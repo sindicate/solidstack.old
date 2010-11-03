@@ -36,9 +36,29 @@
 		<fileset dir="tools/svnkit" includes="*.jar" />
 	</path>
 
+	<path id="testng.classpath">
+		<fileset dir="test/lib" includes="*.jar" />
+	</path>
+
 	<path id="compile.classpath">
 		<fileset dir="lib" includes="*.jar" />
 	</path>
+
+	<path id="compiletest.classpath">
+		<pathelement location="${build.home}/classes" />
+		<fileset dir="test/lib" includes="*.jar" />
+		<path refid="compile.classpath" />
+	</path>
+
+	<path id="test.classpath">
+		<pathelement location="${build.home}/testclasses" />
+		<path refid="compiletest.classpath" />
+	</path>
+
+	
+	<!-- Custom Ant Task Definitions -->
+
+	<taskdef resource="testngtasks" classpathref="testng.classpath" />
 
 
 	<!-- Targets -->
@@ -69,13 +89,13 @@
 			</condition>
 		</fail>
 		<mkdir dir="${dist.home}" />
-		<jar compress="yes" destfile="${dist.home}/solidbase.jar">
+		<jar compress="yes" destfile="${dist.home}/solidstack.jar">
 			<zipfileset dir="${build.home}/classes" />
 			<zipfileset dir="." includes="LICENSE.txt,NOTICE.txt,CHANGELOG.TXT" prefix="META-INF" />
 			<manifest>
 				<attribute name="Implementation-Title" value="SolidQuery" />
 				<attribute name="Implementation-Version" value="${release.number}" />
-				<attribute name="Implementation-Vendor-Id" value="org.solidbase" />
+				<attribute name="Implementation-Vendor-Id" value="solidstack.googlecode.com" />
 				<attribute name="Version" value="${release.number}" />
 				<attribute name="Project-Name" value="${ant.project.name}" />
 				<attribute name="Built-By" value="${user.name}" />
@@ -85,6 +105,25 @@
 	</target>
 
 
+	<target name="compiletest" depends="compile">
+		<mkdir dir="${build.home}/testclasses" />
+		<javac source="${target-jre}" target="${target-jre}" srcdir="test/src" destdir="${build.home}/testclasses" debug="true" deprecation="true" optimize="true">
+			<classpath refid="compiletest.classpath" />
+		</javac>
+		<sync todir="${build.home}/testclasses">
+			<fileset dir="test/src" excludes="**/*.java" />
+			<preserveInTarget includes="**/*.class" />
+		</sync>
+	</target>
+
+
+	<target name="test" depends="compiletest" description="Run the tests">
+		<testng classpathref="test.classpath" outputDir="${build.home}/testreports" haltOnFailure="true" verbose="3">
+			<classfileset dir="${build.home}/testclasses" />
+		</testng>
+	</target>
+
+	
 	<target name="build" depends="jar" description="Do an (incremental) build">
 	</target>
 
