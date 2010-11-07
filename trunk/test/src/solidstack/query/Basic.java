@@ -37,44 +37,32 @@ public class Basic
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query" );
 
-		CompiledQuery compiledQuery = queries.getQuery( "test" );
-
 		Map< String, Object > params = new HashMap< String, Object >();
-		Query query = compiledQuery.params( params );
+		Query query = queries.getQuery( "test", params );
 		List< Map< String, Object > > result = query.list( connection, true );
 		assert result.size() == 22;
-		for( Map< String, Object > row : result )
-			System.out.println( row.get( "tablename" ) );
 
 		params.put( "prefix", "SYST" );
-		query = compiledQuery.params( params );
+		query = queries.getQuery( "test", params );
 		result = query.list( connection, true );
 		assert result.size() == 3;
-		for( Map< String, Object > row : result )
-			System.out.println( row.get( "tablename" ) );
 
 		params.clear();
 		params.put( "name", "SYSTABLES" );
-		query = compiledQuery.params( params );
+		query = queries.getQuery( "test", params );
 		result = query.list( connection, true );
 		assert result.size() == 1;
-		for( Map< String, Object > row : result )
-			System.out.println( row.get( "tablename" ) );
 
 		params.put( "name", "SYSTABLES" );
 		params.put( "prefix", "SYST" );
-		query = compiledQuery.params( params );
+		query = queries.getQuery( "test", params );
 		result = query.list( connection, true );
 		assert result.size() == 1;
-		for( Map< String, Object > row : result )
-			System.out.println( row.get( "tablename" ) );
 
 		params.clear();
 		params.put( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } );
-		query = compiledQuery.params( params );
+		query = queries.getQuery( "test", params );
 		result = query.list( connection, true );
 		assert result.size() == 2;
-		for( Map< String, Object > row : result )
-			System.out.println( row.get( "tablename" ) );
 	}
 }
