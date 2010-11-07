@@ -57,7 +57,7 @@ public class QueryManager
 		this.reloading = reloading;
 	}
 
-	public CompiledQuery getQuery( String path )
+	synchronized public CompiledQuery getQuery( String path )
 	{
 		__LOGGER.debug( "getQuery [" + path + "]" );
 
@@ -126,9 +126,9 @@ public class QueryManager
 		}
 	}
 
-//	public Query getQuery( String path, Map args )
-//	{
-//		CompiledQuery query = getQuery( path );
-//		return query.params( args );
-//	}
+	public Query getQuery( String path, Map args )
+	{
+		CompiledQuery query = getQuery( path );
+		return query.params( args );
+	}
 }

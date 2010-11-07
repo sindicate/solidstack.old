@@ -2,7 +2,7 @@
 	FROM SYS.SYSTABLES
 	WHERE 1 = 1
 <% if( prefix ) { %>
-	AND TABLENAME LIKE '<%=prefix%>%'
+	AND TABLENAME LIKE '<%= prefix %>%'
 <% } %>
 <% if( name ) { %>
 	AND TABLENAME = ${name}
