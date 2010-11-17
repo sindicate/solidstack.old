@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -150,50 +151,19 @@ public class Query
 			int columnCount = metaData.getColumnCount();
 
 			// DETERMINE THE LOWERCASE NAMES IN ADVANCE!!! Otherwise the names will not be shared in memory.
-			String[] columnNames = new String[ columnCount + 1 ];
-			for( int col = 1; col <= columnCount; col++ )
-				columnNames[ col ] = metaData.getColumnLabel( col ).toLowerCase( Locale.ENGLISH );
+			String[] columnNames = new String[ columnCount ];
+			for( int col = 0; col < columnCount; )
+				columnNames[ col ] = metaData.getColumnLabel( ++col ).toLowerCase( Locale.ENGLISH );
 
-			ArrayList result = new ArrayList();
-
-			if( compressed )
+			List result = listOfObjectArrays( resultSet, compressed );
+			ListIterator iterator = result.listIterator();
+			while( iterator.hasNext() )
 			{
-				// THIS CAN REDUCE MEMORY USAGE WITH 90 TO 95 PERCENT, PERFORMANCE IMPACT IS ONLY 5 PERCENT
-
-				HashMap sharedData = new HashMap();
-				while( resultSet.next() )
-				{
-					HashMap line = new HashMap( columnCount );
-					for( int col = 1; col <= columnCount; col++ )
-					{
-						Object object = resultSet.getObject( col );
-						if( object != null )
-						{
-							Object temp = sharedData.get( object );
-							if( temp != null )
-								line.put( columnNames[ col ], temp );
-							else
-							{
-								sharedData.put( object, object );
-								line.put( columnNames[ col ], object );
-							}
-						}
-					}
-					result.add( line );
-				}
-			}
-			else
-			{
-				while( resultSet.next() )
-				{
-					HashMap line = new HashMap( columnCount );
-					for( int col = 1; col <= columnCount; col++ )
-					{
-						Object object = resultSet.getObject( col );
-						line.put( columnNames[ col ], object );
-					}
-					result.add( line );
-				}
+				Object[] values = (Object[])iterator.next();
+				HashMap line = new HashMap( columnCount );
+				for( int col = 0; col < columnCount; col++ )
+					line.put( columnNames[ col ], values[ col ] );
+				iterator.set( line );
 			}
 
 			return result;
@@ -202,6 +172,99 @@ public class Query
 		{
 			throw new SystemException( e );
 		}
+	}
+
+	public List< Object[] > listOfObjectArrays( Connection connection, boolean compressed )
+	{
+		try
+		{
+			ResultSet resultSet = resultSet( connection );
+			return listOfObjectArrays( resultSet, compressed );
+		}
+		catch( SQLException e )
+		{
+			throw new SystemException( e );
+		}
+	}
+
+	public List< Map< String, Object > > listOfRowMaps( Connection connection, boolean compressed )
+	{
+		try
+		{
+			ResultSet resultSet = resultSet( connection );
+
+			ResultSetMetaData metaData = resultSet.getMetaData();
+			int columnCount = metaData.getColumnCount();
+
+			// DETERMINE THE LOWERCASE NAMES IN ADVANCE!!! Otherwise the names will not be shared in memory.
+			Map< String, Integer > names = new HashMap< String, Integer >();
+			for( int col = 0; col < columnCount; col++ )
+				names.put( metaData.getColumnLabel( col + 1 ).toLowerCase( Locale.ENGLISH ), col );
+
+			List result = listOfObjectArrays( resultSet, compressed );
+			ListIterator iterator = result.listIterator();
+			while( iterator.hasNext() )
+			{
+				Object[] values = (Object[])iterator.next();
+				iterator.set( new RowMap( names, values ) );
+			}
+
+			return result;
+		}
+		catch( SQLException e )
+		{
+			throw new SystemException( e );
+		}
+	}
+
+	protected List< Object[] > listOfObjectArrays( ResultSet resultSet, boolean compressed ) throws SQLException
+	{
+		ResultSetMetaData metaData = resultSet.getMetaData();
+		int columnCount = metaData.getColumnCount();
+
+		ArrayList result = new ArrayList();
+
+		if( compressed )
+		{
+			// THIS CAN REDUCE MEMORY USAGE WITH 90 TO 95 PERCENT, PERFORMANCE IMPACT IS ONLY 5 PERCENT
+
+			HashMap sharedData = new HashMap();
+			while( resultSet.next() )
+			{
+				Object[] line = new Object[ columnCount ];
+				for( int col = 1; col <= columnCount; col++ )
+				{
+					Object object = resultSet.getObject( col );
+					if( object != null )
+					{
+						Object temp = sharedData.get( object );
+						if( temp != null )
+							line[ col - 1 ] = temp;
+						else
+						{
+							sharedData.put( object, object );
+							line[ col - 1 ] = object;
+						}
+					}
+				}
+				result.add( line );
+			}
+		}
+		else
+		{
+			while( resultSet.next() )
+			{
+				Object[] line = new Object[ columnCount ];
+				for( int col = 1; col <= columnCount; col++ )
+				{
+					Object object = resultSet.getObject( col );
+					line[ col - 1 ] = object;
+				}
+				result.add( line );
+			}
+		}
+
+		return result;
 	}
 
 	/**

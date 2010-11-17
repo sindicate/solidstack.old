@@ -44,14 +44,14 @@ public class Basic
 
 		params.put( "prefix", "SYST" );
 		query = queries.getQuery( "test", params );
-		result = query.list( connection, true );
+		result = query.listOfRowMaps( connection, true );
 		assert result.size() == 3;
 
 		params.clear();
 		params.put( "name", "SYSTABLES" );
 		query = queries.getQuery( "test", params );
-		result = query.list( connection, true );
-		assert result.size() == 1;
+		List< Object[] > array = query.listOfObjectArrays( connection, true );
+		assert array.size() == 1;
 
 		params.put( "name", "SYSTABLES" );
 		params.put( "prefix", "SYST" );

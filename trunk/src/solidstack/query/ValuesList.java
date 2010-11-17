@@ -1,0 +1,131 @@
+package solidstack.query;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+
+public class ValuesList implements List< Object >
+{
+	protected Object[] values;
+
+	public ValuesList( Object[] values )
+	{
+		this.values = values;
+	}
+
+	public int size()
+	{
+		return this.values.length;
+	}
+
+	public boolean isEmpty()
+	{
+		return this.values.length == 0;
+	}
+
+	public boolean contains( Object o )
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	public Iterator< Object > iterator()
+	{
+		return new ArrayListIterator( this.values );
+	}
+
+	public Object[] toArray()
+	{
+		return this.values;
+	}
+
+	public < T > T[] toArray( T[] a )
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	public boolean add( Object e )
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	public boolean remove( Object o )
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	public boolean containsAll( Collection< ? > c )
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	public boolean addAll( Collection< ? extends Object > c )
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	public boolean addAll( int index, Collection< ? extends Object > c )
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	public boolean removeAll( Collection< ? > c )
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	public boolean retainAll( Collection< ? > c )
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	public void clear()
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	public Object get( int index )
+	{
+		return this.values[ index ];
+	}
+
+	public Object set( int index, Object element )
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	public void add( int index, Object element )
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	public Object remove( int index )
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	public int indexOf( Object o )
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	public int lastIndexOf( Object o )
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	public ListIterator< Object > listIterator()
+	{
+		return new ArrayListIterator( this.values );
+	}
+
+	public ListIterator< Object > listIterator( int index )
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	public List< Object > subList( int fromIndex, int toIndex )
+	{
+		throw new UnsupportedOperationException();
+	}
+}
