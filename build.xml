@@ -16,8 +16,16 @@
    limitations under the License.
 -->
 
-<project basedir="." name="solidstack" default="dist">
+<project basedir="." name="solidstack" default="dist" xmlns:maven="antlib:org.apache.maven.artifact.ant">
 
+	<!-- Maven Ant Task -->
+	
+	<path id="maven.classpath">
+		<fileset dir="tools/maven" includes="*.jar" />
+	</path>
+
+	<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="antlib:org.apache.maven.artifact.ant" classpathref="maven.classpath" />
+	
 	<!-- Properties -->
 	<property file="build.properties" />
 	<property name="target-jre" value="1.5" />
@@ -93,7 +101,7 @@
 			<zipfileset dir="${build.home}/classes" />
 			<zipfileset dir="." includes="LICENSE.txt,NOTICE.txt,CHANGELOG.TXT" prefix="META-INF" />
 			<manifest>
-				<attribute name="Implementation-Title" value="SolidQuery" />
+				<attribute name="Implementation-Title" value="SolidStack" />
 				<attribute name="Implementation-Version" value="${release.number}" />
 				<attribute name="Implementation-Vendor-Id" value="solidstack.googlecode.com" />
 				<attribute name="Version" value="${release.number}" />
@@ -148,4 +156,11 @@
 	</target>
 
 
+	<target name="maven:deploy" depends="build" description="Deploys to the remote repo">
+		<maven:deploy file="${dist.home}/solidstack.jar">
+			<pom file="deploy-pom.xml" />
+		</maven:deploy>
+	</target>
+	
+	
 </project>
