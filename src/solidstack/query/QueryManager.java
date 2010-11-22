@@ -36,7 +36,7 @@ public class QueryManager
 	protected String packag;
 	protected String packageSlashed = ""; // when setPackage is not called
 	protected boolean reloading;
-	protected Map< String, CompiledQuery > queries = new HashMap< String, CompiledQuery >();
+	protected Map< String, QueryTemplate > queries = new HashMap< String, QueryTemplate >();
 
 	public void setPackage( String packag )
 	{
@@ -55,13 +55,13 @@ public class QueryManager
 		this.reloading = reloading;
 	}
 
-	synchronized public CompiledQuery getQuery( String path )
+	synchronized public QueryTemplate getQueryTemplate( String path )
 	{
 		LOGGER.debug( "getQuery [" + path + "]" );
 
 		Assert.isTrue( !path.startsWith( "/" ), "path should not start with a /" );
 
-		CompiledQuery query = this.queries.get( path );
+		QueryTemplate query = this.queries.get( path );
 
 		UrlResource resource = null;
 		long lastModified = 0;
@@ -90,8 +90,8 @@ public class QueryManager
 
 		// If reloading == true and resource is changed, clear current query
 		if( this.reloading )
-			if( query != null && query.lastModified > 0 )
-				if( resource != null && resource.exists() && lastModified > query.lastModified )
+			if( query != null && query.getLastModified() > 0 )
+				if( resource != null && resource.exists() && lastModified > query.getLastModified() )
 				{
 					LOGGER.info( resource.toString() + " changed, reloading" );
 					query = null;
@@ -117,9 +117,9 @@ public class QueryManager
 		return query;
 	}
 
-	public Query getQuery( String path, Map< String, Object > args )
+	public Query bind( String path, Map< String, Object > args )
 	{
-		CompiledQuery query = getQuery( path );
-		return query.params( args );
+		QueryTemplate query = getQueryTemplate( path );
+		return query.bind( args );
 	}
 }

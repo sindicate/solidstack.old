@@ -16,9 +16,11 @@
 
 package solidstack.query;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,32 +40,64 @@ public class Basic
 		queries.setPackage( "solidstack.query" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
-		Query query = queries.getQuery( "test", params );
+		Query query = queries.bind( "test", params );
 		List< Map< String, Object > > result = query.listOfRowMaps( connection, true );
 		assert result.size() == 22;
 
 		params.put( "prefix", "SYST" );
-		query = queries.getQuery( "test", params );
+		query = queries.bind( "test", params );
 		result = query.listOfRowMaps( connection, true );
 		assert result.size() == 3;
 
 		params.clear();
 		params.put( "name", "SYSTABLES" );
-		query = queries.getQuery( "test", params );
+		query = queries.bind( "test", params );
 		List< Object[] > array = query.listOfObjectArrays( connection, true );
 		assert array.size() == 1;
 
 		params.put( "name", "SYSTABLES" );
 		params.put( "prefix", "SYST" );
-		query = queries.getQuery( "test", params );
+		query = queries.bind( "test", params );
 		result = query.listOfRowMaps( connection, true );
 		assert result.size() == 1;
 
 		params.clear();
 		params.put( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } );
-		query = queries.getQuery( "test", params );
+		query = queries.bind( "test", params );
 		result = query.listOfRowMaps( connection, true );
 		assert result.size() == 2;
+	}
+
+	@Test
+	public void testTransform() throws SQLException, ClassNotFoundException, IOException
+	{
+		QueryManager queries = new QueryManager();
+		queries.setPackage( "solidstack.query" );
+
+		Map< String, Object > params = new HashMap< String, Object >();
+		params.put( "name", "SYSTABLES" );
+		params.put( "prefix", "SYST" );
+		params.put( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } );
+		Query query = queries.bind( "test", params );
+		List< Object > pars = new ArrayList< Object >();
+		String sql = query.getPreparedSQL( pars );
+
+		assert sql.equals( "	SELECT *\n" +
+				"	FROM SYS.SYSTABLES\n" +
+				"	WHERE 1 = 1\n" +
+				"\n" +
+				"	AND TABLENAME LIKE 'SYST%'\n" +
+				"\n" +
+				"\n" +
+				"	AND TABLENAME = ?\n" +
+				"\n" +
+				"\n" +
+				"	AND TABLENAME IN (?,?)\n" +
+		"\n" );
+
+//		Writer out = new OutputStreamWriter( new FileOutputStream( "test.out" ), "UTF-8" );
+//		out.write( sql );
+//		out.close();
 	}
 
 	@Test
@@ -76,7 +110,7 @@ public class Basic
 		queries.setPackage( "solidstack.query" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
-		Query query = queries.getQuery( "test2", params );
+		Query query = queries.bind( "test2", params );
 		List< Map< String, Object > > result = query.listOfRowMaps( connection, true );
 		assert result.size() == 22;
 	}

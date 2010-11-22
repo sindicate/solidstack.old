@@ -534,7 +534,7 @@ public class Query
 	{
 //		StringBuilder builder = new StringBuilder( this.sql );
 		StringBuilder builder = new StringBuilder();
-		builder.append( "\nParameters:" );
+		builder.append( "Parameters:" );
 		if( this.params == null )
 			builder.append( " none" );
 		else

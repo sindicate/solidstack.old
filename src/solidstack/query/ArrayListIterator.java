@@ -21,22 +21,22 @@ import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
 /**
- * This class is an implementation of the {@link ListIterator} interface and enables the iteration over a primitive array.
+ * Enables the iteration over Object arrays and primitive arrays.
  * 
  * @author René M. de Bloois
  * @since Aug 12, 2006
  */
 public class ArrayListIterator implements ListIterator<Object>
 {
-	protected Object array;
-	protected int pos;
-	protected int size;
-	protected int lastpos;
+	private Object array;
+	private int pos;
+	private int size;
+	private int lastpos;
 
 	/**
-	 * Constructs a new ArrayListIterator.
+	 * Constructor.
 	 * 
-	 * @param array The primitive array over which you want to iterator.
+	 * @param array The array over which you want to iterate.
 	 */
 	public ArrayListIterator( Object array )
 	{
