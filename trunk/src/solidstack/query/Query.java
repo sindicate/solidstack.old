@@ -77,9 +77,9 @@ public class Query
 	}
 
 	/**
-	 * Sets the connection to use.
+	 * Sets the {@link Connection} to use.
 	 * 
-	 * @param connection The connection to use.
+	 * @param connection The {@link Connection} to use.
 	 */
 	public void setConnection( Connection connection )
 	{
@@ -97,7 +97,7 @@ public class Query
 	}
 
 	/**
-	 * Retrieves a {@link ResultSet} from the configured connection.
+	 * Retrieves a {@link ResultSet} from the configured {@link Connection}.
 	 * 
 	 * @return a {@link ResultSet}.
 	 * @see #resultSet(Connection)
@@ -110,9 +110,9 @@ public class Query
 	}
 
 	/**
-	 * Retrieves a {@link ResultSet} from the given connection.
+	 * Retrieves a {@link ResultSet} from the given {@link Connection}.
 	 * 
-	 * @param connection The connection to use.
+	 * @param connection The {@link Connection} to use.
 	 * @return a {@link ResultSet}.
 	 * @see #resultSet()
 	 */
@@ -130,10 +130,10 @@ public class Query
 	}
 
 	/**
-	 * Retrieves a {@link List} of {@link Object} arrays from the configured connection.
+	 * Retrieves a {@link List} of {@link Object} arrays from the configured {@link Connection}.
 	 * 
 	 * @param compressed Store duplicate values only once.
-	 * @return a {@link List} of {@link Object} arrays from the given connection.
+	 * @return a {@link List} of {@link Object} arrays from the given {@link Connection}.
 	 * @see #listOfObjectArrays(Connection, boolean)
 	 * @see #listOfObjectArrays(ResultSet, boolean)
 	 */
@@ -145,11 +145,11 @@ public class Query
 	}
 
 	/**
-	 * Retrieves a {@link List} of {@link Object} arrays from the given connection.
+	 * Retrieves a {@link List} of {@link Object} arrays from the given {@link Connection}.
 	 * 
-	 * @param connection The connection to use.
+	 * @param connection The {@link Connection} to use.
 	 * @param compressed Store duplicate values only once.
-	 * @return a {@link List} of {@link Object} arrays from the given connection.
+	 * @return a {@link List} of {@link Object} arrays from the given {@link Connection}.
 	 * @see #listOfObjectArrays(boolean)
 	 * @see #listOfObjectArrays(ResultSet, boolean)
 	 */
@@ -226,10 +226,10 @@ public class Query
 	}
 
 	/**
-	 * Retrieve a {@link List} of {@link RowMap} from the configured connection.
+	 * Retrieve a {@link List} of {@link ValuesMap} from the configured {@link Connection}.
 	 * 
 	 * @param compressed Store duplicate values only once.
-	 * @return a {@link List} of {@link RowMap}.
+	 * @return a {@link List} of {@link ValuesMap}.
 	 * @see #listOfRowMaps(Connection, boolean)
 	 */
 	public List< Map< String, Object > > listOfRowMaps( boolean compressed )
@@ -240,11 +240,11 @@ public class Query
 	}
 
 	/**
-	 * Retrieve a {@link List} of {@link RowMap} from the configured connection.
+	 * Retrieve a {@link List} of {@link ValuesMap} from the configured {@link Connection}.
 	 * 
-	 * @param connection The connection to use.
+	 * @param connection The {@link Connection} to use.
 	 * @param compressed Store duplicate values only once.
-	 * @return A {@link List} of {@link RowMap} from the configured connection.
+	 * @return A {@link List} of {@link ValuesMap} from the configured {@link Connection}.
 	 * @see #listOfRowMaps(boolean)
 	 */
 	public List< Map< String, Object > > listOfRowMaps( Connection connection, boolean compressed )
@@ -264,7 +264,7 @@ public class Query
 			List< Object[] > result = listOfObjectArrays( resultSet, compressed );
 			List< Map< String, Object > > result2 = new ArrayList< Map< String, Object > >( result.size() );
 			for( Object[] objects : result)
-				result2.add( new RowMap( names, objects ) );
+				result2.add( new ValuesMap( names, objects ) );
 
 			return result2;
 		}
@@ -293,7 +293,7 @@ public class Query
 	/**
 	 * Executes an update (DML) or a DDL query.
 	 * 
-	 * @param connection The connection to use.
+	 * @param connection The {@link Connection} to use.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 * @throws SQLException Whenever the query caused an {@link SQLException}.
 	 * @see #updateChecked()
@@ -308,7 +308,7 @@ public class Query
 	/**
 	 * Executes an update (DML) or a DDL query. {@link SQLException}s are not expected and wrapped in a {@link SystemException}.
 	 * 
-	 * @param connection The connection to use.
+	 * @param connection The {@link Connection} to use.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 * @see #updateChecked()
 	 * @see #updateChecked(Connection)
@@ -342,7 +342,7 @@ public class Query
 	/**
 	 * Returns a {@link PreparedStatement} for the query.
 	 * 
-	 * @param connection The connection to use.
+	 * @param connection The {@link Connection} to use.
 	 * @return a {@link PreparedStatement} for the query.
 	 */
 	public PreparedStatement getPreparedStatement( Connection connection )

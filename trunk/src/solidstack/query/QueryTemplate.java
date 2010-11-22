@@ -17,20 +17,39 @@
 package solidstack.query;
 
 import groovy.lang.Closure;
+import groovy.lang.GString;
 
+import java.sql.Connection;
 import java.util.Map;
 
+/**
+ * Represents the query template.
+ * 
+ * @author René M. de Bloois
+ */
 public class QueryTemplate
 {
 	private final Closure query;
 	private long lastModified;
 
-	public QueryTemplate( Closure query, long lastModified )
+	/**
+	 * Constructor.
+	 * 
+	 * @param closure The closure that produces the {@link GString} for the query.
+	 * @param lastModified The last modified time stamp of the file that contains the query template.
+	 */
+	public QueryTemplate( Closure closure, long lastModified )
 	{
-		this.query = query;
+		this.query = closure;
 		this.lastModified = lastModified;
 	}
 
+	/**
+	 * Bind the template with the given parameters. This produces a {@link Query} that can be executed against a {@link Connection}.
+	 * 
+	 * @param params The parameters for the query.
+	 * @return A {@link Query}.
+	 */
 	public Query bind( Map< String, Object > params )
 	{
 		Query query = new Query( (Closure)this.query.clone() );
@@ -38,6 +57,11 @@ public class QueryTemplate
 		return query;
 	}
 
+	/**
+	 * Returns the last modification time stamp for the file that contains the query template.
+	 * 
+	 * @return The last modification time stamp for the file that contains the query template.
+	 */
 	public long getLastModified()
 	{
 		return this.lastModified;

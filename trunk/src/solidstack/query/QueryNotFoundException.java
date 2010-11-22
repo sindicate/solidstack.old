@@ -16,13 +16,18 @@
 
 package solidstack.query;
 
+/**
+ * The requested query is not found.
+ * 
+ * @author René M. de Bloois
+ */
 public class QueryNotFoundException extends RuntimeException
 {
-	public QueryNotFoundException( String message, Throwable cause )
-	{
-		super( message, cause );
-	}
-
+	/**
+	 * Constructor.
+	 * 
+	 * @param message The message.
+	 */
 	public QueryNotFoundException( String message )
 	{
 		super( message );
