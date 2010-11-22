@@ -32,13 +32,25 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+/**
+ * Compiles a query template into a {@link Closure}.
+ * 
+ * @author René M. de Bloois
+ */
 public class QueryCompiler
 {
 	static final private Logger LOGGER = LoggerFactory.getLogger( QueryCompiler.class );
 
-	static final protected Pattern pathPattern = Pattern.compile( "/*(?:(.+?)/+)?([^\\/]+)" );
+	static final private Pattern pathPattern = Pattern.compile( "/*(?:(.+?)/+)?([^\\/]+)" );
 
+	/**
+	 * Compiles a query template into a {@link Closure}.
+	 * 
+	 * @param reader The {@link Reader} for the query template text.
+	 * @param path The path of the query template.
+	 * @param lastModified The last modified time stamp of the query template.
+	 * @return A {@link Closure}.
+	 */
 	static public QueryTemplate compile( Reader reader, String path, long lastModified )
 	{
 		LOGGER.info( "compile [" + path + "]" );
@@ -60,13 +72,21 @@ public class QueryCompiler
 		return new QueryTemplate( (Closure)object.invokeMethod( "getClosure", null ), lastModified );
 	}
 
-	static public QueryTemplate compile( String sql, String path, long lastModified )
+	/**
+	 * Compiles a query template into a {@link Closure}.
+	 * 
+	 * @param query The text of the query template.
+	 * @param path The path of the query template.
+	 * @param lastModified The last modified time stamp of the query template.
+	 * @return A {@link Closure}.
+	 */
+	static public QueryTemplate compile( String query, String path, long lastModified )
 	{
-		return compile( new StringReader( sql ), path, lastModified );
+		return compile( new StringReader( query ), path, lastModified );
 	}
 
 
-	static protected class Scanner
+	static private class Scanner
 	{
 //		static final private Logger log = Logger.getLogger( Scanner.class );
 
@@ -153,7 +173,7 @@ public class QueryCompiler
 		}
 	}
 
-	static protected class Parser
+	static private class Parser
 	{
 //		static final private Logger log = Logger.getLogger( GroovyPageCompiler.class );
 
@@ -164,7 +184,7 @@ public class QueryCompiler
 
 		protected String parse( Scanner scanner, String pkg, String cls )
 		{
-			Writer writer = new Writer( cls );
+			Writer writer = new Writer();
 			writer.writeRaw( "package " + pkg + ";class " + cls + "{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();" );
 
 //			log.trace( "-> parse" );
@@ -335,23 +355,6 @@ public class QueryCompiler
 //			log.trace( "<- readString" );
 		}
 
-		protected String readString( Scanner reader )
-		{
-//			log.trace( "-> readString" );
-			StringBuilder result = new StringBuilder();
-			boolean escaped = false;
-			while( true )
-			{
-				int c = reader.read();
-				Assert.isTrue( c > 0 );
-				if( c == '"' && !escaped )
-					return result.toString();
-				escaped = c == '\\';
-				if( !escaped )
-					result.append( (char)c );
-			}
-		}
-
 		protected void readComment( Scanner reader )
 		{
 //			log.trace( "-> readComment" );
@@ -379,22 +382,16 @@ public class QueryCompiler
 		}
 	}
 
-	static protected enum Mode { UNKNOWN, STRING, SCRIPT, EXPRESSION }
+	static private enum Mode { UNKNOWN, STRING, SCRIPT, EXPRESSION }
 
-	static protected class Writer
+	static private class Writer
 	{
 		protected StringBuilder buffer = new StringBuilder();
 		protected Mode mode = Mode.UNKNOWN;
-		protected String cls;
 
 		protected Writer()
 		{
 			// Empty constructor
-		}
-
-		protected Writer( String cls )
-		{
-			this.cls = cls;
 		}
 
 		protected void writeAsString( char c )
@@ -466,22 +463,6 @@ public class QueryCompiler
 				writeAsScript( c );
 			else if( mode == Mode.STRING )
 				writeAsString( c );
-			else
-				Assert.fail( "mode UNKNOWN not allowed" );
-		}
-
-		// TODO What about newlines?
-		protected void writeAs( CharSequence string, Mode mode )
-		{
-			if( string == null || string.length() == 0 )
-				return;
-
-			if( mode == Mode.EXPRESSION )
-				Assert.fail( "mode EXPRESSION not allowed" );
-			else if( mode == Mode.SCRIPT )
-				writeAsScript( string );
-			else if( mode == Mode.STRING )
-				writeWhiteSpaceAsString( string );
 			else
 				Assert.fail( "mode UNKNOWN not allowed" );
 		}

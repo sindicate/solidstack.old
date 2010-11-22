@@ -25,7 +25,7 @@ import java.util.Set;
  * 
  * @author René M. de Bloois
  */
-public class RowMap implements Map< String, Object >
+public class ValuesMap implements Map< String, Object >
 {
 	private Map< String, Integer > names; // This one is shared among all instances of RowMap
 	private Object[] values;
@@ -36,7 +36,7 @@ public class RowMap implements Map< String, Object >
 	 * @param names The names and indexes of the elements in the {@link Object} array.
 	 * @param values The values.
 	 */
-	public RowMap( Map< String, Integer > names, Object[] values )
+	public ValuesMap( Map< String, Integer > names, Object[] values )
 	{
 		this.names = names;
 		this.values = values;
