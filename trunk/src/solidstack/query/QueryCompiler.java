@@ -27,18 +27,19 @@ import java.io.StringReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class QueryCompiler
 {
-	static final private Logger __LOGGER = Logger.getLogger( QueryCompiler.class );
+	static final private Logger LOGGER = LoggerFactory.getLogger( QueryCompiler.class );
 
 	static final protected Pattern pathPattern = Pattern.compile( "/*(?:(.+?)/+)?([^\\/]+)" );
 
 	static public CompiledQuery compile( Reader reader, String path, long lastModified )
 	{
-		__LOGGER.info( "compile [" + path + "]" );
+		LOGGER.info( "compile [" + path + "]" );
 		Matcher matcher = pathPattern.matcher( path );
 		Assert.isTrue( matcher.matches() );
 		path = matcher.group( 1 );
@@ -49,11 +50,11 @@ public class QueryCompiler
 			pkg += "." + path.replaceAll( "/", "." );
 
 		String script = parse( reader, pkg, name );
-		__LOGGER.debug( "Generated groovy:\n" + script );
+		LOGGER.debug( "Generated groovy:\n" + script );
 
 		GroovyClassLoader loader = new GroovyClassLoader();
-		Class groovyClass = loader.parseClass( new GroovyCodeSource( script, name, "x" ) );
-		GroovyObject object = (GroovyObject)Util.newInstance( groovyClass );
+		Class< GroovyObject > groovyClass = loader.parseClass( new GroovyCodeSource( script, name, "x" ) );
+		GroovyObject object = Util.newInstance( groovyClass );
 		return new CompiledQuery( (Closure)object.invokeMethod( "getClosure", null ), lastModified );
 	}
 

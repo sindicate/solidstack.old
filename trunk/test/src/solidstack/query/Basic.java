@@ -39,7 +39,7 @@ public class Basic
 
 		Map< String, Object > params = new HashMap< String, Object >();
 		Query query = queries.getQuery( "test", params );
-		List< Map< String, Object > > result = query.list( connection, true );
+		List< Map< String, Object > > result = query.listOfRowMaps( connection, true );
 		assert result.size() == 22;
 
 		params.put( "prefix", "SYST" );
@@ -56,13 +56,13 @@ public class Basic
 		params.put( "name", "SYSTABLES" );
 		params.put( "prefix", "SYST" );
 		query = queries.getQuery( "test", params );
-		result = query.list( connection, true );
+		result = query.listOfRowMaps( connection, true );
 		assert result.size() == 1;
 
 		params.clear();
 		params.put( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } );
 		query = queries.getQuery( "test", params );
-		result = query.list( connection, true );
+		result = query.listOfRowMaps( connection, true );
 		assert result.size() == 2;
 	}
 }

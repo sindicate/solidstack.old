@@ -3,10 +3,8 @@
 	<classpathentry excluding="**/.svn/" kind="src" path="src"/>
 	<classpathentry excluding="**/.svn/" kind="src" path="test/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/groovy-all-1.7.5.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar"/>
-	<classpathentry kind="lib" path="lib/org.springframework.core-3.0.5.RELEASE.jar"/>
 	<classpathentry kind="lib" path="test/lib/testng-5.8-jdk15.jar"/>
-	<classpathentry kind="lib" path="test/lib/derby-10.6.1.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

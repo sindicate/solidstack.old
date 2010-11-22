@@ -29,8 +29,8 @@ import org.codehaus.groovy.runtime.GStringImpl;
  */
 public class GStringBuilder
 {
-	protected List< String > strings = new ArrayList();
-	protected List< Object > values = new ArrayList();
+	protected List< String > strings = new ArrayList< String >();
+	protected List< Object > values = new ArrayList< Object >();
 
 	public GStringBuilder append( GString s )
 	{

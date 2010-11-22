@@ -34,16 +34,17 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class Query
 {
-	static private final Logger __LOGGER = Logger.getLogger( Query.class );
+	static final private Logger LOGGER = LoggerFactory.getLogger( Query.class );
 
 	static protected final TemplateEngine templateEngine = new SimpleTemplateEngine();
 
@@ -52,7 +53,7 @@ public class Query
 
 	private GString sql;
 	private Closure query;
-	private Map params;
+	private Map< String, Object > params;
 	private Connection connection;
 
 	public Query( GString sql )
@@ -70,7 +71,7 @@ public class Query
 		this.connection = connection;
 	}
 
-	public void params( Map params )
+	public void params( Map< String, Object > params )
 	{
 		this.params = params;
 	}
@@ -95,83 +96,16 @@ public class Query
 		}
 	}
 
-	/*
-	public List< Map > list( DataSource dataSource )
-	{
-		try
-		{
-			Connection connection = dataSource.getConnection();
-			try
-			{
-				return list( connection );
-			}
-			finally
-			{
-				connection.close();
-			}
-		}
-		catch( SQLException e )
-		{
-			throw new SystemException( e );
-		}
-	}
-	 */
-
 	/**
 	 * @param compressed
 	 * @return a List of Maps for each record retrieved from the query.
 	 * @see #list(Connection, boolean)
 	 */
-	public List< Map< String, Object > > list( boolean compressed )
+	public List< Map< String, Object > > listOfRowMaps( boolean compressed )
 	{
 		if( this.connection == null )
 			throw new IllegalArgumentException( "Connection not set" );
-		return list( this.connection, compressed );
-	}
-
-	/**
-	 * Returns a List of Maps containing all the records retrieved from the query. If the compressed parameter is true,
-	 * memory usage will be reduced considerably by storing equal values only once. This is particularly valuable when
-	 * the query returns lots of duplicate values. Also, nulls are not stored in the map when the compressed parameter
-	 * is true.
-	 * 
-	 * @param connection
-	 * @param compressed When true, memory usage will be reduced considerably by storing equal values only once. This is
-	 *            particularly valuable when the query returns lots of duplicate values. Also, nulls are not stored in
-	 *            the map when the compressed parameter is true.
-	 * @return a List of Maps for each record retrieved from the query.
-	 */
-	public List< Map< String, Object > > list( Connection connection, boolean compressed )
-	{
-		try
-		{
-			ResultSet resultSet = resultSet( connection );
-
-			ResultSetMetaData metaData = resultSet.getMetaData();
-			int columnCount = metaData.getColumnCount();
-
-			// DETERMINE THE LOWERCASE NAMES IN ADVANCE!!! Otherwise the names will not be shared in memory.
-			String[] columnNames = new String[ columnCount ];
-			for( int col = 0; col < columnCount; )
-				columnNames[ col ] = metaData.getColumnLabel( ++col ).toLowerCase( Locale.ENGLISH );
-
-			List result = listOfObjectArrays( resultSet, compressed );
-			ListIterator iterator = result.listIterator();
-			while( iterator.hasNext() )
-			{
-				Object[] values = (Object[])iterator.next();
-				HashMap line = new HashMap( columnCount );
-				for( int col = 0; col < columnCount; col++ )
-					line.put( columnNames[ col ], values[ col ] );
-				iterator.set( line );
-			}
-
-			return result;
-		}
-		catch( SQLException e )
-		{
-			throw new SystemException( e );
-		}
+		return listOfRowMaps( this.connection, compressed );
 	}
 
 	public List< Object[] > listOfObjectArrays( Connection connection, boolean compressed )
@@ -187,6 +121,18 @@ public class Query
 		}
 	}
 
+	/**
+	 * Returns a List of Maps containing all the records retrieved from the query. If the compressed parameter is true,
+	 * memory usage will be reduced considerably by storing equal values only once. This is particularly valuable when
+	 * the query returns lots of duplicate values. Also, nulls are not stored in the map when the compressed parameter
+	 * is true.
+	 * 
+	 * @param connection
+	 * @param compressed When true, memory usage will be reduced considerably by storing equal values only once. This is
+	 *            particularly valuable when the query returns lots of duplicate values. Also, nulls are not stored in
+	 *            the map when the compressed parameter is true.
+	 * @return a List of Maps for each record retrieved from the query.
+	 */
 	public List< Map< String, Object > > listOfRowMaps( Connection connection, boolean compressed )
 	{
 		try
@@ -201,15 +147,12 @@ public class Query
 			for( int col = 0; col < columnCount; col++ )
 				names.put( metaData.getColumnLabel( col + 1 ).toLowerCase( Locale.ENGLISH ), col );
 
-			List result = listOfObjectArrays( resultSet, compressed );
-			ListIterator iterator = result.listIterator();
-			while( iterator.hasNext() )
-			{
-				Object[] values = (Object[])iterator.next();
-				iterator.set( new RowMap( names, values ) );
-			}
+			List< Object[] > result = listOfObjectArrays( resultSet, compressed );
+			List< Map< String, Object > > result2 = new ArrayList< Map< String, Object > >( result.size() );
+			for( Object[] objects : result)
+				result2.add( new RowMap( names, objects ) );
 
-			return result;
+			return result2;
 		}
 		catch( SQLException e )
 		{
@@ -222,13 +165,13 @@ public class Query
 		ResultSetMetaData metaData = resultSet.getMetaData();
 		int columnCount = metaData.getColumnCount();
 
-		ArrayList result = new ArrayList();
+		ArrayList< Object[] > result = new ArrayList< Object[] >();
 
 		if( compressed )
 		{
 			// THIS CAN REDUCE MEMORY USAGE WITH 90 TO 95 PERCENT, PERFORMANCE IMPACT IS ONLY 5 PERCENT
 
-			HashMap sharedData = new HashMap();
+			Map< Object, Object > sharedData = new HashMap< Object, Object >();
 			while( resultSet.next() )
 			{
 				Object[] line = new Object[ columnCount ];
@@ -333,12 +276,12 @@ public class Query
 
 	public PreparedStatement getStatement( Connection connection )
 	{
-		if( __LOGGER.isDebugEnabled() )
-			__LOGGER.debug( this );
+		if( LOGGER.isDebugEnabled() )
+			LOGGER.debug( toString() );
 
-		List pars = new ArrayList();
-		String preparedSql = getPreparedSQL( this.params, pars );
-		__LOGGER.debug( preparedSql );
+		List< Object > pars = new ArrayList< Object >();
+		String preparedSql = getPreparedSQL( pars );
+		LOGGER.debug( preparedSql );
 
 		try
 		{
@@ -403,12 +346,12 @@ public class Query
 		}
 	}
 
-	protected void appendParameter( Object object, String name, StringBuilder buildSql, List pars )
+	protected void appendParameter( Object object, String name, StringBuilder buildSql, List< Object > pars )
 	{
 		buildSql.append( '?' );
 		if( object instanceof Collection<?> )
 		{
-			Collection collection = (Collection)object;
+			Collection<?> collection = (Collection<?>)object;
 			int size = collection.size();
 			Assert.isTrue( size > 0, "Parameter [" + name + "] is empty collection" );
 			for( Object object2 : collection )
@@ -429,7 +372,7 @@ public class Query
 		}
 	}
 
-	public String getPreparedSQL( Map params, List pars )
+	public String getPreparedSQL( List< Object > pars )
 	{
 		GString gsql;
 		if( this.query != null )
@@ -463,7 +406,7 @@ public class Query
 
 				if( sql.indexOf( "ORACLE-IN ", pos + 2 ) == pos + 2 )
 				{
-					processOracleIn( sql, pos, pos2, buildSql, params, pars );
+					processOracleIn( sql, pos, pos2, buildSql, pars );
 				}
 				else if( sql.charAt( pos + 2 ) == '\'' )
 				{
@@ -491,7 +434,7 @@ public class Query
 		return buildSql.toString();
 	}
 
-	protected void processOracleIn( String sql, int pos, int pos2, StringBuilder builder, Map params, List pars )
+	protected void processOracleIn( String sql, int pos, int pos2, StringBuilder builder, List< Object > pars )
 	{
 		int pos3 = sql.indexOf( ' ', pos + 12 );
 		Assert.isTrue( pos3 >= 0 && pos3 < pos2, "Need 2 parameters when using ORACLE-IN" );
@@ -542,7 +485,7 @@ public class Query
 			builder.append( object );
 	}
 
-	protected void processOracleIn2( StringBuilder builder, String column, Iterator<?> iter, boolean literal, List pars )
+	protected void processOracleIn2( StringBuilder builder, String column, Iterator<?> iter, boolean literal, List< Object > pars )
 	{
 		builder.append( '(' );
 		boolean first = true;

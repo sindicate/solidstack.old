@@ -19,7 +19,7 @@ package solidstack.query;
 
 public class Util
 {
-	static public Object newInstance( Class cls )
+	static public <T> T newInstance( Class< T > cls )
 	{
 		try
 		{
