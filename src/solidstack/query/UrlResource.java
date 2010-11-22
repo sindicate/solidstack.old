@@ -17,6 +17,7 @@
 package solidstack.query;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -47,13 +48,15 @@ public class UrlResource
 	 * Returns a {@link File} for the resource.
 	 * 
 	 * @return a {@link File} for the resource.
+	 * @throws FileNotFoundException When the url protocol is not 'file'.
 	 */
-	public File getFile()
+	public File getFile() throws FileNotFoundException
 	{
-//		if( !this.url.getProtocol().equals( "file" ) )
-//			throw new FileNotFoundException( "Only file: protocol allowed, not " + this.url.getProtocol() );
+		if( !this.url.getProtocol().equals( "file" ) )
+			throw new FileNotFoundException( "Only file: protocol allowed, not " + this.url.getProtocol() );
 		try
 		{
+			System.out.println( this.url );
 			return new File( this.url.toURI() );
 		}
 		catch( URISyntaxException e )
@@ -86,28 +89,28 @@ public class UrlResource
 	 */
 	public boolean exists()
 	{
-//		try
-//		{
-		// This is more efficient than opening the stream.
-		return getFile().exists();
-//		}
-//		catch( FileNotFoundException e )
-//		{
-//			InputStream in = getInputStream();
-//			if( in != null )
-//			{
-//				try
-//				{
-//					in.close();
-//				}
-//				catch( IOException e1 )
-//				{
-//					throw new SystemException( e );
-//				}
-//				return true;
-//			}
-//			return false;
-//		}
+		try
+		{
+			// This is more efficient than opening the stream.
+			return getFile().exists();
+		}
+		catch( FileNotFoundException e )
+		{
+			InputStream in = getInputStream();
+			if( in != null )
+			{
+				try
+				{
+					in.close();
+				}
+				catch( IOException e1 )
+				{
+					throw new SystemException( e );
+				}
+				return true;
+			}
+			return false;
+		}
 	}
 
 	@Override

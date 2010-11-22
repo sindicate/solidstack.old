@@ -16,6 +16,7 @@
 
 package solidstack.query;
 
+import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
@@ -93,15 +94,15 @@ public class QueryManager
 			if( url == null )
 				throw new QueryNotFoundException( file + " not found in classpath" );
 			resource = new UrlResource( url );
-//			try
-//			{
-			lastModified = resource.getFile().lastModified();
-//			}
-//			catch( FileNotFoundException e )
-//			{
-//				// Appearantly the resource is packed in a jar of some kind.
-//				// lastModified stays 0, which means no reloading will be tried.
-//			}
+			try
+			{
+				lastModified = resource.getFile().lastModified();
+			}
+			catch( FileNotFoundException e )
+			{
+				// Appearantly the resource is packed in a jar of some kind.
+				// lastModified stays 0, which means no reloading will be tried.
+			}
 			LOGGER.debug( resource.toString() + ", lastModified: " + new Date( lastModified ) + " (" + lastModified + ")" );
 		}
 
