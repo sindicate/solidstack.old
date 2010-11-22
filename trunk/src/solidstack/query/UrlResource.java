@@ -17,16 +17,25 @@
 package solidstack.query;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+/**
+ * A resource described by a {@link URL}.
+ * 
+ * @author René M. de Bloois
+ */
 public class UrlResource
 {
-	protected URL url;
+	private URL url;
 
+	/**
+	 * The constructor.
+	 * 
+	 * @param url The {@link URL} of the resource.
+	 */
 	public UrlResource( URL url )
 	{
 		if( url == null )
@@ -34,7 +43,12 @@ public class UrlResource
 		this.url = url;
 	}
 
-	public File getFile() throws FileNotFoundException
+	/**
+	 * Returns a {@link File} for the resource.
+	 * 
+	 * @return a {@link File} for the resource.
+	 */
+	public File getFile()
 	{
 //		if( !this.url.getProtocol().equals( "file" ) )
 //			throw new FileNotFoundException( "Only file: protocol allowed, not " + this.url.getProtocol() );
@@ -48,6 +62,11 @@ public class UrlResource
 		}
 	}
 
+	/**
+	 * Returns an {@link InputStream} for the resource.
+	 * 
+	 * @return an {@link InputStream} for the resource.
+	 */
 	public InputStream getInputStream()
 	{
 		try
@@ -60,35 +79,40 @@ public class UrlResource
 		}
 	}
 
+	/**
+	 * Determines if the resource exists.
+	 * 
+	 * @return True if the resource exists, false otherwise.
+	 */
 	public boolean exists()
 	{
-		try
-		{
-			// This is more efficient than opening the stream.
-			return getFile().exists();
-		}
-		catch( FileNotFoundException e )
-		{
-			InputStream in = getInputStream();
-			if( in != null )
-			{
-				try
-				{
-					in.close();
-				}
-				catch( IOException e1 )
-				{
-					throw new SystemException( e );
-				}
-				return true;
-			}
-			return false;
-		}
+//		try
+//		{
+		// This is more efficient than opening the stream.
+		return getFile().exists();
+//		}
+//		catch( FileNotFoundException e )
+//		{
+//			InputStream in = getInputStream();
+//			if( in != null )
+//			{
+//				try
+//				{
+//					in.close();
+//				}
+//				catch( IOException e1 )
+//				{
+//					throw new SystemException( e );
+//				}
+//				return true;
+//			}
+//			return false;
+//		}
 	}
 
 	@Override
 	public String toString()
 	{
-		return "UrlResource(" + this.url + ")";
+		return this.url.toString();
 	}
 }

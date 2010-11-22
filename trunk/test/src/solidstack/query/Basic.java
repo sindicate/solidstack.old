@@ -16,7 +16,6 @@
 
 package solidstack.query;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -69,7 +68,7 @@ public class Basic
 	}
 
 	@Test
-	public void testTransform() throws SQLException, ClassNotFoundException, IOException
+	public void testTransform() throws Exception
 	{
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query" );

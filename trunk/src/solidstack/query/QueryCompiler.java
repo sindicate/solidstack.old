@@ -71,7 +71,7 @@ public class QueryCompiler
 //		static final private Logger log = Logger.getLogger( Scanner.class );
 
 		protected Reader reader;
-		protected Stack< Integer > pushBack = new Stack();
+		protected Stack< Integer > pushBack = new Stack< Integer >();
 		protected Stack< Integer > pushBackMarked;
 
 		protected Scanner( Reader reader )
