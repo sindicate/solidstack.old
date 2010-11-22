@@ -32,7 +32,7 @@ public class CompiledQuery
 		this.lastModified = lastModified;
 	}
 
-	public Query params( Map params )
+	public Query params( Map< String, Object > params )
 	{
 		Query query = new Query( (Closure)this.query.clone() );
 		query.params( params );
