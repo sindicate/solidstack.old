@@ -65,4 +65,19 @@ public class Basic
 		result = query.listOfRowMaps( connection, true );
 		assert result.size() == 2;
 	}
+
+	@Test
+	public void testInJar() throws SQLException, ClassNotFoundException
+	{
+		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
+		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
+
+		QueryManager queries = new QueryManager();
+		queries.setPackage( "solidstack.query" );
+
+		Map< String, Object > params = new HashMap< String, Object >();
+		Query query = queries.getQuery( "test2", params );
+		List< Map< String, Object > > result = query.listOfRowMaps( connection, true );
+		assert result.size() == 22;
+	}
 }
