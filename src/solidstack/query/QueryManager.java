@@ -28,33 +28,51 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-// TODO Change detection
+/**
+ * Manages and caches the queries.
+ * 
+ * @author René M. de Bloois
+ */
 public class QueryManager
 {
 	static final private Logger LOGGER = LoggerFactory.getLogger( QueryManager.class );
 
-	protected String packag;
-	protected String packageSlashed = ""; // when setPackage is not called
-	protected boolean reloading;
-	protected Map< String, QueryTemplate > queries = new HashMap< String, QueryTemplate >();
+	private String packageSlashed = ""; // when setPackage is not called
+	private boolean reloading;
+	private Map< String, QueryTemplate > queries = new HashMap< String, QueryTemplate >();
 
-	public void setPackage( String packag )
+	/**
+	 * Configures the package which is the root of the gsql file.
+	 * 
+	 * @param pkg The package.
+	 */
+	public void setPackage( String pkg )
 	{
-		Assert.isTrue( !packag.startsWith( "." ) && !packag.endsWith( "." ), "path should not start or end with a ." );
+		Assert.isTrue( !pkg.startsWith( "." ) && !pkg.endsWith( "." ), "path should not start or end with a ." );
 
-		this.packag = packag;
-		if( packag.length() > 0 )
-			this.packageSlashed = packag.replaceAll( "\\.", "/" ) + "/";
+		if( pkg.length() > 0 )
+			this.packageSlashed = pkg.replaceAll( "\\.", "/" ) + "/";
 		else
 			this.packageSlashed = "";
 	}
 
+	/**
+	 * Enable or disable reloading. When enabled, the lastModified time stamp of the file is used to check if it needs reloading.
+	 * 
+	 * @param reloading When true, the file is reloaded when updated.
+	 */
 	public void setReloading( boolean reloading )
 	{
 		LOGGER.info( "Reloading = [" + reloading + "]" );
 		this.reloading = reloading;
 	}
 
+	/**
+	 * Returns the {@link QueryTemplate} with the given path.
+	 * 
+	 * @param path The path of the query.
+	 * @return The {@link QueryTemplate}.
+	 */
 	synchronized public QueryTemplate getQueryTemplate( String path )
 	{
 		LOGGER.debug( "getQuery [" + path + "]" );
@@ -117,6 +135,13 @@ public class QueryManager
 		return query;
 	}
 
+	/**
+	 * Binds the template and the arguments and returns the {@link Query}.
+	 * 
+	 * @param path The path of the query.
+	 * @param args The arguments.
+	 * @return The {@link Query}.
+	 */
 	public Query bind( String path, Map< String, Object > args )
 	{
 		QueryTemplate query = getQueryTemplate( path );

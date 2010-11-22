@@ -18,9 +18,6 @@ package solidstack.query;
 
 import groovy.lang.Closure;
 import groovy.lang.GString;
-import groovy.text.SimpleTemplateEngine;
-import groovy.text.TemplateEngine;
-
 import java.lang.reflect.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -42,40 +39,69 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+/**
+ * A query.
+ * 
+ * @author René M. de Bloois
+ */
 public class Query
 {
 	static final private Logger LOGGER = LoggerFactory.getLogger( Query.class );
-
-	static protected final TemplateEngine templateEngine = new SimpleTemplateEngine();
 
 	static private final String parameterMarkupStart = "#{";
 	static private final char parameterMarkupEnd = '}';
 
 	private GString sql;
-	private Closure query;
+	private Closure closure;
 	private Map< String, Object > params;
 	private Connection connection;
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param sql A {@link GString} query.
+	 */
 	public Query( GString sql )
 	{
 		this.sql = sql;
 	}
 
-	public Query( Closure query )
+	/**
+	 * Constructor.
+	 * 
+	 * @param closure A closure that returns a {@link GString} when called.
+	 */
+	public Query( Closure closure )
 	{
-		this.query = query;
+		this.closure = closure;
 	}
 
+	/**
+	 * Sets the connection to use.
+	 * 
+	 * @param connection The connection to use.
+	 */
 	public void setConnection( Connection connection )
 	{
 		this.connection = connection;
 	}
 
+	/**
+	 * Sets the parameters to use.
+	 * 
+	 * @param params The parameters to use.
+	 */
 	public void params( Map< String, Object > params )
 	{
 		this.params = params;
 	}
 
+	/**
+	 * Retrieves a {@link ResultSet} from the configured connection.
+	 * 
+	 * @return a {@link ResultSet}.
+	 * @see #resultSet(Connection)
+	 */
 	public ResultSet resultSet()
 	{
 		if( this.connection == null )
@@ -83,11 +109,18 @@ public class Query
 		return resultSet( this.connection );
 	}
 
+	/**
+	 * Retrieves a {@link ResultSet} from the given connection.
+	 * 
+	 * @param connection The connection to use.
+	 * @return a {@link ResultSet}.
+	 * @see #resultSet()
+	 */
 	public ResultSet resultSet( Connection connection )
 	{
 		try
 		{
-			PreparedStatement statement = getStatement( connection );
+			PreparedStatement statement = getPreparedStatement( connection );
 			return statement.executeQuery();
 		}
 		catch( SQLException e )
@@ -97,23 +130,94 @@ public class Query
 	}
 
 	/**
-	 * @param compressed
-	 * @return a List of Maps for each record retrieved from the query.
-	 * @see #list(Connection, boolean)
+	 * Retrieves a {@link List} of {@link Object} arrays from the configured connection.
+	 * 
+	 * @param compressed Store duplicate values only once.
+	 * @return a {@link List} of {@link Object} arrays from the given connection.
+	 * @see #listOfObjectArrays(Connection, boolean)
+	 * @see #listOfObjectArrays(ResultSet, boolean)
 	 */
-	public List< Map< String, Object > > listOfRowMaps( boolean compressed )
+	public List< Object[] > listOfObjectArrays( boolean compressed )
 	{
 		if( this.connection == null )
 			throw new IllegalArgumentException( "Connection not set" );
-		return listOfRowMaps( this.connection, compressed );
+		return listOfObjectArrays( this.connection, compressed );
 	}
 
+	/**
+	 * Retrieves a {@link List} of {@link Object} arrays from the given connection.
+	 * 
+	 * @param connection The connection to use.
+	 * @param compressed Store duplicate values only once.
+	 * @return a {@link List} of {@link Object} arrays from the given connection.
+	 * @see #listOfObjectArrays(boolean)
+	 * @see #listOfObjectArrays(ResultSet, boolean)
+	 */
 	public List< Object[] > listOfObjectArrays( Connection connection, boolean compressed )
+	{
+		ResultSet resultSet = resultSet( connection );
+		return listOfObjectArrays( resultSet, compressed );
+	}
+
+	/**
+	 * Converts a {@link ResultSet} into a {@link List} of {@link Object} arrays.
+	 * 
+	 * @param resultSet The {@link ResultSet} to convert.
+	 * @param compressed Store duplicate values only once.
+	 * @return a {@link ResultSet} into a {@link List} of {@link Object} arrays.
+	 * @see #listOfObjectArrays(boolean)
+	 * @see #listOfObjectArrays(Connection, boolean)
+	 */
+	static public List< Object[] > listOfObjectArrays( ResultSet resultSet, boolean compressed )
 	{
 		try
 		{
-			ResultSet resultSet = resultSet( connection );
-			return listOfObjectArrays( resultSet, compressed );
+			ResultSetMetaData metaData = resultSet.getMetaData();
+			int columnCount = metaData.getColumnCount();
+
+			ArrayList< Object[] > result = new ArrayList< Object[] >();
+
+			if( compressed )
+			{
+				// THIS CAN REDUCE MEMORY USAGE WITH 90 TO 95 PERCENT, PERFORMANCE IMPACT IS ONLY 5 PERCENT
+
+				Map< Object, Object > sharedData = new HashMap< Object, Object >();
+				while( resultSet.next() )
+				{
+					Object[] line = new Object[ columnCount ];
+					for( int col = 1; col <= columnCount; col++ )
+					{
+						Object object = resultSet.getObject( col );
+						if( object != null )
+						{
+							Object temp = sharedData.get( object );
+							if( temp != null )
+								line[ col - 1 ] = temp;
+							else
+							{
+								sharedData.put( object, object );
+								line[ col - 1 ] = object;
+							}
+						}
+					}
+					result.add( line );
+				}
+			}
+			else
+			{
+				while( resultSet.next() )
+				{
+					Object[] line = new Object[ columnCount ];
+					for( int col = 1; col <= columnCount; col++ )
+					{
+						Object object = resultSet.getObject( col );
+						line[ col - 1 ] = object;
+					}
+					result.add( line );
+				}
+			}
+
+			return result;
 		}
 		catch( SQLException e )
 		{
@@ -122,16 +226,26 @@ public class Query
 	}
 
 	/**
-	 * Returns a List of Maps containing all the records retrieved from the query. If the compressed parameter is true,
-	 * memory usage will be reduced considerably by storing equal values only once. This is particularly valuable when
-	 * the query returns lots of duplicate values. Also, nulls are not stored in the map when the compressed parameter
-	 * is true.
+	 * Retrieve a {@link List} of {@link RowMap} from the configured connection.
 	 * 
-	 * @param connection
-	 * @param compressed When true, memory usage will be reduced considerably by storing equal values only once. This is
-	 *            particularly valuable when the query returns lots of duplicate values. Also, nulls are not stored in
-	 *            the map when the compressed parameter is true.
-	 * @return a List of Maps for each record retrieved from the query.
+	 * @param compressed Store duplicate values only once.
+	 * @return a {@link List} of {@link RowMap}.
+	 * @see #listOfRowMaps(Connection, boolean)
+	 */
+	public List< Map< String, Object > > listOfRowMaps( boolean compressed )
+	{
+		if( this.connection == null )
+			throw new IllegalArgumentException( "Connection not set" );
+		return listOfRowMaps( this.connection, compressed );
+	}
+
+	/**
+	 * Retrieve a {@link List} of {@link RowMap} from the configured connection.
+	 * 
+	 * @param connection The connection to use.
+	 * @param compressed Store duplicate values only once.
+	 * @return A {@link List} of {@link RowMap} from the configured connection.
+	 * @see #listOfRowMaps(boolean)
 	 */
 	public List< Map< String, Object > > listOfRowMaps( Connection connection, boolean compressed )
 	{
@@ -160,62 +274,14 @@ public class Query
 		}
 	}
 
-	protected List< Object[] > listOfObjectArrays( ResultSet resultSet, boolean compressed ) throws SQLException
-	{
-		ResultSetMetaData metaData = resultSet.getMetaData();
-		int columnCount = metaData.getColumnCount();
-
-		ArrayList< Object[] > result = new ArrayList< Object[] >();
-
-		if( compressed )
-		{
-			// THIS CAN REDUCE MEMORY USAGE WITH 90 TO 95 PERCENT, PERFORMANCE IMPACT IS ONLY 5 PERCENT
-
-			Map< Object, Object > sharedData = new HashMap< Object, Object >();
-			while( resultSet.next() )
-			{
-				Object[] line = new Object[ columnCount ];
-				for( int col = 1; col <= columnCount; col++ )
-				{
-					Object object = resultSet.getObject( col );
-					if( object != null )
-					{
-						Object temp = sharedData.get( object );
-						if( temp != null )
-							line[ col - 1 ] = temp;
-						else
-						{
-							sharedData.put( object, object );
-							line[ col - 1 ] = object;
-						}
-					}
-				}
-				result.add( line );
-			}
-		}
-		else
-		{
-			while( resultSet.next() )
-			{
-				Object[] line = new Object[ columnCount ];
-				for( int col = 1; col <= columnCount; col++ )
-				{
-					Object object = resultSet.getObject( col );
-					line[ col - 1 ] = object;
-				}
-				result.add( line );
-			}
-		}
-
-		return result;
-	}
-
 	/**
 	 * Executes an update (DML) or a DDL query.
 	 * 
-	 * @return either (1) the row count for a DML statement or (2) 0 for SQL statements that return nothing
-	 * @throws SQLException
-	 * @see PreparedStatement#executeUpdate()
+	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
+	 * @throws SQLException Whenever the query caused an {@link SQLException}.
+	 * @see #updateChecked(Connection)
+	 * @see #update()
+	 * @see #update(Connection)
 	 */
 	public int updateChecked() throws SQLException
 	{
@@ -225,24 +291,28 @@ public class Query
 	}
 
 	/**
-	 * Executes an update (DML) or a DDL query through the given connection.
+	 * Executes an update (DML) or a DDL query.
 	 * 
-	 * @param connection
-	 * @return either (1) the row count for a DML statement or (2) 0 for SQL statements that return nothing
-	 * @throws SQLException
-	 * @see PreparedStatement#executeUpdate()
+	 * @param connection The connection to use.
+	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
+	 * @throws SQLException Whenever the query caused an {@link SQLException}.
+	 * @see #updateChecked()
+	 * @see #update()
+	 * @see #update(Connection)
 	 */
 	public int updateChecked( Connection connection ) throws SQLException
 	{
-		return getStatement( connection ).executeUpdate();
+		return getPreparedStatement( connection ).executeUpdate();
 	}
 
 	/**
-	 * Executes an update (DML) or a DDL query through the given connection.
+	 * Executes an update (DML) or a DDL query. {@link SQLException}s are not expected and wrapped in a {@link SystemException}.
 	 * 
-	 * @param connection
-	 * @return either (1) the row count for a DML statement or (2) 0 for SQL statements that return nothing
-	 * @see PreparedStatement#executeUpdate()
+	 * @param connection The connection to use.
+	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
+	 * @see #updateChecked()
+	 * @see #updateChecked(Connection)
+	 * @see #update()
 	 */
 	public int update( Connection connection )
 	{
@@ -257,24 +327,25 @@ public class Query
 	}
 
 	/**
-	 * Executes an update (DML) or a DDL query.
+	 * Executes an update (DML) or a DDL query. {@link SQLException}s are not expected and wrapped in a {@link SystemException}.
 	 * 
-	 * @return either (1) the row count for a DML statement or (2) 0 for SQL statements that return nothing
-	 * @see PreparedStatement#executeUpdate()
+	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
+	 * @see #updateChecked()
+	 * @see #updateChecked(Connection)
+	 * @see #update(Connection)
 	 */
 	public int update()
 	{
-		try
-		{
-			return updateChecked();
-		}
-		catch( SQLException e )
-		{
-			throw new SystemException( e );
-		}
+		return update( this.connection );
 	}
 
-	public PreparedStatement getStatement( Connection connection )
+	/**
+	 * Returns a {@link PreparedStatement} for the query.
+	 * 
+	 * @param connection The connection to use.
+	 * @return a {@link PreparedStatement} for the query.
+	 */
+	public PreparedStatement getPreparedStatement( Connection connection )
 	{
 		if( LOGGER.isDebugEnabled() )
 			LOGGER.debug( toString() );
@@ -309,7 +380,7 @@ public class Query
 		}
 	}
 
-	protected void appendLiteralParameter( Object object, String name, StringBuilder buildSql )
+	private void appendLiteralParameter( Object object, String name, StringBuilder buildSql )
 	{
 		if( object instanceof Collection<?> )
 		{
@@ -346,7 +417,7 @@ public class Query
 		}
 	}
 
-	protected void appendParameter( Object object, String name, StringBuilder buildSql, List< Object > pars )
+	private void appendParameter( Object object, String name, StringBuilder buildSql, List< Object > pars )
 	{
 		buildSql.append( '?' );
 		if( object instanceof Collection<?> )
@@ -372,13 +443,13 @@ public class Query
 		}
 	}
 
-	public String getPreparedSQL( List< Object > pars )
+	private String getPreparedSQL( List< Object > pars )
 	{
 		GString gsql;
-		if( this.query != null )
+		if( this.closure != null )
 		{
-			this.query.setDelegate( this.params );
-			gsql = (GString)this.query.call();
+			this.closure.setDelegate( this.params );
+			gsql = (GString)this.closure.call();
 		}
 		else
 			gsql = this.sql;
@@ -434,7 +505,7 @@ public class Query
 		return buildSql.toString();
 	}
 
-	protected void processOracleIn( String sql, int pos, int pos2, StringBuilder builder, List< Object > pars )
+	private void processOracleIn( String sql, int pos, int pos2, StringBuilder builder, List< Object > pars )
 	{
 		int pos3 = sql.indexOf( ' ', pos + 12 );
 		Assert.isTrue( pos3 >= 0 && pos3 < pos2, "Need 2 parameters when using ORACLE-IN" );
@@ -463,14 +534,14 @@ public class Query
 			Assert.fail( "ORACLE-IN needs an Array or Collection parameter" );
 	}
 
-	protected Object getParameter( String name )
+	private Object getParameter( String name )
 	{
 		if( !this.params.containsKey( name ) )
 			Assert.fail( "Parameter [" + name + "] not set" );
 		return this.params.get( name );
 	}
 
-	protected void appendLiteral( StringBuilder builder, Object object )
+	private void appendLiteral( StringBuilder builder, Object object )
 	{
 		if( object instanceof Date )
 			throw new UnsupportedOperationException( "String/Date *literal* parameters can not be used, remove the single quote: '" );
@@ -485,7 +556,7 @@ public class Query
 			builder.append( object );
 	}
 
-	protected void processOracleIn2( StringBuilder builder, String column, Iterator<?> iter, boolean literal, List< Object > pars )
+	private void processOracleIn2( StringBuilder builder, String column, Iterator<?> iter, boolean literal, List< Object > pars )
 	{
 		builder.append( '(' );
 		boolean first = true;
@@ -520,7 +591,7 @@ public class Query
 		builder.append( "))" );
 	}
 
-	protected void appendExtraQuestionMarks( StringBuilder s, int count )
+	private void appendExtraQuestionMarks( StringBuilder s, int count )
 	{
 		while( count > 0 )
 		{
