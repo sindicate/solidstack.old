@@ -27,9 +27,15 @@ import java.util.Set;
  */
 public class RowMap implements Map< String, Object >
 {
-	protected Map< String, Integer > names; // This one is shared among all instances of RowMap
-	protected Object[] values;
+	private Map< String, Integer > names; // This one is shared among all instances of RowMap
+	private Object[] values;
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param names The names and indexes of the elements in the {@link Object} array.
+	 * @param values The values.
+	 */
 	public RowMap( Map< String, Integer > names, Object[] values )
 	{
 		this.names = names;

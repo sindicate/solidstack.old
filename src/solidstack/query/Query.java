@@ -443,7 +443,7 @@ public class Query
 		}
 	}
 
-	private String getPreparedSQL( List< Object > pars )
+	String getPreparedSQL( List< Object > pars )
 	{
 		GString gsql;
 		if( this.closure != null )

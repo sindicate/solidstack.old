@@ -21,10 +21,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
+/**
+ * Decorates an {@link Object} array to make it look like a {@link List}.
+ * 
+ * @author René M. de Bloois.
+ */
 public class ValuesList implements List< Object >
 {
-	protected Object[] values;
+	private Object[] values;
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param values The {@link Object} array to decorate.
+	 */
 	public ValuesList( Object[] values )
 	{
 		this.values = values;

@@ -16,9 +16,20 @@
 
 package solidstack.query;
 
-
+/**
+ * Generic utilities.
+ * 
+ * @author René M. de Bloois
+ */
 public class Util
 {
+	/**
+	 * Returns a new instance of the given class.
+	 * 
+	 * @param <T> The type of the class.
+	 * @param cls The class.
+	 * @return A new instance of the given class.
+	 */
 	static public <T> T newInstance( Class< T > cls )
 	{
 		try
