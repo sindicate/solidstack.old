@@ -75,7 +75,7 @@ public class Basic
 		queries.setPackage( "solidstack.query" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
-		params.put( "name", "SYSTABLES" );
+//		params.put( "name", "SYSTABLES" );
 		params.put( "prefix", "SYST" );
 		params.put( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } );
 		Query query = queries.bind( "test", params );
@@ -85,15 +85,8 @@ public class Basic
 		assert sql.equals( "	SELECT *\n" +
 				"	FROM SYS.SYSTABLES\n" +
 				"	WHERE 1 = 1\n" +
-				"\n" +
 				"	AND TABLENAME LIKE 'SYST%'\n" +
-				"\n" +
-				"\n" +
-				"	AND TABLENAME = ?\n" +
-				"\n" +
-				"\n" +
-				"	AND TABLENAME IN (?,?)\n" +
-		"\n" );
+		"	AND TABLENAME IN (?,?)\n" );
 
 //		Writer out = new OutputStreamWriter( new FileOutputStream( "test.out" ), "UTF-8" );
 //		out.write( sql );
