@@ -24,21 +24,28 @@ import java.util.List;
 import org.codehaus.groovy.runtime.GStringImpl;
 
 /**
+ * A builder for Groovy's {@link GString}.
  * 
  * @author René M. de Bloois
  */
 public class GStringBuilder
 {
-	protected List< String > strings = new ArrayList< String >();
-	protected List< Object > values = new ArrayList< Object >();
+	private List< String > strings = new ArrayList< String >();
+	private List< Object > values = new ArrayList< Object >();
 
-	public GStringBuilder append( GString s )
+	/**
+	 * Append a {@link GString}.
+	 * 
+	 * @param gString The {@link GString} to append.
+	 * @return The {@link GStringBuilder} itself.
+	 */
+	public GStringBuilder append( GString gString )
 	{
 		if( !( this.strings.size() == 0 || this.strings.size() == this.values.size() + 1 ) )
 			throw new IllegalStateException();
 
-		String[] strings = s.getStrings();
-		Object[] values = s.getValues();
+		String[] strings = gString.getStrings();
+		Object[] values = gString.getValues();
 		if( !( strings.length == values.length + 1 ) )
 			throw new IllegalStateException();
 
@@ -54,27 +61,44 @@ public class GStringBuilder
 		return this;
 	}
 
-	public GStringBuilder append( String s )
+	/**
+	 * Append a {@link String}.
+	 * 
+	 * @param string The string to append.
+	 * @return The {@link GStringBuilder} itself.
+	 */
+	public GStringBuilder append( String string )
 	{
 		if( !( this.strings.size() == 0 || this.strings.size() == this.values.size() + 1 ) )
 			throw new IllegalStateException();
 
 		int last = this.strings.size() - 1;
 		if( last >= 0 )
-			this.strings.set( last, this.strings.get( last ) + s );
+			this.strings.set( last, this.strings.get( last ) + string );
 		else
-			this.strings.add( s );
+			this.strings.add( string );
 
 		if( !( this.strings.size() == this.values.size() + 1 ) )
 			throw new IllegalStateException();
 		return this;
 	}
 
-	public GStringBuilder append( Object o )
+	/**
+	 * Append an object. The object's {@link #toString()} will be called to convert it to a string.
+	 * 
+	 * @param object The object to append.
+	 * @return The {@link GStringBuilder} itself.
+	 */
+	public GStringBuilder append( Object object )
 	{
-		return append( o.toString() );
+		return append( object.toString() );
 	}
 
+	/**
+	 * Returns the {@link GString} end result.
+	 * 
+	 * @return The {@link GString} end result.
+	 */
 	public GString toGString()
 	{
 		int size = this.values.size();
