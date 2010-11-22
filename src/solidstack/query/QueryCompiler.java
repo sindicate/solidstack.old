@@ -21,9 +21,11 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyObject;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,7 +51,7 @@ public class QueryCompiler
 		if( path != null )
 			pkg += "." + path.replaceAll( "/", "." );
 
-		String script = parse( reader, pkg, name );
+		String script = new Parser().parse( new Scanner( reader ), pkg, name );
 		LOGGER.debug( "Generated groovy:\n" + script );
 
 		GroovyClassLoader loader = new GroovyClassLoader();
@@ -63,176 +65,473 @@ public class QueryCompiler
 		return compile( new StringReader( sql ), path, lastModified );
 	}
 
-	static public String parse( Reader reader, String pkg, String cls )
+
+	static protected class Scanner
 	{
-		Writer writer = new Writer();
+//		static final private Logger log = Logger.getLogger( Scanner.class );
 
-		writer.write( "package " + pkg + ";class " + cls + "{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();" );
+		protected Reader reader;
+		protected Stack< Integer > pushBack = new Stack();
+		protected Stack< Integer > pushBackMarked;
 
-		try
+		protected Scanner( Reader reader )
 		{
-			int c = reader.read();
-			while( true )
+			if( !reader.markSupported() )
+				reader = new BufferedReader( reader );
+			this.reader = reader;
+		}
+
+		protected int read()
+		{
+			if( this.pushBack.isEmpty() )
 			{
-				if( c == -1 )
-					break;
+				try
+				{
+					int c = this.reader.read();
+					if( c == 13 )
+					{
+						c = this.reader.read();
+						if( c != 10 )
+						{
+							unread( c );
+							c = 10;
+						}
+					}
+					return c;
+				}
+				catch( IOException e )
+				{
+					throw new SystemException( e );
+				}
+			}
+			return this.pushBack.pop();
+		}
+
+		protected void unread( int c )
+		{
+			this.pushBack.push( c );
+		}
+
+		protected void mark( int readAheadLimit )
+		{
+			try
+			{
+				this.reader.mark( readAheadLimit );
+			}
+			catch( IOException e )
+			{
+				throw new SystemException( e );
+			}
+			this.pushBackMarked = (Stack)this.pushBack.clone();
+		}
+
+		protected void reset()
+		{
+			try
+			{
+				this.reader.reset();
+			}
+			catch( IOException e )
+			{
+				throw new SystemException( e );
+			}
+			this.pushBack = this.pushBackMarked;
+			this.pushBackMarked = null;
+		}
+
+		protected String readWhitespace()
+		{
+			StringBuilder builder = new StringBuilder();
+			int c = read();
+			while( Character.isWhitespace( (char)c ) && c != '\n' )
+			{
+				builder.append( (char)c );
+				c = read();
+			}
+			unread( c );
+			return builder.toString();
+		}
+	}
+
+	static protected class Parser
+	{
+//		static final private Logger log = Logger.getLogger( GroovyPageCompiler.class );
+
+		protected Parser()
+		{
+			// Constructor
+		}
+
+		protected String parse( Scanner scanner, String pkg, String cls )
+		{
+			Writer writer = new Writer( cls );
+			writer.writeRaw( "package " + pkg + ";class " + cls + "{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();" );
+
+//			log.trace( "-> parse" );
+			String leading = scanner.readWhitespace();
+			int c = scanner.read();
+			while( c != -1 )
+			{
 				if( c == '<' )
 				{
-					c = reader.read();
+					c = scanner.read();
 					if( c == '%' )
 					{
-						c = reader.read();
+						scanner.mark( 2 );
+						c = scanner.read();
 						if( c == '=' )
 						{
-							writer.startExpression();
-							readScript( reader, writer );
-							writer.endExpression();
+							writer.writeWhiteSpaceAsString( leading ); leading = null;
+							readScript( scanner, writer, Mode.EXPRESSION );
+						}
+						else if( c == '-' && scanner.read() == '-' )
+						{
+							if( leading == null )
+								readComment( scanner );
+							else
+							{
+								readComment( scanner );
+								String trailing = scanner.readWhitespace();
+								c = scanner.read();
+								if( (char)c == '\n' )
+									// Comment on lines of his own, then ignore the lines.
+									leading = scanner.readWhitespace();
+								else
+								{
+									scanner.unread( c );
+									writer.writeWhiteSpaceAsString( leading ); leading = null;
+									writer.writeWhiteSpaceAsString( trailing );
+								}
+							}
 						}
 						else
 						{
-							writer.startScript();
-							writer.write( (char)c );
-							readScript( reader, writer );
-							writer.endScript();
+							scanner.reset();
+							if( leading == null )
+								readScript( scanner, writer, Mode.SCRIPT );
+							else
+							{
+								Writer writer2 = new Writer();
+								writer2.mode = Mode.UNKNOWN;
+								readScript( scanner, writer2, Mode.SCRIPT );
+								String trailing = scanner.readWhitespace();
+								c = scanner.read();
+								if( (char)c == '\n' )
+								{
+									// If script on lines of his own, add the whitespace and the newline to the script.
+									writer.writeAsScript( leading ); leading = null;
+									writer.writeAsScript( writer2.buffer );
+									writer.writeAsScript( trailing );
+									writer.writeAsScript( '\n' ); // Must not lose newlines
+									leading = scanner.readWhitespace();
+								}
+								else
+								{
+									scanner.unread( c );
+									writer.writeWhiteSpaceAsString( leading ); leading = null;
+									writer.writeAsScript( writer2.buffer );
+									writer.writeWhiteSpaceAsString( trailing );
+								}
+							}
 						}
 					}
 					else
 					{
+						writer.writeWhiteSpaceAsString( leading ); leading = null;
 						writer.writeAsString( '<' );
-						writer.writeAsString( (char)c );
-					}
-				}
-				else if( c == '\\' )
-				{
-					c = reader.read();
-					if( c == '$' )
-					{
-						writer.writeAsString( '\\' );
-						writer.writeAsString( '$' );
-					}
-					else
-					{
-						writer.writeAsString( '\\' );
-						writer.writeAsString( '\\' );
-						writer.writeAsString( (char)c );
-					}
-				}
-				else if( c == '"' )
-				{
-					c = reader.read();
-					if( c == '"' )
-					{
-						c = reader.read();
-						if( c == '"' )
-						{
-							writer.writeAsString( '\\' );
-							writer.writeAsString( '"' );
-							writer.writeAsString( '"' );
-							writer.writeAsString( '"' );
-						}
-						else
-						{
-							writer.writeAsString( '"' );
-							writer.writeAsString( '"' );
-							writer.writeAsString( (char)c );
-						}
-					}
-					else
-					{
-						writer.writeAsString( '"' );
-						writer.writeAsString( (char)c );
+						scanner.unread( c );
 					}
 				}
 				else
-					writer.writeAsString( (char)c );
+				{
+					writer.writeWhiteSpaceAsString( leading );
+					leading = null;
+					if( c == '\\' )
+					{
+						c = scanner.read();
+						if( c == '$' )
+						{
+							writer.writeAsString( '\\' );
+							writer.writeAsString( '$' );
+						}
+						else
+						{
+							writer.writeAsString( '\\' );
+							writer.writeAsString( '\\' );
+							scanner.unread( c );
+						}
+					}
+					else if( c == '"' )
+					{
+						writer.writeAsString( '\\' );
+						writer.writeAsString( (char)c );
+					}
+					else if( c == '\n' )
+					{
+						writer.writeAsString( (char)c );
+						leading = scanner.readWhitespace();
+					}
+					else
+					{
+						writer.writeAsString( (char)c );
+					}
+				}
 
-				c = reader.read();
+				c = scanner.read();
 			}
+			writer.writeWhiteSpaceAsString( leading );
+
+//			log.trace( "<- parse" );
+
+			writer.endAll();
+
+			writer.writeRaw( "return builder.toGString()}}}" );
+
+			return writer.getString();
 		}
-		catch( IOException e )
+
+		protected void readScript( Scanner reader, Writer writer, Mode mode )
 		{
-			throw new SystemException( e );
-		}
+			Assert.isTrue( mode == Mode.SCRIPT || mode == Mode.EXPRESSION );
 
-		writer.end();
-
-		writer.write( "return builder.toGString()}}}" );
-
-		return writer.getString();
-	}
-
-	static protected void readScript( Reader reader, Writer writer ) throws IOException
-	{
-		while( true )
-		{
-			int c = reader.read();
-			if( c == -1 )
-				return;
-			if( c == '%' )
+//			log.trace( "-> readScript" );
+			while( true )
 			{
-				c = reader.read();
-				if( c == '>' )
-					return;
-				writer.write( '%' );
+				int c = reader.read();
+				Assert.isTrue( c > 0 );
+				if( c == '"' )
+					readString( reader, writer, mode );
+//				else if( c == '\'' )
+//					readString( reader, writer, mode );
+				else if( c == '%' )
+				{
+					c = reader.read();
+					if( c == '>' )
+						break;
+					reader.unread( c );
+					writer.writeAs( '%', mode );
+				}
+				else
+					writer.writeAs( (char)c, mode );
 			}
-			writer.write( (char)c );
+//			log.trace( "<- readScript" );
+		}
+
+		protected void readString( Scanner reader, Writer writer, Mode mode )
+		{
+//			log.trace( "-> readString" );
+			writer.writeAs( '"', mode );
+			boolean escaped = false;
+			while( true )
+			{
+				int c = reader.read();
+				Assert.isTrue( c > 0 );
+				if( c == '"' && !escaped )
+					break;
+				escaped = c == '\\';
+				writer.writeAs( (char)c, mode );
+			}
+			writer.writeAs( '"', mode );
+//			log.trace( "<- readString" );
+		}
+
+		protected String readString( Scanner reader )
+		{
+//			log.trace( "-> readString" );
+			StringBuilder result = new StringBuilder();
+			boolean escaped = false;
+			while( true )
+			{
+				int c = reader.read();
+				Assert.isTrue( c > 0 );
+				if( c == '"' && !escaped )
+					return result.toString();
+				escaped = c == '\\';
+				if( !escaped )
+					result.append( (char)c );
+			}
+		}
+
+		protected void readComment( Scanner reader )
+		{
+//			log.trace( "-> readComment" );
+			while( true )
+			{
+				int c = reader.read();
+				Assert.isTrue( c > 0 );
+				if( c == '-' )
+				{
+					reader.mark( 10 );
+					if( reader.read() == '-' && reader.read() == '%' && reader.read() == '>' )
+						break;
+					reader.reset();
+				}
+				else if( c == '<' )
+				{
+					reader.mark( 10 );
+					if( reader.read() == '%' && reader.read() == '-' && reader.read() == '-' )
+						readComment( reader );
+					else
+						reader.reset();
+				}
+			}
+//			log.trace( "<- readComment" );
 		}
 	}
+
+	static protected enum Mode { UNKNOWN, STRING, SCRIPT, EXPRESSION }
 
 	static protected class Writer
 	{
-		protected StringBuilder buffer;
-		protected boolean stringMode = false;
+		protected StringBuilder buffer = new StringBuilder();
+		protected Mode mode = Mode.UNKNOWN;
+		protected String cls;
+
 		protected Writer()
 		{
-			this.buffer = new StringBuilder();
+			// Empty constructor
 		}
-		protected void writeAsString( char string )
+
+		protected Writer( String cls )
 		{
-			if( !this.stringMode )
+			this.cls = cls;
+		}
+
+		protected void writeAsString( char c )
+		{
+			endAllExcept( Mode.STRING );
+			if( this.mode == Mode.UNKNOWN )
 			{
 				this.buffer.append( "builder.append(\"\"\"" );
-				this.stringMode = true;
+				this.mode = Mode.STRING;
+			}
+			if( c == '\n' )
+			{
+				this.buffer.append( "\\n" );
+				endAll();
+			}
+			this.buffer.append( c );
+		}
+
+		protected void writeWhiteSpaceAsString( CharSequence string )
+		{
+			if( string == null || string.length() == 0 )
+				return;
+
+			endAllExcept( Mode.STRING );
+			if( this.mode == Mode.UNKNOWN )
+			{
+				this.buffer.append( "builder.append(\"\"\"" );
+				this.mode = Mode.STRING;
 			}
 			this.buffer.append( string );
 		}
-		protected void write( String s )
+
+		protected void writeAsExpression( char c )
+		{
+			endAllExcept( Mode.EXPRESSION );
+			if( this.mode == Mode.UNKNOWN )
+			{
+				this.buffer.append( "builder.append(" );
+				this.mode = Mode.EXPRESSION;
+			}
+			this.buffer.append( c );
+		}
+
+		protected void writeAsScript( char c )
+		{
+			endAllExcept( Mode.SCRIPT );
+			if( this.mode == Mode.UNKNOWN )
+				this.mode = Mode.SCRIPT;
+			this.buffer.append( c );
+		}
+
+		// TODO What about newlines?
+		protected void writeAsScript( CharSequence script )
+		{
+			if( script == null || script.length() == 0 )
+				return;
+
+			endAllExcept( Mode.SCRIPT );
+			if( this.mode == Mode.UNKNOWN )
+				this.mode = Mode.SCRIPT;
+			this.buffer.append( script );
+		}
+
+		protected void writeAs( char c, Mode mode )
+		{
+			if( mode == Mode.EXPRESSION )
+				writeAsExpression( c );
+			else if( mode == Mode.SCRIPT )
+				writeAsScript( c );
+			else if( mode == Mode.STRING )
+				writeAsString( c );
+			else
+				Assert.fail( "mode UNKNOWN not allowed" );
+		}
+
+		// TODO What about newlines?
+		protected void writeAs( CharSequence string, Mode mode )
+		{
+			if( string == null || string.length() == 0 )
+				return;
+
+			if( mode == Mode.EXPRESSION )
+				Assert.fail( "mode EXPRESSION not allowed" );
+			else if( mode == Mode.SCRIPT )
+				writeAsScript( string );
+			else if( mode == Mode.STRING )
+				writeWhiteSpaceAsString( string );
+			else
+				Assert.fail( "mode UNKNOWN not allowed" );
+		}
+
+		protected void writeRaw( String s )
 		{
 			this.buffer.append( s );
 		}
-		protected void write( char c )
+
+		private void endExpression()
 		{
-			this.buffer.append( c );
-		}
-		protected void startExpression()
-		{
-			endString();
-			this.buffer.append( "builder.append(" );
-		}
-		protected void endExpression()
-		{
+			Assert.isTrue( this.mode == Mode.EXPRESSION );
 			this.buffer.append( ");" );
+			this.mode = Mode.UNKNOWN;
 		}
-		protected void startScript()
+
+		private void endScript()
 		{
-			endString();
+			Assert.isTrue( this.mode == Mode.SCRIPT );
+//			this.buffer.append( ';' );
+			this.mode = Mode.UNKNOWN;
 		}
-		protected void endScript()
+
+		private void endString()
 		{
-			this.buffer.append( ';' );
+			Assert.isTrue( this.mode == Mode.STRING );
+			this.buffer.append( "\"\"\");" );
+			this.mode = Mode.UNKNOWN;
 		}
-		protected void endString()
+
+		private void endAllExcept( Mode mode )
 		{
-			if( this.stringMode )
-			{
-				this.buffer.append( "\"\"\");" );
-				this.stringMode = false;
-			}
+			if( this.mode == mode )
+				return;
+
+			if( this.mode == Mode.STRING )
+				endString();
+			else if( this.mode == Mode.EXPRESSION )
+				endExpression();
+			else if( this.mode == Mode.SCRIPT )
+				endScript();
+			else if( this.mode != Mode.UNKNOWN )
+				Assert.fail( "Unknown mode " + this.mode );
 		}
-		protected void end()
+
+		protected void endAll()
 		{
-			endString();
+			endAllExcept( null );
 		}
+
 		protected String getString()
 		{
 			return this.buffer.toString();
