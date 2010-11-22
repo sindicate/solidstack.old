@@ -37,7 +37,7 @@ public class QueryCompiler
 
 	static final protected Pattern pathPattern = Pattern.compile( "/*(?:(.+?)/+)?([^\\/]+)" );
 
-	static public CompiledQuery compile( Reader reader, String path, long lastModified )
+	static public QueryTemplate compile( Reader reader, String path, long lastModified )
 	{
 		LOGGER.info( "compile [" + path + "]" );
 		Matcher matcher = pathPattern.matcher( path );
@@ -55,10 +55,10 @@ public class QueryCompiler
 		GroovyClassLoader loader = new GroovyClassLoader();
 		Class< GroovyObject > groovyClass = loader.parseClass( new GroovyCodeSource( script, name, "x" ) );
 		GroovyObject object = Util.newInstance( groovyClass );
-		return new CompiledQuery( (Closure)object.invokeMethod( "getClosure", null ), lastModified );
+		return new QueryTemplate( (Closure)object.invokeMethod( "getClosure", null ), lastModified );
 	}
 
-	static public CompiledQuery compile( String sql, String path, long lastModified )
+	static public QueryTemplate compile( String sql, String path, long lastModified )
 	{
 		return compile( new StringReader( sql ), path, lastModified );
 	}
