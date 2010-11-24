@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.testng.annotations.Test;
 
 
@@ -105,5 +106,79 @@ public class Basic
 		Query query = queries.bind( "test2", params );
 		List< Map< String, Object > > result = query.listOfMaps( connection );
 		assert result.size() == 22;
+	}
+
+	@Test(groups="new")
+	public void testGroovy() throws SQLException, ClassNotFoundException
+	{
+		String start = "package p;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();";
+		String end = "return builder.toGString()}}}";
+
+		String result = QueryCompiler.translate( "X\"X'X" );
+		assert result.equals( start + "builder.append(\"\"\"X\\\"X'X\"\"\");" + end );
+		result = QueryCompiler.execute( result );
+		assert result.equals( "X\"X'X" );
+
+		result = QueryCompiler.translate( "X<%=\"X\"%>X" );
+		assert result.equals( start + "builder.append(\"\"\"X\"\"\");builder.append(\"X\");builder.append(\"\"\"X\"\"\");" + end );
+
+		result = QueryCompiler.translate( "X<%=\"%>\"%>X" );
+		assert result.equals( start + "builder.append(\"\"\"X\"\"\");builder.append(\"%>\");builder.append(\"\"\"X\"\"\");" + end );
+
+		result = QueryCompiler.translate( "X<%=\"${var}\"%>X" );
+		assert result.equals( start + "builder.append(\"\"\"X\"\"\");builder.append(\"${var}\");builder.append(\"\"\"X\"\"\");" + end );
+
+		result = QueryCompiler.translate( "X<%=\"${\"text\"}\"%>X" );
+		assert result.equals( start + "builder.append(\"\"\"X\"\"\");builder.append(\"${\"text\"}\");builder.append(\"\"\"X\"\"\");" + end );
+		result = QueryCompiler.execute( result );
+		assert result.equals( "XtextX" );
+
+		// TODO Unclosed string, print error with line number
+//		result = QueryCompiler.translate( "X<%=\"${\"te\"xt\"}\"%>X" );
+
+		// TODO Should work
+//		result = QueryCompiler.translate( "X<%=\"${\"te\\\"xt\"}\"%>X" );
+//		assert result.equals( start + "builder.append(\"\"\"X\"\"\");builder.append(\"${\"te\\\"xt\"}\");builder.append(\"\"\"X\"\"\");" + end );
+//		result = QueryCompiler.execute( result );
+//		assert result.equals( "Xte\"xtX" );
+
+		result = QueryCompiler.translate( "X<%=\"Y${\"Z${\"text\"}Z\"}Y\"%>X" );
+		assert result.equals( start + "builder.append(\"\"\"X\"\"\");builder.append(\"Y${\"Z${\"text\"}Z\"}Y\");builder.append(\"\"\"X\"\"\");" + end );
+		result = QueryCompiler.execute( result );
+		assert result.equals( "XYZtextZYX" );
+
+		result = QueryCompiler.translate( "X${var}X" );
+		assert result.equals( start + "builder.append(\"\"\"X${var}X\"\"\");" + end );
+
+		result = QueryCompiler.translate( "X${\"text\"}X" );
+		assert result.equals( start + "builder.append(\"\"\"X${\"text\"}X\"\"\");" + end );
+		result = QueryCompiler.execute( result );
+		assert result.equals( "XtextX" );
+
+		// TODO Unclosed string, print error with line number
+//		result = QueryCompiler.translate( "X${\"te\"xt\"}X" );
+
+		result = QueryCompiler.translate( "X${\"te\\\"xt\"}X" );
+		assert result.equals( start + "builder.append(\"\"\"X${\"te\\\"xt\"}X\"\"\");" + end );
+		result = QueryCompiler.execute( result );
+		assert result.equals( "Xte\"xtX" );
+
+		// TODO This is not legal, the translater should catch this earlier
+		result = QueryCompiler.translate( "X${\"text\ntext\"}X" );
+		assert result.equals( start + "builder.append(\"\"\"X${\"text\ntext\"}X\"\"\");" + end );
+		try
+		{
+			result = QueryCompiler.execute( result );
+			assert false;
+		}
+		catch( MultipleCompilationErrorsException e )
+		{
+
+		}
+
+		result = QueryCompiler.translate( "X${\"\"\"text\ntext\"\"\"}X" );
+		assert result.equals( start + "builder.append(\"\"\"X${\"\"\"text\ntext\"\"\"}X\"\"\");" + end );
+		result = QueryCompiler.execute( result );
+		assert result.equals( "Xtext\ntextX" );
 	}
 }
