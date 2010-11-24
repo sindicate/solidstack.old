@@ -16,7 +16,6 @@
 
 package solidstack.query;
 
-import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
@@ -83,42 +82,25 @@ public class QueryManager
 		QueryTemplate query = this.queries.get( path );
 
 		UrlResource resource = null;
-		long lastModified = 0;
-
-		// If reloading == true or query not initialized yet, get the resource
-		if( this.reloading || query == null )
-		{
-			String file = this.packageSlashed + path + ".gsql";
-			//ClassLoader loader = Thread.currentThread().getContextClassLoader();
-			ClassLoader loader = getClass().getClassLoader();
-			URL url = loader.getResource( file );
-			if( url == null )
-				throw new QueryNotFoundException( file + " not found in classpath" );
-			resource = new UrlResource( url );
-			try
-			{
-				lastModified = resource.getFile().lastModified();
-			}
-			catch( FileNotFoundException e )
-			{
-				// Appearantly the resource is packed in a jar of some kind.
-				// lastModified stays 0, which means no reloading will be tried.
-			}
-			LOGGER.debug( resource.toString() + ", lastModified: " + new Date( lastModified ) + " (" + lastModified + ")" );
-		}
 
 		// If reloading == true and resource is changed, clear current query
 		if( this.reloading )
 			if( query != null && query.getLastModified() > 0 )
-				if( resource != null && resource.exists() && lastModified > query.getLastModified() )
+			{
+				resource = getResource( path );
+				if( resource.exists() && resource.getLastModified() > query.getLastModified() )
 				{
 					LOGGER.info( resource.toString() + " changed, reloading" );
 					query = null;
 				}
+			}
 
 		// Compile the query if needed
 		if( query == null )
 		{
+			if( resource == null )
+				resource = getResource( path );
+
 			if( !resource.exists() )
 			{
 				String error = resource.toString() + " not found";
@@ -128,12 +110,35 @@ public class QueryManager
 			LOGGER.info( "Loading " + resource.toString() );
 
 			Reader reader = new InputStreamReader( resource.getInputStream() ); // TODO Character set
-			query = QueryCompiler.compile( reader, this.packageSlashed + path, lastModified );
+			query = QueryCompiler.compile( reader, this.packageSlashed + path, resource.getLastModified() );
 
 			this.queries.put( path, query );
 		}
 
 		return query;
+	}
+
+	/**
+	 * Returns the {@link UrlResource} with the given path.
+	 * 
+	 * @param path The path of the resource.
+	 * @return The {@link UrlResource}.
+	 */
+	public UrlResource getResource( String path )
+	{
+		String file = this.packageSlashed + path + ".gsql";
+		//ClassLoader loader = Thread.currentThread().getContextClassLoader();
+		ClassLoader loader = getClass().getClassLoader();
+		URL url = loader.getResource( file );
+		if( url == null )
+			throw new QueryNotFoundException( file + " not found in classpath" );
+
+		UrlResource resource = new UrlResource( url );
+
+		if( LOGGER.isDebugEnabled() )
+			LOGGER.debug( resource.toString() + ", lastModified: " + new Date( resource.getLastModified() ) + " (" + resource.getLastModified() + ")" );
+
+		return resource;
 	}
 
 	/**
