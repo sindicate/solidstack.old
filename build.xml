@@ -132,6 +132,13 @@
 	</target>
 
 	
+	<target name="testnew" depends="compiletest" description="Run new tests">
+		<testng classpathref="test.classpath" outputDir="${build.home}/testreports" haltOnFailure="true" verbose="3" groups="new">
+			<classfileset dir="${build.home}/testclasses" />
+		</testng>
+	</target>
+
+
 	<target name="build" depends="jar" description="Do an (incremental) build">
 	</target>
 

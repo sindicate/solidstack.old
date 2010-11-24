@@ -85,6 +85,21 @@ public class QueryCompiler
 	}
 
 
+	static String translate( String text )
+	{
+		return new Parser().parse( new Scanner( new StringReader( text ) ), "p", "c" );
+	}
+
+
+	static String execute( String script )
+	{
+		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script, "n", "x" ) );
+		GroovyObject object = Util.newInstance( groovyClass );
+		Closure closure = (Closure)object.invokeMethod( "getClosure", null );
+		return closure.call().toString();
+	}
+
+
 	static private class Scanner
 	{
 //		static final private Logger log = Logger.getLogger( Scanner.class );
@@ -265,7 +280,19 @@ public class QueryCompiler
 				{
 					writer.writeWhiteSpaceAsString( leading );
 					leading = null;
-					if( c == '\\' )
+					if( c == '$' )
+					{
+						// TODO And without {}?
+						c = scanner.read();
+						if( c == '{' )
+							readGStringExpression( scanner, writer );
+						else
+						{
+							writer.writeAsString( '$' );
+							scanner.unread( c );
+						}
+					}
+					else if( c == '\\' )
 					{
 						c = scanner.read();
 						if( c == '$' )
@@ -354,6 +381,28 @@ public class QueryCompiler
 //			log.trace( "<- readString" );
 		}
 
+		protected void readGStringExpression( Scanner reader, Writer writer )
+		{
+//			log.trace( "-> readEuh" );
+			writer.writeAsString( '$' );
+			writer.writeAsString( '{' );
+			while( true )
+			{
+				int c = reader.read();
+				Assert.isTrue( c > 0 );
+				if( c == '}' )
+					break;
+				if( c == '"' )
+					readString( reader, writer, Mode.STRING );
+//				else if( c == '\'' ) TODO This is important to, for example '}'
+//					readString( reader, writer, Mode.EXPRESSION2 );
+				else
+					writer.writeAsString( (char)c );
+			}
+			writer.writeAsString( '}' );
+//			log.trace( "<- readEuh" );
+		}
+
 		protected void readComment( Scanner reader )
 		{
 //			log.trace( "-> readComment" );
@@ -434,6 +483,17 @@ public class QueryCompiler
 			this.buffer.append( c );
 		}
 
+//		protected void writeAsExpression2( char c )
+//		{
+//			endAllExcept( Mode.EXPRESSION2 );
+//			if( this.mode == Mode.UNKNOWN )
+//			{
+//				this.buffer.append( "writer.writeEncoded(" );
+//				this.mode = Mode.EXPRESSION2;
+//			}
+//			this.buffer.append( c );
+//		}
+
 		protected void writeAsScript( char c )
 		{
 			endAllExcept( Mode.SCRIPT );
@@ -458,6 +518,8 @@ public class QueryCompiler
 		{
 			if( mode == Mode.EXPRESSION )
 				writeAsExpression( c );
+//			else if( mode == Mode.EXPRESSION2 )
+//				writeAsExpression2( c );
 			else if( mode == Mode.SCRIPT )
 				writeAsScript( c );
 			else if( mode == Mode.STRING )
@@ -477,6 +539,13 @@ public class QueryCompiler
 			this.buffer.append( ");" );
 			this.mode = Mode.UNKNOWN;
 		}
+
+//		private void endExpression2()
+//		{
+//			Assert.isTrue( this.mode == Mode.EXPRESSION2 );
+//			this.buffer.append( ");" );
+//			this.mode = Mode.UNKNOWN;
+//		}
 
 		private void endScript()
 		{
@@ -501,6 +570,8 @@ public class QueryCompiler
 				endString();
 			else if( this.mode == Mode.EXPRESSION )
 				endExpression();
+//			else if( this.mode == Mode.EXPRESSION2 )
+//				endExpression2();
 			else if( this.mode == Mode.SCRIPT )
 				endScript();
 			else if( this.mode != Mode.UNKNOWN )
