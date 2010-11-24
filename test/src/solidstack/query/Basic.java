@@ -40,30 +40,30 @@ public class Basic
 
 		Map< String, Object > params = new HashMap< String, Object >();
 		Query query = queries.bind( "test", params );
-		List< Map< String, Object > > result = query.listOfRowMaps( connection, true );
+		List< Map< String, Object > > result = query.listOfMaps( connection );
 		assert result.size() == 22;
 
 		params.put( "prefix", "SYST" );
 		query = queries.bind( "test", params );
-		result = query.listOfRowMaps( connection, true );
+		result = query.listOfMaps( connection );
 		assert result.size() == 3;
 
 		params.clear();
 		params.put( "name", "SYSTABLES" );
 		query = queries.bind( "test", params );
-		List< Object[] > array = query.listOfObjectArrays( connection, true );
+		List< Object[] > array = query.listOfArrays( connection );
 		assert array.size() == 1;
 
 		params.put( "name", "SYSTABLES" );
 		params.put( "prefix", "SYST" );
 		query = queries.bind( "test", params );
-		result = query.listOfRowMaps( connection, true );
+		result = query.listOfMaps( connection );
 		assert result.size() == 1;
 
 		params.clear();
 		params.put( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } );
 		query = queries.bind( "test", params );
-		result = query.listOfRowMaps( connection, true );
+		result = query.listOfMaps( connection );
 		assert result.size() == 2;
 	}
 
@@ -103,7 +103,7 @@ public class Basic
 
 		Map< String, Object > params = new HashMap< String, Object >();
 		Query query = queries.bind( "test2", params );
-		List< Map< String, Object > > result = query.listOfRowMaps( connection, true );
+		List< Map< String, Object > > result = query.listOfMaps( connection );
 		assert result.size() == 22;
 	}
 }

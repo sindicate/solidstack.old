@@ -48,7 +48,8 @@ public class QueryManager
 	 */
 	public void setPackage( String pkg )
 	{
-		Assert.isTrue( !pkg.startsWith( "." ) && !pkg.endsWith( "." ), "path should not start or end with a ." );
+		Assert.isTrue( !pkg.startsWith( "." ) && !pkg.endsWith( "." ), "package should not start or end with a ." );
+		Assert.isTrue( pkg.indexOf('/') < 0 && pkg.indexOf('\\') < 0 , "package should not contain a \\ or /" );
 
 		if( pkg.length() > 0 )
 			this.packageSlashed = pkg.replaceAll( "\\.", "/" ) + "/";
@@ -142,7 +143,7 @@ public class QueryManager
 	 * @param args The arguments.
 	 * @return The {@link Query}.
 	 */
-	public Query bind( String path, Map< String, Object > args )
+	public Query bind( String path, Map< String, ? > args )
 	{
 		QueryTemplate query = getQueryTemplate( path );
 		return query.bind( args );
