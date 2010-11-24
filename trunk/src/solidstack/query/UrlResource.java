@@ -113,6 +113,23 @@ public class UrlResource
 		}
 	}
 
+	/**
+	 * Determines the last modified time stamp of the resource. Return 0 if the last modified time stamp is not available.
+	 * 
+	 * @return The last modified time stamp of the resource. 0 if the last modified time stamp is not available.
+	 */
+	public long getLastModified()
+	{
+		try
+		{
+			return getFile().lastModified();
+		}
+		catch( FileNotFoundException e )
+		{
+			return 0;
+		}
+	}
+
 	@Override
 	public String toString()
 	{

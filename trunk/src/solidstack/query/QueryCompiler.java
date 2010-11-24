@@ -66,8 +66,7 @@ public class QueryCompiler
 		String script = new Parser().parse( new Scanner( reader ), pkg, name );
 		LOGGER.debug( "Generated groovy:\n" + script );
 
-		GroovyClassLoader loader = new GroovyClassLoader();
-		Class< GroovyObject > groovyClass = loader.parseClass( new GroovyCodeSource( script, name, "x" ) );
+		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script, name, "x" ) );
 		GroovyObject object = Util.newInstance( groovyClass );
 		return new QueryTemplate( (Closure)object.invokeMethod( "getClosure", null ), lastModified );
 	}
@@ -402,11 +401,11 @@ public class QueryCompiler
 				this.buffer.append( "builder.append(\"\"\"" );
 				this.mode = Mode.STRING;
 			}
-			if( c == '\n' )
-			{
-				this.buffer.append( "\\n" );
-				endAll();
-			}
+//			if( c == '\n' ) By enabling this you get build.append()s for each line of SQL
+//			{
+//				this.buffer.append( "\\n" );
+//				endAll();
+//			}
 			this.buffer.append( c );
 		}
 
