@@ -50,10 +50,10 @@ public class QueryTemplate
 	 * @param params The parameters for the query.
 	 * @return A {@link Query}.
 	 */
-	public Query bind( Map< String, Object > params )
+	public Query bind( Map< String, ? > params )
 	{
 		Query query = new Query( (Closure)this.query.clone() );
-		query.params( params );
+		query.bind( params );
 		return query;
 	}
 

@@ -18,6 +18,7 @@ package solidstack.query;
 
 import groovy.lang.Closure;
 import groovy.lang.GString;
+
 import java.lang.reflect.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -35,6 +36,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.hibernate.Session;
+import org.hibernate.jdbc.Work;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,8 +56,9 @@ public class Query
 
 	private GString sql;
 	private Closure closure;
-	private Map< String, Object > params;
+	private Map< String, ? > params;
 	private Connection connection;
+	private boolean compress;
 
 	/**
 	 * Constructor.
@@ -91,9 +95,19 @@ public class Query
 	 * 
 	 * @param params The parameters to use.
 	 */
-	public void params( Map< String, Object > params )
+	public void bind( Map< String, ? > params )
 	{
 		this.params = params;
+	}
+
+	/**
+	 * If set to true, duplicate values from a query will only be stored once in memory.
+	 * 
+	 * @param compress If set to true, duplicate values from a query will only be stored once in memory.
+	 */
+	public void setCompress( boolean compress )
+	{
+		this.compress = compress;
 	}
 
 	/**
@@ -132,43 +146,56 @@ public class Query
 	/**
 	 * Retrieves a {@link List} of {@link Object} arrays from the configured {@link Connection}.
 	 * 
-	 * @param compressed Store duplicate values only once.
 	 * @return a {@link List} of {@link Object} arrays from the given {@link Connection}.
-	 * @see #listOfObjectArrays(Connection, boolean)
-	 * @see #listOfObjectArrays(ResultSet, boolean)
 	 */
-	public List< Object[] > listOfObjectArrays( boolean compressed )
+	public List< Object[] > listOfArrays()
 	{
 		if( this.connection == null )
 			throw new IllegalArgumentException( "Connection not set" );
-		return listOfObjectArrays( this.connection, compressed );
+		return listOfArrays( this.connection );
 	}
 
 	/**
 	 * Retrieves a {@link List} of {@link Object} arrays from the given {@link Connection}.
 	 * 
 	 * @param connection The {@link Connection} to use.
-	 * @param compressed Store duplicate values only once.
 	 * @return a {@link List} of {@link Object} arrays from the given {@link Connection}.
-	 * @see #listOfObjectArrays(boolean)
-	 * @see #listOfObjectArrays(ResultSet, boolean)
 	 */
-	public List< Object[] > listOfObjectArrays( Connection connection, boolean compressed )
+	public List< Object[] > listOfArrays( Connection connection )
 	{
 		ResultSet resultSet = resultSet( connection );
-		return listOfObjectArrays( resultSet, compressed );
+		return listOfArrays( resultSet, this.compress );
+	}
+
+	/**
+	 * Retrieves a {@link List} of {@link Object} arrays from the given Hibernate {@link Session}.
+	 * 
+	 * @param session The Hibernate {@link Session} to use.
+	 * @return a {@link List} of {@link Object} arrays.
+	 */
+	public List< Object[] > listOfArrays( final Session session )
+	{
+		final ResultHolder< List< Object[] > > result = new ResultHolder< List< Object[] > >();
+
+		session.doWork( new Work()
+		{
+			public void execute( Connection connection ) throws SQLException
+			{
+				result.set( listOfArrays( connection ) );
+			}
+		});
+
+		return result.get();
 	}
 
 	/**
 	 * Converts a {@link ResultSet} into a {@link List} of {@link Object} arrays.
 	 * 
 	 * @param resultSet The {@link ResultSet} to convert.
-	 * @param compressed Store duplicate values only once.
+	 * @param compress Store duplicate values only once.
 	 * @return a {@link ResultSet} into a {@link List} of {@link Object} arrays.
-	 * @see #listOfObjectArrays(boolean)
-	 * @see #listOfObjectArrays(Connection, boolean)
 	 */
-	static public List< Object[] > listOfObjectArrays( ResultSet resultSet, boolean compressed )
+	static public List< Object[] > listOfArrays( ResultSet resultSet, boolean compress )
 	{
 		try
 		{
@@ -177,7 +204,7 @@ public class Query
 
 			ArrayList< Object[] > result = new ArrayList< Object[] >();
 
-			if( compressed )
+			if( compress )
 			{
 				// THIS CAN REDUCE MEMORY USAGE WITH 90 TO 95 PERCENT, PERFORMANCE IMPACT IS ONLY 5 PERCENT
 
@@ -228,26 +255,22 @@ public class Query
 	/**
 	 * Retrieve a {@link List} of {@link ValuesMap} from the configured {@link Connection}.
 	 * 
-	 * @param compressed Store duplicate values only once.
 	 * @return a {@link List} of {@link ValuesMap}.
-	 * @see #listOfRowMaps(Connection, boolean)
 	 */
-	public List< Map< String, Object > > listOfRowMaps( boolean compressed )
+	public List< Map< String, Object > > listOfMaps()
 	{
 		if( this.connection == null )
 			throw new IllegalArgumentException( "Connection not set" );
-		return listOfRowMaps( this.connection, compressed );
+		return listOfMaps( this.connection );
 	}
 
 	/**
 	 * Retrieve a {@link List} of {@link ValuesMap} from the configured {@link Connection}.
 	 * 
 	 * @param connection The {@link Connection} to use.
-	 * @param compressed Store duplicate values only once.
 	 * @return A {@link List} of {@link ValuesMap} from the configured {@link Connection}.
-	 * @see #listOfRowMaps(boolean)
 	 */
-	public List< Map< String, Object > > listOfRowMaps( Connection connection, boolean compressed )
+	public List< Map< String, Object > > listOfMaps( Connection connection )
 	{
 		try
 		{
@@ -261,7 +284,7 @@ public class Query
 			for( int col = 0; col < columnCount; col++ )
 				names.put( metaData.getColumnLabel( col + 1 ).toLowerCase( Locale.ENGLISH ), col );
 
-			List< Object[] > result = listOfObjectArrays( resultSet, compressed );
+			List< Object[] > result = listOfArrays( resultSet, this.compress );
 			List< Map< String, Object > > result2 = new ArrayList< Map< String, Object > >( result.size() );
 			for( Object[] objects : result)
 				result2.add( new ValuesMap( names, objects ) );
@@ -272,6 +295,27 @@ public class Query
 		{
 			throw new SystemException( e );
 		}
+	}
+
+	/**
+	 * Retrieves a {@link List} of {@link ValuesMap} from the given Hibernate {@link Session}.
+	 * 
+	 * @param session The Hibernate {@link Session} to use.
+	 * @return a {@link List} of {@link ValuesMap}.
+	 */
+	public List< Map< String, Object > > listOfMaps( final Session session )
+	{
+		final ResultHolder< List< Map< String, Object > > > result = new ResultHolder< List< Map< String, Object > > >();
+
+		session.doWork( new Work()
+		{
+			public void execute( Connection connection ) throws SQLException
+			{
+				result.set( listOfMaps( connection ) );
+			}
+		});
+
+		return result.get();
 	}
 
 	/**
@@ -429,7 +473,7 @@ public class Query
 				pars.add( object2 );
 			appendExtraQuestionMarks( buildSql, size - 1 );
 		}
-		else if( object.getClass().isArray() )
+		else if( object != null && object.getClass().isArray() )
 		{
 			int size = Array.getLength( object );
 			Assert.isTrue( size > 0, "Parameter [" + name + "] is empty array" );
@@ -609,9 +653,8 @@ public class Query
 		if( this.params == null )
 			builder.append( " none" );
 		else
-			for( Iterator<Entry<String, Object>> iter = this.params.entrySet().iterator(); iter.hasNext(); )
+			for( Entry< String, ? > entry : this.params.entrySet() )
 			{
-				Entry<String, Object> entry = iter.next();
 				builder.append( "\n\t" );
 				builder.append( entry.getKey() );
 				Object value = entry.getValue();
