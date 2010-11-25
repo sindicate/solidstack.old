@@ -205,9 +205,24 @@ public class QueryCompiler
 //			log.trace( "-> parse" );
 			String leading = scanner.readWhitespace();
 			int c = scanner.read();
+			boolean escaped = false;
 			while( c != -1 )
 			{
-				if( c == '<' )
+				if( escaped )
+				{
+					Assert.isTrue( c == '<' || c == '$' || c == '\\' );
+					writer.writeWhiteSpaceAsString( leading );
+					leading = null;
+					if( c != '<' )
+						writer.writeAsString( '\\' );
+					writer.writeAsString( (char)c );
+					escaped = false;
+				}
+				else if( c == '\\' )
+				{
+					escaped = true;
+				}
+				else if( c == '<' )
 				{
 					c = scanner.read();
 					if( c == '%' )
@@ -286,29 +301,14 @@ public class QueryCompiler
 						// TODO And without {}?
 						c = scanner.read();
 						if( c == '{' )
-							readGStringExpression( scanner, writer );
+							readGStringExpression( scanner, writer, Mode.STRING );
 						else
 						{
 							writer.writeAsString( '$' );
 							scanner.unread( c );
 						}
 					}
-					else if( c == '\\' )
-					{
-						c = scanner.read();
-						if( c == '$' )
-						{
-							writer.writeAsString( '\\' );
-							writer.writeAsString( '$' );
-						}
-						else
-						{
-							writer.writeAsString( '\\' );
-							writer.writeAsString( '\\' );
-							scanner.unread( c );
-						}
-					}
-					else if( c == '"' )
+					else if( c == '"' ) // Because we are in a """ string, we need to add escaping
 					{
 						writer.writeAsString( '\\' );
 						writer.writeAsString( (char)c );
@@ -366,6 +366,8 @@ public class QueryCompiler
 
 		protected void readString( Scanner reader, Writer writer, Mode mode )
 		{
+			Assert.isTrue( mode == Mode.EXPRESSION || mode == Mode.SCRIPT || mode == Mode.STRING, "Unexpected mode " + mode );
+
 //			log.trace( "-> readString" );
 			writer.writeAs( '"', mode );
 			boolean escaped = false;
@@ -373,20 +375,43 @@ public class QueryCompiler
 			{
 				int c = reader.read();
 				Assert.isTrue( c > 0 );
-				if( c == '"' && !escaped )
-					break;
-				escaped = c == '\\';
-				writer.writeAs( (char)c, mode );
+				if( escaped )
+				{
+					escaped = false;
+					writer.writeAs( (char)c, mode );
+				}
+				else
+				{
+					if( c == '$' )
+					{
+						// TODO And without {}?
+						c = reader.read();
+						if( c == '{' )
+							readGStringExpression( reader, writer, mode );
+						else
+						{
+							writer.writeAsString( '$' );
+							reader.unread( c );
+						}
+					}
+					else if( c == '"' )
+						break;
+					else
+					{
+						escaped = c == '\\';
+						writer.writeAs( (char)c, mode );
+					}
+				}
 			}
 			writer.writeAs( '"', mode );
 //			log.trace( "<- readString" );
 		}
 
-		protected void readGStringExpression( Scanner reader, Writer writer )
+		protected void readGStringExpression( Scanner reader, Writer writer, Mode mode )
 		{
 //			log.trace( "-> readEuh" );
-			writer.writeAsString( '$' );
-			writer.writeAsString( '{' );
+			writer.writeAs( '$', mode );
+			writer.writeAs( '{', mode );
 			while( true )
 			{
 				int c = reader.read();
@@ -394,13 +419,13 @@ public class QueryCompiler
 				if( c == '}' )
 					break;
 				if( c == '"' )
-					readString( reader, writer, Mode.STRING );
+					readString( reader, writer, mode );
 //				else if( c == '\'' ) TODO This is important to, for example '}'
 //					readString( reader, writer, Mode.EXPRESSION2 );
 				else
-					writer.writeAsString( (char)c );
+					writer.writeAs( (char)c, mode );
 			}
-			writer.writeAsString( '}' );
+			writer.writeAs( '}', mode );
 //			log.trace( "<- readEuh" );
 		}
 
