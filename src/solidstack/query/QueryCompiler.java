@@ -64,7 +64,8 @@ public class QueryCompiler
 			pkg += "." + path.replaceAll( "/", "." );
 
 		String script = new Parser().parse( new Scanner( reader ), pkg, name );
-		LOGGER.debug( "Generated groovy:\n" + script );
+		if( LOGGER.isTraceEnabled() )
+			LOGGER.trace( "Generated groovy:\n" + script );
 
 		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script, name, "x" ) );
 		GroovyObject object = Util.newInstance( groovyClass );
