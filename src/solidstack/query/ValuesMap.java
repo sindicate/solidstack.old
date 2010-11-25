@@ -54,20 +54,36 @@ public class ValuesMap implements Map< String, Object >
 
 	public boolean containsKey( Object key )
 	{
-		return this.names.containsKey( key );
+		if( !( key instanceof String ) )
+			throw new IllegalArgumentException( "Expecting a string" );
+		String k = ( (String)key ).toLowerCase();
+		return this.names.containsKey( k );
+	}
+
+	public Object get( Object key )
+	{
+		if( !( key instanceof String ) )
+			throw new IllegalArgumentException( "Expecting a string" );
+		String k = ( (String)key ).toLowerCase();
+		Integer index = this.names.get( k );
+		if( index == null )
+			throw new IllegalArgumentException( "Unknown column name: " + key );
+		return this.values[ index ];
+	}
+
+	public Set< String > keySet()
+	{
+		return this.names.keySet();
+	}
+
+	public Collection< Object > values()
+	{
+		return new ValuesList( this.values );
 	}
 
 	public boolean containsValue( Object value )
 	{
 		throw new UnsupportedOperationException();
-	}
-
-	public Object get( Object key )
-	{
-		Integer index = this.names.get( key );
-		if( index == null )
-			return null;
-		return this.values[ index ];
 	}
 
 	public Object put( String key, Object value )
@@ -88,16 +104,6 @@ public class ValuesMap implements Map< String, Object >
 	public void clear()
 	{
 		throw new UnsupportedOperationException();
-	}
-
-	public Set< String > keySet()
-	{
-		return this.names.keySet();
-	}
-
-	public Collection< Object > values()
-	{
-		return new ValuesList( this.values );
 	}
 
 	public Set< java.util.Map.Entry< String, Object >> entrySet()

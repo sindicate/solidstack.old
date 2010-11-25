@@ -287,11 +287,7 @@ public class Query
 				names.put( metaData.getColumnLabel( col + 1 ).toLowerCase( Locale.ENGLISH ), col );
 
 			List< Object[] > result = listOfArrays( resultSet, this.compress );
-			List< Map< String, Object > > result2 = new ArrayList< Map< String, Object > >( result.size() );
-			for( Object[] objects : result)
-				result2.add( new ValuesMap( names, objects ) );
-
-			return result2;
+			return new ResultList( result, names );
 		}
 		catch( SQLException e )
 		{
@@ -319,12 +315,19 @@ public class Query
 
 		return result.get();
 	}
-	
+
+	/**
+	 * Retrieves a {@link List} of JPA Entities from the given {@link EntityManager}.
+	 * 
+	 * @param entityManager The {@link EntityManager} to use.
+	 * @param entityClass The class to map the results to.
+	 * @return a {@link List} of objects.
+	 */
 	public List<?> listOfEntities(EntityManager entityManager, Class<?> entityClass) {
-		
+
 		List< Object > pars = new ArrayList< Object >();
 		String preparedSql = getPreparedSQL( pars );
-		
+
 		javax.persistence.Query query = entityManager.createNativeQuery(preparedSql, entityClass);
 		int i = 0;
 		for( Object par : pars )
@@ -334,7 +337,7 @@ public class Query
 				Assert.isFalse( par.getClass().isArray() );
 			query.setParameter(++i, par);
 		}
-		
+
 		return query.getResultList();
 	}
 
@@ -562,7 +565,7 @@ public class Query
 			}
 		}
 
-		String sql = buildSql.toString(); 
+		String sql = buildSql.toString();
 		printDebug( sql );
 		return sql;
 	}
@@ -662,11 +665,11 @@ public class Query
 		}
 	}
 
-	public void printDebug( String sql )
+	private void printDebug( String sql )
 	{
 		if( !LOGGER.isDebugEnabled() )
 			return;
-		
+
 		StringBuilder builder = new StringBuilder( "Execution:\n" );
 		builder.append( sql );
 		builder.append( "\nParameters:" );
@@ -705,7 +708,7 @@ public class Query
 				else
 					builder.append( " = (null)" );
 			}
-		
+
 		LOGGER.debug( builder.toString() );
 	}
 }
