@@ -36,6 +36,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.persistence.EntityManager;
+
 import org.hibernate.Session;
 import org.hibernate.jdbc.Work;
 import org.slf4j.Logger;
@@ -317,6 +319,24 @@ public class Query
 
 		return result.get();
 	}
+	
+	public List<?> listOfEntities(EntityManager entityManager, Class<?> entityClass) {
+		
+		List< Object > pars = new ArrayList< Object >();
+		String preparedSql = getPreparedSQL( pars );
+		
+		javax.persistence.Query query = entityManager.createNativeQuery(preparedSql, entityClass);
+		int i = 0;
+		for( Object par : pars )
+		{
+			Assert.isFalse( par instanceof Collection );
+			if( par != null )
+				Assert.isFalse( par.getClass().isArray() );
+			query.setParameter(++i, par);
+		}
+		
+		return query.getResultList();
+	}
 
 	/**
 	 * Executes an update (DML) or a DDL query.
@@ -391,12 +411,8 @@ public class Query
 	 */
 	public PreparedStatement getPreparedStatement( Connection connection )
 	{
-		if( LOGGER.isDebugEnabled() )
-			LOGGER.debug( toString() );
-
 		List< Object > pars = new ArrayList< Object >();
 		String preparedSql = getPreparedSQL( pars );
-		LOGGER.debug( preparedSql );
 
 		try
 		{
@@ -546,7 +562,9 @@ public class Query
 			}
 		}
 
-		return buildSql.toString();
+		String sql = buildSql.toString(); 
+		printDebug( sql );
+		return sql;
 	}
 
 	private void processOracleIn( String sql, int pos, int pos2, StringBuilder builder, List< Object > pars )
@@ -644,12 +662,14 @@ public class Query
 		}
 	}
 
-	@Override
-	public String toString()
+	public void printDebug( String sql )
 	{
-//		StringBuilder builder = new StringBuilder( this.sql );
-		StringBuilder builder = new StringBuilder();
-		builder.append( "Parameters:" );
+		if( !LOGGER.isDebugEnabled() )
+			return;
+		
+		StringBuilder builder = new StringBuilder( "Execution:\n" );
+		builder.append( sql );
+		builder.append( "\nParameters:" );
 		if( this.params == null )
 			builder.append( " none" );
 		else
@@ -685,6 +705,7 @@ public class Query
 				else
 					builder.append( " = (null)" );
 			}
-		return builder.toString();
+		
+		LOGGER.debug( builder.toString() );
 	}
 }
