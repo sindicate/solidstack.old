@@ -42,6 +42,8 @@ public class Basic
 		Map< String, Object > params = new HashMap< String, Object >();
 		Query query = queries.bind( "test", params );
 		List< Map< String, Object > > result = query.listOfMaps( connection );
+		for( Map< String, Object > row : result )
+			System.out.println( "Table: " + row.get( "TABLEname" ) );
 		assert result.size() == 22;
 
 		params.put( "prefix", "SYST" );
