@@ -135,7 +135,8 @@ public class QueryTransformer
 			{
 				if( escaped )
 				{
-					Assert.isTrue( c == '<' || c == '$' || c == '\\' );
+					if( c != '<' && c != '$' && c != '\\' )
+						throw new TransformerException( "Only <, $ or \\ can be escaped", reader.getLineNumber() );
 					writer.writeWhiteSpaceAsString( leading );
 					leading = null;
 					if( c != '<' )
@@ -270,7 +271,8 @@ public class QueryTransformer
 			while( true )
 			{
 				int c = reader.read();
-				Assert.isTrue( c > 0 );
+				if( c < 0 )
+					throw new TransformerException( "Unexpected end of file", reader.getLineNumber() );
 				if( c == '"' )
 					readString( reader, writer, mode );
 //				else if( c == '\'' )
@@ -299,7 +301,8 @@ public class QueryTransformer
 			while( true )
 			{
 				int c = reader.read();
-				Assert.isTrue( c > 0 );
+				if( c < 0 )
+					throw new TransformerException( "Unexpected end of file", reader.getLineNumber() );
 				if( escaped )
 				{
 					escaped = false;
@@ -340,7 +343,8 @@ public class QueryTransformer
 			while( true )
 			{
 				int c = reader.read();
-				Assert.isTrue( c > 0 );
+				if( c < 0 )
+					throw new TransformerException( "Unexpected end of file", reader.getLineNumber() );
 				if( c == '}' )
 					break;
 				if( c == '"' )
@@ -360,7 +364,8 @@ public class QueryTransformer
 			while( true )
 			{
 				int c = reader.read();
-				Assert.isTrue( c > 0 );
+				if( c < 0 )
+					throw new TransformerException( "Unexpected end of file", reader.getLineNumber() );
 				if( c == '-' )
 				{
 					reader.mark( 10 );

@@ -42,6 +42,8 @@ public class Basic
 		Map< String, Object > params = new HashMap< String, Object >();
 		Query query = queries.bind( "test", params );
 		List< Map< String, Object > > result = query.listOfMaps( connection );
+		for( String name : result.get( 0 ).keySet() )
+			System.out.println( "Column: " + name );
 		for( Map< String, Object > row : result )
 			System.out.println( "Table: " + row.get( "TABLEname" ) );
 		assert result.size() == 22;
@@ -176,8 +178,17 @@ public class Basic
 		result = QueryTransformer.execute( result );
 		assert result.equals( "Xte${x}tX" );
 
-		// TODO Unclosed string, print error with line number
-//		result = QueryCompiler.translate( "X<%=\"${\"te\"xt\"}\"%>X" );
+		try
+		{
+			result = QueryTransformer.translate( "X<%=\"${\"te\"xt\"}\"%>X" );
+			assert false;
+		}
+		catch( TransformerException e )
+		{
+
+		}
+
+		// TODO newlines without """ is not allowed
 
 		result = QueryTransformer.translate( "X<%=\"${\"te\\\"xt\"}\"%>X" );
 		assert result.equals( start + "builder.append(\"\"\"X\"\"\");builder.append(\"${\"te\\\"xt\"}\");builder.append(\"\"\"X\"\"\");" + end );
@@ -204,8 +215,14 @@ public class Basic
 		result = QueryTransformer.execute( result );
 		assert result.equals( "XY${YX" );
 
-		// TODO Unclosed string, print error with line number
-//		result = QueryCompiler.translate( "X${\"te\"xt\"}X" );
+		try
+		{
+			result = QueryTransformer.translate( "X${\"te\"xt\"}X" );
+		}
+		catch( TransformerException e )
+		{
+
+		}
 
 		result = QueryTransformer.translate( "X${\"te\\\"xt\"}X" );
 		assert result.equals( start + "builder.append(\"\"\"X${\"te\\\"xt\"}X\"\"\");" + end );
