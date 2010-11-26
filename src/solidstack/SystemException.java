@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack.query;
+package solidstack;
 
 /**
  * Use this exception for throwing system faults. System faults are not expected and are caused by programming bugs,

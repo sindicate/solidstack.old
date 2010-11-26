@@ -16,6 +16,7 @@
 
 package solidstack.query;
 
+import solidstack.SystemException;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyObject;

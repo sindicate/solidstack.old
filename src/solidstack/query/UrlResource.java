@@ -23,6 +23,8 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import solidstack.SystemException;
+
 /**
  * A resource described by a {@link URL}.
  * 

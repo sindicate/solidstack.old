@@ -110,7 +110,7 @@ public class QueryManager
 			LOGGER.info( "Loading " + resource.toString() );
 
 			Reader reader = new InputStreamReader( resource.getInputStream() ); // TODO Character set
-			query = QueryCompiler.compile( reader, this.packageSlashed + path, resource.getLastModified() );
+			query = QueryTransformer.compile( reader, this.packageSlashed + path, resource.getLastModified() );
 
 			this.queries.put( path, query );
 		}

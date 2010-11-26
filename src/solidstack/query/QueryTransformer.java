@@ -21,25 +21,24 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import solidstack.io.PushbackReader;
+
 /**
- * Compiles a query template into a {@link Closure}.
+ * Translates a query template into a Groovy {@link Closure}.
  * 
  * @author René M. de Bloois
  */
-public class QueryCompiler
+public class QueryTransformer
 {
-	static final private Logger LOGGER = LoggerFactory.getLogger( QueryCompiler.class );
+	static final private Logger LOGGER = LoggerFactory.getLogger( QueryTransformer.class );
 
 	static final private Pattern pathPattern = Pattern.compile( "/*(?:(.+?)/+)?([^\\/]+)" );
 
@@ -63,7 +62,7 @@ public class QueryCompiler
 		if( path != null )
 			pkg += "." + path.replaceAll( "/", "." );
 
-		String script = new Parser().parse( new Scanner( reader ), pkg, name );
+		String script = new Parser().parse( new PushbackReader( reader, 1 ), pkg, name );
 		if( LOGGER.isTraceEnabled() )
 			LOGGER.trace( "Generated groovy:\n" + script );
 
@@ -88,7 +87,7 @@ public class QueryCompiler
 
 	static String translate( String text )
 	{
-		return new Parser().parse( new Scanner( new StringReader( text ) ), "p", "c" );
+		return new Parser().parse( new PushbackReader( new StringReader( text ), 1 ), "p", "c" );
 	}
 
 
@@ -101,93 +100,6 @@ public class QueryCompiler
 	}
 
 
-	static private class Scanner
-	{
-//		static final private Logger log = Logger.getLogger( Scanner.class );
-
-		protected Reader reader;
-		protected Stack< Integer > pushBack = new Stack< Integer >();
-		protected Stack< Integer > pushBackMarked;
-
-		protected Scanner( Reader reader )
-		{
-			if( !reader.markSupported() )
-				reader = new BufferedReader( reader );
-			this.reader = reader;
-		}
-
-		protected int read()
-		{
-			if( this.pushBack.isEmpty() )
-			{
-				try
-				{
-					int c = this.reader.read();
-					if( c == 13 )
-					{
-						c = this.reader.read();
-						if( c != 10 )
-						{
-							unread( c );
-							c = 10;
-						}
-					}
-					return c;
-				}
-				catch( IOException e )
-				{
-					throw new SystemException( e );
-				}
-			}
-			return this.pushBack.pop();
-		}
-
-		protected void unread( int c )
-		{
-			this.pushBack.push( c );
-		}
-
-		protected void mark( int readAheadLimit )
-		{
-			try
-			{
-				this.reader.mark( readAheadLimit );
-			}
-			catch( IOException e )
-			{
-				throw new SystemException( e );
-			}
-			this.pushBackMarked = (Stack)this.pushBack.clone();
-		}
-
-		protected void reset()
-		{
-			try
-			{
-				this.reader.reset();
-			}
-			catch( IOException e )
-			{
-				throw new SystemException( e );
-			}
-			this.pushBack = this.pushBackMarked;
-			this.pushBackMarked = null;
-		}
-
-		protected String readWhitespace()
-		{
-			StringBuilder builder = new StringBuilder();
-			int c = read();
-			while( Character.isWhitespace( (char)c ) && c != '\n' )
-			{
-				builder.append( (char)c );
-				c = read();
-			}
-			unread( c );
-			return builder.toString();
-		}
-	}
-
 	static private class Parser
 	{
 //		static final private Logger log = Logger.getLogger( GroovyPageCompiler.class );
@@ -197,14 +109,27 @@ public class QueryCompiler
 			// Constructor
 		}
 
-		protected String parse( Scanner scanner, String pkg, String cls )
+		protected String readWhitespace( PushbackReader reader )
+		{
+			StringBuilder builder = new StringBuilder();
+			int c = reader.read();
+			while( Character.isWhitespace( (char)c ) && c != '\n' )
+			{
+				builder.append( (char)c );
+				c = reader.read();
+			}
+			reader.push( c );
+			return builder.toString();
+		}
+
+		protected String parse( PushbackReader reader, String pkg, String cls )
 		{
 			Writer writer = new Writer();
 			writer.writeRaw( "package " + pkg + ";class " + cls + "{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();" );
 
 //			log.trace( "-> parse" );
-			String leading = scanner.readWhitespace();
-			int c = scanner.read();
+			String leading = readWhitespace( reader );
+			int c = reader.read();
 			boolean escaped = false;
 			while( c != -1 )
 			{
@@ -224,31 +149,31 @@ public class QueryCompiler
 				}
 				else if( c == '<' )
 				{
-					c = scanner.read();
+					c = reader.read();
 					if( c == '%' )
 					{
-						scanner.mark( 2 );
-						c = scanner.read();
+						reader.mark( 2 );
+						c = reader.read();
 						if( c == '=' )
 						{
 							writer.writeWhiteSpaceAsString( leading ); leading = null;
-							readScript( scanner, writer, Mode.EXPRESSION );
+							readScript( reader, writer, Mode.EXPRESSION );
 						}
-						else if( c == '-' && scanner.read() == '-' )
+						else if( c == '-' && reader.read() == '-' )
 						{
 							if( leading == null )
-								readComment( scanner );
+								readComment( reader );
 							else
 							{
-								readComment( scanner );
-								String trailing = scanner.readWhitespace();
-								c = scanner.read();
+								readComment( reader );
+								String trailing = readWhitespace( reader );
+								c = reader.read();
 								if( (char)c == '\n' )
 									// Comment on lines of his own, then ignore the lines.
-									leading = scanner.readWhitespace();
+									leading = readWhitespace( reader );
 								else
 								{
-									scanner.unread( c );
+									reader.push( c );
 									writer.writeWhiteSpaceAsString( leading ); leading = null;
 									writer.writeWhiteSpaceAsString( trailing );
 								}
@@ -256,16 +181,16 @@ public class QueryCompiler
 						}
 						else
 						{
-							scanner.reset();
+							reader.reset();
 							if( leading == null )
-								readScript( scanner, writer, Mode.SCRIPT );
+								readScript( reader, writer, Mode.SCRIPT );
 							else
 							{
 								Writer writer2 = new Writer();
 								writer2.mode = Mode.UNKNOWN;
-								readScript( scanner, writer2, Mode.SCRIPT );
-								String trailing = scanner.readWhitespace();
-								c = scanner.read();
+								readScript( reader, writer2, Mode.SCRIPT );
+								String trailing = readWhitespace( reader );
+								c = reader.read();
 								if( (char)c == '\n' )
 								{
 									// If script on lines of his own, add the whitespace and the newline to the script.
@@ -273,11 +198,11 @@ public class QueryCompiler
 									writer.writeAsScript( writer2.buffer );
 									writer.writeAsScript( trailing );
 									writer.writeAsScript( '\n' ); // Must not lose newlines
-									leading = scanner.readWhitespace();
+									leading = readWhitespace( reader );
 								}
 								else
 								{
-									scanner.unread( c );
+									reader.push( c );
 									writer.writeWhiteSpaceAsString( leading ); leading = null;
 									writer.writeAsScript( writer2.buffer );
 									writer.writeWhiteSpaceAsString( trailing );
@@ -289,7 +214,7 @@ public class QueryCompiler
 					{
 						writer.writeWhiteSpaceAsString( leading ); leading = null;
 						writer.writeAsString( '<' );
-						scanner.unread( c );
+						reader.push( c );
 					}
 				}
 				else
@@ -299,13 +224,13 @@ public class QueryCompiler
 					if( c == '$' )
 					{
 						// TODO And without {}?
-						c = scanner.read();
+						c = reader.read();
 						if( c == '{' )
-							readGStringExpression( scanner, writer, Mode.STRING );
+							readGStringExpression( reader, writer, Mode.STRING );
 						else
 						{
 							writer.writeAsString( '$' );
-							scanner.unread( c );
+							reader.push( c );
 						}
 					}
 					else if( c == '"' ) // Because we are in a """ string, we need to add escaping
@@ -316,7 +241,7 @@ public class QueryCompiler
 					else if( c == '\n' )
 					{
 						writer.writeAsString( (char)c );
-						leading = scanner.readWhitespace();
+						leading = readWhitespace( reader );
 					}
 					else
 					{
@@ -324,7 +249,7 @@ public class QueryCompiler
 					}
 				}
 
-				c = scanner.read();
+				c = reader.read();
 			}
 			writer.writeWhiteSpaceAsString( leading );
 
@@ -337,7 +262,7 @@ public class QueryCompiler
 			return writer.getString();
 		}
 
-		protected void readScript( Scanner reader, Writer writer, Mode mode )
+		protected void readScript( PushbackReader reader, Writer writer, Mode mode )
 		{
 			Assert.isTrue( mode == Mode.SCRIPT || mode == Mode.EXPRESSION );
 
@@ -355,7 +280,7 @@ public class QueryCompiler
 					c = reader.read();
 					if( c == '>' )
 						break;
-					reader.unread( c );
+					reader.push( c );
 					writer.writeAs( '%', mode );
 				}
 				else
@@ -364,7 +289,7 @@ public class QueryCompiler
 //			log.trace( "<- readScript" );
 		}
 
-		protected void readString( Scanner reader, Writer writer, Mode mode )
+		protected void readString( PushbackReader reader, Writer writer, Mode mode )
 		{
 			Assert.isTrue( mode == Mode.EXPRESSION || mode == Mode.SCRIPT || mode == Mode.STRING, "Unexpected mode " + mode );
 
@@ -391,7 +316,7 @@ public class QueryCompiler
 						else
 						{
 							writer.writeAsString( '$' );
-							reader.unread( c );
+							reader.push( c );
 						}
 					}
 					else if( c == '"' )
@@ -407,7 +332,7 @@ public class QueryCompiler
 //			log.trace( "<- readString" );
 		}
 
-		protected void readGStringExpression( Scanner reader, Writer writer, Mode mode )
+		protected void readGStringExpression( PushbackReader reader, Writer writer, Mode mode )
 		{
 //			log.trace( "-> readEuh" );
 			writer.writeAs( '$', mode );
@@ -429,7 +354,7 @@ public class QueryCompiler
 //			log.trace( "<- readEuh" );
 		}
 
-		protected void readComment( Scanner reader )
+		protected void readComment( PushbackReader reader )
 		{
 //			log.trace( "-> readComment" );
 			while( true )
