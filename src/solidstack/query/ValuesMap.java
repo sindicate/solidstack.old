@@ -27,7 +27,7 @@ import java.util.Set;
  */
 public class ValuesMap implements Map< String, Object >
 {
-	private Map< String, Integer > names; // This one is shared among all instances of RowMap
+	private Map< String, Integer > names; // This one is shared by all instances
 	private Object[] values;
 
 	/**
