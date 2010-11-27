@@ -23,6 +23,7 @@ import groovy.lang.GroovyObject;
 
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -91,11 +92,13 @@ public class QueryTransformer
 	}
 
 
-	static String execute( String script )
+	static String execute( String script, Map parameters )
 	{
 		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script, "n", "x" ) );
 		GroovyObject object = Util.newInstance( groovyClass );
 		Closure closure = (Closure)object.invokeMethod( "getClosure", null );
+		if( parameters != null )
+			closure.setDelegate( parameters );
 		return closure.call().toString();
 	}
 
@@ -137,11 +140,11 @@ public class QueryTransformer
 				{
 					if( c != '<' && c != '$' && c != '\\' )
 						throw new TransformerException( "Only <, $ or \\ can be escaped", reader.getLineNumber() );
-					writer.writeWhiteSpaceAsString( leading );
+					writer.writeAsText( leading );
 					leading = null;
 					if( c != '<' )
-						writer.writeAsString( '\\' );
-					writer.writeAsString( (char)c );
+						writer.writeAsText( '\\' );
+					writer.writeAsText( (char)c );
 					escaped = false;
 				}
 				else if( c == '\\' )
@@ -157,7 +160,7 @@ public class QueryTransformer
 						c = reader.read();
 						if( c == '=' )
 						{
-							writer.writeWhiteSpaceAsString( leading ); leading = null;
+							writer.writeAsText( leading ); leading = null;
 							readScript( reader, writer, Mode.EXPRESSION );
 						}
 						else if( c == '-' && reader.read() == '-' )
@@ -175,8 +178,8 @@ public class QueryTransformer
 								else
 								{
 									reader.push( c );
-									writer.writeWhiteSpaceAsString( leading ); leading = null;
-									writer.writeWhiteSpaceAsString( trailing );
+									writer.writeAsText( leading ); leading = null;
+									writer.writeAsText( trailing );
 								}
 							}
 						}
@@ -204,55 +207,55 @@ public class QueryTransformer
 								else
 								{
 									reader.push( c );
-									writer.writeWhiteSpaceAsString( leading ); leading = null;
+									writer.writeAsText( leading ); leading = null;
 									writer.writeAsScript( writer2.buffer );
-									writer.writeWhiteSpaceAsString( trailing );
+									writer.writeAsText( trailing );
 								}
 							}
 						}
 					}
 					else
 					{
-						writer.writeWhiteSpaceAsString( leading ); leading = null;
-						writer.writeAsString( '<' );
+						writer.writeAsText( leading ); leading = null;
+						writer.writeAsText( '<' );
 						reader.push( c );
 					}
 				}
 				else
 				{
-					writer.writeWhiteSpaceAsString( leading );
+					writer.writeAsText( leading );
 					leading = null;
 					if( c == '$' )
 					{
 						// TODO And without {}?
 						c = reader.read();
 						if( c == '{' )
-							readGStringExpression( reader, writer, Mode.STRING );
+							readGStringExpression( reader, writer, Mode.TEXT );
 						else
 						{
-							writer.writeAsString( '$' );
+							writer.writeAsText( '$' );
 							reader.push( c );
 						}
 					}
 					else if( c == '"' ) // Because we are in a """ string, we need to add escaping
 					{
-						writer.writeAsString( '\\' );
-						writer.writeAsString( (char)c );
+						writer.writeAsText( '\\' );
+						writer.writeAsText( (char)c );
 					}
 					else if( c == '\n' )
 					{
-						writer.writeAsString( (char)c );
+						writer.writeAsText( (char)c );
 						leading = readWhitespace( reader );
 					}
 					else
 					{
-						writer.writeAsString( (char)c );
+						writer.writeAsText( (char)c );
 					}
 				}
 
 				c = reader.read();
 			}
-			writer.writeWhiteSpaceAsString( leading );
+			writer.writeAsText( leading );
 
 //			log.trace( "<- parse" );
 
@@ -293,16 +296,34 @@ public class QueryTransformer
 
 		protected void readString( PushbackReader reader, Writer writer, Mode mode )
 		{
-			Assert.isTrue( mode == Mode.EXPRESSION || mode == Mode.SCRIPT || mode == Mode.STRING, "Unexpected mode " + mode );
-
 //			log.trace( "-> readString" );
+
+			Assert.isTrue( mode == Mode.EXPRESSION || mode == Mode.SCRIPT || mode == Mode.TEXT, "Unexpected mode " + mode );
+
 			writer.writeAs( '"', mode );
+			boolean multiline = false;
+			reader.mark( 2 );
+			if( reader.read() == '"' && reader.read() == '"' )
+			{
+				multiline = true;
+				writer.writeAs( '"', mode );
+				writer.writeAs( '"', mode );
+			}
+			else
+				reader.reset();
+
 			boolean escaped = false;
 			while( true )
 			{
 				int c = reader.read();
-				if( c < 0 )
-					throw new TransformerException( "Unexpected end of file", reader.getLineNumber() );
+				if( multiline )
+				{
+					if( c < 0 )
+						throw new TransformerException( "Unexpected end of file", reader.getLineNumber() );
+				}
+				else
+					if( c < 0 || c == '\n' )
+						throw new TransformerException( "Unexpected end of line", reader.getLineNumber() );
 				if( escaped )
 				{
 					escaped = false;
@@ -318,12 +339,23 @@ public class QueryTransformer
 							readGStringExpression( reader, writer, mode );
 						else
 						{
-							writer.writeAsString( '$' );
+							writer.writeAsText( '$' );
 							reader.push( c );
 						}
 					}
 					else if( c == '"' )
-						break;
+					{
+						if( multiline )
+						{
+							reader.mark( 2 );
+							if( reader.read() == '"' && reader.read() == '"' )
+								break;
+							reader.reset();
+							writer.writeAs( (char)c, mode );
+						}
+						else
+							break;
+					}
 					else
 					{
 						escaped = c == '\\';
@@ -331,7 +363,14 @@ public class QueryTransformer
 					}
 				}
 			}
+
 			writer.writeAs( '"', mode );
+			if( multiline )
+			{
+				writer.writeAs( '"', mode );
+				writer.writeAs( '"', mode );
+			}
+
 //			log.trace( "<- readString" );
 		}
 
@@ -343,8 +382,8 @@ public class QueryTransformer
 			while( true )
 			{
 				int c = reader.read();
-				if( c < 0 )
-					throw new TransformerException( "Unexpected end of file", reader.getLineNumber() );
+				if( c < 0 || c == '\n' )
+					throw new TransformerException( "Unexpected end of line", reader.getLineNumber() );
 				if( c == '}' )
 					break;
 				if( c == '"' )
@@ -386,7 +425,7 @@ public class QueryTransformer
 		}
 	}
 
-	static private enum Mode { UNKNOWN, STRING, SCRIPT, EXPRESSION }
+	static private enum Mode { UNKNOWN, TEXT, SCRIPT, EXPRESSION }
 
 	static private class Writer
 	{
@@ -398,13 +437,13 @@ public class QueryTransformer
 			// Empty constructor
 		}
 
-		protected void writeAsString( char c )
+		protected void writeAsText( char c )
 		{
-			endAllExcept( Mode.STRING );
+			endAllExcept( Mode.TEXT );
 			if( this.mode == Mode.UNKNOWN )
 			{
 				this.buffer.append( "builder.append(\"\"\"" );
-				this.mode = Mode.STRING;
+				this.mode = Mode.TEXT;
 			}
 //			if( c == '\n' ) By enabling this you get build.append()s for each line of SQL
 //			{
@@ -414,16 +453,16 @@ public class QueryTransformer
 			this.buffer.append( c );
 		}
 
-		protected void writeWhiteSpaceAsString( CharSequence string )
+		protected void writeAsText( CharSequence string )
 		{
 			if( string == null || string.length() == 0 )
 				return;
 
-			endAllExcept( Mode.STRING );
+			endAllExcept( Mode.TEXT );
 			if( this.mode == Mode.UNKNOWN )
 			{
 				this.buffer.append( "builder.append(\"\"\"" );
-				this.mode = Mode.STRING;
+				this.mode = Mode.TEXT;
 			}
 			this.buffer.append( string );
 		}
@@ -478,8 +517,8 @@ public class QueryTransformer
 //				writeAsExpression2( c );
 			else if( mode == Mode.SCRIPT )
 				writeAsScript( c );
-			else if( mode == Mode.STRING )
-				writeAsString( c );
+			else if( mode == Mode.TEXT )
+				writeAsText( c );
 			else
 				Assert.fail( "mode UNKNOWN not allowed" );
 		}
@@ -512,7 +551,7 @@ public class QueryTransformer
 
 		private void endString()
 		{
-			Assert.isTrue( this.mode == Mode.STRING );
+			Assert.isTrue( this.mode == Mode.TEXT );
 			this.buffer.append( "\"\"\");" );
 			this.mode = Mode.UNKNOWN;
 		}
@@ -522,7 +561,7 @@ public class QueryTransformer
 			if( this.mode == mode )
 				return;
 
-			if( this.mode == Mode.STRING )
+			if( this.mode == Mode.TEXT )
 				endString();
 			else if( this.mode == Mode.EXPRESSION )
 				endExpression();

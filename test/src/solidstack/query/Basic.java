@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.testng.annotations.Test;
 
 
@@ -112,139 +111,70 @@ public class Basic
 		assert result.size() == 22;
 	}
 
+	private String start = "package p;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();";
+	private String end = "return builder.toGString()}}}";
+	private Map parameters;
+	{
+		this.parameters = new HashMap();
+		this.parameters.put( "var", "value" );
+	}
+
+	private void translateTest( String input, String groovy, String output )
+	{
+		String result = QueryTransformer.translate( input );
+		System.out.println( result );
+		assert result.equals( this.start + groovy + this.end );
+		result = QueryTransformer.execute( result, this.parameters );
+		System.out.println( result );
+		assert result.equals( output );
+	}
+
+	private void translateError( String input )
+	{
+		try
+		{
+			QueryTransformer.translate( "X${\"te\"xt\"}X" );
+			assert false;
+		}
+		catch( TransformerException e )
+		{
+			assert e.getMessage().contains( "Unexpected end of line" );
+		}
+	}
+
+	// TODO newlines without """ is not allowed
+
 	@Test(groups="new")
 	public void testGroovy() throws SQLException, ClassNotFoundException
 	{
-		String start = "package p;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();";
-		String end = "return builder.toGString()}}}";
-
 		// Escaping in the text
 
-		String result = QueryTransformer.translate( "X\"X'X" );
-		assert result.equals( start + "builder.append(\"\"\"X\\\"X'X\"\"\");" + end );
-		result = QueryTransformer.execute( result );
-		assert result.equals( "X\"X'X" );
-
-		result = QueryTransformer.translate( "X\\\\\"X'X" );
-//		System.out.println( result );
-		assert result.equals( start + "builder.append(\"\"\"X\\\\\\\"X'X\"\"\");" + end );
-		result = QueryTransformer.execute( result );
-//		System.out.println( result );
-		assert result.equals( "X\\\"X'X" );
-
-		result = QueryTransformer.translate( "X\\\\X'X" );
-//		System.out.println( result );
-		assert result.equals( start + "builder.append(\"\"\"X\\\\X'X\"\"\");" + end );
-		result = QueryTransformer.execute( result );
-//		System.out.println( result );
-		assert result.equals( "X\\X'X" );
-
-		result = QueryTransformer.translate( "X\"\"\"X'X" );
-//		System.out.println( result );
-		assert result.equals( start + "builder.append(\"\"\"X\\\"\\\"\\\"X'X\"\"\");" + end );
-		result = QueryTransformer.execute( result );
-		assert result.equals( "X\"\"\"X'X" );
-
-		result = QueryTransformer.translate( "X\\<%X" );
-//		System.out.println( result );
-		assert result.equals( start + "builder.append(\"\"\"X<%X\"\"\");" + end );
-		result = QueryTransformer.execute( result );
-		assert result.equals( "X<%X" );
-
-		result = QueryTransformer.translate( "X\\${X" );
-//		System.out.println( result );
-		assert result.equals( start + "builder.append(\"\"\"X\\${X\"\"\");" + end );
-		result = QueryTransformer.execute( result );
-		assert result.equals( "X${X" );
+		translateTest( "X\"X'X", "builder.append(\"\"\"X\\\"X'X\"\"\");", "X\"X'X" );
+		translateTest( "X\\\\\"X'X", "builder.append(\"\"\"X\\\\\\\"X'X\"\"\");", "X\\\"X'X" );
+		translateTest( "X\\\\X'X", "builder.append(\"\"\"X\\\\X'X\"\"\");", "X\\X'X" );
+		translateTest( "X\"\"\"X'X", "builder.append(\"\"\"X\\\"\\\"\\\"X'X\"\"\");", "X\"\"\"X'X" );
+		translateTest( "X\\<%X", "builder.append(\"\"\"X<%X\"\"\");", "X<%X" );
+		translateTest( "X\\${X", "builder.append(\"\"\"X\\${X\"\"\");", "X${X" );
 
 		// Expressions
 
-		result = QueryTransformer.translate( "X<%=\"X\"%>X" );
-		assert result.equals( start + "builder.append(\"\"\"X\"\"\");builder.append(\"X\");builder.append(\"\"\"X\"\"\");" + end );
-
-		result = QueryTransformer.translate( "X<%=\"%>\"%>X" );
-		assert result.equals( start + "builder.append(\"\"\"X\"\"\");builder.append(\"%>\");builder.append(\"\"\"X\"\"\");" + end );
-
-		result = QueryTransformer.translate( "X<%=\"${var}\"%>X" );
-		assert result.equals( start + "builder.append(\"\"\"X\"\"\");builder.append(\"${var}\");builder.append(\"\"\"X\"\"\");" + end );
-
-		result = QueryTransformer.translate( "X<%=\"${\"te\\\"xt\"}\"%>X" );
-		assert result.equals( start + "builder.append(\"\"\"X\"\"\");builder.append(\"${\"te\\\"xt\"}\");builder.append(\"\"\"X\"\"\");" + end );
-		result = QueryTransformer.execute( result );
-		assert result.equals( "Xte\"xtX" );
-
-		result = QueryTransformer.translate( "X<%=\"${\"te\\${x}t\"}\"%>X" );
-		assert result.equals( start + "builder.append(\"\"\"X\"\"\");builder.append(\"${\"te\\${x}t\"}\");builder.append(\"\"\"X\"\"\");" + end );
-		result = QueryTransformer.execute( result );
-		assert result.equals( "Xte${x}tX" );
-
-		try
-		{
-			result = QueryTransformer.translate( "X<%=\"${\"te\"xt\"}\"%>X" );
-			assert false;
-		}
-		catch( TransformerException e )
-		{
-
-		}
-
-		// TODO newlines without """ is not allowed
-
-		result = QueryTransformer.translate( "X<%=\"${\"te\\\"xt\"}\"%>X" );
-		assert result.equals( start + "builder.append(\"\"\"X\"\"\");builder.append(\"${\"te\\\"xt\"}\");builder.append(\"\"\"X\"\"\");" + end );
-		result = QueryTransformer.execute( result );
-		assert result.equals( "Xte\"xtX" );
-
-		result = QueryTransformer.translate( "X<%=\"Y${\"Z${\"text\"}Z\"}Y\"%>X" );
-		assert result.equals( start + "builder.append(\"\"\"X\"\"\");builder.append(\"Y${\"Z${\"text\"}Z\"}Y\");builder.append(\"\"\"X\"\"\");" + end );
-		result = QueryTransformer.execute( result );
-		assert result.equals( "XYZtextZYX" );
+		translateTest( "X<%=\"X\"%>X", "builder.append(\"\"\"X\"\"\");builder.append(\"X\");builder.append(\"\"\"X\"\"\");", "XXX" );
+		translateTest( "X<%=\"%>\"%>X", "builder.append(\"\"\"X\"\"\");builder.append(\"%>\");builder.append(\"\"\"X\"\"\");", "X%>X" );
+		translateTest( "X<%=\"${var}\"%>X", "builder.append(\"\"\"X\"\"\");builder.append(\"${var}\");builder.append(\"\"\"X\"\"\");", "XvalueX" );
+		translateTest( "X<%=\"${\"te\\\"xt\"}\"%>X", "builder.append(\"\"\"X\"\"\");builder.append(\"${\"te\\\"xt\"}\");builder.append(\"\"\"X\"\"\");", "Xte\"xtX" );
+		translateTest( "X<%=\"${\"te\\${x}t\"}\"%>X", "builder.append(\"\"\"X\"\"\");builder.append(\"${\"te\\${x}t\"}\");builder.append(\"\"\"X\"\"\");", "Xte${x}tX" );
+		translateError( "X<%=\"${\"te\"xt\"}\"%>X" );
+		translateTest( "X<%=\"${\"te\\\"xt\"}\"%>X", "builder.append(\"\"\"X\"\"\");builder.append(\"${\"te\\\"xt\"}\");builder.append(\"\"\"X\"\"\");", "Xte\"xtX" );
+		translateTest( "X<%=\"Y${\"Z${\"text\"}Z\"}Y\"%>X", "builder.append(\"\"\"X\"\"\");builder.append(\"Y${\"Z${\"text\"}Z\"}Y\");builder.append(\"\"\"X\"\"\");", "XYZtextZYX" );
 
 		// GString expressions
 
-		result = QueryTransformer.translate( "X${var}X" );
-		assert result.equals( start + "builder.append(\"\"\"X${var}X\"\"\");" + end );
-
-		result = QueryTransformer.translate( "X${\"text\"}X" );
-		assert result.equals( start + "builder.append(\"\"\"X${\"text\"}X\"\"\");" + end );
-		result = QueryTransformer.execute( result );
-		assert result.equals( "XtextX" );
-
-		result = QueryTransformer.translate( "X${\"Y\\${Y\"}X" );
-		assert result.equals( start + "builder.append(\"\"\"X${\"Y\\${Y\"}X\"\"\");" + end );
-		result = QueryTransformer.execute( result );
-		assert result.equals( "XY${YX" );
-
-		try
-		{
-			result = QueryTransformer.translate( "X${\"te\"xt\"}X" );
-		}
-		catch( TransformerException e )
-		{
-
-		}
-
-		result = QueryTransformer.translate( "X${\"te\\\"xt\"}X" );
-		assert result.equals( start + "builder.append(\"\"\"X${\"te\\\"xt\"}X\"\"\");" + end );
-		result = QueryTransformer.execute( result );
-		assert result.equals( "Xte\"xtX" );
-
-		// TODO This is not legal, the translater should catch this earlier
-		result = QueryTransformer.translate( "X${\"text\ntext\"}X" );
-		assert result.equals( start + "builder.append(\"\"\"X${\"text\ntext\"}X\"\"\");" + end );
-		try
-		{
-			result = QueryTransformer.execute( result );
-			assert false;
-		}
-		catch( MultipleCompilationErrorsException e )
-		{
-
-		}
-
-		result = QueryTransformer.translate( "X${\"\"\"text\ntext\"\"\"}X" );
-		assert result.equals( start + "builder.append(\"\"\"X${\"\"\"text\ntext\"\"\"}X\"\"\");" + end );
-		result = QueryTransformer.execute( result );
-		assert result.equals( "Xtext\ntextX" );
+		translateTest( "X${var}X", "builder.append(\"\"\"X${var}X\"\"\");", "XvalueX" );
+		translateTest( "X${\"text\"}X", "builder.append(\"\"\"X${\"text\"}X\"\"\");", "XtextX" );
+		translateTest( "X${\"Y\\${Y\"}X", "builder.append(\"\"\"X${\"Y\\${Y\"}X\"\"\");", "XY${YX" );
+		translateError( "X${\"te\"xt\"}X" );
+		translateTest( "X${\"te\\\"xt\"}X", "builder.append(\"\"\"X${\"te\\\"xt\"}X\"\"\");", "Xte\"xtX" );
+		translateError( "X${\"text\ntext\"}X" );
+		translateTest( "X${\"\"\"te\"xt\ntext\\\"\"\"\"}X", "builder.append(\"\"\"X${\"\"\"te\"xt\ntext\\\"\"\"\"}X\"\"\");", "Xte\"xt\ntext\"X" );
 	}
 }
