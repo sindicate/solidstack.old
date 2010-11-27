@@ -303,8 +303,8 @@ public class QueryTransformer
 				int c = reader.read();
 				if( c < 0 )
 					throw new TransformerException( "Unexpected end of file", reader.getLineNumber() );
-				if( c == '"' )
-					readString( reader, writer );
+				if( c == '"' || c == '\'' )
+					readString( reader, writer, (char)c );
 				else if( c == '%' )
 				{
 					c = reader.read();
@@ -318,7 +318,7 @@ public class QueryTransformer
 			}
 		}
 
-		protected void readString( PushbackReader reader, Writer writer )
+		protected void readString( PushbackReader reader, Writer writer, char quote )
 		{
 			Assert.isTrue( writer.pendingMode == Mode.EXPRESSION || writer.pendingMode == Mode.SCRIPT || writer.pendingMode == Mode.TEXT, "Unexpected mode " + writer.pendingMode );
 
@@ -327,14 +327,14 @@ public class QueryTransformer
 			// " within ${} should not end this string
 			// \ is used to escape $, " and itself
 
-			writer.write( '"' );
+			writer.write( quote );
 			boolean multiline = false;
 			reader.mark( 2 );
-			if( reader.read() == '"' && reader.read() == '"' )
+			if( reader.read() == quote && reader.read() == quote )
 			{
 				multiline = true;
-				writer.write( '"' );
-				writer.write( '"' );
+				writer.write( quote );
+				writer.write( quote );
 			}
 			else
 				reader.reset();
@@ -356,14 +356,14 @@ public class QueryTransformer
 				{
 					writer.write( (char)c );
 					c = reader.read();
-					if( c == '$' || c == '\\' || c == '"'  )
+					if( c == '$' && quote == '"' || c == '\\' || c == quote  )
 						writer.write( (char)c );
 					else
-						throw new TransformerException( "Only \", $ or \\ can be escaped", reader.getLineNumber() );
+						throw new TransformerException( "Only " + ( quote == '"' ? "\", $" : "'" ) + " or \\ can be escaped", reader.getLineNumber() );
 					continue;
 				}
 
-				if( c == '$' )
+				if( quote == '"' && c == '$' )
 				{
 					// TODO And without {}?
 					c = reader.read();
@@ -377,31 +377,28 @@ public class QueryTransformer
 					continue;
 				}
 
-				if( c == '"' )
+				if( c == quote )
 				{
+					writer.write( quote );
 					if( !multiline )
-						break;
+						return;
 
 					reader.mark( 2 );
-					if( reader.read() == '"' && reader.read() == '"' )
+					if( reader.read() == quote && reader.read() == quote )
+					{
+						writer.write( quote );
+						writer.write( quote );
 						break;
+					}
+
 					reader.reset();
-					writer.write( (char)c );
 					continue;
 				}
 
 				writer.write( (char)c );
 			}
-
-			writer.write( '"' );
-			if( multiline )
-			{
-				writer.write( '"' );
-				writer.write( '"' );
-			}
 		}
 
-		// TODO Single quote lines
 		// TODO Should we allow { } blocks within GString expressions?
 		protected void readGStringExpression( PushbackReader reader, Writer writer )
 		{
@@ -418,8 +415,8 @@ public class QueryTransformer
 					throw new TransformerException( "Unexpected end of line", reader.getLineNumber() );
 				if( c == '}' )
 					break;
-				if( c == '"' )
-					readString( reader, writer );
+				if( c == '"' || c == '\'' )
+					readString( reader, writer, (char)c );
 				else
 					writer.write( (char)c );
 			}
