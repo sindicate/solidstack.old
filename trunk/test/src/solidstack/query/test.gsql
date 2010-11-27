@@ -1,12 +1,16 @@
-	SELECT *
-	FROM SYS.SYSTABLES
-	WHERE 1 = 1
-<% if( prefix ) { %>
-	AND TABLENAME LIKE '<%= prefix %>%'
-<% } %>
-<% if( name ) { %>
-	AND TABLENAME = ${name}
-<% } %>
-<% if( names ) { %>
-	AND TABLENAME IN (${names})
-<% } %>
+SELECT *
+FROM SYS.SYSTABLES
+	<%--
+	This comment should not 
+	interfere with the linenumbers
+	--%>
+WHERE 1 = 1
+		<% if( prefix ) { %>
+AND TABLENAME LIKE '<%= prefix %>%'
+		<% } %>
+		<% if( name ) { %>
+AND TABLENAME = ${name}
+		<% } %>
+		<% if( names ) { %>
+AND TABLENAME IN (${names})
+		<% } %>

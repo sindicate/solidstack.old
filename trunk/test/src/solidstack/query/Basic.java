@@ -16,6 +16,7 @@
 
 package solidstack.query;
 
+import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -74,6 +75,28 @@ public class Basic
 	@Test
 	public void testTransform() throws Exception
 	{
+		String groovy = QueryTransformer.translate( new FileReader( "test/src/solidstack/query/test.gsql" ) );
+//		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
+		assert groovy.equals(
+				"package p;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();builder.append(\"\"\"SELECT *\n" +
+				"FROM SYS.SYSTABLES\n" +
+				"\"\"\");\n" +
+				"\n" +
+				"\n" +
+				"\n" +
+				"builder.append(\"\"\"WHERE 1 = 1\n" +
+				"\"\"\");\t\t if( prefix ) { \n" +
+				"builder.append(\"\"\"AND TABLENAME LIKE '\"\"\");builder.append( prefix );builder.append(\"\"\"%'\n" +
+				"\"\"\");\t\t } \n" +
+				"\t\t if( name ) { \n" +
+				"builder.append(\"\"\"AND TABLENAME = ${name}\n" +
+				"\"\"\");\t\t } \n" +
+				"\t\t if( names ) { \n" +
+				"builder.append(\"\"\"AND TABLENAME IN (${names})\n" +
+				"\"\"\");\t\t } \n" +
+				"return builder.toGString()}}}"
+		);
+
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query" );
 
@@ -85,11 +108,11 @@ public class Basic
 		List< Object > pars = new ArrayList< Object >();
 		String sql = query.getPreparedSQL( pars );
 
-		assert sql.equals( "	SELECT *\n" +
-				"	FROM SYS.SYSTABLES\n" +
-				"	WHERE 1 = 1\n" +
-				"	AND TABLENAME LIKE 'SYST%'\n" +
-		"	AND TABLENAME IN (?,?)\n" );
+		assert sql.equals( "SELECT *\n" +
+				"FROM SYS.SYSTABLES\n" +
+				"WHERE 1 = 1\n" +
+				"AND TABLENAME LIKE 'SYST%'\n" +
+		"AND TABLENAME IN (?,?)\n" );
 
 //		Writer out = new OutputStreamWriter( new FileOutputStream( "test.out" ), "UTF-8" );
 //		out.write( sql );
