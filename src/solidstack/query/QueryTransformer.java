@@ -445,17 +445,7 @@ public class QueryTransformer
 
 		protected void writeAsText( char c )
 		{
-			endAllExcept( Mode.TEXT );
-			if( this.mode == Mode.SCRIPT )
-			{
-				this.buffer.append( "builder.append(\"\"\"" );
-				this.mode = Mode.TEXT;
-			}
-//			if( c == '\n' ) By enabling this you get build.append()s for each line of SQL
-//			{
-//				this.buffer.append( "\\n" );
-//				endAll();
-//			}
+			switchMode( Mode.TEXT );
 			this.buffer.append( c );
 		}
 
@@ -464,50 +454,28 @@ public class QueryTransformer
 			if( string == null || string.length() == 0 )
 				return;
 
-			endAllExcept( Mode.TEXT );
-			if( this.mode == Mode.SCRIPT )
-			{
-				this.buffer.append( "builder.append(\"\"\"" );
-				this.mode = Mode.TEXT;
-			}
+			switchMode( Mode.TEXT );
 			this.buffer.append( string );
 		}
 
 		protected void writeAsExpression( char c )
 		{
-			endAllExcept( Mode.EXPRESSION );
-			if( this.mode == Mode.SCRIPT )
-			{
-				this.buffer.append( "builder.append(" );
-				this.mode = Mode.EXPRESSION;
-			}
+			switchMode( Mode.EXPRESSION );
 			this.buffer.append( c );
 		}
-
-//		protected void writeAsExpression2( char c )
-//		{
-//			endAllExcept( Mode.EXPRESSION2 );
-//			if( this.mode == Mode.UNKNOWN )
-//			{
-//				this.buffer.append( "writer.writeEncoded(" );
-//				this.mode = Mode.EXPRESSION2;
-//			}
-//			this.buffer.append( c );
-//		}
 
 		protected void writeAsScript( char c )
 		{
-			endAllExcept( Mode.SCRIPT );
+			switchMode( Mode.SCRIPT );
 			this.buffer.append( c );
 		}
 
-		// TODO What about newlines?
 		protected void writeAsScript( CharSequence script )
 		{
 			if( script == null || script.length() == 0 )
 				return;
 
-			endAllExcept( Mode.SCRIPT );
+			switchMode( Mode.SCRIPT );
 			this.buffer.append( script );
 		}
 
@@ -525,56 +493,33 @@ public class QueryTransformer
 				Assert.fail( "mode UNKNOWN not allowed" );
 		}
 
-		private void endExpression()
-		{
-			Assert.isTrue( this.mode == Mode.EXPRESSION );
-			this.buffer.append( ");" );
-			this.mode = Mode.SCRIPT;
-		}
-
-//		private void endExpression2()
-//		{
-//			Assert.isTrue( this.mode == Mode.EXPRESSION2 );
-//			this.buffer.append( ");" );
-//			this.mode = Mode.UNKNOWN;
-//		}
-
-		private void endScript()
-		{
-			Assert.isTrue( this.mode == Mode.SCRIPT );
-			// FIXME Groovy BUG:
-			// Groovy does not understand: builder.append("""    """); } builder.append("""
-			// We need extra ;
-//			this.buffer.append( ';' );
-		}
-
-		private void endString()
-		{
-			Assert.isTrue( this.mode == Mode.TEXT );
-			this.buffer.append( "\"\"\");" );
-			this.mode = Mode.SCRIPT;
-		}
-
-		private void endAllExcept( Mode mode )
+		private void switchMode( Mode mode )
 		{
 			if( this.mode == mode )
 				return;
 
 			if( this.mode == Mode.TEXT )
-				endString();
+				this.buffer.append( "\"\"\");" );
 			else if( this.mode == Mode.EXPRESSION )
-				endExpression();
-//			else if( this.mode == Mode.EXPRESSION2 )
-//				endExpression2();
+				this.buffer.append( ");" );
 			else if( this.mode == Mode.SCRIPT )
-				endScript();
+			{
+				// FIXME Groovy BUG:
+				// Groovy does not understand: builder.append("""    """); } builder.append("""
+				// We need extra ;
+				// this.buffer.append( ';' );
+			}
 			else
 				Assert.fail( "Unknown mode " + this.mode );
-		}
 
-		protected void endAll()
-		{
-			endAllExcept( null );
+			if( mode == Mode.TEXT )
+				this.buffer.append( "builder.append(\"\"\"" );
+			else if( mode == Mode.EXPRESSION )
+				this.buffer.append( "builder.append(" );
+			else if( mode != Mode.SCRIPT )
+				Assert.fail( "Unknown mode " + mode );
+
+			this.mode = mode;
 		}
 
 		protected StringBuilder getBuffer()
