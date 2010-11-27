@@ -179,7 +179,7 @@ public class Basic
 		translateTest( "X\\<%X", "builder.append(\"\"\"X<%X\"\"\");", "X<%X" );
 		translateTest( "X\\${X", "builder.append(\"\"\"X\\${X\"\"\");", "X${X" );
 
-		// Expressions
+		// Expressions with "
 
 		translateTest( "X<%=\"X\"%>X", "builder.append(\"\"\"X\"\"\");builder.append(\"X\");builder.append(\"\"\"X\"\"\");", "XXX" );
 		translateTest( "X<%=\"%>\"%>X", "builder.append(\"\"\"X\"\"\");builder.append(\"%>\");builder.append(\"\"\"X\"\"\");", "X%>X" );
@@ -190,7 +190,14 @@ public class Basic
 		translateTest( "X<%=\"${\"te\\\"xt\"}\"%>X", "builder.append(\"\"\"X\"\"\");builder.append(\"${\"te\\\"xt\"}\");builder.append(\"\"\"X\"\"\");", "Xte\"xtX" );
 		translateTest( "X<%=\"Y${\"Z${\"text\"}Z\"}Y\"%>X", "builder.append(\"\"\"X\"\"\");builder.append(\"Y${\"Z${\"text\"}Z\"}Y\");builder.append(\"\"\"X\"\"\");", "XYZtextZYX" );
 
-		// GString expressions
+		// Expressions with '
+
+		translateTest( "X<%='X'%>X", "builder.append(\"\"\"X\"\"\");builder.append('X');builder.append(\"\"\"X\"\"\");", "XXX" );
+		translateTest( "X<%='%>'%>X", "builder.append(\"\"\"X\"\"\");builder.append('%>');builder.append(\"\"\"X\"\"\");", "X%>X" );
+		translateTest( "X<%='${var}'%>X", "builder.append(\"\"\"X\"\"\");builder.append('${var}');builder.append(\"\"\"X\"\"\");", "X${var}X" );
+		translateTest( "X<%=\"${'te${x}t'}\"%>X", "builder.append(\"\"\"X\"\"\");builder.append(\"${'te${x}t'}\");builder.append(\"\"\"X\"\"\");", "Xte${x}tX" );
+
+		// GString expressions with "
 
 		translateTest( "X${var}X", "builder.append(\"\"\"X${var}X\"\"\");", "XvalueX" );
 		translateTest( "X${\"text\"}X", "builder.append(\"\"\"X${\"text\"}X\"\"\");", "XtextX" );
@@ -199,5 +206,14 @@ public class Basic
 		translateTest( "X${\"te\\\"xt\"}X", "builder.append(\"\"\"X${\"te\\\"xt\"}X\"\"\");", "Xte\"xtX" );
 		translateError( "X${\"text\ntext\"}X" );
 		translateTest( "X${\"\"\"te\"xt\ntext\\\"\"\"\"}X", "builder.append(\"\"\"X${\"\"\"te\"xt\ntext\\\"\"\"\"}X\"\"\");", "Xte\"xt\ntext\"X" );
+
+		// GString expressions with '
+
+		translateTest( "X${'text'}X", "builder.append(\"\"\"X${'text'}X\"\"\");", "XtextX" );
+		translateTest( "X${'Y${Y'}X", "builder.append(\"\"\"X${'Y${Y'}X\"\"\");", "XY${YX" );
+		translateError( "X${'te'xt'}X" );
+		translateTest( "X${'te\"xt'}X", "builder.append(\"\"\"X${'te\"xt'}X\"\"\");", "Xte\"xtX" );
+		translateError( "X${'text\ntext'}X" );
+		translateTest( "X${'''te\"xt\ntext\\''''}X", "builder.append(\"\"\"X${'''te\"xt\ntext\\''''}X\"\"\");", "Xte\"xt\ntext'X" );
 	}
 }
