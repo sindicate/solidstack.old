@@ -27,6 +27,8 @@ import java.util.Map;
 
 import org.testng.annotations.Test;
 
+import solidstack.template.ParseException;
+
 
 public class Basic
 {
@@ -159,7 +161,7 @@ public class Basic
 			QueryTransformer.translate( "X${\"te\"xt\"}X" );
 			assert false;
 		}
-		catch( TransformerException e )
+		catch( ParseException e )
 		{
 			assert e.getMessage().contains( "Unexpected end of line" );
 		}

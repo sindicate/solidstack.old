@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import solidstack.Assert;
 import solidstack.io.PushbackReader;
 import solidstack.template.JSPLikeTemplateParser;
 
@@ -109,7 +110,6 @@ public class QueryTransformer
 			closure.setDelegate( parameters );
 		return closure.call().toString();
 	}
-
 
 	static class Writer extends solidstack.template.JSPLikeTemplateParser.Writer
 	{
