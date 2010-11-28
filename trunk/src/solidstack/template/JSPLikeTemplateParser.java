@@ -18,7 +18,7 @@ public class JSPLikeTemplateParser
 		StringBuilder leading = readWhitespace( reader );
 		while( true )
 		{
-			writer.setMode( Mode.TEXT );
+			writer.nextMode( Mode.TEXT );
 
 			// We are in TEXT mode here.
 			// Expecting <%, <%=, <%--, ${
@@ -63,14 +63,14 @@ public class JSPLikeTemplateParser
 				if( c == '=' )
 				{
 					writer.write( leading ); leading = null;
-					writer.setMode( Mode.EXPRESSION );
+					writer.nextMode( Mode.EXPRESSION );
 					readScript( reader, writer );
 					continue;
 				}
 
 				if( c == '-' && reader.read() == '-' )
 				{
-					writer.setMode( Mode.SCRIPT );
+					writer.nextMode( Mode.SCRIPT );
 					if( leading == null )
 						readComment( reader, writer );
 					else
@@ -87,7 +87,7 @@ public class JSPLikeTemplateParser
 						else
 						{
 							reader.push( c );
-							writer.setMode( Mode.TEXT );
+							writer.nextMode( Mode.TEXT );
 							writer.write( leading ); leading = null;
 							writer.write( trailing );
 						}
@@ -99,20 +99,23 @@ public class JSPLikeTemplateParser
 
 				if( leading == null )
 				{
-					writer.setMode( Mode.SCRIPT );
+					writer.nextMode( Mode.SCRIPT );
 					readScript( reader, writer );
 				}
 				else
 				{
+					// ASSUMPTION: SCRIPT has no adornments
+
 					// Script started with leading whitespace only, transform the script into a new buffer
-					Writer buffer = writer.scriptWriter();
+					Writer buffer = writer.newWriter( Mode.SCRIPT );
 					readScript( reader, buffer );
 					StringBuilder trailing = readWhitespace( reader );
+
 					c = reader.read();
 					if( (char)c == '\n' )
 					{
 						// Script on its own lines, leading and trailing whitespace are added to the script instead of the text
-						writer.setMode( Mode.SCRIPT );
+						writer.nextMode( Mode.SCRIPT );
 						writer.write( leading ); leading = null;
 						writer.write( buffer.getBuffer() );
 						writer.write( trailing );
@@ -122,10 +125,11 @@ public class JSPLikeTemplateParser
 					else
 					{
 						reader.push( c );
+						writer.nextMode( Mode.TEXT );
 						writer.write( leading ); leading = null;
-						writer.setMode( Mode.SCRIPT );
+						writer.nextMode( Mode.SCRIPT );
 						writer.write( buffer.getBuffer() );
-						writer.setMode( Mode.TEXT );
+						writer.nextMode( Mode.TEXT );
 						writer.write( trailing );
 					}
 				}
@@ -168,9 +172,9 @@ public class JSPLikeTemplateParser
 			writer.write( (char)c );
 		}
 
-		writer.setMode( Mode.TEXT );
+		writer.nextMode( Mode.TEXT );
 		writer.write( leading );
-		writer.setMode( Mode.SCRIPT );
+		writer.nextMode( Mode.SCRIPT );
 		writer.write( "return builder.toGString()}}}" );
 
 		return writer.getString();
@@ -191,7 +195,7 @@ public class JSPLikeTemplateParser
 
 	protected void readScript( PushbackReader reader, Writer writer )
 	{
-		Assert.isTrue( writer.pendingMode == Mode.SCRIPT || writer.pendingMode == Mode.EXPRESSION );
+		Assert.isTrue( writer.nextMode == Mode.SCRIPT || writer.nextMode == Mode.EXPRESSION );
 
 		// We are in SCRIPT/EXPRESSION mode here.
 		// Expecting ", %>
@@ -219,7 +223,7 @@ public class JSPLikeTemplateParser
 
 	protected void readString( PushbackReader reader, Writer writer, char quote )
 	{
-		Assert.isTrue( writer.pendingMode == Mode.EXPRESSION || writer.pendingMode == Mode.SCRIPT || writer.pendingMode == Mode.TEXT, "Unexpected mode " + writer.pendingMode );
+		Assert.isTrue( writer.nextMode == Mode.EXPRESSION || writer.nextMode == Mode.SCRIPT || writer.nextMode == Mode.TEXT, "Unexpected mode " + writer.nextMode );
 
 		// String can be read in any mode
 		// Expecting $, " and \
@@ -362,16 +366,26 @@ public class JSPLikeTemplateParser
 
 		protected StringBuilder buffer = new StringBuilder();
 		protected Mode mode = Mode.INITIAL;
-		protected Mode pendingMode = Mode.INITIAL;
+		protected Mode nextMode = Mode.INITIAL;
 
-		protected void setMode( Mode mode )
+		protected Writer()
 		{
-			this.pendingMode = mode;
+			// Nothing
+		}
+
+		protected Writer( Mode mode )
+		{
+			this.mode = this.nextMode = mode;
+		}
+
+		protected void nextMode( Mode mode )
+		{
+			this.nextMode = mode;
 		}
 
 		protected void write( char c )
 		{
-			switchMode( this.pendingMode );
+			switchMode( this.nextMode );
 			this.buffer.append( c );
 		}
 
@@ -379,7 +393,7 @@ public class JSPLikeTemplateParser
 		{
 			if( string == null || string.length() == 0 )
 				return;
-			switchMode( this.pendingMode );
+			switchMode( this.nextMode );
 			this.buffer.append( string );
 		}
 
@@ -395,13 +409,13 @@ public class JSPLikeTemplateParser
 			return this.buffer.toString();
 		}
 
-		protected StringBuilder switchBuffer( StringBuilder buffer )
-		{
-			StringBuilder result = this.buffer;
-			this.buffer = buffer;
-			return result;
-		}
+//		protected StringBuilder switchBuffer( StringBuilder buffer )
+//		{
+//			StringBuilder result = this.buffer;
+//			this.buffer = buffer;
+//			return result;
+//		}
 
-		abstract protected Writer scriptWriter();
+		abstract protected Writer newWriter( Mode mode );
 	}
 }
