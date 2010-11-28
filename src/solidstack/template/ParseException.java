@@ -1,4 +1,4 @@
-package solidstack.query;
+package solidstack.template;
 
 
 /**
@@ -7,7 +7,7 @@ package solidstack.query;
  * @author René M. de Bloois
  */
 // TODO Rename to ParseException?
-public class TransformerException extends RuntimeException
+public class ParseException extends RuntimeException
 {
 	private int lineNumber;
 
@@ -17,7 +17,7 @@ public class TransformerException extends RuntimeException
 	 * @param message The message.
 	 * @param lineNumber The line number where the problem occurred.
 	 */
-	public TransformerException( String message, int lineNumber )
+	public ParseException( String message, int lineNumber )
 	{
 		super( message );
 		this.lineNumber = lineNumber;

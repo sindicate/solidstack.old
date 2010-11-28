@@ -1,8 +1,7 @@
 package solidstack.template;
 
+import solidstack.Assert;
 import solidstack.io.PushbackReader;
-import solidstack.query.Assert;
-import solidstack.query.TransformerException;
 import solidstack.template.JSPLikeTemplateParser.Writer.Mode;
 
 
@@ -42,7 +41,7 @@ public class JSPLikeTemplateParser
 				else if( cc == '<' )
 					writer.write( (char)cc );
 				else
-					throw new TransformerException( "Only <, $ or \\ can be escaped", reader.getLineNumber() );
+					throw new ParseException( "Only <, $ or \\ can be escaped", reader.getLineNumber() );
 				continue;
 			}
 
@@ -205,7 +204,7 @@ public class JSPLikeTemplateParser
 		{
 			int c = reader.read();
 			if( c < 0 )
-				throw new TransformerException( "Unexpected end of file", reader.getLineNumber() );
+				throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
 			if( c == '"' || c == '\'' )
 				readString( reader, writer, (char)c );
 			else if( c == '%' )
@@ -249,11 +248,11 @@ public class JSPLikeTemplateParser
 			if( multiline )
 			{
 				if( c < 0 )
-					throw new TransformerException( "Unexpected end of file", reader.getLineNumber() );
+					throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
 			}
 			else
 				if( c < 0 || c == '\n' )
-					throw new TransformerException( "Unexpected end of line", reader.getLineNumber() );
+					throw new ParseException( "Unexpected end of line", reader.getLineNumber() );
 
 			if( c == '\\' )
 			{
@@ -262,7 +261,7 @@ public class JSPLikeTemplateParser
 				if( c == '$' && quote == '"' || c == '\\' || c == quote  )
 					writer.write( (char)c );
 				else
-					throw new TransformerException( "Only " + ( quote == '"' ? "\", $" : "'" ) + " or \\ can be escaped", reader.getLineNumber() );
+					throw new ParseException( "Only " + ( quote == '"' ? "\", $" : "'" ) + " or \\ can be escaped", reader.getLineNumber() );
 				continue;
 			}
 
@@ -315,7 +314,7 @@ public class JSPLikeTemplateParser
 		{
 			int c = reader.read();
 			if( c < 0 || c == '\n' )
-				throw new TransformerException( "Unexpected end of line", reader.getLineNumber() );
+				throw new ParseException( "Unexpected end of line", reader.getLineNumber() );
 			if( c == '}' )
 				break;
 			if( c == '"' || c == '\'' )
@@ -337,7 +336,7 @@ public class JSPLikeTemplateParser
 		{
 			int c = reader.read();
 			if( c < 0 )
-				throw new TransformerException( "Unexpected end of file", reader.getLineNumber() );
+				throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
 			if( c == '-' )
 			{
 				reader.mark( 10 );

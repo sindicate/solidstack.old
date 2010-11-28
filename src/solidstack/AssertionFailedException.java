@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack.query;
+package solidstack;
 
 /**
  * Thrown when an assertion failed.

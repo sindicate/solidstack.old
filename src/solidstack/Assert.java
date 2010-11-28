@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package solidstack.query;
+package solidstack;
 
 import java.util.Collection;
+
 
 /**
  * Assert methods.
