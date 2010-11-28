@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import solidstack.Assert;
 import solidstack.io.PushbackReader;
+import solidstack.template.Directive;
 import solidstack.template.JSPLikeTemplateParser;
 
 /**
@@ -125,6 +126,12 @@ public class QueryTransformer
 		public Writer( Mode mode )
 		{
 			super( mode );
+		}
+
+		@Override
+		protected void directive( String text, int lineNumber )
+		{
+			Directive directive = solidstack.template.Util.parseDirective( text, lineNumber );
 		}
 
 		@Override

@@ -1,3 +1,4 @@
+<%@ query import = "package.Util" %>
 SELECT *
 FROM SYS.SYSTABLES
 	<%--

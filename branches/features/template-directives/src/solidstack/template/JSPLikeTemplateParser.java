@@ -67,6 +67,37 @@ public class JSPLikeTemplateParser
 					continue;
 				}
 
+				if( c == '@' )
+				{
+					if( leading == null )
+					{
+						readDirective( reader, writer );
+					}
+					else
+					{
+						// Directive started with leading whitespace only
+						readDirective( reader, writer );
+						StringBuilder trailing = readWhitespace( reader );
+
+						c = reader.read();
+						if( (char)c == '\n' )
+						{
+							// Directive on its own lines, leading and trailing whitespace are ignored
+							writer.nextMode( Mode.SCRIPT );
+							writer.write( '\n' ); // Must not lose newlines
+							leading = readWhitespace( reader );
+						}
+						else
+						{
+							reader.push( c );
+							writer.nextMode( Mode.TEXT );
+							writer.write( leading ); leading = null;
+							writer.write( trailing );
+						}
+					}
+					continue;
+				}
+
 				if( c == '-' && reader.read() == '-' )
 				{
 					writer.nextMode( Mode.SCRIPT );
@@ -177,6 +208,31 @@ public class JSPLikeTemplateParser
 		writer.write( "return builder.toGString()}}}" );
 
 		return writer.getString();
+	}
+
+	private void readDirective( PushbackReader reader, Writer writer )
+	{
+		// We are in DIRECTIVE mode here.
+		// Expecting only %>
+
+		int lineNumber = reader.getLineNumber();
+		StringBuilder directive = new StringBuilder();
+		while( true )
+		{
+			int c = reader.read();
+			if( c < 0 )
+				throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
+			if( c == '%' )
+			{
+				int cc = reader.read();
+				if( cc == '>' )
+					break;
+				reader.push( cc );
+			}
+			directive.append( (char)c );
+		}
+
+		writer.directive( directive.toString(), lineNumber );
 	}
 
 	protected StringBuilder readWhitespace( PushbackReader reader )
@@ -368,6 +424,11 @@ public class JSPLikeTemplateParser
 		protected Mode nextMode = Mode.INITIAL;
 
 		protected Writer()
+		{
+			// Nothing
+		}
+
+		protected void directive( String directive, int lineNumber )
 		{
 			// Nothing
 		}
