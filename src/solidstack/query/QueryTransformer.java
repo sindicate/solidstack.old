@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import solidstack.io.PushbackReader;
+import solidstack.template.JSPLikeTemplateParser;
 
 /**
  * Translates a query template into a Groovy {@link Closure}.
@@ -63,9 +64,10 @@ public class QueryTransformer
 		if( path != null )
 			pkg += "." + path.replaceAll( "/", "." );
 
-		String script = new Parser().parse( new PushbackReader( reader, 1 ), pkg, name );
+		String script = new JSPLikeTemplateParser().parse( new PushbackReader( reader, 1 ), new Writer( pkg, name ) );
 		if( LOGGER.isTraceEnabled() )
 			LOGGER.trace( "Generated groovy:\n" + script );
+		System.out.println( script );
 
 		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script, name, "x" ) );
 		GroovyObject object = Util.newInstance( groovyClass );
@@ -88,13 +90,13 @@ public class QueryTransformer
 
 	static String translate( Reader reader )
 	{
-		return new Parser().parse( new PushbackReader( reader, 1 ), "p", "c" );
+		return new JSPLikeTemplateParser().parse( new PushbackReader( reader, 1 ), new Writer( "p", "c" ) );
 	}
 
 
 	static String translate( String text )
 	{
-		return new Parser().parse( new PushbackReader( new StringReader( text ), 1 ), "p", "c" );
+		return new JSPLikeTemplateParser().parse( new PushbackReader( new StringReader( text ), 1 ), new Writer( "p", "c" ) );
 	}
 
 
@@ -109,388 +111,31 @@ public class QueryTransformer
 	}
 
 
-	static class Parser
+	static class Writer extends solidstack.template.JSPLikeTemplateParser.Writer
 	{
-		protected String parse( PushbackReader reader, String pkg, String cls )
+		private String pckg;
+		private String cls;
+
+		public Writer( Mode mode )
 		{
-			Writer writer = new Writer();
-			writer.write( "package " + pkg + ";class " + cls + "{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();" );
-
-			StringBuilder leading = readWhitespace( reader );
-			while( true )
-			{
-				writer.setMode( Mode.TEXT );
-
-				// We are in TEXT mode here.
-				// Expecting <%, <%=, <%--, ${
-				// " must be escaped because text is appended with a append("""...""")
-				// \n must be detected because we want to read leading whitespace in a special way
-				// Only <, $ and \ may be escaped
-
-				int c = reader.read();
-				if( c == -1 )
-					break;
-
-				if( c == '\\' )
-				{
-					writer.write( leading ); leading = null;
-					int cc = reader.read();
-					if( cc == '$' || cc == '\\' )
-					{
-						writer.write( (char)c );
-						writer.write( (char)cc );
-					}
-					else if( cc == '<' )
-						writer.write( (char)cc );
-					else
-						throw new TransformerException( "Only <, $ or \\ can be escaped", reader.getLineNumber() );
-					continue;
-				}
-
-				if( c == '<' )
-				{
-					int cc = reader.read();
-					if( cc != '%' )
-					{
-						writer.write( leading ); leading = null;
-						writer.write( (char)c );
-						reader.push( cc );
-						continue;
-					}
-
-					reader.mark( 2 );
-					c = reader.read();
-
-					if( c == '=' )
-					{
-						writer.write( leading ); leading = null;
-						writer.setMode( Mode.EXPRESSION );
-						readScript( reader, writer );
-						continue;
-					}
-
-					if( c == '-' && reader.read() == '-' )
-					{
-						writer.setMode( Mode.SCRIPT );
-						if( leading == null )
-							readComment( reader, writer );
-						else
-						{
-							// Comment started with leading whitespace only
-							readComment( reader, writer );
-							StringBuilder trailing = readWhitespace( reader );
-							c = reader.read();
-							if( (char)c == '\n' )
-							{
-								writer.write( '\n' ); // Must not lose newlines
-								leading = readWhitespace( reader ); // Comment on its own lines, ignore the lines totally
-							}
-							else
-							{
-								reader.push( c );
-								writer.setMode( Mode.TEXT );
-								writer.write( leading ); leading = null;
-								writer.write( trailing );
-							}
-						}
-						continue;
-					}
-
-					reader.reset();
-
-					if( leading == null )
-					{
-						writer.setMode( Mode.SCRIPT );
-						readScript( reader, writer );
-					}
-					else
-					{
-						// Script started with leading whitespace only, transform the script into a buffer
-						Writer buffer = new Writer();
-						readScript( reader, buffer );
-						StringBuilder trailing = readWhitespace( reader );
-						c = reader.read();
-						if( (char)c == '\n' )
-						{
-							// Script on its own lines, leading and trailing whitespace are added to the script instead of the text
-							writer.setMode( Mode.SCRIPT );
-							writer.write( leading ); leading = null;
-							writer.write( buffer.getBuffer() );
-							writer.write( trailing );
-							writer.write( '\n' ); // Must not lose newlines
-							leading = readWhitespace( reader );
-						}
-						else
-						{
-							reader.push( c );
-							writer.write( leading ); leading = null;
-							writer.setMode( Mode.SCRIPT );
-							writer.write( buffer.getBuffer() );
-							writer.setMode( Mode.TEXT );
-							writer.write( trailing );
-						}
-					}
-
-					continue;
-				}
-
-				writer.write( leading ); leading = null;
-
-				if( c == '$' )
-				{
-					// TODO And without {}?
-					int cc = reader.read();
-					if( cc == '{' )
-						readGStringExpression( reader, writer );
-					else
-					{
-						writer.write( (char)c );
-						reader.push( cc );
-					}
-					continue;
-				}
-
-				if( c == '"' )
-				{
-					// Because we are in a """ string, we need to add escaping to a "
-					writer.write( '\\' );
-					writer.write( (char)c );
-					continue;
-				}
-
-				if( c == '\n' )
-				{
-					// Newline, we need to read leading whitespace
-					writer.write( (char)c );
-					leading = readWhitespace( reader );
-					continue;
-				}
-
-				writer.write( (char)c );
-			}
-
-			writer.setMode( Mode.TEXT );
-			writer.write( leading );
-			writer.setMode( Mode.SCRIPT );
-			writer.write( "return builder.toGString()}}}" );
-
-			return writer.getString();
+			this.mode = this.pendingMode = mode;
 		}
 
-		protected StringBuilder readWhitespace( PushbackReader reader )
+		public Writer( String pckg, String cls )
 		{
-			StringBuilder builder = new StringBuilder();
-			int c = reader.read();
-			while( Character.isWhitespace( (char)c ) && c != '\n' )
-			{
-				builder.append( (char)c );
-				c = reader.read();
-			}
-			reader.push( c );
-			return builder;
+			this.pckg = pckg;
+			this.cls = cls;
 		}
 
-		protected void readScript( PushbackReader reader, Writer writer )
-		{
-			Assert.isTrue( writer.pendingMode == Mode.SCRIPT || writer.pendingMode == Mode.EXPRESSION );
-
-			// We are in SCRIPT/EXPRESSION mode here.
-			// Expecting ", %>
-			// %> within strings should not end the script
-
-			while( true )
-			{
-				int c = reader.read();
-				if( c < 0 )
-					throw new TransformerException( "Unexpected end of file", reader.getLineNumber() );
-				if( c == '"' || c == '\'' )
-					readString( reader, writer, (char)c );
-				else if( c == '%' )
-				{
-					c = reader.read();
-					if( c == '>' )
-						break;
-					reader.push( c );
-					writer.write( '%' );
-				}
-				else
-					writer.write( (char)c );
-			}
-		}
-
-		protected void readString( PushbackReader reader, Writer writer, char quote )
-		{
-			Assert.isTrue( writer.pendingMode == Mode.EXPRESSION || writer.pendingMode == Mode.SCRIPT || writer.pendingMode == Mode.TEXT, "Unexpected mode " + writer.pendingMode );
-
-			// String can be read in any mode
-			// Expecting $, " and \
-			// " within ${} should not end this string
-			// \ is used to escape $, " and itself
-
-			writer.write( quote );
-			boolean multiline = false;
-			reader.mark( 2 );
-			if( reader.read() == quote && reader.read() == quote )
-			{
-				multiline = true;
-				writer.write( quote );
-				writer.write( quote );
-			}
-			else
-				reader.reset();
-
-			while( true )
-			{
-				int c = reader.read();
-
-				if( multiline )
-				{
-					if( c < 0 )
-						throw new TransformerException( "Unexpected end of file", reader.getLineNumber() );
-				}
-				else
-					if( c < 0 || c == '\n' )
-						throw new TransformerException( "Unexpected end of line", reader.getLineNumber() );
-
-				if( c == '\\' )
-				{
-					writer.write( (char)c );
-					c = reader.read();
-					if( c == '$' && quote == '"' || c == '\\' || c == quote  )
-						writer.write( (char)c );
-					else
-						throw new TransformerException( "Only " + ( quote == '"' ? "\", $" : "'" ) + " or \\ can be escaped", reader.getLineNumber() );
-					continue;
-				}
-
-				if( quote == '"' && c == '$' )
-				{
-					// TODO And without {}?
-					c = reader.read();
-					if( c == '{' )
-						readGStringExpression( reader, writer );
-					else
-					{
-						writer.write( '$' );
-						reader.push( c );
-					}
-					continue;
-				}
-
-				if( c == quote )
-				{
-					writer.write( quote );
-					if( !multiline )
-						return;
-
-					reader.mark( 2 );
-					if( reader.read() == quote && reader.read() == quote )
-					{
-						writer.write( quote );
-						writer.write( quote );
-						break;
-					}
-
-					reader.reset();
-					continue;
-				}
-
-				writer.write( (char)c );
-			}
-		}
-
-		// TODO Should we allow { } blocks within GString expressions?
-		protected void readGStringExpression( PushbackReader reader, Writer writer )
-		{
-			// GStringExpressions can be read in any mode
-			// Expecting }, "
-			// } within a string should not end this expression
-
-			writer.write( '$' );
-			writer.write( '{' );
-			while( true )
-			{
-				int c = reader.read();
-				if( c < 0 || c == '\n' )
-					throw new TransformerException( "Unexpected end of line", reader.getLineNumber() );
-				if( c == '}' )
-					break;
-				if( c == '"' || c == '\'' )
-					readString( reader, writer, (char)c );
-				else
-					writer.write( (char)c );
-			}
-			writer.write( '}' );
-		}
-
-		protected void readComment( PushbackReader reader, Writer writer )
-		{
-			// We are in SCRIPT mode (needed to transfer newlines from the comment to the script)
-			// Expecting --%>, <%--, \n
-			// Comments can be nested
-			// Newlines are transferred to the script
-
-			while( true )
-			{
-				int c = reader.read();
-				if( c < 0 )
-					throw new TransformerException( "Unexpected end of file", reader.getLineNumber() );
-				if( c == '-' )
-				{
-					reader.mark( 10 );
-					if( reader.read() == '-' && reader.read() == '%' && reader.read() == '>' )
-						break;
-					reader.reset();
-				}
-				else if( c == '<' )
-				{
-					reader.mark( 10 );
-					if( reader.read() == '%' && reader.read() == '-' && reader.read() == '-' )
-						readComment( reader, writer );
-					else
-						reader.reset();
-				}
-				else if( c == '\n' )
-				{
-					writer.write( '\n' );
-				}
-			}
-		}
-	}
-
-	static private enum Mode { SCRIPT, TEXT, EXPRESSION }
-
-	static class Writer
-	{
-		protected StringBuilder buffer = new StringBuilder();
-		protected Mode mode = Mode.SCRIPT;
-		protected Mode pendingMode = Mode.SCRIPT;
-
-		protected void setMode( Mode mode )
-		{
-			this.pendingMode = mode;
-		}
-
-		protected void write( char c )
-		{
-			switchMode( this.pendingMode );
-			this.buffer.append( c );
-		}
-
-		protected void write( CharSequence string )
-		{
-			if( string == null || string.length() == 0 )
-				return;
-			switchMode( this.pendingMode );
-			this.buffer.append( string );
-		}
-
-		private void switchMode( Mode mode )
+		@Override
+		protected void switchMode( Mode mode )
 		{
 			if( this.mode == mode )
 				return;
 
-			if( this.mode == Mode.TEXT )
+			if( this.mode == Mode.INITIAL )
+				this.buffer.append( "package " + this.pckg + ";class " + this.cls + "{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();" );
+			else if( this.mode == Mode.TEXT )
 				this.buffer.append( "\"\"\");" );
 			else if( this.mode == Mode.EXPRESSION )
 				this.buffer.append( ");" );
@@ -514,14 +159,10 @@ public class QueryTransformer
 			this.mode = mode;
 		}
 
-		protected StringBuilder getBuffer()
+		@Override
+		protected solidstack.template.JSPLikeTemplateParser.Writer scriptWriter()
 		{
-			return this.buffer;
-		}
-
-		protected String getString()
-		{
-			return this.buffer.toString();
+			return new Writer( Mode.SCRIPT );
 		}
 	}
 }
