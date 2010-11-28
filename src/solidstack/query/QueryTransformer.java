@@ -116,15 +116,15 @@ public class QueryTransformer
 		private String pckg;
 		private String cls;
 
-		public Writer( Mode mode )
-		{
-			this.mode = this.pendingMode = mode;
-		}
-
 		public Writer( String pckg, String cls )
 		{
 			this.pckg = pckg;
 			this.cls = cls;
+		}
+
+		public Writer( Mode mode )
+		{
+			super( mode );
 		}
 
 		@Override
@@ -156,13 +156,13 @@ public class QueryTransformer
 			else if( mode != Mode.SCRIPT )
 				Assert.fail( "Unknown mode " + mode );
 
-			this.mode = mode;
+			this.nextMode = this.mode = mode;
 		}
 
 		@Override
-		protected solidstack.template.JSPLikeTemplateParser.Writer scriptWriter()
+		protected solidstack.template.JSPLikeTemplateParser.Writer newWriter( Mode mode )
 		{
-			return new Writer( Mode.SCRIPT );
+			return new Writer( mode );
 		}
 	}
 }
