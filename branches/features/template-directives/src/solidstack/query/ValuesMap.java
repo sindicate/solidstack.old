@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import solidstack.util.ObjectArrayList;
+
 /**
  * Decorates an {@link Object} array to let it look like a {@link Map}.
  * 
@@ -78,7 +80,7 @@ public class ValuesMap implements Map< String, Object >
 
 	public Collection< Object > values()
 	{
-		return new ValuesList( this.values );
+		return new ObjectArrayList( this.values );
 	}
 
 	public boolean containsValue( Object value )
