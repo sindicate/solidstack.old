@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
 
 import solidstack.Assert;
 import solidstack.SystemException;
+import solidstack.util.ArrayListIterator;
 
 
 /**

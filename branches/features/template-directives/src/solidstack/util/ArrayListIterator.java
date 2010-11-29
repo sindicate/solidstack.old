@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack.query;
+package solidstack.util;
 
 import java.lang.reflect.Array;
 import java.util.ListIterator;

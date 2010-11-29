@@ -21,6 +21,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
+import solidstack.util.ArrayListIterator;
+
 /**
  * Decorates an {@link Object} array to make it look like a {@link List}.
  * 
