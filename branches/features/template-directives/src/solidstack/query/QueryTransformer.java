@@ -23,6 +23,8 @@ import groovy.lang.GroovyObject;
 
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,8 +34,8 @@ import org.slf4j.LoggerFactory;
 
 import solidstack.Assert;
 import solidstack.io.PushbackReader;
-import solidstack.template.Directive;
 import solidstack.template.JSPLikeTemplateParser;
+import solidstack.template.ParseException;
 
 /**
  * Translates a query template into a Groovy {@link Closure}.
@@ -116,6 +118,7 @@ public class QueryTransformer
 	{
 		private String pckg;
 		private String cls;
+		private List< String > imports = new ArrayList< String >();
 
 		public Writer( String pckg, String cls )
 		{
@@ -129,9 +132,13 @@ public class QueryTransformer
 		}
 
 		@Override
-		protected void directive( String text, int lineNumber )
+		protected void directive( String name, String attribute, String value, int lineNumber )
 		{
-			Directive directive = solidstack.template.Util.parseDirective( text, lineNumber );
+			if( !name.equals( "query" ) )
+				throw new ParseException( "Only expecting query directives", lineNumber );
+			if( !attribute.equals( "import" ) )
+				throw new ParseException( "The query directive only allows import attributes", lineNumber );
+			this.imports.add( value );
 		}
 
 		@Override

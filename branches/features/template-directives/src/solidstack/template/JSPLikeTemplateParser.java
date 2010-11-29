@@ -210,29 +210,87 @@ public class JSPLikeTemplateParser
 		return writer.getString();
 	}
 
-	private void readDirective( PushbackReader reader, Writer writer )
+	static public String getToken( PushbackReader reader )
 	{
-		// We are in DIRECTIVE mode here.
-		// Expecting only %>
+		// Skip whitespace
+		int ch = reader.read();
+		while( ch != -1 && Character.isWhitespace( ch ) )
+			ch = reader.read();
 
-		int lineNumber = reader.getLineNumber();
-		StringBuilder directive = new StringBuilder();
-		while( true )
+		// Read a string enclosed by ' or "
+		if( ch == '\'' || ch == '"' )
 		{
-			int c = reader.read();
-			if( c < 0 )
-				throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
-			if( c == '%' )
+			StringBuilder result = new StringBuilder( 32 );
+			int quote = ch;
+			while( true )
 			{
-				int cc = reader.read();
-				if( cc == '>' )
+				result.append( (char)ch );
+
+				ch = reader.read();
+				if( ch == -1 )
+					throw new ParseException( "Unexpected end of input", reader.getLineNumber() );
+				if( ch == quote )
+				{
+					result.append( (char)ch );
 					break;
-				reader.push( cc );
+				}
 			}
-			directive.append( (char)c );
+			return result.toString();
 		}
 
-		writer.directive( directive.toString(), lineNumber );
+		if( ch == '%' )
+		{
+			ch = reader.read();
+			if( ch == -1 )
+				throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
+			if( ch == '>' )
+				return "%>";
+			reader.push( ch );
+			return "%";
+		}
+
+		if( ch == '=' )
+			return String.valueOf( (char)ch );
+
+		if( ch == -1 )
+			return null;
+
+		// Collect all characters until whitespace or special character
+		StringBuilder result = new StringBuilder( 16 );
+		do
+		{
+			result.append( (char)ch );
+			ch = reader.read();
+		}
+		while( ch != -1 && !Character.isWhitespace( ch ) && ch != '=' && ch != '%' );
+
+		// Push back the last character
+		reader.push( ch );
+
+		// Return the result
+		Assert.isFalse( result.length() == 0 );
+		return result.toString();
+	}
+
+	private void readDirective( PushbackReader reader, Writer writer )
+	{
+		String name = getToken( reader );
+		if( name == null )
+			throw new ParseException( "Expecting a name", reader.getLineNumber() );
+
+		String token = getToken( reader );
+		while( token != null )
+		{
+			if( token.equals( "%>" ) )
+				return;
+			if( !getToken( reader ).equals( "=" ) )
+				throw new ParseException( "Expecting '=' in directive", reader.getLineNumber() );
+			String value = getToken( reader );
+			if( value == null || !value.startsWith( "\"" ) || !value.endsWith( "\"" ) )
+				throw new ParseException( "Expecting a string value in directive", reader.getLineNumber() );
+			writer.directive( name, token, value.substring( 1, value.length() - 2 ), reader.getLineNumber() );
+			token = getToken( reader );
+		}
 	}
 
 	protected StringBuilder readWhitespace( PushbackReader reader )
@@ -428,7 +486,7 @@ public class JSPLikeTemplateParser
 			// Nothing
 		}
 
-		protected void directive( String directive, int lineNumber )
+		protected void directive( String name, String attribute, String value, int lineNumber )
 		{
 			// Nothing
 		}
