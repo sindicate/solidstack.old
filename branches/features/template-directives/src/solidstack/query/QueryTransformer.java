@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import solidstack.Assert;
 import solidstack.io.PushbackReader;
 import solidstack.template.JSPLikeTemplateParser;
+import solidstack.template.JSPLikeTemplateParser.ModalWriter;
 import solidstack.template.ParseException;
 
 /**
@@ -68,12 +69,11 @@ public class QueryTransformer
 		if( path != null )
 			pkg += "." + path.replaceAll( "/", "." );
 
-		StringBuilder script = new JSPLikeTemplateParser().parse( new PushbackReader( reader, 1 ), new Writer( pkg, name ) );
+		String script = new JSPLikeTemplateParser().parse( new PushbackReader( reader, 1 ), new Writer( pkg, name ) );
 		if( LOGGER.isTraceEnabled() )
 			LOGGER.trace( "Generated groovy:\n" + script );
-		System.out.println( script );
 
-		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script.toString(), name, "x" ) );
+		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script, name, "x" ) );
 		GroovyObject object = Util.newInstance( groovyClass );
 		return new QueryTemplate( (Closure)object.invokeMethod( "getClosure", null ), lastModified );
 	}
@@ -91,23 +91,22 @@ public class QueryTransformer
 		return compile( new StringReader( query ), path, lastModified );
 	}
 
-
-	static StringBuilder translate( Reader reader )
+	// For testing purposes
+	static String translate( Reader reader )
 	{
 		return new JSPLikeTemplateParser().parse( new PushbackReader( reader, 1 ), new Writer( "p", "c" ) );
 	}
 
-
-	static StringBuilder translate( String text )
+	// For testing purposes
+	static String translate( String text )
 	{
-		return new JSPLikeTemplateParser().parse( new PushbackReader( new StringReader( text ), 1 ), new Writer( "p", "c" ) );
+		return translate( new StringReader( text ) );
 	}
 
-
-	static String execute( StringBuilder script, Map< String, ? > parameters )
+	// For testing purposes
+	static String execute( String script, Map< String, ? > parameters )
 	{
-		// TODO Create a GroovyCodeSource for CharSequence
-		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script.toString(), "n", "x" ) );
+		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script, "n", "x" ) );
 		GroovyObject object = Util.newInstance( groovyClass );
 		Closure closure = (Closure)object.invokeMethod( "getClosure", null );
 		if( parameters != null )
@@ -115,7 +114,7 @@ public class QueryTransformer
 		return closure.call().toString();
 	}
 
-	static class Writer extends solidstack.template.JSPLikeTemplateParser.Writer
+	static class Writer extends ModalWriter
 	{
 		private String pckg;
 		private String cls;
@@ -125,11 +124,6 @@ public class QueryTransformer
 		{
 			this.pckg = pckg;
 			this.cls = cls;
-		}
-
-		public Writer( Mode mode )
-		{
-			super( mode );
 		}
 
 		@Override
@@ -143,15 +137,15 @@ public class QueryTransformer
 		}
 
 		@Override
-		protected void switchMode( Mode mode )
+		protected void activateMode( Mode mode )
 		{
 			if( this.mode == mode )
 				return;
 
 			if( this.mode == Mode.TEXT )
-				this.buffer.append( "\"\"\");" );
+				append( "\"\"\");" );
 			else if( this.mode == Mode.EXPRESSION )
-				this.buffer.append( ");" );
+				append( ");" );
 			else if( this.mode == Mode.SCRIPT )
 			{
 				// FIXME Groovy BUG:
@@ -163,9 +157,9 @@ public class QueryTransformer
 				Assert.fail( "Unknown mode " + this.mode );
 
 			if( mode == Mode.TEXT )
-				this.buffer.append( "builder.append(\"\"\"" );
+				append( "builder.append(\"\"\"" );
 			else if( mode == Mode.EXPRESSION )
-				this.buffer.append( "builder.append(" );
+				append( "builder.append(" );
 			else if( mode != Mode.SCRIPT )
 				Assert.fail( "Unknown mode " + mode );
 
@@ -173,7 +167,7 @@ public class QueryTransformer
 		}
 
 		@Override
-		protected StringBuilder getResult()
+		protected String getResult()
 		{
 			StringBuilder result = new StringBuilder();
 			result.append( "package " );
@@ -190,13 +184,7 @@ public class QueryTransformer
 			result.append( "{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();" );
 			result.append( super.getBuffer() );
 			result.append( "return builder.toGString()}}}" );
-			return result;
-		}
-
-		@Override
-		protected solidstack.template.JSPLikeTemplateParser.Writer newWriter( Mode mode )
-		{
-			return new Writer( mode );
+			return result.toString();
 		}
 	}
 }

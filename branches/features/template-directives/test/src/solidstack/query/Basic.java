@@ -149,9 +149,9 @@ public class Basic
 
 	private void translateTest( String input, String groovy, String output )
 	{
-		StringBuilder g = QueryTransformer.translate( input );
+		String g = QueryTransformer.translate( input ).toString();
 		System.out.println( g );
-		assert g.toString().equals( this.start + groovy + this.end );
+		assert g.equals( this.start + groovy + this.end );
 
 		String result = QueryTransformer.execute( g, this.parameters );
 		System.out.println( result );

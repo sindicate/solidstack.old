@@ -2,17 +2,24 @@ package solidstack.template;
 
 import solidstack.Assert;
 import solidstack.io.PushbackReader;
-import solidstack.template.JSPLikeTemplateParser.Writer.Mode;
+import solidstack.template.JSPLikeTemplateParser.ModalWriter.Mode;
 
 
+/**
+ * Parses a template using the old JSP syntax.
+ * 
+ * @author René M. de Bloois
+ */
 public class JSPLikeTemplateParser
 {
-//	public JSPLikeTemplateParser( PushbackReader reader, Writer writer, String pkg, String cls )
-//	{
-//
-//	}
-
-	public StringBuilder parse( PushbackReader reader, Writer writer )
+	/**
+	 * Parse the template.
+	 * 
+	 * @param reader The input reader.
+	 * @param writer This writer produces the right Groovy code.
+	 * @return The resulting Groovy code.
+	 */
+	public String parse( PushbackReader reader, ModalWriter writer )
 	{
 		StringBuilder leading = readWhitespace( reader );
 		while( true )
@@ -137,7 +144,7 @@ public class JSPLikeTemplateParser
 					// ASSUMPTION: SCRIPT has no adornments
 
 					// Script started with leading whitespace only, transform the script into a new buffer
-					Writer buffer = writer.newWriter( Mode.SCRIPT );
+					ModalWriter buffer = new ScriptWriter();
 					readScript( reader, buffer );
 					StringBuilder trailing = readWhitespace( reader );
 
@@ -204,12 +211,12 @@ public class JSPLikeTemplateParser
 
 		writer.nextMode( Mode.TEXT );
 		writer.write( leading );
-		writer.switchMode( Mode.SCRIPT ); // ASSUMPTION: Script is not decorated
+		writer.activateMode( Mode.SCRIPT ); // ASSUMPTION: Script is not decorated
 
 		return writer.getResult();
 	}
 
-	static public String getToken( PushbackReader reader )
+	static private String getToken( PushbackReader reader )
 	{
 		// Skip whitespace
 		int ch = reader.read();
@@ -271,7 +278,7 @@ public class JSPLikeTemplateParser
 		return result.toString();
 	}
 
-	private void readDirective( PushbackReader reader, Writer writer )
+	private void readDirective( PushbackReader reader, ModalWriter writer )
 	{
 		String name = getToken( reader );
 		if( name == null )
@@ -292,7 +299,7 @@ public class JSPLikeTemplateParser
 		}
 	}
 
-	protected StringBuilder readWhitespace( PushbackReader reader )
+	private StringBuilder readWhitespace( PushbackReader reader )
 	{
 		StringBuilder builder = new StringBuilder();
 		int c = reader.read();
@@ -305,7 +312,7 @@ public class JSPLikeTemplateParser
 		return builder;
 	}
 
-	protected void readScript( PushbackReader reader, Writer writer )
+	private void readScript( PushbackReader reader, ModalWriter writer )
 	{
 		Assert.isTrue( writer.nextMode == Mode.SCRIPT || writer.nextMode == Mode.EXPRESSION );
 
@@ -333,7 +340,7 @@ public class JSPLikeTemplateParser
 		}
 	}
 
-	protected void readString( PushbackReader reader, Writer writer, char quote )
+	private void readString( PushbackReader reader, ModalWriter writer, char quote )
 	{
 		Assert.isTrue( writer.nextMode == Mode.EXPRESSION || writer.nextMode == Mode.SCRIPT || writer.nextMode == Mode.TEXT, "Unexpected mode " + writer.nextMode );
 
@@ -415,7 +422,7 @@ public class JSPLikeTemplateParser
 	}
 
 	// TODO Should we allow { } blocks within GString expressions? This works in expressions: <%= { prefix }.call() %>
-	protected void readGStringExpression( PushbackReader reader, Writer writer )
+	private void readGStringExpression( PushbackReader reader, ModalWriter writer )
 	{
 		// GStringExpressions can be read in any mode
 		// Expecting }, "
@@ -438,7 +445,7 @@ public class JSPLikeTemplateParser
 		writer.write( '}' );
 	}
 
-	protected void readComment( PushbackReader reader, Writer writer )
+	private void readComment( PushbackReader reader, ModalWriter writer )
 	{
 		// We are in SCRIPT mode (needed to transfer newlines from the comment to the script)
 		// Expecting --%>, <%--, \n
@@ -472,64 +479,154 @@ public class JSPLikeTemplateParser
 		}
 	}
 
-	static abstract public class Writer
+	/**
+	 * A writer that writes in different modes. The implementation of this class need to react to mode changes.
+	 * 
+	 * @author René M. de Bloois
+	 */
+	static abstract public class ModalWriter
 	{
-		static public enum Mode { SCRIPT, TEXT, EXPRESSION }
-
-		protected StringBuilder buffer = new StringBuilder();
-		protected Mode mode = Mode.SCRIPT;
-		protected Mode nextMode = Mode.SCRIPT;
-
-		protected Writer()
+		/**
+		 * The different modes that the {@link ModalWriter} should be able to work in.
+		 * 
+		 * @author René M. de Bloois
+		 */
+		static public enum Mode
 		{
-			// Nothing
+			/**
+			 * Script mode: <% %>.
+			 */
+			SCRIPT,
+			/**
+			 * Text mode.
+			 */
+			TEXT,
+			/**
+			 * An <%= %> expression.
+			 */
+			EXPRESSION
 		}
 
+		/**
+		 * The current mode.
+		 */
+		protected Mode mode = Mode.SCRIPT;
+
+		/**
+		 * The next mode. Gets activated when something is writen.
+		 */
+		protected Mode nextMode = Mode.SCRIPT;
+
+		private StringBuilder buffer = new StringBuilder();
+
+		/**
+		 * A directive is encountered.
+		 * 
+		 * @param name The name of the directive.
+		 * @param attribute The attribute name.
+		 * @param value The value of the attribute.
+		 * @param lineNumber The line number where the directive is encountered.
+		 */
+		@SuppressWarnings( "unused" )
 		protected void directive( String name, String attribute, String value, int lineNumber )
 		{
 			// Nothing
 		}
 
-		protected Writer( Mode mode )
-		{
-			this.mode = this.nextMode = mode;
-		}
-
+		/**
+		 * Sets the next mode. This mode gets activated when something is written.
+		 * 
+		 * @param mode The next mode.
+		 */
 		protected void nextMode( Mode mode )
 		{
 			this.nextMode = mode;
 		}
 
+		/**
+		 * Activate the next mode and write the given character.
+		 * 
+		 * @param c The character to write.
+		 */
 		protected void write( char c )
 		{
-			switchMode( this.nextMode );
+			activateMode( this.nextMode );
 			this.buffer.append( c );
 		}
 
+		/**
+		 * Activate the next mode and write the given character sequence.
+		 * 
+		 * @param string The character sequence to write.
+		 */
 		protected void write( CharSequence string )
 		{
 			if( string == null || string.length() == 0 )
 				return;
-			switchMode( this.nextMode );
+			activateMode( this.nextMode );
 			this.buffer.append( string );
 		}
 
-		abstract protected void switchMode( Mode mode );
+		/**
+		 * Directly activate the given mode. Implementors should react to a mode change.
+		 * 
+		 * @param mode The mode to activate.
+		 */
+		abstract protected void activateMode( Mode mode );
 
+		/**
+		 * Returns the buffer.
+		 * 
+		 * @return The buffer.
+		 */
+		// TODO Do we want to return the buffer?
 		protected StringBuilder getBuffer()
 		{
 			return this.buffer;
 		}
 
-		abstract protected StringBuilder getResult();
+		/**
+		 * Returns the result.
+		 * 
+		 * @return The result.
+		 */
+		abstract protected String getResult();
 
-//		protected StringBuilder switchBuffer( StringBuilder buffer )
-//		{
-//			StringBuilder result = this.buffer;
-//			this.buffer = buffer;
-//			return result;
-//		}
+		/**
+		 * Directly append the given character to the buffer.
+		 * 
+		 * @param c The character to append.
+		 */
+		protected void append( char c )
+		{
+			this.buffer.append( c );
+		}
 
-		abstract protected Writer newWriter( Mode mode );
+		/**
+		 * Directly append the given character sequence to the buffer.
+		 * 
+		 * @param string The character sequence to append.
+		 */
+		protected void append( CharSequence string )
+		{
+			this.buffer.append( string );
+		}
+	}
+
+	static class ScriptWriter extends ModalWriter
+	{
+		@Override
+		protected void activateMode( Mode mode )
+		{
+			if( this.mode == mode )
+				return;
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		protected String getResult()
+		{
+			throw new UnsupportedOperationException();
+		}
 	}
 }
