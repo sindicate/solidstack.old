@@ -1,4 +1,5 @@
-<%@ query import = "package.Util" %>
+<% // Test if the import at the bottom works, and this comment too of course
+new Timestamp( new Date().time ) %>
 SELECT *
 FROM SYS.SYSTABLES
 	<%--
@@ -15,3 +16,4 @@ AND TABLENAME = ${name}
 		<% if( names ) { %>
 AND TABLENAME IN (${names})
 		<% } %>
+<%@ query import = "java.sql.Timestamp" %>

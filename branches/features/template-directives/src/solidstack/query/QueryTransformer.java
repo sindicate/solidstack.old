@@ -68,12 +68,12 @@ public class QueryTransformer
 		if( path != null )
 			pkg += "." + path.replaceAll( "/", "." );
 
-		String script = new JSPLikeTemplateParser().parse( new PushbackReader( reader, 1 ), new Writer( pkg, name ) );
+		StringBuilder script = new JSPLikeTemplateParser().parse( new PushbackReader( reader, 1 ), new Writer( pkg, name ) );
 		if( LOGGER.isTraceEnabled() )
 			LOGGER.trace( "Generated groovy:\n" + script );
 		System.out.println( script );
 
-		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script, name, "x" ) );
+		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script.toString(), name, "x" ) );
 		GroovyObject object = Util.newInstance( groovyClass );
 		return new QueryTemplate( (Closure)object.invokeMethod( "getClosure", null ), lastModified );
 	}
@@ -92,21 +92,22 @@ public class QueryTransformer
 	}
 
 
-	static String translate( Reader reader )
+	static StringBuilder translate( Reader reader )
 	{
 		return new JSPLikeTemplateParser().parse( new PushbackReader( reader, 1 ), new Writer( "p", "c" ) );
 	}
 
 
-	static String translate( String text )
+	static StringBuilder translate( String text )
 	{
 		return new JSPLikeTemplateParser().parse( new PushbackReader( new StringReader( text ), 1 ), new Writer( "p", "c" ) );
 	}
 
 
-	static String execute( String script, Map< String, ? > parameters )
+	static String execute( StringBuilder script, Map< String, ? > parameters )
 	{
-		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script, "n", "x" ) );
+		// TODO Create a GroovyCodeSource for CharSequence
+		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script.toString(), "n", "x" ) );
 		GroovyObject object = Util.newInstance( groovyClass );
 		Closure closure = (Closure)object.invokeMethod( "getClosure", null );
 		if( parameters != null )
@@ -147,9 +148,7 @@ public class QueryTransformer
 			if( this.mode == mode )
 				return;
 
-			if( this.mode == Mode.INITIAL )
-				this.buffer.append( "package " + this.pckg + ";class " + this.cls + "{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();" );
-			else if( this.mode == Mode.TEXT )
+			if( this.mode == Mode.TEXT )
 				this.buffer.append( "\"\"\");" );
 			else if( this.mode == Mode.EXPRESSION )
 				this.buffer.append( ");" );
@@ -171,6 +170,27 @@ public class QueryTransformer
 				Assert.fail( "Unknown mode " + mode );
 
 			this.nextMode = this.mode = mode;
+		}
+
+		@Override
+		protected StringBuilder getResult()
+		{
+			StringBuilder result = new StringBuilder();
+			result.append( "package " );
+			result.append( this.pckg );
+			result.append( ";" );
+			for( String imprt : this.imports )
+			{
+				result.append( "import " );
+				result.append( imprt );
+				result.append( ';' );
+			}
+			result.append( "class " );
+			result.append( this.cls );
+			result.append( "{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();" );
+			result.append( super.getBuffer() );
+			result.append( "return builder.toGString()}}}" );
+			return result;
 		}
 
 		@Override

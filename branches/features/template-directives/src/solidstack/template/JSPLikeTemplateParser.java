@@ -12,7 +12,7 @@ public class JSPLikeTemplateParser
 //
 //	}
 
-	public String parse( PushbackReader reader, Writer writer )
+	public StringBuilder parse( PushbackReader reader, Writer writer )
 	{
 		StringBuilder leading = readWhitespace( reader );
 		while( true )
@@ -204,10 +204,9 @@ public class JSPLikeTemplateParser
 
 		writer.nextMode( Mode.TEXT );
 		writer.write( leading );
-		writer.nextMode( Mode.SCRIPT );
-		writer.write( "return builder.toGString()}}}" );
+		writer.switchMode( Mode.SCRIPT ); // ASSUMPTION: Script is not decorated
 
-		return writer.getString();
+		return writer.getResult();
 	}
 
 	static public String getToken( PushbackReader reader )
@@ -288,7 +287,7 @@ public class JSPLikeTemplateParser
 			String value = getToken( reader );
 			if( value == null || !value.startsWith( "\"" ) || !value.endsWith( "\"" ) )
 				throw new ParseException( "Expecting a string value in directive", reader.getLineNumber() );
-			writer.directive( name, token, value.substring( 1, value.length() - 2 ), reader.getLineNumber() );
+			writer.directive( name, token, value.substring( 1, value.length() - 1 ), reader.getLineNumber() );
 			token = getToken( reader );
 		}
 	}
@@ -475,11 +474,11 @@ public class JSPLikeTemplateParser
 
 	static abstract public class Writer
 	{
-		static public enum Mode { INITIAL, SCRIPT, TEXT, EXPRESSION }
+		static public enum Mode { SCRIPT, TEXT, EXPRESSION }
 
 		protected StringBuilder buffer = new StringBuilder();
-		protected Mode mode = Mode.INITIAL;
-		protected Mode nextMode = Mode.INITIAL;
+		protected Mode mode = Mode.SCRIPT;
+		protected Mode nextMode = Mode.SCRIPT;
 
 		protected Writer()
 		{
@@ -522,10 +521,7 @@ public class JSPLikeTemplateParser
 			return this.buffer;
 		}
 
-		protected String getString()
-		{
-			return this.buffer.toString();
-		}
+		abstract protected StringBuilder getResult();
 
 //		protected StringBuilder switchBuffer( StringBuilder buffer )
 //		{
