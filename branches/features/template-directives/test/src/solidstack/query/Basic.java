@@ -79,33 +79,34 @@ public class Basic
 	{
 		String groovy = QueryTransformer.translate( new FileReader( "test/src/solidstack/query/test.gsql" ) ).toString();
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
-		System.out.println( groovy );
-//		assert groovy.equals(
-//				"package p;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();\n" +
-//				"builder.append(\"\"\"SELECT *\n" +
-//				"FROM SYS.SYSTABLES\n" +
-//				"\"\"\");\n" +
-//				"\n" +
-//				"\n" +
-//				"\n" +
-//				"builder.append(\"\"\"WHERE 1 = 1\n" +
-//				"\"\"\");\t\t if( prefix ) { \n" +
-//				"builder.append(\"\"\"AND TABLENAME LIKE '\"\"\");builder.append( prefix );builder.append(\"\"\"%'\n" +
-//				"\"\"\");\t\t } \n" +
-//				"\t\t if( name ) { \n" +
-//				"builder.append(\"\"\"AND TABLENAME = ${name}\n" +
-//				"\"\"\");\t\t } \n" +
-//				"\t\t if( names ) { \n" +
-//				"builder.append(\"\"\"AND TABLENAME IN (${names})\n" +
-//				"\"\"\");\t\t } \n" +
-//				"return builder.toGString()}}}"
-//		);
+//		System.out.println( groovy );
+		assert groovy.equals(
+				"package p;import java.sql.Timestamp;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder(); // Test if the import at the bottom works, and this comment too of course\n" +
+				"new Timestamp( new Date().time ) \n" +
+				"builder.append(\"\"\"SELECT *\n" +
+				"FROM SYS.SYSTABLES\n" +
+				"\"\"\");\n" +
+				"\n" +
+				"\n" +
+				"\n" +
+				"builder.append(\"\"\"WHERE 1 = 1\n" +
+				"\"\"\");\t\t if( prefix ) { \n" +
+				"builder.append(\"\"\"AND TABLENAME LIKE '\"\"\");builder.append( prefix );builder.append(\"\"\"%'\n" +
+				"\"\"\");\t\t } \n" +
+				"\t\t if( name ) { \n" +
+				"builder.append(\"\"\"AND TABLENAME = ${name}\n" +
+				"\"\"\");\t\t } \n" +
+				"\t\t if( names ) { \n" +
+				"builder.append(\"\"\"AND TABLENAME IN (${names})\n" +
+				"\"\"\");\t\t } \n" +
+				"\n" +
+				"return builder.toGString()}}}"
+		);
 
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
-//		params.put( "name", "SYSTABLES" );
 		params.put( "prefix", "SYST" );
 		params.put( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } );
 		Query query = queries.bind( "test", params );
