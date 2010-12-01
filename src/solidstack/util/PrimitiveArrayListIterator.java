@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack.query;
+package solidstack.util;
 
 import java.lang.reflect.Array;
 import java.util.ListIterator;
@@ -26,7 +26,7 @@ import java.util.NoSuchElementException;
  * @author René M. de Bloois
  * @since Aug 12, 2006
  */
-public class ArrayListIterator implements ListIterator<Object>
+public class PrimitiveArrayListIterator implements ListIterator<Object>
 {
 	private Object array;
 	private int pos;
@@ -38,7 +38,7 @@ public class ArrayListIterator implements ListIterator<Object>
 	 * 
 	 * @param array The array over which you want to iterate.
 	 */
-	public ArrayListIterator( Object array )
+	public PrimitiveArrayListIterator( Object array )
 	{
 		if( !array.getClass().isArray() )
 			throw new IllegalArgumentException( "Given object is not an array" );

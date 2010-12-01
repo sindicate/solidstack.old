@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
 
 import solidstack.Assert;
 import solidstack.SystemException;
+import solidstack.util.PrimitiveArrayListIterator;
 
 
 /**
@@ -596,7 +597,7 @@ public class Query
 		else if( object.getClass().isArray() )
 		{
 			Assert.isTrue( Array.getLength( object ) > 0, "Parameter [" + name + "] is empty array" );
-			processOracleIn2( builder, column, new ArrayListIterator( object ), literal, pars );
+			processOracleIn2( builder, column, new PrimitiveArrayListIterator( object ), literal, pars );
 		}
 		else
 			Assert.fail( "ORACLE-IN needs an Array or Collection parameter" );
