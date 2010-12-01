@@ -194,7 +194,7 @@ public class JSPLikeTemplateParser
 
 			if( c == '$' )
 			{
-				// TODO And without {}?
+				// TODO And without {}? Groovy identifiers: JavaLetters, _, and numbers but not as first char
 				int cc = reader.read();
 				if( cc == '{' )
 					readGStringExpression( reader, writer );
@@ -356,6 +356,7 @@ public class JSPLikeTemplateParser
 		}
 	}
 
+	// TODO Independently of ' or " or triple string, $, ', ", \ or newline can always be escaped, and the escaping will work (\ disappears)
 	private void readString( PushbackReader reader, ModalWriter writer, char quote )
 	{
 		Assert.isTrue( writer.nextMode == Mode.EXPRESSION || writer.nextMode == Mode.SCRIPT || writer.nextMode == Mode.TEXT, "Unexpected mode " + writer.nextMode );
@@ -437,7 +438,12 @@ public class JSPLikeTemplateParser
 		}
 	}
 
-	// TODO Should we allow { } blocks within GString expressions? This works in expressions: <%= { prefix }.call() %>
+	// TODO This should work in gstrings: "${if(true){"true"}else{"false"}}"
+	// TODO Backslashes before a newline, can be used in " strings and let the newline disappear
+	// TODO newlines are not accepted within ${} when part of a single quoted string, but they are when in a """ string
+	// TODO Slashy strings: /test/, accepts even newlines, \ escapes everything, use \\ for a backslash. Newlines are accepted even as part of a " Gstring
+	// TODO Slashy strings work like GStrings """
+	// TODO Well, slashy strings are too difficult: see: 1/3, so, slashy strings not supported, """ are just as good
 	private void readGStringExpression( PushbackReader reader, ModalWriter writer )
 	{
 		// GStringExpressions can be read in any mode
