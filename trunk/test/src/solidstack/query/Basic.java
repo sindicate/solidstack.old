@@ -77,10 +77,13 @@ public class Basic
 	@Test
 	public void testTransform() throws Exception
 	{
-		String groovy = QueryTransformer.translate( new FileReader( "test/src/solidstack/query/test.gsql" ) );
+		String groovy = QueryTransformer.translate( new FileReader( "test/src/solidstack/query/test.gsql" ) ).toString();
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
+//		System.out.println( groovy );
 		assert groovy.equals(
-				"package p;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();builder.append(\"\"\"SELECT *\n" +
+				"package p;import java.sql.Timestamp;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder(); // Test if the import at the bottom works, and this comment too of course\n" +
+				"new Timestamp( new Date().time ) \n" +
+				"builder.append(\"\"\"SELECT *\n" +
 				"FROM SYS.SYSTABLES\n" +
 				"\"\"\");\n" +
 				"\n" +
@@ -96,6 +99,7 @@ public class Basic
 				"\t\t if( names ) { \n" +
 				"builder.append(\"\"\"AND TABLENAME IN (${names})\n" +
 				"\"\"\");\t\t } \n" +
+				"\n" +
 				"return builder.toGString()}}}"
 		);
 
@@ -103,7 +107,6 @@ public class Basic
 		queries.setPackage( "solidstack.query" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
-//		params.put( "name", "SYSTABLES" );
 		params.put( "prefix", "SYST" );
 		params.put( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } );
 		Query query = queries.bind( "test", params );
@@ -146,10 +149,11 @@ public class Basic
 
 	private void translateTest( String input, String groovy, String output )
 	{
-		String result = QueryTransformer.translate( input );
-		System.out.println( result );
-		assert result.equals( this.start + groovy + this.end );
-		result = QueryTransformer.execute( result, this.parameters );
+		String g = QueryTransformer.translate( input ).toString();
+		System.out.println( g );
+		assert g.equals( this.start + groovy + this.end );
+
+		String result = QueryTransformer.execute( g, this.parameters );
 		System.out.println( result );
 		assert result.equals( output );
 	}

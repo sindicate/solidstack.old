@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-package solidstack.query;
+package solidstack.util;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
+
 /**
  * Decorates an {@link Object} array to make it look like a {@link List}.
  * 
  * @author René M. de Bloois.
  */
-public class ValuesList implements List< Object >
+public class ObjectArrayList implements List< Object >
 {
 	private Object[] values;
 
@@ -35,7 +36,7 @@ public class ValuesList implements List< Object >
 	 * 
 	 * @param values The {@link Object} array to decorate.
 	 */
-	public ValuesList( Object[] values )
+	public ObjectArrayList( Object[] values )
 	{
 		this.values = values;
 	}
@@ -57,7 +58,7 @@ public class ValuesList implements List< Object >
 
 	public Iterator< Object > iterator()
 	{
-		return new ArrayListIterator( this.values );
+		return new ObjectArrayListIterator( this.values );
 	}
 
 	public Object[] toArray()
@@ -142,7 +143,7 @@ public class ValuesList implements List< Object >
 
 	public ListIterator< Object > listIterator()
 	{
-		return new ArrayListIterator( this.values );
+		return new ObjectArrayListIterator( this.values );
 	}
 
 	public ListIterator< Object > listIterator( int index )

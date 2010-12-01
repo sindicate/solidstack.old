@@ -23,6 +23,8 @@ import groovy.lang.GroovyObject;
 
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,6 +35,8 @@ import org.slf4j.LoggerFactory;
 import solidstack.Assert;
 import solidstack.io.PushbackReader;
 import solidstack.template.JSPLikeTemplateParser;
+import solidstack.template.JSPLikeTemplateParser.ModalWriter;
+import solidstack.template.ParseException;
 
 /**
  * Translates a query template into a Groovy {@link Closure}.
@@ -68,7 +72,6 @@ public class QueryTransformer
 		String script = new JSPLikeTemplateParser().parse( new PushbackReader( reader, 1 ), new Writer( pkg, name ) );
 		if( LOGGER.isTraceEnabled() )
 			LOGGER.trace( "Generated groovy:\n" + script );
-		System.out.println( script );
 
 		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script, name, "x" ) );
 		GroovyObject object = Util.newInstance( groovyClass );
@@ -88,19 +91,19 @@ public class QueryTransformer
 		return compile( new StringReader( query ), path, lastModified );
 	}
 
-
+	// For testing purposes
 	static String translate( Reader reader )
 	{
 		return new JSPLikeTemplateParser().parse( new PushbackReader( reader, 1 ), new Writer( "p", "c" ) );
 	}
 
-
+	// For testing purposes
 	static String translate( String text )
 	{
-		return new JSPLikeTemplateParser().parse( new PushbackReader( new StringReader( text ), 1 ), new Writer( "p", "c" ) );
+		return translate( new StringReader( text ) );
 	}
 
-
+	// For testing purposes
 	static String execute( String script, Map< String, ? > parameters )
 	{
 		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script, "n", "x" ) );
@@ -111,10 +114,11 @@ public class QueryTransformer
 		return closure.call().toString();
 	}
 
-	static class Writer extends solidstack.template.JSPLikeTemplateParser.Writer
+	static class Writer extends ModalWriter
 	{
 		private String pckg;
 		private String cls;
+		private List< String > imports = new ArrayList< String >();
 
 		public Writer( String pckg, String cls )
 		{
@@ -122,23 +126,26 @@ public class QueryTransformer
 			this.cls = cls;
 		}
 
-		public Writer( Mode mode )
+		@Override
+		protected void directive( String name, String attribute, String value, int lineNumber )
 		{
-			super( mode );
+			if( !name.equals( "query" ) )
+				throw new ParseException( "Only expecting query directives", lineNumber );
+			if( !attribute.equals( "import" ) )
+				throw new ParseException( "The query directive only allows import attributes", lineNumber );
+			this.imports.add( value );
 		}
 
 		@Override
-		protected void switchMode( Mode mode )
+		protected void activateMode( Mode mode )
 		{
 			if( this.mode == mode )
 				return;
 
-			if( this.mode == Mode.INITIAL )
-				this.buffer.append( "package " + this.pckg + ";class " + this.cls + "{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();" );
-			else if( this.mode == Mode.TEXT )
-				this.buffer.append( "\"\"\");" );
+			if( this.mode == Mode.TEXT )
+				append( "\"\"\");" );
 			else if( this.mode == Mode.EXPRESSION )
-				this.buffer.append( ");" );
+				append( ");" );
 			else if( this.mode == Mode.SCRIPT )
 			{
 				// FIXME Groovy BUG:
@@ -150,9 +157,9 @@ public class QueryTransformer
 				Assert.fail( "Unknown mode " + this.mode );
 
 			if( mode == Mode.TEXT )
-				this.buffer.append( "builder.append(\"\"\"" );
+				append( "builder.append(\"\"\"" );
 			else if( mode == Mode.EXPRESSION )
-				this.buffer.append( "builder.append(" );
+				append( "builder.append(" );
 			else if( mode != Mode.SCRIPT )
 				Assert.fail( "Unknown mode " + mode );
 
@@ -160,9 +167,24 @@ public class QueryTransformer
 		}
 
 		@Override
-		protected solidstack.template.JSPLikeTemplateParser.Writer newWriter( Mode mode )
+		protected String getResult()
 		{
-			return new Writer( mode );
+			StringBuilder result = new StringBuilder();
+			result.append( "package " );
+			result.append( this.pckg );
+			result.append( ";" );
+			for( String imprt : this.imports )
+			{
+				result.append( "import " );
+				result.append( imprt );
+				result.append( ';' );
+			}
+			result.append( "class " );
+			result.append( this.cls );
+			result.append( "{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();" );
+			result.append( super.getBuffer() );
+			result.append( "return builder.toGString()}}}" );
+			return result.toString();
 		}
 	}
 }
