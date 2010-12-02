@@ -22,7 +22,6 @@ package solidstack.template;
  * 
  * @author René M. de Bloois
  */
-// TODO Rename to ParseException?
 public class ParseException extends RuntimeException
 {
 	private int lineNumber;

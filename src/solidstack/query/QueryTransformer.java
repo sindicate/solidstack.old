@@ -147,12 +147,7 @@ public class QueryTransformer
 			else if( this.mode == Mode.EXPRESSION )
 				append( ");" );
 			else if( this.mode == Mode.SCRIPT )
-			{
-				// FIXME Groovy BUG:
-				// Groovy does not understand: builder.append("""    """); } builder.append("""
-				// We need extra ;
-				// this.buffer.append( ';' );
-			}
+				append( ';' ); // Groovy does not understand: "...} builder.append(..." Need extra ; when coming from SCRIPT
 			else
 				Assert.fail( "Unknown mode " + this.mode );
 
@@ -183,7 +178,7 @@ public class QueryTransformer
 			result.append( this.cls );
 			result.append( "{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();" );
 			result.append( super.getBuffer() );
-			result.append( "return builder.toGString()}}}" );
+			result.append( ";return builder.toGString()}}}" ); // Groovy does not understand: "...} return ..." Need extra ; to be sure
 			return result.toString();
 		}
 	}
