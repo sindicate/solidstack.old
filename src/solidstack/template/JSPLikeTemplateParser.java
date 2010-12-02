@@ -194,15 +194,10 @@ public class JSPLikeTemplateParser
 
 			if( c == '$' )
 			{
-				// TODO And without {}? Groovy identifiers: JavaLetters, _, and numbers but not as first char
 				int cc = reader.read();
-				if( cc == '{' )
-					readGStringExpression( reader, writer, true );
-				else
-				{
-					writer.write( (char)c );
-					reader.push( cc );
-				}
+				if( cc != '{' )
+					throw new ParseException( "Expecting an { after the $", reader.getLineNumber() );
+				readGStringExpression( reader, writer, true );
 				continue;
 			}
 
@@ -399,15 +394,10 @@ public class JSPLikeTemplateParser
 
 			if( quote == '"' && c == '$' )
 			{
-				// TODO And without {}?
 				c = reader.read();
-				if( c == '{' )
-					readGStringExpression( reader, writer, multiline );
-				else
-				{
-					writer.write( '$' );
-					reader.push( c );
-				}
+				if( c != '{' )
+					throw new ParseException( "Expecting an { after the $", reader.getLineNumber() );
+				readGStringExpression( reader, writer, multiline );
 				continue;
 			}
 
