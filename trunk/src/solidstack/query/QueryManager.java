@@ -18,6 +18,7 @@ package solidstack.query;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import solidstack.Assert;
+import solidstack.SystemException;
 
 
 /**
@@ -111,8 +113,15 @@ public class QueryManager
 
 			LOGGER.info( "Loading " + resource.toString() );
 
-			Reader reader = new InputStreamReader( resource.getInputStream() ); // TODO Character set
-			query = QueryTransformer.compile( reader, this.packageSlashed + path, resource.getLastModified() );
+			try
+			{
+				Reader reader = new InputStreamReader( resource.getInputStream(), "ISO-8859-1" );
+				query = QueryTransformer.compile( reader, this.packageSlashed + path, resource.getLastModified() );
+			}
+			catch( UnsupportedEncodingException e )
+			{
+				throw new SystemException( e );
+			}
 
 			this.queries.put( path, query );
 		}

@@ -599,7 +599,7 @@ public class JSPLikeTemplateParser
 		 * 
 		 * @param string The character sequence to write.
 		 */
-		protected void write( CharSequence string )
+		protected void write( StringBuilder string ) // StringBuilder.append does strange stuff when given a CharSequence
 		{
 			if( string == null || string.length() == 0 )
 				return;
@@ -619,7 +619,6 @@ public class JSPLikeTemplateParser
 		 * 
 		 * @return The buffer.
 		 */
-		// TODO Do we want to return the buffer?
 		protected StringBuilder getBuffer()
 		{
 			return this.buffer;
