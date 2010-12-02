@@ -197,7 +197,7 @@ public class JSPLikeTemplateParser
 				// TODO And without {}? Groovy identifiers: JavaLetters, _, and numbers but not as first char
 				int cc = reader.read();
 				if( cc == '{' )
-					readGStringExpression( reader, writer );
+					readGStringExpression( reader, writer, true );
 				else
 				{
 					writer.write( (char)c );
@@ -333,7 +333,7 @@ public class JSPLikeTemplateParser
 		Assert.isTrue( writer.nextMode == Mode.SCRIPT || writer.nextMode == Mode.EXPRESSION );
 
 		// We are in SCRIPT/EXPRESSION mode here.
-		// Expecting ", %>
+		// Expecting ", ' or %>
 		// %> within strings should not end the script
 
 		while( true )
@@ -356,15 +356,14 @@ public class JSPLikeTemplateParser
 		}
 	}
 
-	// TODO Independently of ' or " or triple string, $, ', ", \ or newline can always be escaped, and the escaping will work (\ disappears)
 	private void readString( PushbackReader reader, ModalWriter writer, char quote )
 	{
 		Assert.isTrue( writer.nextMode == Mode.EXPRESSION || writer.nextMode == Mode.SCRIPT || writer.nextMode == Mode.TEXT, "Unexpected mode " + writer.nextMode );
 
 		// String can be read in any mode
-		// Expecting $, " and \
+		// Expecting $, ", ' and \
 		// " within ${} should not end this string
-		// \ is used to escape $, " and itself
+		// \ is used to escape $, " and itself, and special characters
 
 		writer.write( quote );
 		boolean multiline = false;
@@ -382,23 +381,19 @@ public class JSPLikeTemplateParser
 		{
 			int c = reader.read();
 
-			if( multiline )
-			{
-				if( c < 0 )
-					throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
-			}
-			else
-				if( c < 0 || c == '\n' )
-					throw new ParseException( "Unexpected end of line", reader.getLineNumber() );
+			if( c < 0 )
+				throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
+			if( !multiline && c == '\n' )
+				throw new ParseException( "Unexpected end of line", reader.getLineNumber() );
 
 			if( c == '\\' )
 			{
 				writer.write( (char)c );
 				c = reader.read();
-				if( c == '$' && quote == '"' || c == '\\' || c == quote  )
+				if( "bfnrt'\"\\$".indexOf( c ) >= 0 )
 					writer.write( (char)c );
 				else
-					throw new ParseException( "Only " + ( quote == '"' ? "\", $" : "'" ) + " or \\ can be escaped", reader.getLineNumber() );
+					throw new ParseException( "Only b, f, n, r, t, ', \",  $ or \\ can be escaped", reader.getLineNumber() );
 				continue;
 			}
 
@@ -407,7 +402,7 @@ public class JSPLikeTemplateParser
 				// TODO And without {}?
 				c = reader.read();
 				if( c == '{' )
-					readGStringExpression( reader, writer );
+					readGStringExpression( reader, writer, multiline );
 				else
 				{
 					writer.write( '$' );
@@ -438,16 +433,10 @@ public class JSPLikeTemplateParser
 		}
 	}
 
-	// TODO This should work in gstrings: "${if(true){"true"}else{"false"}}"
-	// TODO Backslashes before a newline, can be used in " strings and let the newline disappear
-	// TODO newlines are not accepted within ${} when part of a single quoted string, but they are when in a """ string
-	// TODO Slashy strings: /test/, accepts even newlines, \ escapes everything, use \\ for a backslash. Newlines are accepted even as part of a " Gstring
-	// TODO Slashy strings work like GStrings """
-	// TODO Well, slashy strings are too difficult: see: 1/3, so, slashy strings not supported, """ are just as good
-	private void readGStringExpression( PushbackReader reader, ModalWriter writer )
+	private void readGStringExpression( PushbackReader reader, ModalWriter writer, boolean multiline )
 	{
 		// GStringExpressions can be read in any mode
-		// Expecting }, "
+		// Expecting }, ", ' and {
 		// } within a string should not end this expression
 
 		writer.write( '$' );
@@ -455,12 +444,41 @@ public class JSPLikeTemplateParser
 		while( true )
 		{
 			int c = reader.read();
-			if( c < 0 || c == '\n' )
+			if( c < 0 )
+				throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
+			if( !multiline && c == '\n' )
 				throw new ParseException( "Unexpected end of line", reader.getLineNumber() );
 			if( c == '}' )
 				break;
 			if( c == '"' || c == '\'' )
 				readString( reader, writer, (char)c );
+			else if( c =='{' )
+				readBlock( reader, writer, multiline );
+			else
+				writer.write( (char)c );
+		}
+		writer.write( '}' );
+	}
+
+	private void readBlock( PushbackReader reader, ModalWriter writer, boolean multiline )
+	{
+		// Expecting }, " or '
+		// } within a string should not end this block
+
+		writer.write( '{' );
+		while( true )
+		{
+			int c = reader.read();
+			if( c < 0 )
+				throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
+			if( !multiline && c == '\n' )
+				throw new ParseException( "Unexpected end of line", reader.getLineNumber() );
+			if( c == '}' )
+				break;
+			if( c == '"' || c == '\'' )
+				readString( reader, writer, (char)c );
+			else if( c =='{' )
+				readBlock( reader, writer, multiline );
 			else
 				writer.write( (char)c );
 		}

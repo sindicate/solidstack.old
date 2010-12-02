@@ -162,12 +162,13 @@ public class Basic
 	{
 		try
 		{
-			QueryTransformer.translate( "X${\"te\"xt\"}X" );
+			String result = QueryTransformer.translate( "X${\"te\"xt\"}X" );
+			System.out.println( result );
 			assert false;
 		}
 		catch( ParseException e )
 		{
-			assert e.getMessage().contains( "Unexpected end of line" );
+			assert e.getMessage().contains( "Unexpected end of " );
 		}
 	}
 
@@ -206,12 +207,16 @@ public class Basic
 		// GString expressions with "
 
 		translateTest( "X${var}X", "builder.append(\"\"\"X${var}X\"\"\");", "XvalueX" );
-		translateTest( "X${\"text\"}X", "builder.append(\"\"\"X${\"text\"}X\"\"\");", "XtextX" );
+		translateTest( "X${\nvar}X", "builder.append(\"\"\"X${\nvar}X\"\"\");", "XvalueX" );
+		translateTest( "X${\"te\\nxt\"}X", "builder.append(\"\"\"X${\"te\\nxt\"}X\"\"\");", "Xte\nxtX" );
 		translateTest( "X${\"Y\\${Y\"}X", "builder.append(\"\"\"X${\"Y\\${Y\"}X\"\"\");", "XY${YX" );
 		translateError( "X${\"te\"xt\"}X" );
 		translateTest( "X${\"te\\\"xt\"}X", "builder.append(\"\"\"X${\"te\\\"xt\"}X\"\"\");", "Xte\"xtX" );
 		translateError( "X${\"text\ntext\"}X" );
 		translateTest( "X${\"\"\"te\"xt\ntext\\\"\"\"\"}X", "builder.append(\"\"\"X${\"\"\"te\"xt\ntext\\\"\"\"\"}X\"\"\");", "Xte\"xt\ntext\"X" );
+		translateTest( "${if(var){\"true\"}else{\"false\"}}", "builder.append(\"\"\"${if(var){\"true\"}else{\"false\"}}\"\"\");", "true" );
+		translateError( "X${\"Y${\n}Y\"}X" );
+		translateTest( "X${\"\"\"Y${\nvar\n}Y\"\"\"}X", "builder.append(\"\"\"X${\"\"\"Y${\nvar\n}Y\"\"\"}X\"\"\");", "XYvalueYX" );
 
 		// GString expressions with '
 
