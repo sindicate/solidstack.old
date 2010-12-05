@@ -245,48 +245,44 @@ public class JSPLikeTemplateParser
 
 				ch = reader.read();
 				if( ch == -1 )
-					throw new ParseException( "Unexpected end of input", reader.getLineNumber() );
+					throw new ParseException( "Unclosed string", reader.getLineNumber() );
 				if( ch == quote )
 				{
 					result.append( (char)ch );
-					break;
+					return result.toString();
 				}
 			}
-			return result.toString();
 		}
 
+		// Read an identifier
+		if( Character.isJavaIdentifierStart( ch ) && ch != '$' )
+		{
+			StringBuilder result = new StringBuilder( 16 );
+			while( true )
+			{
+				result.append( (char)ch );
+				ch = reader.read();
+				if( !Character.isJavaIdentifierPart( ch ) || ch == '$' )
+				{
+					reader.push( ch );
+					return result.toString();
+				}
+			}
+		}
+
+		// Read %>
 		if( ch == '%' )
 		{
 			ch = reader.read();
-			if( ch == -1 )
-				throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
-			if( ch == '>' )
-				return "%>";
-			reader.push( ch );
-			return "%";
+			if( ch != '>' )
+				throw new ParseException( "Expecting > after an %", reader.getLineNumber() );
+			return "%>";
 		}
-
-		if( ch == '=' )
-			return String.valueOf( (char)ch );
 
 		if( ch == -1 )
 			return null;
 
-		// Collect all characters until whitespace or special character
-		StringBuilder result = new StringBuilder( 16 );
-		do
-		{
-			result.append( (char)ch );
-			ch = reader.read();
-		}
-		while( ch != -1 && !Character.isWhitespace( ch ) && ch != '=' && ch != '%' );
-
-		// Push back the last character
-		reader.push( ch );
-
-		// Return the result
-		Assert.isFalse( result.length() == 0 );
-		return result.toString();
+		return String.valueOf( (char)ch );
 	}
 
 	private void readDirective( PushbackReader reader, ModalWriter writer )
