@@ -211,6 +211,7 @@ public class Basic
 		translateError( "X${\"te\"xt\"}X" );
 		translateTest( "X${\"te\\\"xt\"}X", ";builder.append(\"\"\"X${\"te\\\"xt\"}X\"\"\");", "Xte\"xtX" );
 		translateError( "X${\"text\ntext\"}X" );
+		translateError( "X${\"${\"text\ntext\"}\"}X" );
 		translateTest( "X${\"\"\"te\"xt\ntext\\\"\"\"\"}X", ";builder.append(\"\"\"X${\"\"\"te\"xt\ntext\\\"\"\"\"}X\"\"\");", "Xte\"xt\ntext\"X" );
 		translateTest( "${if(var){\"true\"}else{\"false\"}}", ";builder.append(\"\"\"${if(var){\"true\"}else{\"false\"}}\"\"\");", "true" );
 		translateError( "X${\"Y${\n}Y\"}X" );
