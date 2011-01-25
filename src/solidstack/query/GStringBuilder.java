@@ -91,7 +91,7 @@ public class GStringBuilder
 	 */
 	public GStringBuilder append( Object object )
 	{
-		return append( object.toString() );
+		return append( object != null ? object.toString() : "null" );
 	}
 
 	/**
