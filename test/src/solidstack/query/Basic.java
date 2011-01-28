@@ -17,6 +17,8 @@
 package solidstack.query;
 
 import java.io.FileReader;
+import java.io.Reader;
+import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -77,7 +79,7 @@ public class Basic
 	@Test
 	public void testTransform() throws Exception
 	{
-		String groovy = QueryTransformer.translate( new FileReader( "test/src/solidstack/query/test.gsql" ) ).toString();
+		String groovy = QueryTransformer.translate( new FileReader( "test/src/solidstack/query/test.gsql" ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
 		assert groovy.equals(
@@ -122,6 +124,27 @@ public class Basic
 //		Writer out = new OutputStreamWriter( new FileOutputStream( "test.out" ), "UTF-8" );
 //		out.write( sql );
 //		out.close();
+	}
+
+	@Test
+	public void testNewlinesWithinDirective() throws Exception
+	{
+		Reader reader = new StringReader( "<%@ query\n" +
+				"import=\"uk.co.tntpost.umbrella.common.utils.QueryUtils\"\n" +
+				"import=\"uk.co.tntpost.umbrella.common.enums.*\"\n" +
+				"%>\n" +
+		"TEST" );
+
+		String groovy = QueryTransformer.translate( reader );
+//		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
+//		System.out.println( groovy );
+		assert groovy.equals(
+				"package p;import uk.co.tntpost.umbrella.common.utils.QueryUtils;import uk.co.tntpost.umbrella.common.enums.*;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();\n" +
+				"\n" +
+				"\n" +
+				"\n" +
+				";builder.append(\"\"\"TEST\"\"\");;return builder.toGString()}}}"
+		);
 	}
 
 	@Test
