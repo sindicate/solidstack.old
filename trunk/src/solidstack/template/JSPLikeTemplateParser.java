@@ -92,6 +92,7 @@ public class JSPLikeTemplateParser
 
 				if( c == '@' )
 				{
+					writer.nextMode( Mode.SCRIPT );
 					if( leading == null )
 					{
 						readDirective( reader, writer );
@@ -106,7 +107,6 @@ public class JSPLikeTemplateParser
 						if( (char)c == '\n' )
 						{
 							// Directive on its own lines, leading and trailing whitespace are ignored
-							writer.nextMode( Mode.SCRIPT );
 							writer.write( '\n' ); // Must not lose newlines
 							leading = readWhitespace( reader );
 						}
@@ -227,12 +227,16 @@ public class JSPLikeTemplateParser
 		return writer.getResult();
 	}
 
-	static private String getToken( PushbackReader reader )
+	static private String getToken( PushbackReader reader, ModalWriter writer )
 	{
 		// Skip whitespace
 		int ch = reader.read();
 		while( ch != -1 && Character.isWhitespace( ch ) )
+		{
+			if( ch == '\n' )
+				writer.write( (char)ch );
 			ch = reader.read();
+		}
 
 		// Read a string enclosed by ' or "
 		if( ch == '\'' || ch == '"' )
@@ -244,7 +248,7 @@ public class JSPLikeTemplateParser
 				result.append( (char)ch );
 
 				ch = reader.read();
-				if( ch == -1 )
+				if( ch == -1 || ch == '\n' )
 					throw new ParseException( "Unclosed string", reader.getLineNumber() );
 				if( ch == quote )
 				{
@@ -287,22 +291,22 @@ public class JSPLikeTemplateParser
 
 	private void readDirective( PushbackReader reader, ModalWriter writer )
 	{
-		String name = getToken( reader );
+		String name = getToken( reader, writer );
 		if( name == null )
 			throw new ParseException( "Expecting a name", reader.getLineNumber() );
 
-		String token = getToken( reader );
+		String token = getToken( reader, writer );
 		while( token != null )
 		{
 			if( token.equals( "%>" ) )
 				return;
-			if( !getToken( reader ).equals( "=" ) )
+			if( !getToken( reader, writer ).equals( "=" ) )
 				throw new ParseException( "Expecting '=' in directive", reader.getLineNumber() );
-			String value = getToken( reader );
+			String value = getToken( reader, writer );
 			if( value == null || !value.startsWith( "\"" ) || !value.endsWith( "\"" ) )
 				throw new ParseException( "Expecting a string value in directive", reader.getLineNumber() );
 			writer.directive( name, token, value.substring( 1, value.length() - 1 ), reader.getLineNumber() );
-			token = getToken( reader );
+			token = getToken( reader, writer );
 		}
 	}
 
