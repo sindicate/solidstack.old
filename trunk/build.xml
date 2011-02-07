@@ -143,7 +143,7 @@
 	</target>
 
 
-	<target name="dist" depends="clean,build" description="Complete build process to create the distribution files">
+	<target name="dist" depends="clean,build,test" description="Complete build process to create the distribution files">
 		<echo message="Distribution files created in ${dist.home}" />
 	</target>
 
