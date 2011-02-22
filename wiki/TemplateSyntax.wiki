@@ -1,11 +1,10 @@
+#summary Describes the template syntax used for .gsql files.
 
-#Describes the template syntax used for .gsql files.
+=Query directive=
 
-=Import directive=
+The query directive can be used to import classes. Keep in mind that the template uses Groovy as the script language. Groovy imports more packages by default than Java does.
 
-The import directive can be used to import classes. Keep in mind the the template uses Groovy as the script language. Groovy imports more packages by default than Java does.
-
-The following packages and classes are imported by default by Groovy:
+The following packages and classes are imported by default:
 
  * java.io.`*`
  * java.lang.`*`
@@ -30,7 +29,7 @@ Example2:
 
 =Scriptlet=
 
-Scriptlets can be used to add all sorts of groovy code to your template.
+Scriptlets can be used to add groovy code to your template.
 
 Syntax:
 
@@ -38,7 +37,7 @@ Syntax:
 <% groovy code %>
 }}}
 
-Example2:
+Example:
 
 {{{
 <%
@@ -49,6 +48,16 @@ FROM EMPLOYEES
 WHERE TO_CHAR( BIRTHDAY, 'MMDD' ) = TO_CHAR( ${today}, 'MMDD' )
 <% if( gender ) { %>
 AND GENDER = ${gender}
+<% } %>
+}}}
+
+Beware that because of a Groovy syntax bug the following needs a semicolon (;) where Java does not:
+
+{{{
+<% if( gender ) { %>
+AND GENDER = ${gender}
+<% }; if( age ) { %>
+AND AGE = ${age}
 <% } %>
 }}}
 
@@ -74,6 +83,12 @@ WHERE ACTIVE = <%= DBUtils.TRUE %>
 =Bind parameter=
 
 A bind parameter is added to the SQL as a question mark (?). Question marks in SQL represent bind parameters that are sent to the database separate from the SQL.
+
+Bind parameters are useful for performance reasons and for preventing SQL injection attacks. But they should not be overused. It is better not to use bind parameters for the following:
+
+ * Oracle's "ROWNUM < x". Oracle adapts its query execution plan depending on the number of rows you want. If it is a bind parameter, Oracle can't use the value to adapt its execution plan;
+ * LIKE 'prefix%';
+ * Constants.
 
 Syntax:
 
