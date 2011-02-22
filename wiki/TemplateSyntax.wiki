@@ -1,0 +1,100 @@
+
+#Describes the template syntax used for .gsql files.
+
+=Import directive=
+
+The import directive can be used to import classes. Keep in mind the the template uses Groovy as the script language. Groovy imports more packages by default than Java does.
+
+The following packages and classes are imported by default by Groovy:
+
+ * java.io.`*`
+ * java.lang.`*`
+ * java.math.!BigDecimal
+ * java.math.!BigInteger
+ * java.net.`*`
+ * java.util.`*`
+ * groovy.lang.`*`
+ * groovy.util.`*`
+
+Example1:
+
+{{{
+<%@ query import="packagename.ClassName" %>
+}}}
+
+Example2:
+
+{{{
+<%@ query import="packagename1.*" import="packagename2.ClassName" %>
+}}}
+
+=Scriptlet=
+
+Scriptlets can be used to add all sorts of groovy code to your template.
+
+Syntax:
+
+{{{
+<% groovy code %>
+}}}
+
+Example2:
+
+{{{
+<%
+def today = new java.sql.Date( System.currentTimeMillis() );
+%>
+SELECT NAME, AGE
+FROM EMPLOYEES
+WHERE TO_CHAR( BIRTHDAY, 'MMDD' ) = TO_CHAR( ${today}, 'MMDD' )
+<% if( gender ) { %>
+AND GENDER = ${gender}
+<% } %>
+}}}
+
+=Expression=
+
+Expressions can be used to add text to the SQL.
+
+Syntax:
+
+{{{
+<%= groovy expression %>
+}}}
+
+Example:
+
+{{{
+<%@ query import="app.DBUtils" %>
+SELECT NAME, AGE
+FROM EMPLOYEES
+WHERE ACTIVE = <%= DBUtils.TRUE %>
+}}}
+
+=Bind parameter=
+
+A bind parameter is added to the SQL as a question mark (?). Question marks in SQL represent bind parameters that are sent to the database separate from the SQL.
+
+Syntax:
+
+{{{
+${groovy expression}
+}}}
+
+Example:
+
+{{{
+SELECT NAME, AGE
+FROM EMPLOYEES
+WHERE AGE = ${age}
+}}}
+
+=Comment=
+
+Adds a comment to the template.
+
+Syntax:
+
+{{{
+<%-- comment --%>
+}}}
