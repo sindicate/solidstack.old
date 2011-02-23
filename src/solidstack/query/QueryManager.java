@@ -32,7 +32,22 @@ import solidstack.SystemException;
 
 
 /**
- * Manages and caches the queries.
+ * Reads, compiles and caches the queries.
+ * 
+ * Usage:
+ * 
+ * <pre>
+ *    Map<String, Object> args = new HashMap<String, Object>();
+ *    args.put("arg1", arg1);
+ *    args.put("arg2", arg2);
+ *    Query query = queryManager.bind("path/filename", args);
+ *    List<Map<String, Object>> result = query.listOfMaps(connection);</pre>
+ * 
+ * <p>The {@link #bind(String, Map)} call looks in the classpath for a file 'path/filename.gsql' in the package configured with {@link #setPackage(String)}.</p>
+ * 
+ * <p>The arguments in the map given to the bind call can be any type as long as the template produces something that the JDBC driver understands.</p>
+ * 
+ * <p>See {@link Query} for a description of what you can do with the query returned by the bind call.</p>
  * 
  * @author René M. de Bloois
  */
@@ -153,7 +168,7 @@ public class QueryManager
 	}
 
 	/**
-	 * Binds the template and the arguments and returns the {@link Query}.
+	 * Binds the arguments and the template and returns the {@link Query}.
 	 * 
 	 * @param path The path of the query.
 	 * @param args The arguments.
