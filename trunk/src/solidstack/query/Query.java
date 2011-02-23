@@ -273,7 +273,7 @@ public class Query
 	}
 
 	/**
-	 * Retrieve a {@link List} of {@link Map}s from the configured {@link Connection}. The maps contain the column names from the query as keys and the column values as the map's values.
+	 * Retrieve a {@link List} of {@link Map}s from the given {@link Connection}. The maps contain the column names from the query as keys and the column values as the map's values.
 	 * 
 	 * @param connection The {@link Connection} to use.
 	 * @return A {@link List} of {@link Map}s.
