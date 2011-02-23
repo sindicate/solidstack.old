@@ -49,7 +49,8 @@ import solidstack.util.PrimitiveArrayListIterator;
 
 
 /**
- * A query.
+ * A query object will normally be constructed by a call to {@link QueryManager#bind(String, Map)}.
+ * The query object can be used to retrieve data from the database or to execute DML or DDL statements.
  * 
  * @author René M. de Bloois
  */
@@ -64,6 +65,7 @@ public class Query
 	private Closure closure;
 	private Map< String, ? > params;
 	private Connection connection;
+	// TODO Shouldn't this be true by default?
 	private boolean compress;
 
 	/**
@@ -119,7 +121,7 @@ public class Query
 	/**
 	 * Retrieves a {@link ResultSet} from the configured {@link Connection}.
 	 * 
-	 * @return a {@link ResultSet}.
+	 * @return A {@link ResultSet}.
 	 * @see #resultSet(Connection)
 	 */
 	public ResultSet resultSet()
@@ -152,7 +154,7 @@ public class Query
 	/**
 	 * Retrieves a {@link List} of {@link Object} arrays from the configured {@link Connection}.
 	 * 
-	 * @return a {@link List} of {@link Object} arrays from the given {@link Connection}.
+	 * @return A {@link List} of {@link Object} arrays from the given {@link Connection}.
 	 */
 	public List< Object[] > listOfArrays()
 	{
@@ -165,7 +167,7 @@ public class Query
 	 * Retrieves a {@link List} of {@link Object} arrays from the given {@link Connection}.
 	 * 
 	 * @param connection The {@link Connection} to use.
-	 * @return a {@link List} of {@link Object} arrays from the given {@link Connection}.
+	 * @return A {@link List} of {@link Object} arrays from the given {@link Connection}.
 	 */
 	public List< Object[] > listOfArrays( Connection connection )
 	{
@@ -198,8 +200,8 @@ public class Query
 	 * Converts a {@link ResultSet} into a {@link List} of {@link Object} arrays.
 	 * 
 	 * @param resultSet The {@link ResultSet} to convert.
-	 * @param compress Store duplicate values only once.
-	 * @return a {@link ResultSet} into a {@link List} of {@link Object} arrays.
+	 * @param compress If true, duplicate values are stored in memory only once.
+	 * @return A {@link List} of {@link Object} arrays containing the data from the result set.
 	 */
 	static public List< Object[] > listOfArrays( ResultSet resultSet, boolean compress )
 	{
@@ -259,9 +261,9 @@ public class Query
 	}
 
 	/**
-	 * Retrieve a {@link List} of {@link ValuesMap} from the configured {@link Connection}.
+	 * Retrieve a {@link List} of {@link Map}s from the configured {@link Connection}. The maps contain the column names from the query as keys and the column values as the map's values.
 	 * 
-	 * @return a {@link List} of {@link ValuesMap}.
+	 * @return A {@link List} of {@link Map}s.
 	 */
 	public List< Map< String, Object > > listOfMaps()
 	{
@@ -271,10 +273,10 @@ public class Query
 	}
 
 	/**
-	 * Retrieve a {@link List} of {@link ValuesMap} from the configured {@link Connection}.
+	 * Retrieve a {@link List} of {@link Map}s from the configured {@link Connection}. The maps contain the column names from the query as keys and the column values as the map's values.
 	 * 
 	 * @param connection The {@link Connection} to use.
-	 * @return A {@link List} of {@link ValuesMap} from the configured {@link Connection}.
+	 * @return A {@link List} of {@link Map}s.
 	 */
 	public List< Map< String, Object > > listOfMaps( Connection connection )
 	{
@@ -300,10 +302,10 @@ public class Query
 	}
 
 	/**
-	 * Retrieves a {@link List} of {@link ValuesMap} from the given Hibernate {@link Session}.
+	 * Retrieves a {@link List} of {@link Map}s from the given Hibernate {@link Session}.
 	 * 
 	 * @param session The Hibernate {@link Session} to use.
-	 * @return a {@link List} of {@link ValuesMap}.
+	 * @return A {@link List} of {@link Map}s.
 	 */
 	public List< Map< String, Object > > listOfMaps( final Session session )
 	{
@@ -325,34 +327,33 @@ public class Query
 	 * 
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param entityClass The class to map the results to.
-	 * @return a {@link List} of objects.
+	 * @return A {@link List} of entities.
 	 */
 	public List<?> listOfEntities(EntityManager entityManager, Class<?> entityClass) {
 
 		List< Object > pars = new ArrayList< Object >();
 		String preparedSql = getPreparedSQL( pars );
 
-		javax.persistence.Query query = entityManager.createNativeQuery(preparedSql, entityClass);
+		javax.persistence.Query query = entityManager.createNativeQuery( preparedSql, entityClass );
 		int i = 0;
 		for( Object par : pars )
 		{
-			Assert.isFalse( par instanceof Collection );
 			if( par != null )
+			{
+				Assert.isFalse( par instanceof Collection );
 				Assert.isFalse( par.getClass().isArray() );
-			query.setParameter(++i, par);
+			}
+			query.setParameter( ++i, par );
 		}
 
 		return query.getResultList();
 	}
 
 	/**
-	 * Executes an update (DML) or a DDL query.
+	 * Executes an update (DML) or a DDL query, passing through the {@link SQLException} when the JDBC driver throws one.
 	 * 
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 * @throws SQLException Whenever the query caused an {@link SQLException}.
-	 * @see #updateChecked(Connection)
-	 * @see #update()
-	 * @see #update(Connection)
 	 */
 	public int updateChecked() throws SQLException
 	{
@@ -362,14 +363,11 @@ public class Query
 	}
 
 	/**
-	 * Executes an update (DML) or a DDL query.
+	 * Executes an update (DML) or a DDL query, passing through the {@link SQLException} when the JDBC driver throws one.
 	 * 
 	 * @param connection The {@link Connection} to use.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 * @throws SQLException Whenever the query caused an {@link SQLException}.
-	 * @see #updateChecked()
-	 * @see #update()
-	 * @see #update(Connection)
 	 */
 	public int updateChecked( Connection connection ) throws SQLException
 	{
@@ -377,13 +375,10 @@ public class Query
 	}
 
 	/**
-	 * Executes an update (DML) or a DDL query. {@link SQLException}s are not expected and wrapped in a {@link SystemException}.
+	 * Executes an update (DML) or a DDL query. {@link SQLException}s are wrapped in a {@link SystemException}.
 	 * 
 	 * @param connection The {@link Connection} to use.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
-	 * @see #updateChecked()
-	 * @see #updateChecked(Connection)
-	 * @see #update()
 	 */
 	public int update( Connection connection )
 	{
@@ -393,17 +388,15 @@ public class Query
 		}
 		catch( SQLException e )
 		{
+			// TODO Maybe we should wrap it in another exception.
 			throw new SystemException( e );
 		}
 	}
 
 	/**
-	 * Executes an update (DML) or a DDL query. {@link SQLException}s are not expected and wrapped in a {@link SystemException}.
+	 * Executes an update (DML) or a DDL query. {@link SQLException}s are wrapped in a {@link SystemException}.
 	 * 
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
-	 * @see #updateChecked()
-	 * @see #updateChecked(Connection)
-	 * @see #update(Connection)
 	 */
 	public int update()
 	{
