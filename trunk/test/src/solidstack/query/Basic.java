@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -120,6 +121,38 @@ public class Basic
 				"WHERE 1 = 1\n" +
 				"AND TABLENAME LIKE 'SYST%'\n" +
 		"AND TABLENAME IN (?,?)\n" );
+
+//		Writer out = new OutputStreamWriter( new FileOutputStream( "test.out" ), "UTF-8" );
+//		out.write( sql );
+//		out.close();
+	}
+
+	@Test
+	public void testBigIN() throws Exception
+	{
+		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
+
+		QueryManager queries = new QueryManager();
+		queries.setPackage( "solidstack.query" );
+
+		Map< String, Object > params = new HashMap< String, Object >();
+		params.put( "names", Arrays.asList( new String[] { "SYSTABLES", "SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS", "SYSTABLES",
+				"SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS",
+				"SYSTABLES", "SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS", "SYSTABLES",
+				"SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS" } ) );
+		Query query = queries.bind( "bigin", params );
+		List< Object > pars = new ArrayList< Object >();
+		String sql = query.getPreparedSQL( pars );
+
+		assert sql.equals( "SELECT *\n" +
+				"FROM SYS.SYSTABLES\n" +
+				"WHERE TABLENAME IN ( ?,?,?,?,? )\n" +
+				"OR TABLENAME IN ( ?,?,?,?,? )\n" +
+				"OR TABLENAME IN ( ?,?,?,?,? )\n" +
+		"OR TABLENAME IN ( ?,?,? )\n" );
+
+		List< Map< String, Object > > result = query.listOfMaps( connection );
+		assert result.size() == 2;
 
 //		Writer out = new OutputStreamWriter( new FileOutputStream( "test.out" ), "UTF-8" );
 //		out.write( sql );
