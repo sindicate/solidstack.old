@@ -96,12 +96,31 @@ Syntax:
 ${groovy expression}
 }}}
 
-Example:
+Example 1:
 
 {{{
 SELECT NAME, AGE
 FROM EMPLOYEES
 WHERE AGE = ${age}
+}}}
+
+Example 2, IN can also be used. The variable 'departments' is a Collection or an array.
+
+{{{
+SELECT NAME, AGE
+FROM EMPLOYEES
+WHERE DEPARTMENT IN (${departments})
+}}}
+
+Oracle limits the size of the list to 1000 elements. When you need more elements you could do the following, assuming the variable 'departments' is of type List:
+
+{{{
+SELECT NAME, AGE
+FROM EMPLOYEES
+WHERE DEPARTMENT IN ( ${ departments.subList( 0, Math.min( 1000, departments.size() ) ) } )
+<% for( def i = 1000; i < departments.size(); i += 1000 ) { %>
+OR DEPARTMENT IN ( ${ departments.subList( i, Math.min( i + 1000, departments.size() ) ) } )
+<% } %>
 }}}
 
 =Comment=
