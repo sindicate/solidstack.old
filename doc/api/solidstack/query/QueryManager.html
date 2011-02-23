@@ -105,17 +105,25 @@ Reads, compiles and caches the queries.
  Usage:
  
  <pre>
-    Map<String, Object> args = new HashMap<String, Object>();
-    args.put("arg1", arg1);
-    args.put("arg2", arg2);
-    Query query = queryManager.bind("path/filename", args);
-    List<Map<String, Object>> result = query.listOfMaps(connection);</pre>
+    Map&lt; String, Object &gt; args = new HashMap&lt; String, Object &gt;();
+    args.put( &quot;arg1&quot;, arg1 );
+    args.put( &quot;arg2&quot;, arg2 );
+    Query query = queryManager.bind( &quot;path/filename&quot;, args );
+    List&lt; Map&lt; String, Object &gt;&gt; result = query.listOfMaps( connection );</pre>
  
- <p>The <A HREF="../../solidstack/query/QueryManager.html#bind(java.lang.String, java.util.Map)"><CODE>bind(String, Map)</CODE></A> call looks in the classpath for a file 'path/filename.gsql' in the package configured with <A HREF="../../solidstack/query/QueryManager.html#setPackage(java.lang.String)"><CODE>setPackage(String)</CODE></A>.</p>
+ <p>
+ The <A HREF="../../solidstack/query/QueryManager.html#bind(java.lang.String, java.util.Map)"><CODE>bind(String, Map)</CODE></A> call looks in the classpath for a file 'path/filename.gsql' in the package configured
+ with <A HREF="../../solidstack/query/QueryManager.html#setPackage(java.lang.String)"><CODE>setPackage(String)</CODE></A>.
+ </p>
  
- <p>The arguments in the map given to the bind call can be any type as long as the template produces something that the JDBC driver understands.</p>
+ <p>
+ The arguments in the map given to the bind call can be any type as long as the template produces something that the
+ JDBC driver understands.
+ </p>
  
- <p>See <A HREF="../../solidstack/query/Query.html" title="class in solidstack.query"><CODE>Query</CODE></A> for a description of what you can do with the query returned by the bind call.</p>
+ <p>
+ See <A HREF="../../solidstack/query/Query.html" title="class in solidstack.query"><CODE>Query</CODE></A> for a description of what you can do with the query returned by the bind call.
+ </p>
 <P>
 
 <P>
