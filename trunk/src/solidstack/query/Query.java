@@ -38,13 +38,13 @@ import java.util.Map.Entry;
 
 import javax.persistence.EntityManager;
 
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.jdbc.Work;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import solidstack.Assert;
-import solidstack.SystemException;
 import solidstack.util.PrimitiveArrayListIterator;
 
 
@@ -147,8 +147,30 @@ public class Query
 		}
 		catch( SQLException e )
 		{
-			throw new SystemException( e );
+			throw new QueryException( e );
 		}
+	}
+
+	/**
+	 * Retrieves a {@link ResultSet} from the given Hibernate {@link Session}.
+	 * 
+	 * @param session The Hibernate {@link Session} to use.
+	 * @return a {@link ResultSet}.
+	 * @see #resultSet()
+	 */
+	public ResultSet resultSet( Session session )
+	{
+		final ResultHolder< ResultSet > result = new ResultHolder< ResultSet >();
+
+		session.doWork( new Work()
+		{
+			public void execute( Connection connection )
+			{
+				result.set( resultSet( connection ) );
+			}
+		});
+
+		return result.get();
 	}
 
 	/**
@@ -187,7 +209,7 @@ public class Query
 
 		session.doWork( new Work()
 		{
-			public void execute( Connection connection ) throws SQLException
+			public void execute( Connection connection )
 			{
 				result.set( listOfArrays( connection ) );
 			}
@@ -256,7 +278,7 @@ public class Query
 		}
 		catch( SQLException e )
 		{
-			throw new SystemException( e );
+			throw new QueryException( e );
 		}
 	}
 
@@ -297,7 +319,7 @@ public class Query
 		}
 		catch( SQLException e )
 		{
-			throw new SystemException( e );
+			throw new QueryException( e );
 		}
 	}
 
@@ -313,7 +335,7 @@ public class Query
 
 		session.doWork( new Work()
 		{
-			public void execute( Connection connection ) throws SQLException
+			public void execute( Connection connection )
 			{
 				result.set( listOfMaps( connection ) );
 			}
@@ -350,7 +372,7 @@ public class Query
 	}
 
 	/**
-	 * Executes an update (DML) or a DDL query, passing through the {@link SQLException} when the JDBC driver throws one.
+	 * Executes an update (DML) or a DDL query.
 	 * 
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 * @throws SQLException Whenever the query caused an {@link SQLException}.
@@ -363,7 +385,7 @@ public class Query
 	}
 
 	/**
-	 * Executes an update (DML) or a DDL query, passing through the {@link SQLException} when the JDBC driver throws one.
+	 * Executes an update (DML) or a DDL query.
 	 * 
 	 * @param connection The {@link Connection} to use.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
@@ -375,7 +397,17 @@ public class Query
 	}
 
 	/**
-	 * Executes an update (DML) or a DDL query. {@link SQLException}s are wrapped in a {@link SystemException}.
+	 * Executes an update (DML) or a DDL query. {@link SQLException}s are wrapped in a {@link QueryException}.
+	 * 
+	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
+	 */
+	public int update()
+	{
+		return update( this.connection );
+	}
+
+	/**
+	 * Executes an update (DML) or a DDL query. {@link SQLException}s are wrapped in a {@link QueryException}.
 	 * 
 	 * @param connection The {@link Connection} to use.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
@@ -388,19 +420,30 @@ public class Query
 		}
 		catch( SQLException e )
 		{
-			// TODO Maybe we should wrap it in another exception.
-			throw new SystemException( e );
+			throw new QueryException( e );
 		}
 	}
 
 	/**
-	 * Executes an update (DML) or a DDL query. {@link SQLException}s are wrapped in a {@link SystemException}.
+	 * Executes an update (DML) or a DDL query through the given Hibernate {@link Session}.
 	 * 
+	 * @param session The Hibernate {@link Session} to use.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
+	 * @throws HibernateException SQLExceptions are translated to HibernateExceptions by Hibernate.
 	 */
-	public int update()
+	public int update( Session session )
 	{
-		return update( this.connection );
+		final ResultHolder< Integer > result = new ResultHolder< Integer >();
+
+		session.doWork( new Work()
+		{
+			public void execute( Connection connection )
+			{
+				result.set( update( connection ) );
+			}
+		});
+
+		return result.get();
 	}
 
 	/**
@@ -436,7 +479,7 @@ public class Query
 		}
 		catch( SQLException e )
 		{
-			throw new SystemException( e );
+			throw new QueryException( e );
 		}
 	}
 
