@@ -40,7 +40,7 @@
 	<!-- Classpaths -->
 
 	<path id="groovy.classpath">
-		<fileset dir="tools/groovy" includes="*.jar" />
+		<fileset dir="lib" includes="groovy*.jar" />
 		<fileset dir="tools/svnkit" includes="*.jar" />
 	</path>
 
@@ -67,6 +67,7 @@
 	<!-- Custom Ant Task Definitions -->
 
 	<taskdef resource="testngtasks" classpathref="testng.classpath" />
+	<taskdef name="groovy" classname="org.codehaus.groovy.ant.Groovy" classpathref="groovy.classpath" />
 
 
 	<!-- Targets -->
@@ -97,17 +98,20 @@
 			</condition>
 		</fail>
 		<mkdir dir="${dist.home}" />
+		<groovy src="scripts/getsvninfo.groovy" />
 		<jar compress="yes" destfile="${dist.home}/solidstack.jar">
 			<zipfileset dir="${build.home}/classes" />
 			<zipfileset dir="." includes="LICENSE.txt,NOTICE.txt,CHANGELOG.TXT" prefix="META-INF" />
 			<manifest>
 				<attribute name="Implementation-Title" value="SolidStack" />
-				<attribute name="Implementation-Version" value="${release.number}" />
+				<attribute name="Implementation-Version" value="${release.number}.${svn.revision}" />
 				<attribute name="Implementation-Vendor-Id" value="solidstack.googlecode.com" />
-				<attribute name="Version" value="${release.number}" />
+				<attribute name="Version" value="${release.number}.${svn.revision}" />
 				<attribute name="Project-Name" value="${ant.project.name}" />
 				<attribute name="Built-By" value="${user.name}" />
 				<attribute name="Target-JRE" value="${target-jre}" />
+				<attribute name="SVN-url" value="${svn.url}" />
+				<attribute name="SVN-revision" value="${svn.committedRevision}" />
 			</manifest>
 		</jar>
 	</target>
