@@ -36,11 +36,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.persistence.EntityManager;
-
-import org.hibernate.HibernateException;
-import org.hibernate.Session;
-import org.hibernate.jdbc.Work;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,28 +147,6 @@ public class Query
 	}
 
 	/**
-	 * Retrieves a {@link ResultSet} from the given Hibernate {@link Session}.
-	 * 
-	 * @param session The Hibernate {@link Session} to use.
-	 * @return a {@link ResultSet}.
-	 * @see #resultSet()
-	 */
-	public ResultSet resultSet( Session session )
-	{
-		final ResultHolder< ResultSet > result = new ResultHolder< ResultSet >();
-
-		session.doWork( new Work()
-		{
-			public void execute( Connection connection )
-			{
-				result.set( resultSet( connection ) );
-			}
-		});
-
-		return result.get();
-	}
-
-	/**
 	 * Retrieves a {@link List} of {@link Object} arrays from the configured {@link Connection}.
 	 * 
 	 * @return A {@link List} of {@link Object} arrays from the given {@link Connection}.
@@ -195,27 +168,6 @@ public class Query
 	{
 		ResultSet resultSet = resultSet( connection );
 		return listOfArrays( resultSet, this.compress );
-	}
-
-	/**
-	 * Retrieves a {@link List} of {@link Object} arrays from the given Hibernate {@link Session}.
-	 * 
-	 * @param session The Hibernate {@link Session} to use.
-	 * @return a {@link List} of {@link Object} arrays.
-	 */
-	public List< Object[] > listOfArrays( final Session session )
-	{
-		final ResultHolder< List< Object[] > > result = new ResultHolder< List< Object[] > >();
-
-		session.doWork( new Work()
-		{
-			public void execute( Connection connection )
-			{
-				result.set( listOfArrays( connection ) );
-			}
-		});
-
-		return result.get();
 	}
 
 	/**
@@ -324,54 +276,6 @@ public class Query
 	}
 
 	/**
-	 * Retrieves a {@link List} of {@link Map}s from the given Hibernate {@link Session}.
-	 * 
-	 * @param session The Hibernate {@link Session} to use.
-	 * @return A {@link List} of {@link Map}s.
-	 */
-	public List< Map< String, Object > > listOfMaps( final Session session )
-	{
-		final ResultHolder< List< Map< String, Object > > > result = new ResultHolder< List< Map< String, Object > > >();
-
-		session.doWork( new Work()
-		{
-			public void execute( Connection connection )
-			{
-				result.set( listOfMaps( connection ) );
-			}
-		});
-
-		return result.get();
-	}
-
-	/**
-	 * Retrieves a {@link List} of JPA Entities from the given {@link EntityManager}.
-	 * 
-	 * @param entityManager The {@link EntityManager} to use.
-	 * @param entityClass The class to map the results to.
-	 * @return A {@link List} of entities.
-	 */
-	public List<?> listOfEntities(EntityManager entityManager, Class<?> entityClass) {
-
-		List< Object > pars = new ArrayList< Object >();
-		String preparedSql = getPreparedSQL( pars );
-
-		javax.persistence.Query query = entityManager.createNativeQuery( preparedSql, entityClass );
-		int i = 0;
-		for( Object par : pars )
-		{
-			if( par != null )
-			{
-				Assert.isFalse( par instanceof Collection );
-				Assert.isFalse( par.getClass().isArray() );
-			}
-			query.setParameter( ++i, par );
-		}
-
-		return query.getResultList();
-	}
-
-	/**
 	 * Executes an update (DML) or a DDL query.
 	 * 
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
@@ -422,28 +326,6 @@ public class Query
 		{
 			throw new QueryException( e );
 		}
-	}
-
-	/**
-	 * Executes an update (DML) or a DDL query through the given Hibernate {@link Session}.
-	 * 
-	 * @param session The Hibernate {@link Session} to use.
-	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
-	 * @throws HibernateException SQLExceptions are translated to HibernateExceptions by Hibernate.
-	 */
-	public int update( Session session )
-	{
-		final ResultHolder< Integer > result = new ResultHolder< Integer >();
-
-		session.doWork( new Work()
-		{
-			public void execute( Connection connection )
-			{
-				result.set( update( connection ) );
-			}
-		});
-
-		return result.get();
 	}
 
 	/**

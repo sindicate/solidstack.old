@@ -5,9 +5,9 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/slf4j-api-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/groovy-all-1.7.5.jar"/>
-	<classpathentry kind="lib" path="test/lib/testng-5.8-jdk15.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate-core-3.3.1.GA.jar"/>
-	<classpathentry kind="lib" path="lib/persistence-api-1.0.jar"/>
+	<classpathentry kind="lib" path="tools/testng/testng-5.8-jdk15.jar"/>
+	<classpathentry kind="lib" path="lib/optional/hibernate-core-3.3.1.GA.jar"/>
+	<classpathentry kind="lib" path="lib/optional/persistence-api-1.0.jar"/>
 	<classpathentry kind="lib" path="test/lib/derby-10.6.1.0.jar"/>
 	<classpathentry kind="lib" path="test/lib/testquery.jar"/>
 	<classpathentry kind="lib" path="test/lib/slf4j-simple-1.6.1.jar"/>
