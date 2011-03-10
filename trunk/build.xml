@@ -45,22 +45,25 @@
 	</path>
 
 	<path id="testng.classpath">
-		<fileset dir="test/lib" includes="*.jar" />
+		<fileset dir="tools/testng" includes="*.jar" />
 	</path>
 
 	<path id="compile.classpath">
-		<fileset dir="lib" includes="*.jar" />
+		<fileset dir="lib" includes="**/*.jar" />
 	</path>
 
 	<path id="compiletest.classpath">
 		<pathelement location="${build.home}/classes" />
-		<fileset dir="test/lib" includes="*.jar" />
 		<path refid="compile.classpath" />
+		<path refid="testng.classpath" />
 	</path>
 
 	<path id="test.classpath">
 		<pathelement location="${build.home}/testclasses" />
-		<path refid="compiletest.classpath" />
+		<pathelement location="${build.home}/classes" />
+		<fileset dir="lib" includes="*.jar" />
+		<fileset dir="test/lib" includes="*.jar" />
+		<path refid="testng.classpath" />
 	</path>
 
 	
