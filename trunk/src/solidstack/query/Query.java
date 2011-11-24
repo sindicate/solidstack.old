@@ -61,7 +61,7 @@ public class Query
 	private Map< String, ? > params;
 	private Connection connection;
 	// TODO Shouldn't this be true by default?
-	private boolean compress;
+	private boolean flyWeight;
 
 	/**
 	 * Constructor.
@@ -103,14 +103,19 @@ public class Query
 		this.params = params;
 	}
 
+	public QueryHibernateAdapter hibernate()
+	{
+		return new QueryHibernateAdapter( this );
+	}
+
 	/**
 	 * If set to true, duplicate values from a query will only be stored once in memory.
 	 * 
-	 * @param compress If set to true, duplicate values from a query will only be stored once in memory.
+	 * @param flyWeight If set to true, duplicate values from a query will only be stored once in memory.
 	 */
-	public void setCompress( boolean compress )
+	public void setFlyWeight( boolean flyWeight )
 	{
-		this.compress = compress;
+		this.flyWeight = flyWeight;
 	}
 
 	/**
@@ -167,17 +172,17 @@ public class Query
 	public List< Object[] > listOfArrays( Connection connection )
 	{
 		ResultSet resultSet = resultSet( connection );
-		return listOfArrays( resultSet, this.compress );
+		return listOfArrays( resultSet, this.flyWeight );
 	}
 
 	/**
 	 * Converts a {@link ResultSet} into a {@link List} of {@link Object} arrays.
 	 * 
 	 * @param resultSet The {@link ResultSet} to convert.
-	 * @param compress If true, duplicate values are stored in memory only once.
+	 * @param flyWeight If true, duplicate values are stored in memory only once.
 	 * @return A {@link List} of {@link Object} arrays containing the data from the result set.
 	 */
-	static public List< Object[] > listOfArrays( ResultSet resultSet, boolean compress )
+	static public List< Object[] > listOfArrays( ResultSet resultSet, boolean flyWeight )
 	{
 		try
 		{
@@ -186,7 +191,7 @@ public class Query
 
 			ArrayList< Object[] > result = new ArrayList< Object[] >();
 
-			if( compress )
+			if( flyWeight )
 			{
 				// THIS CAN REDUCE MEMORY USAGE WITH 90 TO 95 PERCENT, PERFORMANCE IMPACT IS ONLY 5 PERCENT
 
@@ -266,7 +271,7 @@ public class Query
 			for( int col = 0; col < columnCount; col++ )
 				names.put( metaData.getColumnLabel( col + 1 ).toLowerCase( Locale.ENGLISH ), col );
 
-			List< Object[] > result = listOfArrays( resultSet, this.compress );
+			List< Object[] > result = listOfArrays( resultSet, this.flyWeight );
 			return new ResultList( result, names );
 		}
 		catch( SQLException e )

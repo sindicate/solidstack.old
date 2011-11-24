@@ -68,7 +68,7 @@ public class HibernateSupport
 	 * @param session The Hibernate {@link Session} to use.
 	 * @return A {@link List} of {@link Map}s.
 	 */
-	public List< Map< String, Object > > listOfMaps( final Query query, final Session session )
+	static public List< Map< String, Object > > listOfMaps( final Query query, final Session session )
 	{
 		final ResultHolder< List< Map< String, Object > > > result = new ResultHolder< List< Map< String, Object > > >();
 
@@ -91,7 +91,7 @@ public class HibernateSupport
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 * @throws HibernateException SQLExceptions are translated to HibernateExceptions by Hibernate.
 	 */
-	public int update( final Query query, Session session )
+	static public int update( final Query query, Session session )
 	{
 		final ResultHolder< Integer > result = new ResultHolder< Integer >();
 
