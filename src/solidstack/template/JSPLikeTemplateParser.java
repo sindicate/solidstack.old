@@ -197,6 +197,7 @@ public class JSPLikeTemplateParser
 				int cc = reader.read();
 				if( cc != '{' )
 					throw new ParseException( "Expecting an { after the $", reader.getLineNumber() );
+				writer.nextMode( Mode.EXPRESSION2 );
 				readGStringExpression( reader, writer, true );
 				continue;
 			}
@@ -353,8 +354,6 @@ public class JSPLikeTemplateParser
 
 	private void readString( PushbackReader reader, ModalWriter writer, char quote )
 	{
-		Assert.isTrue( writer.nextMode == Mode.EXPRESSION || writer.nextMode == Mode.SCRIPT || writer.nextMode == Mode.TEXT, "Unexpected mode " + writer.nextMode );
-
 		// String can be read in any mode
 		// Expecting $, ", ' and \
 		// " within ${} should not end this string
@@ -397,7 +396,10 @@ public class JSPLikeTemplateParser
 				c = reader.read();
 				if( c != '{' )
 					throw new ParseException( "Expecting an { after the $", reader.getLineNumber() );
+				writer.write( '$' );
+				writer.write( '{' );
 				readGStringExpression( reader, writer, multiline );
+				writer.write( '}' );
 				continue;
 			}
 
@@ -429,8 +431,6 @@ public class JSPLikeTemplateParser
 		// Expecting }, ", ' and {
 		// } within a string should not end this expression
 
-		writer.write( '$' );
-		writer.write( '{' );
 		while( true )
 		{
 			int c = reader.read();
@@ -447,7 +447,6 @@ public class JSPLikeTemplateParser
 			else
 				writer.write( (char)c );
 		}
-		writer.write( '}' );
 	}
 
 	private void readBlock( PushbackReader reader, ModalWriter writer, boolean multiline )
@@ -534,7 +533,11 @@ public class JSPLikeTemplateParser
 			/**
 			 * An <%= %> expression.
 			 */
-			EXPRESSION
+			EXPRESSION,
+			/**
+			 * An ${ } expression.
+			 */
+			EXPRESSION2
 		}
 
 		/**
@@ -543,7 +546,7 @@ public class JSPLikeTemplateParser
 		protected Mode mode = Mode.SCRIPT;
 
 		/**
-		 * The next mode. Gets activated when something is writen.
+		 * The next mode. Gets activated when something is written.
 		 */
 		protected Mode nextMode = Mode.SCRIPT;
 

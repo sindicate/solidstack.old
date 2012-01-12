@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack.query;
+package solidstack.template;
 
 import groovy.lang.Closure;
 import groovy.lang.GroovyClassLoader;
@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 import solidstack.Assert;
 import solidstack.io.PushbackReader;
 import solidstack.template.JSPLikeTemplateParser;
-import solidstack.template.Util;
 import solidstack.template.JSPLikeTemplateParser.ModalWriter;
 import solidstack.template.ParseException;
 
@@ -44,9 +43,9 @@ import solidstack.template.ParseException;
  * 
  * @author René M. de Bloois
  */
-public class QueryTransformer
+public class TemplateTransformer
 {
-	static final private Logger LOGGER = LoggerFactory.getLogger( QueryTransformer.class );
+	static final private Logger LOGGER = LoggerFactory.getLogger( TemplateTransformer.class );
 
 	static final private Pattern pathPattern = Pattern.compile( "/*(?:(.+?)/+)?([^\\/]+)" );
 
@@ -58,7 +57,7 @@ public class QueryTransformer
 	 * @param lastModified The last modified time stamp of the query template.
 	 * @return A {@link Closure}.
 	 */
-	static public QueryTemplate compile( Reader reader, String path, long lastModified )
+	static public Template compile( Reader reader, String path, long lastModified )
 	{
 		LOGGER.info( "compile [" + path + "]" );
 		Matcher matcher = pathPattern.matcher( path );
@@ -66,7 +65,7 @@ public class QueryTransformer
 		path = matcher.group( 1 );
 		String name = matcher.group( 2 ).replaceAll( "[\\.-]", "_" );
 
-		String pkg = "solidstack.query.tmp.gsql";
+		String pkg = "solidstack.template.tmp";
 		if( path != null )
 			pkg += "." + path.replaceAll( "/", "." );
 
@@ -76,7 +75,7 @@ public class QueryTransformer
 
 		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script, name, "x" ) );
 		GroovyObject object = Util.newInstance( groovyClass );
-		return new QueryTemplate( (Closure)object.invokeMethod( "getClosure", null ), lastModified );
+		return new Template( (Closure)object.invokeMethod( "getClosure", null ), lastModified );
 	}
 
 	/**
@@ -87,7 +86,7 @@ public class QueryTransformer
 	 * @param lastModified The last modified time stamp of the query template.
 	 * @return A {@link Closure}.
 	 */
-	static public QueryTemplate compile( String query, String path, long lastModified )
+	static public Template compile( String query, String path, long lastModified )
 	{
 		return compile( new StringReader( query ), path, lastModified );
 	}
@@ -130,8 +129,8 @@ public class QueryTransformer
 		@Override
 		protected void directive( String name, String attribute, String value, int lineNumber )
 		{
-			if( !name.equals( "query" ) )
-				throw new ParseException( "Only expecting query directives", lineNumber );
+			if( !name.equals( "template" ) )
+				throw new ParseException( "Only expecting template directives", lineNumber );
 			if( !attribute.equals( "import" ) )
 				throw new ParseException( "The query directive only allows import attributes", lineNumber );
 			this.imports.add( value );
@@ -143,38 +142,24 @@ public class QueryTransformer
 			if( this.mode == mode )
 				return;
 
-			// TODO Do this with a matrix switch
+			// TODO Use switch?
 			if( this.mode == Mode.TEXT )
-			{
-				if( mode != Mode.EXPRESSION2 )
-					append( "\"\"\");" );
-			}
+				append( "\"\"\");" );
 			else if( this.mode == Mode.EXPRESSION )
 				append( ");" );
 			else if( this.mode == Mode.EXPRESSION2 )
-			{
-				append( "}" );
-				if( mode != Mode.TEXT )
-					append( "\"\"\");" );
-			}
+				append( "));" );
 			else if( this.mode == Mode.SCRIPT )
 				append( ';' ); // Groovy does not understand: "...} builder.append(..." Need extra ; when coming from SCRIPT
 			else
 				Assert.fail( "Unknown mode " + this.mode );
 
 			if( mode == Mode.TEXT )
-			{
-				if( this.mode != Mode.EXPRESSION2 )
-					append( "builder.append(\"\"\"" );
-			}
+				append( "writer.write(\"\"\"" );
 			else if( mode == Mode.EXPRESSION )
-				append( "builder.append(" );
+				append( "writer.write(" );
 			else if( mode == Mode.EXPRESSION2 )
-			{
-				if( this.mode != Mode.TEXT )
-					append( "builder.append(\"\"\"" );
-				append( "${" );
-			}
+				append( "writer.write(escape(" );
 			else if( mode != Mode.SCRIPT )
 				Assert.fail( "Unknown mode " + mode );
 
@@ -196,9 +181,9 @@ public class QueryTransformer
 			}
 			result.append( "class " );
 			result.append( this.cls );
-			result.append( "{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();" );
+			result.append( "{Closure getClosure(){return{writer->" );
 			result.append( super.getBuffer() );
-			result.append( ";return builder.toGString()}}}" ); // Groovy does not understand: "...} return ..." Need extra ; to be sure
+			result.append( "}}}" ); // Groovy does not understand: "...} return ..." Need extra ; to be sure
 			return result.toString();
 		}
 	}
