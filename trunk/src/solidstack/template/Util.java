@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack.query;
+package solidstack.template;
 
 import solidstack.SystemException;
 import groovy.lang.GroovyClassLoader;
