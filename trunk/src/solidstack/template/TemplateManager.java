@@ -41,35 +41,26 @@ import solidstack.query.UrlResource;
  *    Map&lt; String, Object &gt; args = new HashMap&lt; String, Object &gt;();
  *    args.put( &quot;arg1&quot;, arg1 );
  *    args.put( &quot;arg2&quot;, arg2 );
- *    Query query = queryManager.bind( &quot;path/filename&quot;, args );
- *    List&lt; Map&lt; String, Object &gt;&gt; result = query.listOfMaps( connection );</pre>
+ *    Template template = templateManager.getTemplate( &quot;path/filename&quot; );
+ *    String result = template.apply( args );</pre>
  * 
  * <p>
- * The {@link #bind(String, Map)} call looks in the classpath for a file 'path/filename.gsql' in the package configured
+ * The {@link #getTemplate(String)} call looks in the classpath for a file 'path/filename' in the package configured
  * with {@link #setPackage(String)}.
- * </p>
- * 
- * <p>
- * The arguments in the map given to the bind call can be any type as long as the template produces something that the
- * JDBC driver understands.
- * </p>
- * 
- * <p>
- * See {@link Query} for a description of what you can do with the query returned by the bind call.
  * </p>
  * 
  * @author René M. de Bloois
  */
 public class TemplateManager
 {
-	static final private Logger LOGGER = LoggerFactory.getLogger( TemplateManager.class );
+	static private Logger log = LoggerFactory.getLogger( TemplateManager.class );
 
 	private String packageSlashed = ""; // when setPackage is not called
 	private boolean reloading;
 	private Map< String, Template > templates = new HashMap< String, Template >();
 
 	/**
-	 * Configures the package which is the root of the gsql file.
+	 * Configures the package which is the root of the template files.
 	 * 
 	 * @param pkg The package.
 	 */
@@ -91,19 +82,19 @@ public class TemplateManager
 	 */
 	public void setReloading( boolean reloading )
 	{
-		LOGGER.info( "Reloading = [" + reloading + "]" );
+		log.info( "Reloading = [" + reloading + "]" );
 		this.reloading = reloading;
 	}
 
 	/**
-	 * Returns the {@link QueryTemplate} with the given path.
+	 * Returns the compiled {@link Template} with the given path.
 	 * 
-	 * @param path The path of the query.
-	 * @return The {@link QueryTemplate}.
+	 * @param path The path of the template.
+	 * @return The {@link Template}.
 	 */
 	synchronized public Template getTemplate( String path )
 	{
-		LOGGER.debug( "getTemplate [" + path + "]" );
+		log.debug( "getTemplate [" + path + "]" );
 
 		Assert.isTrue( !path.startsWith( "/" ), "path should not start with a /" );
 
@@ -118,7 +109,7 @@ public class TemplateManager
 				resource = getResource( path );
 				if( resource.exists() && resource.getLastModified() > template.getLastModified() )
 				{
-					LOGGER.info( resource.toString() + " changed, reloading" );
+					log.info( resource.toString() + " changed, reloading" );
 					template = null;
 				}
 			}
@@ -135,7 +126,7 @@ public class TemplateManager
 				throw new TemplateNotFoundException( error );
 			}
 
-			LOGGER.info( "Loading " + resource.toString() );
+			log.info( "Loading " + resource.toString() );
 
 			try
 			{
@@ -170,8 +161,8 @@ public class TemplateManager
 
 		UrlResource resource = new UrlResource( url );
 
-		if( LOGGER.isDebugEnabled() )
-			LOGGER.debug( resource.toString() + ", lastModified: " + new Date( resource.getLastModified() ) + " (" + resource.getLastModified() + ")" );
+		if( log.isDebugEnabled() )
+			log.debug( resource.toString() + ", lastModified: " + new Date( resource.getLastModified() ) + " (" + resource.getLastModified() + ")" );
 
 		return resource;
 	}

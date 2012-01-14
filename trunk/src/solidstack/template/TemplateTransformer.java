@@ -50,12 +50,12 @@ public class TemplateTransformer
 	static final private Pattern pathPattern = Pattern.compile( "/*(?:(.+?)/+)?([^\\/]+)" );
 
 	/**
-	 * Compiles a query template into a {@link Closure}.
+	 * Compiles a template into a {@link Template}.
 	 * 
-	 * @param reader The {@link Reader} for the query template text.
-	 * @param path The path of the query template.
-	 * @param lastModified The last modified time stamp of the query template.
-	 * @return A {@link Closure}.
+	 * @param reader The {@link Reader} for the template text.
+	 * @param path The path of the template.
+	 * @param lastModified The last modified time stamp of the template.
+	 * @return A {@link Template}.
 	 */
 	static public Template compile( Reader reader, String path, long lastModified )
 	{
@@ -79,16 +79,16 @@ public class TemplateTransformer
 	}
 
 	/**
-	 * Compiles a query template into a {@link Closure}.
+	 * Compiles a template into a {@link Template}.
 	 * 
-	 * @param query The text of the query template.
-	 * @param path The path of the query template.
-	 * @param lastModified The last modified time stamp of the query template.
-	 * @return A {@link Closure}.
+	 * @param template The text of the template.
+	 * @param path The path of the  template.
+	 * @param lastModified The last modified time stamp of the  template.
+	 * @return A {@link Template}.
 	 */
-	static public Template compile( String query, String path, long lastModified )
+	static public Template compile( String template, String path, long lastModified )
 	{
-		return compile( new StringReader( query ), path, lastModified );
+		return compile( new StringReader( template ), path, lastModified );
 	}
 
 	// For testing purposes
@@ -183,7 +183,7 @@ public class TemplateTransformer
 			result.append( this.cls );
 			result.append( "{Closure getClosure(){return{writer->" );
 			result.append( super.getBuffer() );
-			result.append( "}}}" ); // Groovy does not understand: "...} return ..." Need extra ; to be sure
+			result.append( "}}}" );
 			return result.toString();
 		}
 	}

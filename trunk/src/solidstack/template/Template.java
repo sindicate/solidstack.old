@@ -17,15 +17,13 @@
 package solidstack.template;
 
 import groovy.lang.Closure;
-import groovy.lang.GString;
 
 import java.io.StringWriter;
 import java.io.Writer;
-import java.sql.Connection;
 import java.util.Map;
 
 /**
- * Represents the query template.
+ * A compiled template.
  * 
  * @author René M. de Bloois
  */
@@ -37,8 +35,8 @@ public class Template
 	/**
 	 * Constructor.
 	 * 
-	 * @param closure The closure that produces the {@link GString} for the query.
-	 * @param lastModified The last modified time stamp of the file that contains the query template.
+	 * @param closure A groovy closure which is the compiled version of the template.
+	 * @param lastModified The last modified time stamp of the file that contains the template.
 	 */
 	public Template( Closure closure, long lastModified )
 	{
@@ -47,10 +45,10 @@ public class Template
 	}
 
 	/**
-	 * Bind the template with the given parameters. This produces a {@link Query} that can be executed against a {@link Connection}.
+	 * Apply this template.
 	 * 
-	 * @param params The parameters for the query.
-	 * @return A {@link Query}.
+	 * @param params The parameters to be applied.
+	 * @param writer The result of applying this template is written to this writer.
 	 */
 	public void apply( Map< String, ? > params, Writer writer )
 	{
@@ -59,6 +57,12 @@ public class Template
 		template.call( writer );
 	}
 
+	/**
+	 * Apply this template.
+	 * 
+	 * @param params The parameters to be applied.
+	 * @return The result of applying this template.
+	 */
 	public String apply( Map< String, ? > params )
 	{
 		StringWriter writer = new StringWriter();
@@ -67,9 +71,9 @@ public class Template
 	}
 
 	/**
-	 * Returns the last modification time stamp for the file that contains the query template.
+	 * Returns the last modification time stamp for the file that contains the template.
 	 * 
-	 * @return The last modification time stamp for the file that contains the query template.
+	 * @return The last modification time stamp for the file that contains the template.
 	 */
 	public long getLastModified()
 	{
