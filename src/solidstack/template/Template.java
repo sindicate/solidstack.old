@@ -53,7 +53,7 @@ public class Template
 	public void apply( Map< String, ? > params, Writer writer )
 	{
 		Closure template = (Closure)this.template.clone();
-		template.setDelegate( params );
+		template.setDelegate( new TemplateDelegate( params ) );
 		template.call( writer );
 	}
 
