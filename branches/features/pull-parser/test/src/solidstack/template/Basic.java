@@ -46,7 +46,7 @@ public class Basic
 	@Test(groups="new")
 	public void testTransform() throws Exception
 	{
-		String groovy = TemplateTransformer.translate( new FileReader( "test/src/solidstack/template/test.gtext" ) );
+		String groovy = TemplateTransformer.translate( "p", "c", new FileReader( "test/src/solidstack/template/test.gtext" ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
 		// TODO What about the class name?
@@ -100,7 +100,7 @@ public class Basic
 				"%>\n" +
 				"TEST" );
 
-		String groovy = TemplateTransformer.translate( reader );
+		String groovy = TemplateTransformer.translate( "p", "c", reader );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
 		assert groovy.equals(

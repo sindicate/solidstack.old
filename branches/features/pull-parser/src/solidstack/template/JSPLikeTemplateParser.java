@@ -16,9 +16,7 @@
 
 package solidstack.template;
 
-import solidstack.Assert;
 import solidstack.io.PushbackReader;
-import solidstack.template.JSPLikeTemplateParser.ModalWriter.Mode;
 
 
 /**
@@ -28,223 +26,151 @@ import solidstack.template.JSPLikeTemplateParser.ModalWriter.Mode;
  */
 public class JSPLikeTemplateParser
 {
-	/**
-	 * Parse the template.
-	 * 
-	 * @param reader The input reader.
-	 * @param writer This writer produces the right Groovy code.
-	 * @return The resulting Groovy code.
-	 */
-	public String parse( PushbackReader reader, ModalWriter writer )
+	static public enum EVENT { TEXT, SCRIPT, EXPRESSION, GSTRING, DIRECTIVE, COMMENT, EOF };
+
+	static public class ParseEvent
 	{
-		StringBuilder leading = readWhitespace( reader );
-		while( true )
+		protected EVENT event;
+		protected String data;
+
+		protected ParseEvent( EVENT event, String data )
 		{
-			writer.nextMode( Mode.TEXT );
-
-			// We are in TEXT mode here.
-			// Expecting <%@, <%, <%=, <%--, ${
-			// " must be escaped because text is appended with a append("""...""")
-			// \n must be detected because we want to read leading whitespace in a special way
-			// Only <, $ and \ may be escaped
-
-			int c = reader.read();
-			if( c == -1 )
-				break;
-
-			// Escape $, \ or <
-			if( c == '\\' )
-			{
-				writer.write( leading ); leading = null;
-				int cc = reader.read();
-				if( cc == '$' || cc == '\\' )
-				{
-					writer.write( (char)c );
-					writer.write( (char)cc );
-				}
-				else if( cc == '<' )
-					writer.write( (char)cc );
-				else
-					throw new ParseException( "Only <, $ or \\ can be escaped", reader.getLineNumber() );
-				continue;
-			}
-
-			if( c == '<' )
-			{
-				int cc = reader.read();
-				if( cc != '%' )
-				{
-					writer.write( leading ); leading = null;
-					writer.write( (char)c );
-					reader.push( cc );
-					continue;
-				}
-
-				reader.mark( 2 );
-				c = reader.read();
-
-				// <%= expression
-				if( c == '=' )
-				{
-					writer.write( leading ); leading = null;
-					writer.nextMode( Mode.EXPRESSION );
-					readScript( reader, writer );
-					continue;
-				}
-
-				// <%@ directive
-				if( c == '@' )
-				{
-					writer.nextMode( Mode.SCRIPT );
-					if( leading == null )
-					{
-						readDirective( reader, writer );
-					}
-					else
-					{
-						// Directive started with leading whitespace only
-						readDirective( reader, writer );
-						StringBuilder trailing = readWhitespace( reader );
-
-						c = reader.read();
-						if( (char)c == '\n' )
-						{
-							// Directive on its own lines, leading and trailing whitespace are ignored
-							writer.write( '\n' ); // Must not lose newlines
-							leading = readWhitespace( reader );
-						}
-						else
-						{
-							reader.push( c );
-							writer.nextMode( Mode.TEXT );
-							writer.write( leading ); leading = null;
-							writer.write( trailing );
-						}
-					}
-					continue;
-				}
-
-				// <%-- comment
-				if( c == '-' && reader.read() == '-' )
-				{
-					writer.nextMode( Mode.SCRIPT );
-					if( leading == null )
-						readComment( reader, writer );
-					else
-					{
-						// Comment started with leading whitespace only
-						readComment( reader, writer );
-						StringBuilder trailing = readWhitespace( reader );
-						c = reader.read();
-						if( (char)c == '\n' )
-						{
-							writer.write( '\n' ); // Must not lose newlines
-							leading = readWhitespace( reader ); // Comment on its own lines, ignore the lines totally
-						}
-						else
-						{
-							reader.push( c );
-							writer.nextMode( Mode.TEXT );
-							writer.write( leading ); leading = null;
-							writer.write( trailing );
-						}
-					}
-					continue;
-				}
-
-				reader.reset();
-
-				// <% script
-				if( leading == null )
-				{
-					writer.nextMode( Mode.SCRIPT );
-					readScript( reader, writer );
-				}
-				else
-				{
-					// ASSUMPTION: SCRIPT has no adornments
-
-					// Script started with leading whitespace only, transform the script into a new buffer
-					ModalWriter buffer = new ScriptWriter();
-					readScript( reader, buffer );
-					StringBuilder trailing = readWhitespace( reader );
-
-					c = reader.read();
-					if( (char)c == '\n' )
-					{
-						// Script on its own lines, leading and trailing whitespace are added to the script instead of the text
-						writer.nextMode( Mode.SCRIPT );
-						writer.write( leading ); leading = null;
-						writer.write( buffer.getBuffer() );
-						writer.write( trailing );
-						writer.write( '\n' ); // Must not lose newlines
-						leading = readWhitespace( reader );
-					}
-					else
-					{
-						reader.push( c );
-						writer.nextMode( Mode.TEXT );
-						writer.write( leading ); leading = null;
-						writer.nextMode( Mode.SCRIPT );
-						writer.write( buffer.getBuffer() );
-						writer.nextMode( Mode.TEXT );
-						writer.write( trailing );
-					}
-				}
-
-				continue;
-			}
-
-			writer.write( leading ); leading = null;
-
-			// ${ expression
-			if( c == '$' )
-			{
-				int cc = reader.read();
-				if( cc != '{' )
-					throw new ParseException( "Expecting an { after the $", reader.getLineNumber() );
-				writer.nextMode( Mode.EXPRESSION2 );
-				readGStringExpression( reader, writer, true );
-				continue;
-			}
-
-			// From here it's just text
-
-			if( c == '"' )
-			{
-				// Because we are in a """ string, we need to add escaping to a "
-				writer.write( '\\' );
-				writer.write( (char)c );
-				continue;
-			}
-
-			if( c == '\n' )
-			{
-				// Newline, we need to read leading whitespace
-				writer.write( (char)c );
-				leading = readWhitespace( reader );
-				continue;
-			}
-
-			writer.write( (char)c );
+			this.event = event;
+			this.data = data;
 		}
 
-		writer.nextMode( Mode.TEXT );
-		writer.write( leading );
-		writer.activateMode( Mode.SCRIPT ); // ASSUMPTION: Script is not decorated
+		public EVENT getEvent()
+		{
+			return this.event;
+		}
 
-		return writer.getResult();
+		public String getText()
+		{
+			return this.data;
+		}
+	}
+	static public ParseEvent EOF = new ParseEvent( EVENT.EOF, null );
+
+	protected PushbackReader reader;
+
+	protected StringBuilder buffer = new StringBuilder( 1024 );
+
+
+	public JSPLikeTemplateParser( PushbackReader reader )
+	{
+		this.reader = reader;
+	}
+
+	public ParseEvent next()
+	{
+		while( true )
+		{
+			int c = this.reader.read();
+			switch( c )
+			{
+				case -1:
+					if( this.buffer.length() > 0 )
+						return new ParseEvent( EVENT.TEXT, popBuffer() );
+					return EOF;
+
+				case '\\':
+					int cc = this.reader.read();
+					switch( cc )
+					{
+						case '$':
+						case '\\':
+							this.buffer.append( '\\' );
+							this.buffer.append( (char)cc );
+							continue;
+						case '<':
+							this.buffer.append( (char)cc );
+							continue;
+						default:
+							throw new ParseException( "Only <, $ or \\ can be escaped", this.reader.getLineNumber() );
+					}
+
+				case '<':
+					cc = this.reader.read();
+					if( cc != '%' )
+					{
+						this.reader.push( cc );
+						this.buffer.append( '<' );
+						continue;
+					}
+					if( this.buffer.length() > 0 )
+					{
+						// TODO Return text segments
+						this.reader.push( cc );
+						this.reader.push( c );
+						return new ParseEvent( EVENT.TEXT, popBuffer() );
+					}
+					return readMarkup();
+
+				case '$':
+					if( this.buffer.length() > 0 )
+					{
+						// TODO Return text segments
+						this.reader.push( c );
+						return new ParseEvent( EVENT.TEXT, popBuffer() );
+					}
+					return readDollar();
+
+				default:
+					this.buffer.append( (char)c );
+			}
+		}
+	}
+
+	protected String popBuffer()
+	{
+		String result = this.buffer.toString();
+		this.buffer.setLength( 0 );
+		return result;
+	}
+
+	protected ParseEvent readMarkup()
+	{
+		this.reader.mark( 2 );
+		int c = this.reader.read();
+		switch( c )
+		{
+			case '=':
+				ParseEvent event = readScript( this.reader );
+				event.event = EVENT.EXPRESSION;
+				return event;
+
+			case '@':
+				// TODO Directives should be on top only
+				return readDirective( this.reader );
+
+			case '-':
+				if( this.reader.read() == '-' )
+					return readComment( this.reader );
+				//$FALL-THROUGH$
+
+			default:
+				this.reader.reset();
+				return readScript( this.reader );
+		}
+	}
+
+	protected ParseEvent readDollar()
+	{
+		int c = this.reader.read();
+		if( c != '{' )
+			throw new ParseException( "Expecting an { after the $", this.reader.getLineNumber() );
+		return readGStringExpression( this.reader, true );
 	}
 
 	// Needed to parse directives
-	static private String getToken( PushbackReader reader, ModalWriter writer )
+	private String getToken( PushbackReader reader )
 	{
 		// Skip whitespace
 		int ch = reader.read();
 		while( ch != -1 && Character.isWhitespace( ch ) )
 		{
 			if( ch == '\n' )
-				writer.write( (char)ch );
+				this.buffer.append( (char)ch );
 			ch = reader.read();
 		}
 
@@ -299,25 +225,27 @@ public class JSPLikeTemplateParser
 		return String.valueOf( (char)ch );
 	}
 
-	private void readDirective( PushbackReader reader, ModalWriter writer )
+	protected ParseEvent readDirective( PushbackReader reader )
 	{
-		String name = getToken( reader, writer );
+		String name = getToken( reader );
 		if( name == null )
 			throw new ParseException( "Expecting a name", reader.getLineNumber() );
 
-		String token = getToken( reader, writer );
+		String token = getToken( reader );
 		while( token != null )
 		{
 			if( token.equals( "%>" ) )
-				return;
-			if( !getToken( reader, writer ).equals( "=" ) )
+				return new ParseEvent( EVENT.DIRECTIVE, popBuffer() ); // TODO directives
+			if( !getToken( reader ).equals( "=" ) )
 				throw new ParseException( "Expecting '=' in directive", reader.getLineNumber() );
-			String value = getToken( reader, writer );
+			String value = getToken( reader );
 			if( value == null || !value.startsWith( "\"" ) || !value.endsWith( "\"" ) )
 				throw new ParseException( "Expecting a string value in directive", reader.getLineNumber() );
-			writer.directive( name, token, value.substring( 1, value.length() - 1 ), reader.getLineNumber() );
-			token = getToken( reader, writer );
+//			writer.directive( name, token, value.substring( 1, value.length() - 1 ), reader.getLineNumber() );
+			token = getToken( reader );
 		}
+
+		throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
 	}
 
 	private StringBuilder readWhitespace( PushbackReader reader )
@@ -333,10 +261,8 @@ public class JSPLikeTemplateParser
 		return builder;
 	}
 
-	private void readScript( PushbackReader reader, ModalWriter writer )
+	private ParseEvent readScript( PushbackReader reader )
 	{
-		Assert.isTrue( writer.nextMode == Mode.SCRIPT || writer.nextMode == Mode.EXPRESSION );
-
 		// We are in SCRIPT/EXPRESSION mode here.
 		// Expecting ", ' or %>
 		// %> within strings should not end the script
@@ -344,38 +270,44 @@ public class JSPLikeTemplateParser
 		while( true )
 		{
 			int c = reader.read();
-			if( c < 0 )
-				throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
-			if( c == '"' || c == '\'' )
-				readString( reader, writer, (char)c );
-			else if( c == '%' )
+			switch( c )
 			{
-				c = reader.read();
-				if( c == '>' )
+				case -1:
+					throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
+
+				case '"':
+				case '\'':
+					readString( reader, (char)c );
 					break;
-				reader.push( c );
-				writer.write( '%' );
+
+				case '%':
+					int cc = reader.read();
+					if( cc == '>' )
+						return new ParseEvent( EVENT.SCRIPT, popBuffer() );
+					reader.push( cc );
+					//$FALL-THROUGH$
+
+				default:
+					this.buffer.append( (char)c );
 			}
-			else
-				writer.write( (char)c );
 		}
 	}
 
-	private void readString( PushbackReader reader, ModalWriter writer, char quote )
+	private void readString( PushbackReader reader, char quote )
 	{
 		// String can be read in any mode
 		// Expecting $, ", ' and \
 		// " within ${} should not end this string
 		// \ is used to escape $, " and itself, and special characters
 
-		writer.write( quote );
+		this.buffer.append( quote );
 		boolean multiline = false;
 		reader.mark( 2 );
 		if( reader.read() == quote && reader.read() == quote )
 		{
 			multiline = true;
-			writer.write( quote );
-			writer.write( quote );
+			this.buffer.append( quote );
+			this.buffer.append( quote );
 		}
 		else
 			reader.reset();
@@ -391,10 +323,10 @@ public class JSPLikeTemplateParser
 
 			if( c == '\\' )
 			{
-				writer.write( (char)c );
+				this.buffer.append( (char)c );
 				c = reader.read();
 				if( "bfnrt'\"\\$".indexOf( c ) >= 0 )
-					writer.write( (char)c );
+					this.buffer.append( (char)c );
 				else
 					throw new ParseException( "Only b, f, n, r, t, ', \",  $ or \\ can be escaped", reader.getLineNumber() );
 				continue;
@@ -405,24 +337,24 @@ public class JSPLikeTemplateParser
 				c = reader.read();
 				if( c != '{' )
 					throw new ParseException( "Expecting an { after the $", reader.getLineNumber() );
-				writer.write( '$' );
-				writer.write( '{' );
-				readGStringExpression( reader, writer, multiline );
-				writer.write( '}' );
+				this.buffer.append( '$' );
+				this.buffer.append( '{' );
+				readGStringExpression( reader, multiline );
+				this.buffer.append( '{' );
 				continue;
 			}
 
 			if( c == quote )
 			{
-				writer.write( quote );
+				this.buffer.append( quote );
 				if( !multiline )
 					return;
 
 				reader.mark( 2 );
 				if( reader.read() == quote && reader.read() == quote )
 				{
-					writer.write( quote );
-					writer.write( quote );
+					this.buffer.append( quote );
+					this.buffer.append( quote );
 					break;
 				}
 
@@ -430,11 +362,11 @@ public class JSPLikeTemplateParser
 				continue;
 			}
 
-			writer.write( (char)c );
+			this.buffer.append( (char)c );
 		}
 	}
 
-	private void readGStringExpression( PushbackReader reader, ModalWriter writer, boolean multiline )
+	protected ParseEvent readGStringExpression( PushbackReader reader, boolean multiline )
 	{
 		// GStringExpressions can be read in any mode
 		// Expecting }, ", ' and {
@@ -448,22 +380,22 @@ public class JSPLikeTemplateParser
 			if( !multiline && c == '\n' )
 				throw new ParseException( "Unexpected end of line", reader.getLineNumber() );
 			if( c == '}' )
-				break;
+				return new ParseEvent( EVENT.GSTRING, popBuffer() );
 			if( c == '"' || c == '\'' )
-				readString( reader, writer, (char)c );
+				readString( reader, (char)c );
 			else if( c =='{' )
-				readBlock( reader, writer, multiline );
+				readBlock( reader, multiline );
 			else
-				writer.write( (char)c );
+				this.buffer.append( (char)c );
 		}
 	}
 
-	private void readBlock( PushbackReader reader, ModalWriter writer, boolean multiline )
+	private void readBlock( PushbackReader reader, boolean multiline )
 	{
 		// Expecting }, " or '
 		// } within a string should not end this block
 
-		writer.write( '{' );
+		this.buffer.append( '{' );
 		while( true )
 		{
 			int c = reader.read();
@@ -474,16 +406,16 @@ public class JSPLikeTemplateParser
 			if( c == '}' )
 				break;
 			if( c == '"' || c == '\'' )
-				readString( reader, writer, (char)c );
+				readString( reader, (char)c );
 			else if( c =='{' )
-				readBlock( reader, writer, multiline );
+				readBlock( reader, multiline );
 			else
-				writer.write( (char)c );
+				this.buffer.append( (char)c );
 		}
-		writer.write( '}' );
+		this.buffer.append( '}' );
 	}
 
-	private void readComment( PushbackReader reader, ModalWriter writer )
+	protected ParseEvent readComment( PushbackReader reader )
 	{
 		// We are in SCRIPT mode (needed to transfer newlines from the comment to the script)
 		// Expecting --%>, <%--, \n
@@ -499,175 +431,21 @@ public class JSPLikeTemplateParser
 			{
 				reader.mark( 10 );
 				if( reader.read() == '-' && reader.read() == '%' && reader.read() == '>' )
-					break;
+					return new ParseEvent( EVENT.COMMENT, popBuffer() );
 				reader.reset();
 			}
 			else if( c == '<' )
 			{
 				reader.mark( 10 );
 				if( reader.read() == '%' && reader.read() == '-' && reader.read() == '-' )
-					readComment( reader, writer );
+					readComment( reader );
 				else
 					reader.reset();
 			}
 			else if( c == '\n' )
 			{
-				writer.write( '\n' );
+				this.buffer.append( '\n' );
 			}
-		}
-	}
-
-	/**
-	 * A writer that writes in different modes. The implementation of this class need to react to mode changes.
-	 * 
-	 * @author René M. de Bloois
-	 */
-	static abstract public class ModalWriter
-	{
-		/**
-		 * The different modes that the {@link ModalWriter} should be able to work in.
-		 * 
-		 * @author René M. de Bloois
-		 */
-		static public enum Mode
-		{
-			/**
-			 * Script mode: <% %>.
-			 */
-			SCRIPT,
-			/**
-			 * Text mode.
-			 */
-			TEXT,
-			/**
-			 * An <%= %> expression.
-			 */
-			EXPRESSION,
-			/**
-			 * An ${ } expression.
-			 */
-			EXPRESSION2
-		}
-
-		/**
-		 * The current mode.
-		 */
-		protected Mode mode = Mode.SCRIPT;
-
-		/**
-		 * The next mode. Gets activated when something is written.
-		 */
-		protected Mode nextMode = Mode.SCRIPT;
-
-		private StringBuilder buffer = new StringBuilder();
-
-		/**
-		 * A directive is encountered.
-		 * 
-		 * @param name The name of the directive.
-		 * @param attribute The attribute name.
-		 * @param value The value of the attribute.
-		 * @param lineNumber The line number where the directive is encountered.
-		 */
-		@SuppressWarnings( "unused" )
-		protected void directive( String name, String attribute, String value, int lineNumber )
-		{
-			// Nothing
-		}
-
-		/**
-		 * Sets the next mode. This mode gets activated when something is written.
-		 * 
-		 * @param mode The next mode.
-		 */
-		protected void nextMode( Mode mode )
-		{
-			this.nextMode = mode;
-		}
-
-		/**
-		 * Activate the next mode and write the given character.
-		 * 
-		 * @param c The character to write.
-		 */
-		protected void write( char c )
-		{
-			activateMode( this.nextMode );
-			this.buffer.append( c );
-		}
-
-		/**
-		 * Activate the next mode and write the given character sequence.
-		 * 
-		 * @param string The character sequence to write.
-		 */
-		protected void write( StringBuilder string ) // StringBuilder.append does strange stuff when given a CharSequence
-		{
-			if( string == null || string.length() == 0 )
-				return;
-			activateMode( this.nextMode );
-			this.buffer.append( string );
-		}
-
-		/**
-		 * Directly activate the given mode. Implementors should react to a mode change.
-		 * 
-		 * @param mode The mode to activate.
-		 */
-		abstract protected void activateMode( Mode mode );
-
-		/**
-		 * Returns the buffer.
-		 * 
-		 * @return The buffer.
-		 */
-		protected StringBuilder getBuffer()
-		{
-			return this.buffer;
-		}
-
-		/**
-		 * Returns the result.
-		 * 
-		 * @return The result.
-		 */
-		abstract protected String getResult();
-
-		/**
-		 * Directly append the given character to the buffer.
-		 * 
-		 * @param c The character to append.
-		 */
-		protected void append( char c )
-		{
-			this.buffer.append( c );
-		}
-
-		/**
-		 * Directly append the given character sequence to the buffer.
-		 * 
-		 * @param string The character sequence to append.
-		 */
-		protected void append( CharSequence string )
-		{
-			this.buffer.append( string );
-		}
-	}
-
-	static class ScriptWriter extends ModalWriter
-	{
-		@Override
-		protected void activateMode( Mode mode )
-		{
-			if( this.mode == mode )
-				return;
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		protected String getResult()
-		{
-			throw new UnsupportedOperationException();
 		}
 	}
 }

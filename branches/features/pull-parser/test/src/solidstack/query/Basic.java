@@ -80,31 +80,31 @@ public class Basic
 	@Test
 	public void testTransform() throws Exception
 	{
-		String groovy = QueryTransformer.translate( new FileReader( "test/src/solidstack/query/test.gsql" ) );
+		String groovy = QueryTransformer.translate( "p", "c", new FileReader( "test/src/solidstack/query/test.gsql" ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
 		assert groovy.equals(
 				"package p;import java.sql.Timestamp;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder(); // Test if the import at the bottom works, and this comment too of course\n" +
-				"new Timestamp( new Date().time ) \n" +
-				";builder.append(\"\"\"SELECT *\n" +
-				"FROM SYS.SYSTABLES\n" +
-				"\"\"\");\n" +
-				"\n" +
-				"\n" +
-				"\n" +
-				";builder.append(\"\"\"WHERE 1 = 1\n" +
-				"\"\"\");\t\t if( prefix ) { \n" +
-				";builder.append(\"\"\"AND TABLENAME LIKE '\"\"\");builder.append( prefix );builder.append(\"\"\"%'\n" +
-				"\"\"\");\t\t } \n" +
-				"\t\t if( name ) { \n" +
-				";builder.append(\"\"\"AND TABLENAME = ${name}\n" +
-				"\"\"\");\t\t } \n" +
-				"\t\t if( names ) { \n" +
-				";builder.append(\"\"\"AND TABLENAME IN (${names})\n" +
-				"\"\"\");\t\t } \n" +
-				"\n" +
-				";return builder.toGString()}}}"
-		);
+						"new Timestamp( new Date().time ) \n" +
+						";builder.append(\"\"\"SELECT *\n" +
+						"FROM SYS.SYSTABLES\n" +
+						"\"\"\");\n" +
+						"\n" +
+						"\n" +
+						"\n" +
+						";builder.append(\"\"\"WHERE 1 = 1\n" +
+						"\"\"\");\t\t if( prefix ) { \n" +
+						";builder.append(\"\"\"AND TABLENAME LIKE '\"\"\");builder.append( prefix );builder.append(\"\"\"%'\n" +
+						"\"\"\");\t\t } \n" +
+						"\t\t if( name ) { \n" +
+						";builder.append(\"\"\"AND TABLENAME = ${name}\n" +
+						"\"\"\");\t\t } \n" +
+						"\t\t if( names ) { \n" +
+						";builder.append(\"\"\"AND TABLENAME IN (${names})\n" +
+						"\"\"\");\t\t } \n" +
+						"\n" +
+						";return builder.toGString()}}}"
+				);
 
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query" );
@@ -120,7 +120,7 @@ public class Basic
 				"FROM SYS.SYSTABLES\n" +
 				"WHERE 1 = 1\n" +
 				"AND TABLENAME LIKE 'SYST%'\n" +
-		"AND TABLENAME IN (?,?)\n" );
+				"AND TABLENAME IN (?,?)\n" );
 
 //		Writer out = new OutputStreamWriter( new FileOutputStream( "test.out" ), "UTF-8" );
 //		out.write( sql );
@@ -149,7 +149,7 @@ public class Basic
 				"WHERE TABLENAME IN ( ?,?,?,?,? )\n" +
 				"OR TABLENAME IN ( ?,?,?,?,? )\n" +
 				"OR TABLENAME IN ( ?,?,?,?,? )\n" +
-		"OR TABLENAME IN ( ?,?,? )\n" );
+				"OR TABLENAME IN ( ?,?,? )\n" );
 
 		List< Map< String, Object > > result = query.listOfMaps( connection );
 		assert result.size() == 2;
@@ -166,18 +166,18 @@ public class Basic
 				"import=\"uk.co.tntpost.umbrella.common.utils.QueryUtils\"\n" +
 				"import=\"uk.co.tntpost.umbrella.common.enums.*\"\n" +
 				"%>\n" +
-		"TEST" );
+				"TEST" );
 
-		String groovy = QueryTransformer.translate( reader );
+		String groovy = QueryTransformer.translate( "p", "c", reader );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
 		assert groovy.equals(
 				"package p;import uk.co.tntpost.umbrella.common.utils.QueryUtils;import uk.co.tntpost.umbrella.common.enums.*;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();\n" +
-				"\n" +
-				"\n" +
-				"\n" +
-				";builder.append(\"\"\"TEST\"\"\");;return builder.toGString()}}}"
-		);
+						"\n" +
+						"\n" +
+						"\n" +
+						";builder.append(\"\"\"TEST\"\"\");;return builder.toGString()}}}"
+				);
 	}
 
 	@Test
