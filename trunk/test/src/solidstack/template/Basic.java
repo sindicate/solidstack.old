@@ -16,9 +16,12 @@
 
 package solidstack.template;
 
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.Writer;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,15 +40,15 @@ public class Basic
 		Map< String, Object > params = new HashMap< String, Object >();
 		Template template = templates.getTemplate( "test.gtext" );
 		String result = template.apply( params );
-		System.out.println( result );
+//		System.out.println( result );
 	}
 
-	@Test
+	@Test(groups="new")
 	public void testTransform() throws Exception
 	{
 		String groovy = TemplateTransformer.translate( new FileReader( "test/src/solidstack/template/test.gtext" ) );
-		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
-		System.out.println( groovy );
+//		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
+//		System.out.println( groovy );
 		// TODO What about the class name?
 		assert groovy.equals(
 				"package p;import java.sql.Timestamp;class c{Closure getClosure(){return{writer-> // Test if the import at the bottom works, and this comment too of course\n" +
@@ -70,25 +73,22 @@ public class Basic
 						"}}}"
 				);
 
-//		TemplateManager queries = new TemplateManager();
-//		queries.setPackage( "solidstack.query" );
-//
-//		Map< String, Object > params = new HashMap< String, Object >();
-//		params.put( "prefix", "SYST" );
-//		params.put( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } );
-//		Query query = queries.bind( "test", params );
-//		List< Object > pars = new ArrayList< Object >();
-//		String sql = query.getPreparedSQL( pars );
-//
-//		assert sql.equals( "SELECT *\n" +
-//				"FROM SYS.SYSTABLES\n" +
-//				"WHERE 1 = 1\n" +
-//				"AND TABLENAME LIKE 'SYST%'\n" +
-//				"AND TABLENAME IN (?,?)\n" );
+		TemplateManager queries = new TemplateManager();
+		queries.setPackage( "solidstack.template" );
 
-//		Writer out = new OutputStreamWriter( new FileOutputStream( "test.out" ), "UTF-8" );
-//		out.write( sql );
-//		out.close();
+		Map< String, Object > params = new HashMap< String, Object >();
+		params.put( "prefix", "SYST" );
+		Template template = queries.getTemplate( "test.gtext" );
+		String result = template.apply( params );
+
+		Writer out = new OutputStreamWriter( new FileOutputStream( "test2.out" ), "UTF-8" );
+		out.write( result );
+		out.close();
+
+		assert result.equals( "SELECT *\n" +
+				"FROM SYS.SYSTABLES\n" +
+				"WHERE 1 = 1\n" +
+				"AND TABLENAME LIKE 'SYST%'\n" );
 	}
 
 	@Test
