@@ -18,7 +18,7 @@ package solidstack.template;
 
 
 /**
- * Something has gone wrong with parsing the SQL template.
+ * Something has gone wrong with parsing the template.
  * 
  * @author René M. de Bloois
  */

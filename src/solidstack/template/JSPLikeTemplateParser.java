@@ -43,7 +43,7 @@ public class JSPLikeTemplateParser
 			writer.nextMode( Mode.TEXT );
 
 			// We are in TEXT mode here.
-			// Expecting <%, <%=, <%--, ${
+			// Expecting <%@, <%, <%=, <%--, ${
 			// " must be escaped because text is appended with a append("""...""")
 			// \n must be detected because we want to read leading whitespace in a special way
 			// Only <, $ and \ may be escaped
@@ -52,6 +52,7 @@ public class JSPLikeTemplateParser
 			if( c == -1 )
 				break;
 
+			// Escape $, \ or <
 			if( c == '\\' )
 			{
 				writer.write( leading ); leading = null;
@@ -82,6 +83,7 @@ public class JSPLikeTemplateParser
 				reader.mark( 2 );
 				c = reader.read();
 
+				// <%= expression
 				if( c == '=' )
 				{
 					writer.write( leading ); leading = null;
@@ -90,6 +92,7 @@ public class JSPLikeTemplateParser
 					continue;
 				}
 
+				// <%@ directive
 				if( c == '@' )
 				{
 					writer.nextMode( Mode.SCRIPT );
@@ -121,6 +124,7 @@ public class JSPLikeTemplateParser
 					continue;
 				}
 
+				// <%-- comment
 				if( c == '-' && reader.read() == '-' )
 				{
 					writer.nextMode( Mode.SCRIPT );
@@ -150,6 +154,7 @@ public class JSPLikeTemplateParser
 
 				reader.reset();
 
+				// <% script
 				if( leading == null )
 				{
 					writer.nextMode( Mode.SCRIPT );
@@ -192,6 +197,7 @@ public class JSPLikeTemplateParser
 
 			writer.write( leading ); leading = null;
 
+			// ${ expression
 			if( c == '$' )
 			{
 				int cc = reader.read();
@@ -201,6 +207,8 @@ public class JSPLikeTemplateParser
 				readGStringExpression( reader, writer, true );
 				continue;
 			}
+
+			// From here it's just text
 
 			if( c == '"' )
 			{
@@ -228,6 +236,7 @@ public class JSPLikeTemplateParser
 		return writer.getResult();
 	}
 
+	// Needed to parse directives
 	static private String getToken( PushbackReader reader, ModalWriter writer )
 	{
 		// Skip whitespace
