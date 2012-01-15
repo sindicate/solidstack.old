@@ -23,6 +23,8 @@ import groovy.lang.GroovyObject;
 
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import solidstack.Assert;
 import solidstack.io.PushbackReader;
 import solidstack.template.JSPLikeTemplateParser;
+import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
 import solidstack.template.Util;
 
@@ -89,21 +92,41 @@ public class QueryTransformer
 		return compile( new StringReader( query ), path, lastModified );
 	}
 
+	// TODO We should really have some kind og GroovyWriter which can do the escaping
+	static void writeString( StringBuilder buffer, String s )
+	{
+		int len = s.length();
+		for( int i = 0; i < len; i++ )
+		{
+			char c = s.charAt( i );
+			if( c == '"' )
+			{
+				buffer.append( '\\' );
+				buffer.append( c );
+			}
+			else
+				buffer.append( c );
+		}
+	}
+
 	static String translate( String pkg, String cls, Reader reader )
 	{
 		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( new PushbackReader( reader, 1 ) );
 		StringBuilder buffer = new StringBuilder();
 		boolean text = false;
+		List< String > imports = null;
 		loop: while( true )
 		{
-			ParseEvent event = parser.next();
+			ParseEvent event = parser.next3();
 			switch( event.getEvent() )
 			{
 				case TEXT:
+				case NEWLINE:
+				case WHITESPACE:
 					if( !text )
 						buffer.append( "builder.append(\"\"\"" );
 					text = true;
-					buffer.append( event.getText() );
+					writeString( buffer, event.getText() );
 					break;
 				case SCRIPT:
 					if( text )
@@ -129,6 +152,11 @@ public class QueryTransformer
 					buffer.append( '}' );
 					break;
 				case DIRECTIVE:
+					if( imports == null )
+						imports = new ArrayList< String >();
+					for( Directive directive : event.getDirectives() )
+						imports.add( directive.getValue() );
+					//$FALL-THROUGH$
 				case COMMENT:
 					if( text )
 						buffer.append( "\"\"\");" );
@@ -139,23 +167,24 @@ public class QueryTransformer
 					if( text )
 						buffer.append( "\"\"\");" );
 					break loop;
+				default:
+					Assert.fail( "Unexpected event " + event.getEvent() );
 			}
 		}
-
-		StringBuilder prelude = new StringBuilder();
+		StringBuilder prelude = new StringBuilder( 256 );
 		prelude.append( "package " );
 		prelude.append( pkg );
 		prelude.append( ";" );
-//		for( String imprt : this.imports )
-//		{
-//			result.append( "import " );
-//			result.append( imprt );
-//			result.append( ';' );
-//		}
+		if( imports != null )
+			for( String imprt : imports )
+			{
+				prelude.append( "import " );
+				prelude.append( imprt );
+				prelude.append( ';' );
+			}
 		prelude.append( "class " );
 		prelude.append( cls );
 		prelude.append( "{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();" );
-
 		buffer.insert( 0, prelude );
 		buffer.append( ";return builder.toGString()}}}" ); // Groovy does not understand: "...} return ..." Need extra ; to be sure
 		return buffer.toString();

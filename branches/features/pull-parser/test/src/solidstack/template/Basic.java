@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 
@@ -50,27 +51,26 @@ public class Basic
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
 		// TODO What about the class name?
-		assert groovy.equals(
-				"package p;import java.sql.Timestamp;class c{Closure getClosure(){return{writer-> // Test if the import at the bottom works, and this comment too of course\n" +
-						"new Timestamp( new Date().time ) \n" +
-						";writer.write(\"\"\"SELECT *\n" +
-						"FROM SYS.SYSTABLES\n" +
-						"\"\"\");\n" +
-						"\n" +
-						"\n" +
-						"\n" +
-						";writer.write(\"\"\"WHERE 1 = 1\n" +
-						"\"\"\");\t\t if( prefix ) { \n" +
-						";writer.write(\"\"\"AND TABLENAME LIKE '\"\"\");writer.write( prefix );writer.write(\"\"\"%'\n" +
-						"\"\"\");\t\t } \n" +
-						"\t\t if( name ) { \n" +
-						";writer.write(\"\"\"AND TABLENAME = \"\"\");writer.write(escape(name));writer.write(\"\"\"\n" +
-						"\"\"\");\t\t } \n" +
-						"\t\t if( names ) { \n" +
-						";writer.write(\"\"\"AND TABLENAME IN (\"\"\");writer.write(escape(names));writer.write(\"\"\")\n" +
-						"\"\"\");\t\t } \n" +
-						"\n" +
-						"}}}"
+		Assert.assertEquals( groovy, "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{writer-> // Test if the import at the bottom works, and this comment too of course\n" +
+				"new Timestamp( new Date().time ) \n" +
+				";writer.write(\"\"\"SELECT *\n" +
+				"FROM SYS.SYSTABLES\n" +
+				"\"\"\");\n" +
+				"\n" +
+				"\n" +
+				"\n" +
+				"writer.write(\"\"\"WHERE 1 = 1\n" +
+				"\"\"\");\t\t if( prefix ) { \n" +
+				";writer.write(\"\"\"AND TABLENAME LIKE '\"\"\");writer.write( prefix );writer.write(\"\"\"%'\n" +
+				"\"\"\");\t\t } \n" +
+				";\t\t if( name ) { \n" +
+				";writer.write(\"\"\"AND TABLENAME = \"\"\");writer.write(escape(name));writer.write(\"\"\"\n" +
+				"\"\"\");\t\t } \n" +
+				";\t\t if( names ) { \n" +
+				";writer.write(\"\"\"AND TABLENAME IN (\"\"\");writer.write(escape(names));writer.write(\"\"\")\n" +
+				"\"\"\");\t\t } \n" +
+				";\n" +
+				"}}}"
 				);
 
 		TemplateManager queries = new TemplateManager();
@@ -103,12 +103,11 @@ public class Basic
 		String groovy = TemplateTransformer.translate( "p", "c", reader );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		assert groovy.equals(
-				"package p;import uk.co.tntpost.umbrella.common.utils.QueryUtils;import uk.co.tntpost.umbrella.common.enums.*;class c{Closure getClosure(){return{writer->\n" +
-						"\n" +
-						"\n" +
-						"\n" +
-						";writer.write(\"\"\"TEST\"\"\");}}}"
+		Assert.assertEquals( groovy, "package p;import uk.co.tntpost.umbrella.common.utils.QueryUtils;import uk.co.tntpost.umbrella.common.enums.*;class c{Closure getClosure(){return{writer->\n" +
+				"\n" +
+				"\n" +
+				"\n" +
+				"writer.write(\"\"\"TEST\"\"\");}}}"
 				);
 	}
 

@@ -16,6 +16,10 @@
 
 package solidstack.template;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import solidstack.Assert;
 import solidstack.io.PushbackReader;
 
 
@@ -26,12 +30,13 @@ import solidstack.io.PushbackReader;
  */
 public class JSPLikeTemplateParser
 {
-	static public enum EVENT { TEXT, SCRIPT, EXPRESSION, GSTRING, DIRECTIVE, COMMENT, EOF };
+	static public enum EVENT { TEXT, WHITESPACE, NEWLINE, SCRIPT, EXPRESSION, GSTRING, DIRECTIVE, COMMENT, EOF };
 
 	static public class ParseEvent
 	{
 		protected EVENT event;
 		protected String data;
+		protected List< Directive > directives;
 
 		protected ParseEvent( EVENT event, String data )
 		{
@@ -48,8 +53,56 @@ public class JSPLikeTemplateParser
 		{
 			return this.data;
 		}
+
+		@Override
+		public String toString()
+		{
+			return this.event + ": " + this.data;
+		}
+
+		public void addDirective( String name, String attribute, String value, int lineNumber )
+		{
+			if( this.directives == null )
+				this.directives = new ArrayList< Directive >();
+			this.directives.add( new Directive( name, attribute, value, lineNumber ) );
+		}
+
+		static public ParseEvent newDirective()
+		{
+			ParseEvent result = new ParseEvent( EVENT.DIRECTIVE, null );
+			result.directives = new ArrayList< Directive >();
+			return result;
+		}
+
+		public List< Directive > getDirectives()
+		{
+			return this.directives;
+		}
 	}
+
+	static public class Directive
+	{
+		protected String name;
+		protected String attribute;
+		protected String value;
+		protected int lineNumber;
+
+		protected Directive( String name, String attribute, String value, int lineNumber )
+		{
+			this.name = name;
+			this.attribute = attribute;
+			this.value = value;
+			this.lineNumber = lineNumber;
+		}
+
+		public String getValue()
+		{
+			return this.value;
+		}
+	}
+
 	static public ParseEvent EOF = new ParseEvent( EVENT.EOF, null );
+	static public ParseEvent NEWLINE = new ParseEvent( EVENT.NEWLINE, "\n" );
 
 	protected PushbackReader reader;
 
@@ -99,7 +152,7 @@ public class JSPLikeTemplateParser
 					}
 					if( this.buffer.length() > 0 )
 					{
-						// TODO Return text segments
+						// TODO Return text segments, blocks should not be longer than a maximum
 						this.reader.push( cc );
 						this.reader.push( c );
 						return new ParseEvent( EVENT.TEXT, popBuffer() );
@@ -117,6 +170,186 @@ public class JSPLikeTemplateParser
 
 				default:
 					this.buffer.append( (char)c );
+			}
+		}
+	}
+
+	public ParseEvent next2()
+	{
+		// This loop always runs in text mode, no scripts or anything else
+
+		boolean textFound = false;
+		while( true )
+		{
+			int c = this.reader.read();
+			switch( c )
+			{
+				case -1:
+					if( this.buffer.length() > 0 )
+						return new ParseEvent( textFound ? EVENT.TEXT : EVENT.WHITESPACE, popBuffer() );
+					return EOF;
+
+				case '\\':
+					int cc = this.reader.read();
+					textFound = true;
+					switch( cc )
+					{
+						case '$':
+						case '\\':
+							this.buffer.append( '\\' ); // TODO This may not be correct, re-escaping should be done somewhere else
+							this.buffer.append( (char)cc );
+							continue;
+						case '<':
+							this.buffer.append( (char)cc );
+							continue;
+						default:
+							throw new ParseException( "Only <, $ or \\ can be escaped", this.reader.getLineNumber() );
+					}
+
+				case '<':
+					cc = this.reader.read();
+					if( cc != '%' )
+					{
+						this.reader.push( cc );
+						this.buffer.append( '<' );
+						textFound = true;
+						continue;
+					}
+					if( this.buffer.length() > 0 )
+					{
+						// TODO Return text segments, blocks should not be longer than a maximum
+						this.reader.push( cc );
+						this.reader.push( c );
+						ParseEvent result = new ParseEvent( textFound ? EVENT.TEXT : EVENT.WHITESPACE, popBuffer() );
+						textFound = false;
+						return result;
+					}
+					return readMarkup();
+
+				case '$':
+					if( this.buffer.length() > 0 )
+					{
+						// TODO Return text segments
+						this.reader.push( c );
+						ParseEvent result = new ParseEvent( textFound ? EVENT.TEXT : EVENT.WHITESPACE, popBuffer() );
+						textFound = false;
+						return result;
+					}
+					return readDollar();
+
+				case '\n':
+					if( this.buffer.length() > 0 )
+					{
+						this.reader.push( c );
+						ParseEvent result = new ParseEvent( textFound ? EVENT.TEXT : EVENT.WHITESPACE, popBuffer() );
+						textFound = false;
+						return result;
+					}
+					return NEWLINE;
+
+				default:
+					textFound = true;
+					//$FALL-THROUGH$
+
+				case '\t':
+				case ' ':
+					this.buffer.append( (char)c );
+			}
+		}
+	}
+
+	protected List< ParseEvent > queue = new ArrayList< ParseEvent >();
+
+	public ParseEvent next3()
+	{
+		if( this.queue.size() > 0 )
+			return this.queue.remove( 0 );
+
+		while( true )
+		{
+			ParseEvent event = next2();
+			switch( event.getEvent() )
+			{
+				case TEXT:
+				case EXPRESSION:
+				case GSTRING:
+				case EOF:
+					if( this.queue.size() == 0 )
+						return event;
+					this.queue.add( event );
+					return this.queue.remove( 0 );
+
+				case WHITESPACE:
+				case SCRIPT:
+				case DIRECTIVE:
+				case COMMENT:
+					this.queue.add( event );
+					break;
+
+				case NEWLINE:
+					if( this.queue.size() == 0 )
+						return event;
+					this.queue.add( event );
+					processQueue();
+					return this.queue.remove( 0 );
+			}
+		}
+	}
+
+	protected void processQueue()
+	{
+		int index = 0;
+		while( index < this.queue.size() )
+		{
+			ParseEvent event = this.queue.get( index );
+			index++;
+			switch( event.getEvent() )
+			{
+				case WHITESPACE:
+				case NEWLINE:
+					if( index < this.queue.size() )
+					{
+						ParseEvent event2 = this.queue.get( index );
+						if( event2.getEvent() == EVENT.SCRIPT || event2.getEvent() == EVENT.DIRECTIVE )
+						{
+							event2.data = event.data + event2.data;
+							index--;
+							this.queue.remove( index );
+						}
+						else if( event2.getEvent() == EVENT.COMMENT )
+						{
+							index--;
+							this.queue.remove( index );
+						}
+					}
+					else
+					{
+						index -= 2;
+						if( index >= 0 )
+						{
+							ParseEvent event2 = this.queue.get( index );
+							if( event2.getEvent() == EVENT.SCRIPT || event2.getEvent() == EVENT.DIRECTIVE )
+							{
+								event2.data += event.data;
+								index++;
+								this.queue.remove( index );
+							}
+							else if( event2.getEvent() == EVENT.COMMENT )
+							{
+								if( event.getEvent() == EVENT.NEWLINE )
+									event2.data += event.data;
+								index++;
+								this.queue.remove( index );
+							}
+						}
+					}
+					break;
+				case DIRECTIVE:
+				case SCRIPT:
+				case COMMENT:
+					break;
+				default:
+					Assert.fail( "Unexpected event " + event.getEvent() );
 			}
 		}
 	}
@@ -159,7 +392,8 @@ public class JSPLikeTemplateParser
 		int c = this.reader.read();
 		if( c != '{' )
 			throw new ParseException( "Expecting an { after the $", this.reader.getLineNumber() );
-		return readGStringExpression( this.reader, true );
+		readGStringExpression( this.reader, true );
+		return new ParseEvent( EVENT.GSTRING, popBuffer() );
 	}
 
 	// Needed to parse directives
@@ -231,17 +465,22 @@ public class JSPLikeTemplateParser
 		if( name == null )
 			throw new ParseException( "Expecting a name", reader.getLineNumber() );
 
+		ParseEvent result = ParseEvent.newDirective();
+
 		String token = getToken( reader );
 		while( token != null )
 		{
 			if( token.equals( "%>" ) )
-				return new ParseEvent( EVENT.DIRECTIVE, popBuffer() ); // TODO directives
+			{
+				result.data = popBuffer();
+				return result;
+			}
 			if( !getToken( reader ).equals( "=" ) )
 				throw new ParseException( "Expecting '=' in directive", reader.getLineNumber() );
 			String value = getToken( reader );
 			if( value == null || !value.startsWith( "\"" ) || !value.endsWith( "\"" ) )
 				throw new ParseException( "Expecting a string value in directive", reader.getLineNumber() );
-//			writer.directive( name, token, value.substring( 1, value.length() - 1 ), reader.getLineNumber() );
+			result.addDirective( name, token, value.substring( 1, value.length() - 1 ), reader.getLineNumber() );
 			token = getToken( reader );
 		}
 
@@ -340,7 +579,7 @@ public class JSPLikeTemplateParser
 				this.buffer.append( '$' );
 				this.buffer.append( '{' );
 				readGStringExpression( reader, multiline );
-				this.buffer.append( '{' );
+				this.buffer.append( '}' );
 				continue;
 			}
 
@@ -366,7 +605,7 @@ public class JSPLikeTemplateParser
 		}
 	}
 
-	protected ParseEvent readGStringExpression( PushbackReader reader, boolean multiline )
+	protected void readGStringExpression( PushbackReader reader, boolean multiline )
 	{
 		// GStringExpressions can be read in any mode
 		// Expecting }, ", ' and {
@@ -380,7 +619,7 @@ public class JSPLikeTemplateParser
 			if( !multiline && c == '\n' )
 				throw new ParseException( "Unexpected end of line", reader.getLineNumber() );
 			if( c == '}' )
-				return new ParseEvent( EVENT.GSTRING, popBuffer() );
+				return;
 			if( c == '"' || c == '\'' )
 				readString( reader, (char)c );
 			else if( c =='{' )
