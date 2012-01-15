@@ -126,13 +126,13 @@ public class QueryTransformer
 					if( !text )
 						buffer.append( "builder.append(\"\"\"" );
 					text = true;
-					writeString( buffer, event.getText() );
+					writeString( buffer, event.getData() );
 					break;
 				case SCRIPT:
 					if( text )
 						buffer.append( "\"\"\");" );
 					text = false;
-					buffer.append( event.getText() );
+					buffer.append( event.getData() );
 					buffer.append( ';' );
 					break;
 				case EXPRESSION:
@@ -140,7 +140,7 @@ public class QueryTransformer
 						buffer.append( "\"\"\");" );
 					text = false;
 					buffer.append( "builder.append(" );
-					buffer.append( event.getText() );
+					buffer.append( event.getData() );
 					buffer.append( ");" );
 					break;
 				case GSTRING:
@@ -148,7 +148,7 @@ public class QueryTransformer
 						buffer.append( "builder.append(\"\"\"" );
 					text = true;
 					buffer.append( "${" );
-					buffer.append( event.getText() );
+					buffer.append( event.getData() );
 					buffer.append( '}' );
 					break;
 				case DIRECTIVE:
@@ -161,7 +161,7 @@ public class QueryTransformer
 					if( text )
 						buffer.append( "\"\"\");" );
 					text = false;
-					buffer.append( event.getText() );
+					buffer.append( event.getData() );
 					break;
 				case EOF:
 					if( text )

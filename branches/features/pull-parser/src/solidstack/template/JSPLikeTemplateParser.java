@@ -17,6 +17,7 @@
 package solidstack.template;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import solidstack.Assert;
@@ -32,82 +33,11 @@ public class JSPLikeTemplateParser
 {
 	static public enum EVENT { TEXT, WHITESPACE, NEWLINE, SCRIPT, EXPRESSION, GSTRING, DIRECTIVE, COMMENT, EOF };
 
-	static public class ParseEvent
-	{
-		protected EVENT event;
-		protected String data;
-		protected List< Directive > directives;
-
-		protected ParseEvent( EVENT event, String data )
-		{
-			this.event = event;
-			this.data = data;
-		}
-
-		public EVENT getEvent()
-		{
-			return this.event;
-		}
-
-		public String getText()
-		{
-			return this.data;
-		}
-
-		@Override
-		public String toString()
-		{
-			return this.event + ": " + this.data;
-		}
-
-		public void addDirective( String name, String attribute, String value, int lineNumber )
-		{
-			if( this.directives == null )
-				this.directives = new ArrayList< Directive >();
-			this.directives.add( new Directive( name, attribute, value, lineNumber ) );
-		}
-
-		static public ParseEvent newDirective()
-		{
-			ParseEvent result = new ParseEvent( EVENT.DIRECTIVE, null );
-			result.directives = new ArrayList< Directive >();
-			return result;
-		}
-
-		public List< Directive > getDirectives()
-		{
-			return this.directives;
-		}
-	}
-
-	static public class Directive
-	{
-		protected String name;
-		protected String attribute;
-		protected String value;
-		protected int lineNumber;
-
-		protected Directive( String name, String attribute, String value, int lineNumber )
-		{
-			this.name = name;
-			this.attribute = attribute;
-			this.value = value;
-			this.lineNumber = lineNumber;
-		}
-
-		public String getValue()
-		{
-			return this.value;
-		}
-	}
-
 	static public ParseEvent EOF = new ParseEvent( EVENT.EOF, null );
 	static public ParseEvent NEWLINE = new ParseEvent( EVENT.NEWLINE, "\n" );
 
 	protected PushbackReader reader;
-
 	protected StringBuilder buffer = new StringBuilder( 1024 );
-
 
 	public JSPLikeTemplateParser( PushbackReader reader )
 	{
@@ -310,16 +240,17 @@ public class JSPLikeTemplateParser
 					if( index < this.queue.size() )
 					{
 						ParseEvent event2 = this.queue.get( index );
-						if( event2.getEvent() == EVENT.SCRIPT || event2.getEvent() == EVENT.DIRECTIVE )
+						switch( event2.getEvent() )
 						{
-							event2.data = event.data + event2.data;
-							index--;
-							this.queue.remove( index );
-						}
-						else if( event2.getEvent() == EVENT.COMMENT )
-						{
-							index--;
-							this.queue.remove( index );
+							case SCRIPT:
+							case DIRECTIVE:
+								event2.setData( event.getData() + event2.getData() );
+								//$FALL-THROUGH$
+							case COMMENT:
+								index--;
+								this.queue.remove( index );
+								//$FALL-THROUGH$
+							default:
 						}
 					}
 					else
@@ -328,18 +259,21 @@ public class JSPLikeTemplateParser
 						if( index >= 0 )
 						{
 							ParseEvent event2 = this.queue.get( index );
-							if( event2.getEvent() == EVENT.SCRIPT || event2.getEvent() == EVENT.DIRECTIVE )
+							switch( event2.getEvent() )
 							{
-								event2.data += event.data;
-								index++;
-								this.queue.remove( index );
-							}
-							else if( event2.getEvent() == EVENT.COMMENT )
-							{
-								if( event.getEvent() == EVENT.NEWLINE )
-									event2.data += event.data;
-								index++;
-								this.queue.remove( index );
+								case SCRIPT:
+								case DIRECTIVE:
+									event2.setData( event2.getData() + event.getData() );
+									index++;
+									this.queue.remove( index );
+									break;
+								case COMMENT:
+									if( event.getEvent() == EVENT.NEWLINE )
+										event2.setData( event2.getData() + event.getData() );
+									index++;
+									this.queue.remove( index );
+									//$FALL-THROUGH$
+								default:
 							}
 						}
 					}
@@ -401,7 +335,7 @@ public class JSPLikeTemplateParser
 	{
 		// Skip whitespace
 		int ch = reader.read();
-		while( ch != -1 && Character.isWhitespace( ch ) )
+		while( ch != -1 && Character.isWhitespace( ch ) ) // TODO Bad whitespace
 		{
 			if( ch == '\n' )
 				this.buffer.append( (char)ch );
@@ -465,14 +399,14 @@ public class JSPLikeTemplateParser
 		if( name == null )
 			throw new ParseException( "Expecting a name", reader.getLineNumber() );
 
-		ParseEvent result = ParseEvent.newDirective();
+		ParseEvent result = new ParseEvent( EVENT.DIRECTIVE );
 
 		String token = getToken( reader );
 		while( token != null )
 		{
 			if( token.equals( "%>" ) )
 			{
-				result.data = popBuffer();
+				result.setData( popBuffer() );
 				return result;
 			}
 			if( !getToken( reader ).equals( "=" ) )
@@ -485,19 +419,6 @@ public class JSPLikeTemplateParser
 		}
 
 		throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
-	}
-
-	private StringBuilder readWhitespace( PushbackReader reader )
-	{
-		StringBuilder builder = new StringBuilder();
-		int c = reader.read();
-		while( Character.isWhitespace( (char)c ) && c != '\n' )
-		{
-			builder.append( (char)c );
-			c = reader.read();
-		}
-		reader.push( c );
-		return builder;
 	}
 
 	private ParseEvent readScript( PushbackReader reader )
@@ -685,6 +606,80 @@ public class JSPLikeTemplateParser
 			{
 				this.buffer.append( '\n' );
 			}
+		}
+	}
+
+	static public class ParseEvent
+	{
+		private EVENT event;
+		private String data;
+		private List< Directive > directives;
+
+		public ParseEvent( EVENT event )
+		{
+			this( event, null );
+		}
+
+		public ParseEvent( EVENT event, String data )
+		{
+			this.event = event;
+			this.data = data;
+		}
+
+		public EVENT getEvent()
+		{
+			return this.event;
+		}
+
+		public String getData()
+		{
+			return this.data;
+		}
+
+		public void setData( String data )
+		{
+			this.data = data;
+		}
+
+		@Override
+		public String toString()
+		{
+			return this.event + ": " + this.data;
+		}
+
+		public void addDirective( String name, String attribute, String value, int lineNumber )
+		{
+			if( this.directives == null )
+				this.directives = new ArrayList< Directive >();
+			this.directives.add( new Directive( name, attribute, value, lineNumber ) );
+		}
+
+		public List< Directive > getDirectives()
+		{
+			if( this.directives == null )
+				return Collections.emptyList();
+			return this.directives;
+		}
+	}
+
+	static public class Directive
+	{
+		private String name;
+		private String attribute;
+		private String value;
+		private int lineNumber;
+
+		protected Directive( String name, String attribute, String value, int lineNumber )
+		{
+			this.name = name;
+			this.attribute = attribute;
+			this.value = value;
+			this.lineNumber = lineNumber;
+		}
+
+		public String getValue()
+		{
+			return this.value;
 		}
 	}
 }

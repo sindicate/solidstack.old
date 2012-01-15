@@ -90,7 +90,7 @@ public class TemplateTransformer
 		return compile( new StringReader( template ), path, lastModified );
 	}
 
-	// TODO We should really have some kind og GroovyWriter which can do the escaping
+	// TODO We should really have some kind of GroovyWriter which can do the escaping
 	static void writeString( StringBuilder buffer, String s )
 	{
 		int len = s.length();
@@ -124,14 +124,14 @@ public class TemplateTransformer
 					if( !text )
 						buffer.append( "writer.write(\"\"\"" );
 					text = true;
-					writeString( buffer, event.getText() );
+					writeString( buffer, event.getData() );
 					break;
 
 				case SCRIPT:
 					if( text )
 						buffer.append( "\"\"\");" );
 					text = false;
-					buffer.append( event.getText() );
+					buffer.append( event.getData() );
 					buffer.append( ';' );
 					break;
 
@@ -140,7 +140,7 @@ public class TemplateTransformer
 						buffer.append( "\"\"\");" );
 					text = false;
 					buffer.append( "writer.write(" );
-					buffer.append( event.getText() );
+					buffer.append( event.getData() );
 					buffer.append( ");" );
 					break;
 
@@ -149,21 +149,21 @@ public class TemplateTransformer
 						buffer.append( "\"\"\");" );
 					text = false;
 					buffer.append( "writer.write(escape(" );
-					buffer.append( event.getText() );
+					buffer.append( event.getData() );
 					buffer.append( "));" );
 					break;
 
 				case DIRECTIVE:
 					if( imports == null )
 						imports = new ArrayList< String >();
-					for( Directive directive : event.directives )
-						imports.add( directive.value );
+					for( Directive directive : event.getDirectives() )
+						imports.add( directive.getValue() ); // TODO Need to be checked, name and attribute
 					//$FALL-THROUGH$
 				case COMMENT:
 					if( text )
 						buffer.append( "\"\"\");" );
 					text = false;
-					buffer.append( event.getText() );
+					buffer.append( event.getData() );
 					break;
 
 				case EOF:
