@@ -16,11 +16,7 @@
 
 package solidstack.template;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.util.Date;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,8 +24,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import solidstack.Assert;
-import solidstack.SystemException;
-import solidstack.query.UrlResource;
+import solidstack.io.BOMDetectingLineReader;
+import solidstack.io.LineReader;
+import solidstack.io.Resource;
+import solidstack.io.ResourceFactory;
+import solidstack.query.QueryNotFoundException;
 
 
 /**
@@ -100,7 +99,7 @@ public class TemplateManager
 
 		Template template = this.templates.get( path );
 
-		UrlResource resource = null;
+		Resource resource = null;
 
 		// If reloading == true and resource is changed, clear current query
 		if( this.reloading )
@@ -121,22 +120,20 @@ public class TemplateManager
 				resource = getResource( path );
 
 			if( !resource.exists() )
-			{
-				String error = resource.toString() + " not found";
-				throw new TemplateNotFoundException( error );
-			}
+				throw new QueryNotFoundException( resource.toString() + " not found" );
 
 			log.info( "Loading " + resource.toString() );
 
+			LineReader reader;
 			try
 			{
-				Reader reader = new InputStreamReader( resource.getInputStream(), "UTF-8" );
-				template = TemplateTransformer.compile( reader, this.packageSlashed + path, resource.getLastModified() );
+				reader = new BOMDetectingLineReader( resource );
 			}
-			catch( UnsupportedEncodingException e )
+			catch( FileNotFoundException e )
 			{
-				throw new SystemException( e );
+				throw new QueryNotFoundException( resource.toString() + " not found" );
 			}
+			template = TemplateTransformer.compile( reader, this.packageSlashed + path, resource.getLastModified() );
 
 			this.templates.put( path, template );
 		}
@@ -150,20 +147,12 @@ public class TemplateManager
 	 * @param path The path of the resource.
 	 * @return The {@link UrlResource}.
 	 */
-	public UrlResource getResource( String path )
+	public Resource getResource( String path )
 	{
-		String file = this.packageSlashed + path;
-		//ClassLoader loader = Thread.currentThread().getContextClassLoader();
-		ClassLoader loader = getClass().getClassLoader();
-		URL url = loader.getResource( file );
-		if( url == null )
-			throw new TemplateNotFoundException( file + " not found in classpath" );
-
-		UrlResource resource = new UrlResource( url );
-
-		if( log.isDebugEnabled() )
-			log.debug( resource.toString() + ", lastModified: " + new Date( resource.getLastModified() ) + " (" + resource.getLastModified() + ")" );
-
-		return resource;
+//		if( LOGGER.isDebugEnabled() )
+//			LOGGER.debug( resource.toString() + ", lastModified: " + new Date( resource.getLastModified() ) + " (" + resource.getLastModified() + ")" );
+		return ResourceFactory.getResource( "classpath:" + this.packageSlashed + path );
+//		if( url == null )
+//			throw new QueryNotFoundException( file + " not found in classpath" );
 	}
 }

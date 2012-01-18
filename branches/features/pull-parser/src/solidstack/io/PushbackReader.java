@@ -17,16 +17,13 @@
 package solidstack.io;
 
 import java.io.IOException;
-import java.io.Reader;
-
-import solidstack.SystemException;
 
 
 /**
  * My own PushbackReader. This one has an unlimited buffer and maintains the current line number. It also gives access
- * to the underlying reader. Furthermore, it wraps {@link IOException}s in a {@link SystemException} because we are
+ * to the underlying reader. Furthermore, it wraps {@link IOException}s in a {@link RuntimeException} because we are
  * never interested in it.
- * 
+ *
  * @author René M. de Bloois
  */
 public class PushbackReader
@@ -34,44 +31,36 @@ public class PushbackReader
 	/**
 	 * The underlying reader.
 	 */
-	protected Reader reader;
+	protected LineReader reader;
 
 	/**
-	 * The push back buffer.
+	 * The push back buffer;
 	 */
-	protected StringBuilder buffer = new StringBuilder();
-
-	/**
-	 * The mark buffer.
-	 */
-	protected StringBuilder mark;
-
-	/**
-	 * The mark limit.
-	 */
-	protected int markLimit;
+	protected StringBuilder buffer;
 
 	/**
 	 * The current line number.
 	 */
 	protected int lineNumber;
 
+	protected StringBuilder markBuffer;
+
 
 	/**
 	 * Constructs a new instance of the PushbackReader.
-	 * 
-	 * @param reader The underlying reader.
-	 * @param currentLineNumber The current line number in the reader.
+	 *
+	 * @param reader A reader.
 	 */
-	public PushbackReader( Reader reader, int currentLineNumber )
+	public PushbackReader( LineReader reader )
 	{
 		this.reader = reader;
-		this.lineNumber = currentLineNumber;
+		this.buffer = new StringBuilder();
+		this.lineNumber = reader.getLineNumber();
 	}
 
 	/**
 	 * Returns the current line number.
-	 * 
+	 *
 	 * @return The current line number.
 	 */
 	public int getLineNumber()
@@ -79,12 +68,17 @@ public class PushbackReader
 		return this.lineNumber;
 	}
 
+	public FileLocation getLocation()
+	{
+		return new FileLocation( this.reader.getResource(), this.lineNumber );
+	}
+
 	/**
 	 * Returns the underlying reader. But only if the back buffer is empty, otherwise an IllegalStateException is thrown.
-	 * 
+	 *
 	 * @return The underlying reader.
 	 */
-	public Reader getReader()
+	public LineReader getReader()
 	{
 		if( this.buffer.length() > 0 )
 			throw new IllegalStateException( "There are still pushed back characters in the buffer" );
@@ -95,7 +89,7 @@ public class PushbackReader
 	 * Read one character. If the buffer contains characters, the character is taken from there. If the buffer is empty,
 	 * the character is taken from the underlying reader. Carriage returns are filtered out. \r and \r\n are
 	 * automatically translated to a single \n. The current line number is incremented for each newline encountered.
-	 * 
+	 *
 	 * @return The character read or -1 if no more characters are available.
 	 */
 	public int read()
@@ -105,43 +99,43 @@ public class PushbackReader
 		if( this.buffer.length() > 0 )
 		{
 			int p = this.buffer.length() - 1;
-			result = this.buffer.charAt( p ); // No \r in the buffer
+			result = this.buffer.charAt( p );
 			this.buffer.delete( p, p + 1 ); // No cost involved, deleting from the end only decrements a count
+			if( result == '\n' ) // There are no \r in the backbuffer
+				this.lineNumber++;
 		}
 		else
 		{
-			try
+			result = this.reader.read();
+			if( result == '\r' ) // Filter out carriage returns
 			{
 				result = this.reader.read();
-				if( result == '\r' ) // Filter out carriage returns
-				{
-					int ch = this.reader.read();
-					if( ch != '\n' )
-						push1( ch );
-					result = '\n';
-				}
-			}
-			catch( IOException e )
-			{
-				throw new SystemException( e );
+				if( result != '\n' )
+					push( result );
+				result = '\n';
 			}
 		}
 
 		if( result == '\n' )
 			this.lineNumber++;
 
-		if( this.mark != null ) // Mark enabled?
+		if( this.markBuffer != null )
 		{
-			if( this.mark.length() >= this.markLimit )
-				this.mark = null; // The mark is expired
+			if( this.markBuffer.length() == this.markBuffer.capacity() ) // TODO May need unit test for this
+				this.markBuffer = null;
 			else
-				this.mark.append( (char)result );
+				this.markBuffer.append( (char)result );
 		}
 
 		return result;
 	}
 
-	private void push1( int ch )
+	/**
+	 * Push a character back into the reader. The current line number is decremented when a newline character is pushed back.
+	 *
+	 * @param ch The character to push back. -1 is ignored.
+	 */
+	public void push( int ch )
 	{
 		if( ch == '\r' )
 			throw new IllegalArgumentException( "A \\r can't be pushed back into the reader" );
@@ -154,67 +148,42 @@ public class PushbackReader
 	}
 
 	/**
-	 * Push a character back into the reader. The current line number is decremented when a newline character is pushed back. If a mark is present it will expire.
-	 * 
-	 * @param ch The character to push back. -1 is ignored.
-	 */
-	public void push( int ch )
-	{
-		this.mark = null;
-		push1( ch );
-	}
-
-	/**
-	 * Push a complete {@link StringBuilder} back into the reader. The current line number is decremented for each newline encountered. If a mark is present it will expire.
-	 * 
+	 * Push a complete {@link StringBuilder} back into the reader. The current line number is decremented for each newline encountered.
+	 *
 	 * @param builder The {@link StringBuilder} to push back.
 	 */
 	public void push( StringBuilder builder )
 	{
-		this.mark = null;
 		int len = builder.length();
 		while( len > 0 )
-			push1( builder.charAt( --len ) ); // Use push to decrement the line number when a \n is found
+			push( builder.charAt( --len ) ); // Use push to decrement the line number when a \n is found
 	}
 
 	/**
-	 * Push a complete {@link String} back into the reader. The current line number is decremented for each newline encountered. If a mark is present it will expire.
-	 * 
+	 * Push a complete {@link String} back into the reader. The current line number is decremented for each newline encountered.
+	 *
 	 * @param string The {@link String} to push back.
 	 */
 	public void push( String string )
 	{
-		this.mark = null;
 		int len = string.length();
 		while( len > 0 )
-			push1( string.charAt( --len ) ); // Use push to decrement the line number when a \n is found
+			push( string.charAt( --len ) ); // Use push to decrement the line number when a \n is found
 	}
 
-	/**
-	 * Marks the current position in the reader. The mark will expire whenever one of the push methods is called or when
-	 * more characters are being read than the limit allows.
-	 * 
-	 * @param limit When more characters are being read than this limit signifies, the mark is expired.
-	 * 
-	 * @see #reset()
-	 */
-	public void mark( int limit )
+	public void mark( int maxLength )
 	{
-		if( limit <= 0 )
-			throw new IllegalArgumentException( "limit must be greater than 0" );
-		this.mark = new StringBuilder();
-		this.markLimit = limit;
+		this.markBuffer = new StringBuilder( maxLength );
 	}
 
-	/**
-	 * Resets the reader to the marked position.
-	 * 
-	 * @see #mark(int)
-	 */
 	public void reset()
 	{
-		if( this.mark == null )
-			throw new IllegalStateException( "No mark or mark expiried" );
-		push( this.mark );
+		push( this.markBuffer );
+		this.markBuffer = null;
+	}
+
+	public void close()
+	{
+		this.reader.close();
 	}
 }

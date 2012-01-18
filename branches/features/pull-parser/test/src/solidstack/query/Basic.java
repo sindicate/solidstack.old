@@ -16,9 +16,6 @@
 
 package solidstack.query;
 
-import java.io.FileReader;
-import java.io.Reader;
-import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -31,6 +28,11 @@ import java.util.Map;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import solidstack.io.BOMDetectingLineReader;
+import solidstack.io.LineReader;
+import solidstack.io.Resource;
+import solidstack.io.ResourceFactory;
+import solidstack.io.StringLineReader;
 import solidstack.template.ParseException;
 
 
@@ -81,7 +83,8 @@ public class Basic
 	@Test
 	public void testTransform() throws Exception
 	{
-		String groovy = QueryTransformer.translate( "p", "c", new FileReader( "test/src/solidstack/query/test.gsql" ) );
+		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/test.gsql" );
+		String groovy = QueryTransformer.translate( "p", "c", new BOMDetectingLineReader( resource ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
 		Assert.assertEquals( groovy, "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder(); // Test if the import at the bottom works, and this comment too of course\n" +
@@ -162,7 +165,7 @@ public class Basic
 	@Test
 	public void testNewlinesWithinDirective() throws Exception
 	{
-		Reader reader = new StringReader( "<%@ query\n" +
+		LineReader reader = new StringLineReader( "<%@ query\n" +
 				"import=\"uk.co.tntpost.umbrella.common.utils.QueryUtils\"\n" +
 				"import=\"uk.co.tntpost.umbrella.common.enums.*\"\n" +
 				"%>\n" +

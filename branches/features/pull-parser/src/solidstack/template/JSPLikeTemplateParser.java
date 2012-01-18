@@ -307,7 +307,6 @@ public class JSPLikeTemplateParser
 				return event;
 
 			case '@':
-				// TODO Directives should be on top only
 				return readDirective( this.reader );
 
 			case '-':

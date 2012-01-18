@@ -22,7 +22,6 @@ import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyObject;
 
 import java.io.Reader;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +32,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import solidstack.Assert;
+import solidstack.io.LineReader;
 import solidstack.io.PushbackReader;
+import solidstack.io.StringLineReader;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
 
@@ -56,7 +57,7 @@ public class TemplateTransformer
 	 * @param lastModified The last modified time stamp of the template.
 	 * @return A {@link Template}.
 	 */
-	static public Template compile( Reader reader, String path, long lastModified )
+	static public Template compile( LineReader reader, String path, long lastModified )
 	{
 		LOGGER.info( "compile [" + path + "]" );
 		Matcher matcher = pathPattern.matcher( path );
@@ -87,7 +88,7 @@ public class TemplateTransformer
 	 */
 	static public Template compile( String template, String path, long lastModified )
 	{
-		return compile( new StringReader( template ), path, lastModified );
+		return compile( new StringLineReader( template ), path, lastModified );
 	}
 
 	// TODO We should really have some kind of GroovyWriter which can do the escaping
@@ -107,9 +108,9 @@ public class TemplateTransformer
 		}
 	}
 
-	static String translate( String pkg, String cls, Reader reader )
+	static String translate( String pkg, String cls, LineReader reader )
 	{
-		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( new PushbackReader( reader, 1 ) );
+		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( new PushbackReader( reader ) );
 		StringBuilder buffer = new StringBuilder();
 		boolean text = false;
 		List< String > imports = null;
@@ -197,7 +198,7 @@ public class TemplateTransformer
 	// For testing purposes
 	static String translate( String text )
 	{
-		return translate( "p", "c", new StringReader( text ) );
+		return translate( "p", "c", new StringLineReader( text ) );
 	}
 
 	// For testing purposes

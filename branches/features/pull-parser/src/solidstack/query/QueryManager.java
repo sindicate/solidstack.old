@@ -16,11 +16,7 @@
 
 package solidstack.query;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.util.Date;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,7 +24,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import solidstack.Assert;
-import solidstack.SystemException;
+import solidstack.io.BOMDetectingLineReader;
+import solidstack.io.LineReader;
+import solidstack.io.Resource;
+import solidstack.io.ResourceFactory;
 
 
 /**
@@ -108,7 +107,7 @@ public class QueryManager
 
 		QueryTemplate query = this.queries.get( path );
 
-		UrlResource resource = null;
+		Resource resource = null;
 
 		// If reloading == true and resource is changed, clear current query
 		if( this.reloading )
@@ -129,22 +128,20 @@ public class QueryManager
 				resource = getResource( path );
 
 			if( !resource.exists() )
-			{
-				String error = resource.toString() + " not found";
-				throw new QueryNotFoundException( error );
-			}
+				throw new QueryNotFoundException( resource.toString() + " not found" );
 
 			LOGGER.info( "Loading " + resource.toString() );
 
+			LineReader reader;
 			try
 			{
-				Reader reader = new InputStreamReader( resource.getInputStream(), "ISO-8859-1" );
-				query = QueryTransformer.compile( reader, this.packageSlashed + path, resource.getLastModified() );
+				reader = new BOMDetectingLineReader( resource );
 			}
-			catch( UnsupportedEncodingException e )
+			catch( FileNotFoundException e )
 			{
-				throw new SystemException( e );
+				throw new QueryNotFoundException( resource.toString() + " not found" );
 			}
+			query = QueryTransformer.compile( reader, this.packageSlashed + path, resource.getLastModified() );
 
 			this.queries.put( path, query );
 		}
@@ -158,21 +155,13 @@ public class QueryManager
 	 * @param path The path of the resource.
 	 * @return The {@link UrlResource}.
 	 */
-	public UrlResource getResource( String path )
+	public Resource getResource( String path )
 	{
-		String file = this.packageSlashed + path + ".gsql";
-		//ClassLoader loader = Thread.currentThread().getContextClassLoader();
-		ClassLoader loader = getClass().getClassLoader();
-		URL url = loader.getResource( file );
-		if( url == null )
-			throw new QueryNotFoundException( file + " not found in classpath" );
-
-		UrlResource resource = new UrlResource( url );
-
-		if( LOGGER.isDebugEnabled() )
-			LOGGER.debug( resource.toString() + ", lastModified: " + new Date( resource.getLastModified() ) + " (" + resource.getLastModified() + ")" );
-
-		return resource;
+//		if( LOGGER.isDebugEnabled() )
+//			LOGGER.debug( resource.toString() + ", lastModified: " + new Date( resource.getLastModified() ) + " (" + resource.getLastModified() + ")" );
+		return ResourceFactory.getResource( "classpath:" + this.packageSlashed + path + ".gsql" );
+//		if( url == null )
+//			throw new QueryNotFoundException( file + " not found in classpath" );
 	}
 
 	/**

@@ -17,10 +17,7 @@
 package solidstack.template;
 
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.StringReader;
 import java.io.Writer;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -28,6 +25,12 @@ import java.util.Map;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import solidstack.io.BOMDetectingLineReader;
+import solidstack.io.LineReader;
+import solidstack.io.Resource;
+import solidstack.io.ResourceFactory;
+import solidstack.io.StringLineReader;
 
 
 public class Basic
@@ -47,7 +50,8 @@ public class Basic
 	@Test(groups="new")
 	public void testTransform() throws Exception
 	{
-		String groovy = TemplateTransformer.translate( "p", "c", new FileReader( "test/src/solidstack/template/test.gtext" ) );
+		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/template/test.gtext" );
+		String groovy = TemplateTransformer.translate( "p", "c", new BOMDetectingLineReader( resource ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
 		// TODO What about the class name?
@@ -94,7 +98,7 @@ public class Basic
 	@Test
 	public void testNewlinesWithinDirective() throws Exception
 	{
-		Reader reader = new StringReader( "<%@ template\n" +
+		LineReader reader = new StringLineReader( "<%@ template\n" +
 				"import=\"uk.co.tntpost.umbrella.common.utils.QueryUtils\"\n" +
 				"import=\"uk.co.tntpost.umbrella.common.enums.*\"\n" +
 				"%>\n" +
