@@ -16,6 +16,7 @@
 
 package solidstack.query;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -28,7 +29,7 @@ import java.util.Map;
  * 
  * @author René M. de Bloois
  */
-public class ResultList implements List< Map< String, Object > >
+public class ResultList implements List< Map< String, Object > >, Serializable
 {
 	private List< Object[] > list;
 	private Map< String, Integer > names;
@@ -150,9 +151,16 @@ public class ResultList implements List< Map< String, Object > >
 		throw new UnsupportedOperationException();
 	}
 
-	public Object[] toArray()
+	public Map<String,Object>[] toArray()
 	{
 		throw new UnsupportedOperationException();
+//		@SuppressWarnings( "unchecked" )
+//		Map< String, Object>[] result = new Map[ this.list.size() ];
+//		Iterator< Map< String, Object > > i = iterator();
+//		int j = 0;
+//		while( i.hasNext() )
+//			result[ j++ ] = i.next();
+//		return result;
 	}
 
 	public < T > T[] toArray( T[] arg0 )
