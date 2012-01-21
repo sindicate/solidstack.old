@@ -26,11 +26,11 @@ import java.util.Map;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import solidstack.io.BOMDetectingLineReader;
-import solidstack.io.LineReader;
-import solidstack.io.Resource;
-import solidstack.io.ResourceFactory;
-import solidstack.io.StringLineReader;
+import solidbase.io.BOMDetectingLineReader;
+import solidbase.io.LineReader;
+import solidbase.io.Resource;
+import solidbase.io.ResourceFactory;
+import solidbase.io.StringLineReader;
 
 
 public class Basic

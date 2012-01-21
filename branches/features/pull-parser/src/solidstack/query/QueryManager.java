@@ -23,11 +23,11 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import solidbase.io.BOMDetectingLineReader;
+import solidbase.io.LineReader;
+import solidbase.io.Resource;
+import solidbase.io.ResourceFactory;
 import solidstack.Assert;
-import solidstack.io.BOMDetectingLineReader;
-import solidstack.io.LineReader;
-import solidstack.io.Resource;
-import solidstack.io.ResourceFactory;
 
 
 /**

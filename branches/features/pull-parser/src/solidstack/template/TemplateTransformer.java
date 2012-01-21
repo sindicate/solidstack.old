@@ -31,10 +31,10 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import solidbase.io.LineReader;
+import solidbase.io.PushbackReader;
+import solidbase.io.StringLineReader;
 import solidstack.Assert;
-import solidstack.io.LineReader;
-import solidstack.io.PushbackReader;
-import solidstack.io.StringLineReader;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
 
