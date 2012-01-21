@@ -676,9 +676,19 @@ public class JSPLikeTemplateParser
 			this.lineNumber = lineNumber;
 		}
 
+		public String getAttribute()
+		{
+			return this.attribute;
+		}
+
 		public String getValue()
 		{
 			return this.value;
+		}
+
+		public String getName()
+		{
+			return this.name;
 		}
 	}
 }

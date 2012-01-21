@@ -19,6 +19,7 @@ package solidstack.template;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +54,8 @@ import solidstack.query.QueryNotFoundException;
 public class TemplateManager
 {
 	static private Logger log = LoggerFactory.getLogger( TemplateManager.class );
+
+	static final Pattern ENCODING_PATTERN = Pattern.compile( "^<%@[ \t]*template[ \t]+encoding[ \t]*=\"([^\"]*)\"[ \t]*%>[ \t]*$", Pattern.CASE_INSENSITIVE );
 
 	private String packageSlashed = ""; // when setPackage is not called
 	private boolean reloading;
@@ -127,7 +130,7 @@ public class TemplateManager
 			LineReader reader;
 			try
 			{
-				reader = new BOMDetectingLineReader( resource );
+				reader = new BOMDetectingLineReader( resource, ENCODING_PATTERN );
 			}
 			catch( FileNotFoundException e )
 			{

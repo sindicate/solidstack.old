@@ -1,3 +1,4 @@
+<%@ template encoding="UTF-8" %>
 <% // Test if the import at the bottom works, and this comment too of course
 new Timestamp( new Date().time ) %>
 SELECT *

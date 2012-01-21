@@ -155,12 +155,26 @@ public class TemplateTransformer
 					break;
 
 				case DIRECTIVE:
-					if( imports == null )
-						imports = new ArrayList< String >();
 					for( Directive directive : event.getDirectives() )
-						imports.add( directive.getValue() ); // TODO Need to be checked, name and attribute
+					{
+						Assert.isTrue( directive.getName().equals( "template" ), "Unexpected directive '" + directive.getName() + "'" );
+						if( directive.getAttribute().equals( "import" ) )
+						{
+							if( imports == null )
+								imports = new ArrayList< String >();
+							imports.add( directive.getValue() ); // TODO Need to be checked, name and attribute
+						}
+						else if( directive.getAttribute().equals( "encoding" ) )
+						{
+							// ignore
+						}
+						else
+							Assert.fail( "Unexpected attribute '" + directive.getAttribute() + "' for directive '" + directive.getName() + "'" );
+					}
 					//$FALL-THROUGH$
 				case COMMENT:
+					if( event.getData().length() == 0 )
+						break;
 					if( text )
 						buffer.append( "\"\"\");" );
 					text = false;
