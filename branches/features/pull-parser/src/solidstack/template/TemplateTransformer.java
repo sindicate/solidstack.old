@@ -48,6 +48,7 @@ public class TemplateTransformer
 	static final private Logger LOGGER = LoggerFactory.getLogger( TemplateTransformer.class );
 
 	static final private Pattern pathPattern = Pattern.compile( "/*(?:(.+?)/+)?([^\\/]+)" );
+	static final private Pattern contentTypePattern = Pattern.compile( "^[ \\t]*(\\S*)[ \\t]*(?:;[ \\t]*charset[ \\t]*=[ \\t]*(\\S*)[ \\t]*)$" ); // TODO Improve
 
 	/**
 	 * Compiles a template into a {@link Template}.
@@ -69,13 +70,22 @@ public class TemplateTransformer
 		if( path != null )
 			pkg += "." + path.replaceAll( "/", "." );
 
-		String script = translate( pkg, name, reader );
+		String[] script = translate( pkg, name, reader );
 		if( LOGGER.isTraceEnabled() )
 			LOGGER.trace( "Generated groovy:\n" + script );
 
-		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script, name, "x" ) );
+		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script[ 0 ], name, "x" ) );
 		GroovyObject object = Util.newInstance( groovyClass );
-		return new Template( (Closure)object.invokeMethod( "getClosure", null ), lastModified );
+		String contentType = null;
+		String charSet = null;
+		if( script[ 1 ] != null )
+		{
+			matcher = contentTypePattern.matcher( script[ 1 ] );
+			Assert.isTrue( matcher.matches(), "Couldn't interpret contentType " + script[ 1 ] );
+			contentType = matcher.group( 1 );
+			charSet = matcher.group( 2 );
+		}
+		return new Template( (Closure)object.invokeMethod( "getClosure", null ), contentType, charSet, lastModified );
 	}
 
 	/**
@@ -108,12 +118,13 @@ public class TemplateTransformer
 		}
 	}
 
-	static String translate( String pkg, String cls, LineReader reader )
+	static String[] translate( String pkg, String cls, LineReader reader )
 	{
 		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( new PushbackReader( reader ) );
 		StringBuilder buffer = new StringBuilder();
 		boolean text = false;
 		List< String > imports = null;
+		String contentType = null;
 		loop: while( true )
 		{
 			ParseEvent event = parser.next3();
@@ -168,6 +179,10 @@ public class TemplateTransformer
 						{
 							// ignore
 						}
+						else if( directive.getAttribute().equals( "contentType" ) )
+						{
+							contentType = directive.getValue();
+						}
 						else
 							Assert.fail( "Unexpected attribute '" + directive.getAttribute() + "' for directive '" + directive.getName() + "'" );
 					}
@@ -206,11 +221,11 @@ public class TemplateTransformer
 		prelude.append( "{Closure getClosure(){return{writer->" );
 		buffer.insert( 0, prelude );
 		buffer.append( "}}}" );
-		return buffer.toString();
+		return new String[] { buffer.toString(), contentType };
 	}
 
 	// For testing purposes
-	static String translate( String text )
+	static String[] translate( String text )
 	{
 		return translate( "p", "c", new StringLineReader( text ) );
 	}

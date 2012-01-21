@@ -18,9 +18,14 @@ package solidstack.template;
 
 import groovy.lang.Closure;
 
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.Map;
+
+import solidstack.SystemException;
 
 /**
  * A compiled template.
@@ -30,6 +35,8 @@ import java.util.Map;
 public class Template
 {
 	private final Closure template;
+	private String contentType;
+	private String charSet;
 	private long lastModified;
 
 	/**
@@ -38,9 +45,11 @@ public class Template
 	 * @param closure A groovy closure which is the compiled version of the template.
 	 * @param lastModified The last modified time stamp of the file that contains the template.
 	 */
-	public Template( Closure closure, long lastModified )
+	public Template( Closure closure, String contentType, String charSet, long lastModified )
 	{
 		this.template = closure;
+		this.contentType = contentType;
+		this.charSet = charSet;
 		this.lastModified = lastModified;
 	}
 
@@ -61,6 +70,32 @@ public class Template
 	 * Apply this template.
 	 * 
 	 * @param params The parameters to be applied.
+	 * @param writer The result of applying this template is written to this writer.
+	 */
+	// TODO Test this one
+	public void apply( Map< String, ? > params, OutputStream out )
+	{
+		Writer writer;
+		if( this.charSet != null )
+			try
+		{
+				writer = new OutputStreamWriter( out, this.charSet );
+		}
+		catch( UnsupportedEncodingException e )
+		{
+			throw new SystemException( e ); // TODO Better exception?
+		}
+		else
+			writer = new OutputStreamWriter( out ); // TODO Should we use the encoding from the source file?
+		Closure template = (Closure)this.template.clone();
+		template.setDelegate( new TemplateDelegate( params ) ); // TODO Escaping should depend on the content type
+		template.call( writer );
+	}
+
+	/**
+	 * Apply this template.
+	 * 
+	 * @param params The parameters to be applied.
 	 * @return The result of applying this template.
 	 */
 	public String apply( Map< String, ? > params )
@@ -68,6 +103,16 @@ public class Template
 		StringWriter writer = new StringWriter();
 		apply( params, writer );
 		return writer.toString();
+	}
+
+	public String getContentType()
+	{
+		return this.contentType;
+	}
+
+	public String getCharSet()
+	{
+		return this.charSet;
 	}
 
 	/**
