@@ -32,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import solidbase.io.LineReader;
-import solidbase.io.PushbackReader;
 import solidbase.io.StringLineReader;
 import solidstack.Assert;
 import solidstack.template.JSPLikeTemplateParser.Directive;
@@ -120,14 +119,14 @@ public class TemplateTransformer
 
 	static String[] translate( String pkg, String cls, LineReader reader )
 	{
-		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( new PushbackReader( reader ) );
+		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( reader );
 		StringBuilder buffer = new StringBuilder();
 		boolean text = false;
 		List< String > imports = null;
 		String contentType = null;
 		loop: while( true )
 		{
-			ParseEvent event = parser.next3();
+			ParseEvent event = parser.next();
 			switch( event.getEvent() )
 			{
 				case TEXT:
@@ -156,7 +155,7 @@ public class TemplateTransformer
 					buffer.append( ");" );
 					break;
 
-				case GSTRING:
+				case EXPRESSION2:
 					if( text )
 						buffer.append( "\"\"\");" );
 					text = false;

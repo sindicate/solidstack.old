@@ -96,15 +96,15 @@ public class Basic
 				"\n" +
 				"\n" +
 				"builder.append(\"\"\"WHERE 1 = 1\n" +
-				"\"\"\");\t\t if( prefix ) { \n" +
+				"\"\"\"); if( prefix ) { \n" +
 				";builder.append(\"\"\"AND TABLENAME LIKE '\"\"\");builder.append( prefix );builder.append(\"\"\"%'\n" +
-				"\"\"\");\t\t } \n" +
-				";\t\t if( name ) { \n" +
+				"\"\"\"); } \n" +
+				"; if( name ) { \n" +
 				";builder.append(\"\"\"AND TABLENAME = ${name}\n" +
-				"\"\"\");\t\t } \n" +
-				";\t\t if( names ) { \n" +
+				"\"\"\"); } \n" +
+				"; if( names ) { \n" +
 				";builder.append(\"\"\"AND TABLENAME IN (${names})\n" +
-				"\"\"\");\t\t } \n" +
+				"\"\"\"); } \n" +
 				";\n" +
 				";return builder.toGString()}}}"
 				);
@@ -208,12 +208,12 @@ public class Basic
 	private void translateTest( String input, String groovy, String output )
 	{
 		String g = QueryTransformer.translate( input ).toString();
-		System.out.println( g );
+//		System.out.println( g );
 		Assert.assertEquals( g, this.start + groovy + this.end );
 
 		String result = QueryTransformer.execute( g, this.parameters );
-		System.out.println( result );
-		assert result.equals( output );
+//		System.out.println( result );
+		Assert.assertEquals( result, output );
 	}
 
 	private void translateError( String input )
@@ -235,6 +235,7 @@ public class Basic
 	{
 		// Escaping in the text
 
+		translateTest( "\"\"\"", "builder.append(\"\"\"\\\"\\\"\\\"\"\"\");", "\"\"\"" );
 		translateTest( "X\"X'X", "builder.append(\"\"\"X\\\"X'X\"\"\");", "X\"X'X" );
 		translateTest( "X\\\\\"X'X", "builder.append(\"\"\"X\\\\\\\"X'X\"\"\");", "X\\\"X'X" );
 		translateTest( "X\\\\X'X", "builder.append(\"\"\"X\\\\X'X\"\"\");", "X\\X'X" );

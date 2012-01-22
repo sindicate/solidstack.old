@@ -32,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import solidbase.io.LineReader;
-import solidbase.io.PushbackReader;
 import solidbase.io.StringLineReader;
 import solidstack.Assert;
 import solidstack.template.JSPLikeTemplateParser;
@@ -93,32 +92,31 @@ public class QueryTransformer
 		return compile( new StringLineReader( query ), path, lastModified );
 	}
 
-	// TODO We should really have some kind og GroovyWriter which can do the escaping
+	// TODO We should really have some kind of GroovyWriter which can do the escaping
 	static void writeString( StringBuilder buffer, String s )
 	{
-		int len = s.length();
-		for( int i = 0; i < len; i++ )
-		{
-			char c = s.charAt( i );
-			if( c == '"' )
+		char c;
+		for( int i = 0, len = s.length(); i < len; i++ )
+			switch( c = s.charAt( i ) )
 			{
-				buffer.append( '\\' );
-				buffer.append( c );
+				case '"':
+				case '\\':
+				case '$': // We are in a GString, so we need to escape the $ too
+					buffer.append( '\\' ); //$FALL-THROUGH$
+				default:
+					buffer.append( c );
 			}
-			else
-				buffer.append( c );
-		}
 	}
 
 	static String translate( String pkg, String cls, LineReader reader )
 	{
-		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( new PushbackReader( reader ) );
+		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( reader );
 		StringBuilder buffer = new StringBuilder();
 		boolean text = false;
 		List< String > imports = null;
 		loop: while( true )
 		{
-			ParseEvent event = parser.next3();
+			ParseEvent event = parser.next();
 			switch( event.getEvent() )
 			{
 				case TEXT:
@@ -144,7 +142,7 @@ public class QueryTransformer
 					buffer.append( event.getData() );
 					buffer.append( ");" );
 					break;
-				case GSTRING:
+				case EXPRESSION2:
 					if( !text )
 						buffer.append( "builder.append(\"\"\"" );
 					text = true;
@@ -207,92 +205,4 @@ public class QueryTransformer
 			closure.setDelegate( parameters );
 		return closure.call().toString();
 	}
-
-//	static class Writer extends ModalWriter
-//	{
-//		private String pckg;
-//		private String cls;
-//		private List< String > imports = new ArrayList< String >();
-//
-//		public Writer( String pckg, String cls )
-//		{
-//			this.pckg = pckg;
-//			this.cls = cls;
-//		}
-//
-//		@Override
-//		protected void directive( String name, String attribute, String value, int lineNumber )
-//		{
-//			if( !name.equals( "query" ) )
-//				throw new ParseException( "Only expecting query directives", lineNumber );
-//			if( !attribute.equals( "import" ) )
-//				throw new ParseException( "The query directive only allows import attributes", lineNumber );
-//			this.imports.add( value );
-//		}
-//
-//		@Override
-//		protected void activateMode( Mode mode )
-//		{
-//			if( this.mode == mode )
-//				return;
-//
-//			// TODO Do this with a matrix switch
-//			if( this.mode == Mode.TEXT )
-//			{
-//				if( mode != Mode.EXPRESSION2 )
-//					append( "\"\"\");" );
-//			}
-//			else if( this.mode == Mode.EXPRESSION )
-//				append( ");" );
-//			else if( this.mode == Mode.EXPRESSION2 )
-//			{
-//				append( "}" );
-//				if( mode != Mode.TEXT )
-//					append( "\"\"\");" );
-//			}
-//			else if( this.mode == Mode.SCRIPT )
-//				append( ';' ); // Groovy does not understand: "...} builder.append(..." Need extra ; when coming from SCRIPT
-//			else
-//				Assert.fail( "Unknown mode " + this.mode );
-//
-//			if( mode == Mode.TEXT )
-//			{
-//				if( this.mode != Mode.EXPRESSION2 )
-//					append( "builder.append(\"\"\"" );
-//			}
-//			else if( mode == Mode.EXPRESSION )
-//				append( "builder.append(" );
-//			else if( mode == Mode.EXPRESSION2 )
-//			{
-//				if( this.mode != Mode.TEXT )
-//					append( "builder.append(\"\"\"" );
-//				append( "${" );
-//			}
-//			else if( mode != Mode.SCRIPT )
-//				Assert.fail( "Unknown mode " + mode );
-//
-//			this.nextMode = this.mode = mode;
-//		}
-//
-//		@Override
-//		protected String getResult()
-//		{
-//			StringBuilder result = new StringBuilder();
-//			result.append( "package " );
-//			result.append( this.pckg );
-//			result.append( ";" );
-//			for( String imprt : this.imports )
-//			{
-//				result.append( "import " );
-//				result.append( imprt );
-//				result.append( ';' );
-//			}
-//			result.append( "class " );
-//			result.append( this.cls );
-//			result.append( "{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();" );
-//			result.append( super.getBuffer() );
-//			result.append( ";return builder.toGString()}}}" ); // Groovy does not understand: "...} return ..." Need extra ; to be sure
-//			return result.toString();
-//		}
-//	}
 }
