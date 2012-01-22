@@ -47,7 +47,7 @@ public class Basic
 //		System.out.println( result );
 	}
 
-	@Test(groups="new")
+	@Test //(groups="new")
 	public void testTransform() throws Exception
 	{
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/template/test.gtext" );

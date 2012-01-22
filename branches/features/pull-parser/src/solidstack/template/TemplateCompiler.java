@@ -21,6 +21,7 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyObject;
 
+import java.io.FileNotFoundException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,9 +32,12 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import solidbase.io.BOMDetectingLineReader;
 import solidbase.io.LineReader;
+import solidbase.io.Resource;
 import solidbase.io.StringLineReader;
 import solidstack.Assert;
+import solidstack.query.QueryNotFoundException;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
 
@@ -46,8 +50,10 @@ public class TemplateCompiler
 {
 	static private Logger log = LoggerFactory.getLogger( TemplateCompiler.class );
 
-	static final private Pattern pathPattern = Pattern.compile( "/*(?:(.+?)/+)?([^\\/]+)" );
-	static final private Pattern contentTypePattern = Pattern.compile( "^[ \\t]*(\\S*)[ \\t]*(?:;[ \\t]*charset[ \\t]*=[ \\t]*(\\S*)[ \\t]*)$" ); // TODO Improve
+	static final public Pattern PATH_PATTERN = Pattern.compile( "/*(?:(.+?)/+)?([^\\/]+)" );
+	static final public Pattern CONTENT_TYPE_PATTERN = Pattern.compile( "^[ \\t]*(\\S*)[ \\t]*(?:;[ \\t]*charset[ \\t]*=[ \\t]*(\\S*)[ \\t]*)$" ); // TODO Improve
+	static final public Pattern ENCODING_PATTERN = Pattern.compile( "^<%@[ \t]*template[ \t]+encoding[ \t]*=\"([^\"]*)\"[ \t]*%>[ \t]*$", Pattern.CASE_INSENSITIVE );
+
 
 
 	/**
@@ -59,10 +65,22 @@ public class TemplateCompiler
 	 * @return A {@link Template}.
 	 */
 	// TODO Use Resource instead of LineReader
-	static public Template compile( LineReader reader, String path, long lastModified )
+	static public Template compile( Resource resource, String path, long lastModified )
 	{
+		log.info( "Compiling {}", resource );
+
+		LineReader reader;
+		try
+		{
+			reader = new BOMDetectingLineReader( resource, ENCODING_PATTERN );
+		}
+		catch( FileNotFoundException e )
+		{
+			throw new QueryNotFoundException( resource.toString() + " not found" );
+		}
+
 		log.info( "compile [{}]", path );
-		Matcher matcher = pathPattern.matcher( path );
+		Matcher matcher = PATH_PATTERN.matcher( path );
 		Assert.isTrue( matcher.matches() );
 		path = matcher.group( 1 );
 		String name = matcher.group( 2 ).replaceAll( "[\\.-]", "_" );
@@ -84,26 +102,13 @@ public class TemplateCompiler
 		Directive d = template.getDirective( "template", "contentType" );
 		if( d != null )
 		{
-			matcher = contentTypePattern.matcher( d.getValue() );
+			matcher = CONTENT_TYPE_PATTERN.matcher( d.getValue() );
 			Assert.isTrue( matcher.matches(), "Couldn't interpret contentType " + d.getValue() );
 			template.setContentType( matcher.group( 1 ) );
 			template.setCharSet( matcher.group( 2 ) );
 		}
 
 		return template;
-	}
-
-	/**
-	 * Compiles a template into a {@link Template}.
-	 * 
-	 * @param template The text of the template.
-	 * @param path The path of the  template.
-	 * @param lastModified The last modified time stamp of the  template.
-	 * @return A {@link Template}.
-	 */
-	static public Template compile( String template, String path, long lastModified )
-	{
-		return compile( new StringLineReader( template ), path, lastModified );
 	}
 
 	// TODO We should really have some kind of GroovyWriter which can do the escaping

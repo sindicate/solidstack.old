@@ -16,17 +16,12 @@
 
 package solidstack.template;
 
-import java.io.FileNotFoundException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import solidbase.io.BOMDetectingLineReader;
-import solidbase.io.LineReader;
 import solidbase.io.Resource;
 import solidbase.io.ResourceFactory;
 import solidstack.Assert;
@@ -55,8 +50,6 @@ import solidstack.query.QueryNotFoundException;
 public class TemplateManager
 {
 	static private Logger log = LoggerFactory.getLogger( TemplateManager.class );
-
-	static final Pattern ENCODING_PATTERN = Pattern.compile( "^<%@[ \t]*template[ \t]+encoding[ \t]*=\"([^\"]*)\"[ \t]*%>[ \t]*$", Pattern.CASE_INSENSITIVE );
 
 	private String packageSlashed = ""; // when setPackage is not called
 	private boolean reloading;
@@ -98,24 +91,21 @@ public class TemplateManager
 	synchronized public Template getTemplate( String path )
 	{
 		log.debug( "getTemplate [{}]", path );
-
 		Assert.isTrue( !path.startsWith( "/" ), "path should not start with a /" );
 
 		Template template = this.templates.get( path );
-
 		Resource resource = null;
 
 		// If reloading == true and resource is changed, clear current query
-		if( this.reloading )
-			if( template != null && template.getLastModified() > 0 )
+		if( this.reloading && template != null && template.getLastModified() > 0 )
+		{
+			resource = getResource( path );
+			if( resource.exists() && resource.getLastModified() > template.getLastModified() )
 			{
-				resource = getResource( path );
-				if( resource.exists() && resource.getLastModified() > template.getLastModified() )
-				{
-					log.info( "{} changed, reloading", resource );
-					template = null;
-				}
+				log.info( "{} changed, reloading", resource );
+				template = null;
 			}
+		}
 
 		// Compile the query if needed
 		if( template == null )
@@ -126,19 +116,7 @@ public class TemplateManager
 			if( !resource.exists() )
 				throw new QueryNotFoundException( resource.toString() + " not found" );
 
-			log.info( "Loading {}", resource );
-
-			LineReader reader;
-			try
-			{
-				reader = new BOMDetectingLineReader( resource, ENCODING_PATTERN );
-			}
-			catch( FileNotFoundException e )
-			{
-				throw new QueryNotFoundException( resource.toString() + " not found" );
-			}
-			template = TemplateCompiler.compile( reader, this.packageSlashed + path, resource.getLastModified() );
-
+			template = TemplateCompiler.compile( resource, this.packageSlashed + path, resource.getLastModified() );
 			this.templates.put( path, template );
 		}
 
