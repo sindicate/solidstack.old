@@ -59,7 +59,7 @@ public class Template
 	{
 		Closure template = (Closure)this.template.clone();
 		template.setDelegate( params );
-		template.call( new TemplateWriter( writer ) );
+		template.call( new EncodingWriter( writer ) );
 	}
 
 	/**
@@ -87,7 +87,7 @@ public class Template
 			writer = new OutputStreamWriter( out ); // TODO Should we use the encoding from the source file?
 		Closure template = (Closure)this.template.clone();
 		template.setDelegate( params ); // TODO Escaping should depend on the content type
-		template.call( new TemplateWriter( writer ) );
+		template.call( new EncodingWriter( writer ) );
 	}
 
 	/**
