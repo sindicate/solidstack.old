@@ -170,9 +170,9 @@ public class TemplateCompiler
 					if( text )
 						buffer.append( "\"\"\");" );
 					text = false;
-					buffer.append( "writer.write(escape(" );
+					buffer.append( "writer.writeEscaped(" );
 					buffer.append( event.getData() );
-					buffer.append( "));" );
+					buffer.append( ");" );
 					break;
 
 				case DIRECTIVE:
@@ -181,11 +181,11 @@ public class TemplateCompiler
 					directives.addAll( event.getDirectives() );
 
 					for( Directive directive : event.getDirectives() )
-						if( directive.getAttribute().equals( "import" ) )
+						if( directive.getName().equals( "template" ) && directive.getAttribute().equals( "import" ) )
 						{
 							if( imports == null )
 								imports = new ArrayList< String >();
-							imports.add( directive.getValue() ); // TODO Need to be checked, name and attribute
+							imports.add( directive.getValue() );
 						}
 					//$FALL-THROUGH$
 

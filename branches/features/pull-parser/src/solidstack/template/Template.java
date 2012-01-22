@@ -58,8 +58,8 @@ public class Template
 	public void apply( Map< String, ? > params, Writer writer )
 	{
 		Closure template = (Closure)this.template.clone();
-		template.setDelegate( new TemplateDelegate( params ) );
-		template.call( writer );
+		template.setDelegate( params );
+		template.call( new TemplateWriter( writer ) );
 	}
 
 	/**
@@ -73,19 +73,21 @@ public class Template
 	{
 		Writer writer;
 		if( this.charSet != null )
+		{
 			try
-		{
+			{
 				writer = new OutputStreamWriter( out, this.charSet );
-		}
-		catch( UnsupportedEncodingException e )
-		{
-			throw new SystemException( e ); // TODO Better exception?
+			}
+			catch( UnsupportedEncodingException e )
+			{
+				throw new SystemException( e ); // TODO Better exception?
+			}
 		}
 		else
 			writer = new OutputStreamWriter( out ); // TODO Should we use the encoding from the source file?
 		Closure template = (Closure)this.template.clone();
-		template.setDelegate( new TemplateDelegate( params ) ); // TODO Escaping should depend on the content type
-		template.call( writer );
+		template.setDelegate( params ); // TODO Escaping should depend on the content type
+		template.call( new TemplateWriter( writer ) );
 	}
 
 	/**

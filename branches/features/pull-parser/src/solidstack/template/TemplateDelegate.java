@@ -4,6 +4,7 @@ import groovy.lang.GroovyObjectSupport;
 
 import java.util.Map;
 
+// TODO This class is not used at the moment.
 public class TemplateDelegate extends GroovyObjectSupport
 {
 	protected Map< String, ? > params;

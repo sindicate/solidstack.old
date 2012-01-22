@@ -70,10 +70,10 @@ public class Basic
 				";writer.write(\"\"\"AND TABLENAME LIKE '\"\"\");writer.write( prefix );writer.write(\"\"\"%'\n" +
 				"\"\"\"); } \n" +
 				"; if( name ) { \n" +
-				";writer.write(\"\"\"AND TABLENAME = \"\"\");writer.write(escape(name));writer.write(\"\"\"\n" +
+				";writer.write(\"\"\"AND TABLENAME = \"\"\");writer.writeEscaped(name);writer.write(\"\"\"\n" +
 				"\"\"\"); } \n" +
 				"; if( names ) { \n" +
-				";writer.write(\"\"\"AND TABLENAME IN (\"\"\");writer.write(escape(names));writer.write(\"\"\")\n" +
+				";writer.write(\"\"\"AND TABLENAME IN (\"\"\");writer.writeEscaped(names);writer.write(\"\"\")\n" +
 				"\"\"\"); } \n" +
 				";\n" +
 				"}}}"
