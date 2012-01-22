@@ -358,63 +358,69 @@ public class JSPLikeTemplateParser
 		PushbackReader reader = this.reader;
 
 		// Skip whitespace
-		int ch = reader.read();
-		while( ch != -1 && Character.isWhitespace( ch ) ) // TODO Bad whitespace
+		int ch;
+		loop: while( true )
 		{
-			if( ch == '\n' )
-				this.buffer.append( (char)ch );
-			ch = reader.read();
+			switch( ch = reader.read() )
+			{
+				default:
+					break loop;
+				case '\n':
+					this.buffer.append( '\n' ); //$FALL-THROUGH$
+				case ' ':
+				case '\t':
+				case '\r':
+			}
 		}
 
-		// Read a string enclosed by ' or "
-		if( ch == '\'' || ch == '"' )
+		switch( ch )
 		{
-			StringBuilder result = new StringBuilder( 32 );
-			int quote = ch;
-			while( true )
-			{
-				result.append( (char)ch );
-
-				ch = reader.read();
-				if( ch == -1 || ch == '\n' )
-					throw new ParseException( "Unclosed string", reader.getLineNumber() );
-				if( ch == quote )
+			case -1:
+				return null;
+			case '\'':
+			case '"':
+				// Read a string enclosed by ' or "
+				StringBuilder result = new StringBuilder( 32 );
+				int quote = ch;
+				while( true )
 				{
 					result.append( (char)ch );
-					return result.toString();
-				}
-			}
-		}
 
-		// Read an identifier
-		if( Character.isJavaIdentifierStart( ch ) && ch != '$' )
-		{
-			StringBuilder result = new StringBuilder( 16 );
-			while( true )
-			{
-				result.append( (char)ch );
+					ch = reader.read();
+					if( ch == -1 || ch == '\n' )
+						throw new ParseException( "Unclosed string", reader.getLineNumber() );
+					if( ch == quote )
+					{
+						result.append( (char)ch );
+						return result.toString();
+					}
+				}
+			case '%':
+				// Read %>
 				ch = reader.read();
-				if( !Character.isJavaIdentifierPart( ch ) || ch == '$' )
+				if( ch != '>' )
+					throw new ParseException( "Expecting > after an %", reader.getLineNumber() );
+				return "%>";
+			default:
+				// Read an identifier
+				if( Character.isJavaIdentifierStart( ch ) ) // TODO Don't use java identifier start?
 				{
-					reader.push( ch );
-					return result.toString();
+					result = new StringBuilder( 16 );
+					while( true )
+					{
+						result.append( (char)ch );
+						ch = reader.read();
+						if( !Character.isJavaIdentifierPart( ch ) || ch == '$' ) // TODO Why is $ special?
+						{
+							reader.push( ch );
+							return result.toString();
+						}
+					}
 				}
-			}
+				//$FALL-THROUGH$
+			case '$': // TODO Why is $ special?
+				return String.valueOf( (char)ch );
 		}
-
-		// Read %>
-		if( ch == '%' )
-		{
-			ch = reader.read();
-			if( ch != '>' )
-				throw new ParseException( "Expecting > after an %", reader.getLineNumber() );
-			return "%>";
-		}
-
-		if( ch == -1 )
-			return null;
-
-		return String.valueOf( (char)ch );
 	}
 
 	/**
@@ -509,58 +515,73 @@ public class JSPLikeTemplateParser
 		else
 			reader.reset();
 
+		int c;
 		while( true )
-		{
-			int c = reader.read();
-
-			if( c < 0 )
-				throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
-			if( !multiline && c == '\n' )
-				throw new ParseException( "Unexpected end of line", reader.getLineNumber() );
-
-			if( c == '\\' )
+			switch( c = reader.read() )
 			{
-				buffer.append( (char)c );
-				c = reader.read();
-				if( "bfnrt'\"\\$".indexOf( c ) >= 0 )
+				case -1:
+					throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
+				case '\n':
+					if( !multiline )
+						throw new ParseException( "Unexpected end of line", reader.getLineNumber() );
 					buffer.append( (char)c );
-				else
-					throw new ParseException( "Only b, f, n, r, t, ', \",  $ or \\ can be escaped", reader.getLineNumber() );
-				continue;
-			}
-
-			if( quote == '"' && c == '$' )
-			{
-				c = reader.read();
-				if( c != '{' )
-					throw new ParseException( "Expecting an { after the $", reader.getLineNumber() );
-				buffer.append( '$' );
-				buffer.append( '{' );
-				readGStringExpression( multiline );
-				buffer.append( '}' );
-				continue;
-			}
-
-			if( c == quote )
-			{
-				buffer.append( quote );
-				if( !multiline )
-					return;
-
-				reader.mark( 2 );
-				if( reader.read() == quote && reader.read() == quote )
-				{
-					buffer.append( quote );
-					buffer.append( quote );
 					break;
-				}
+				case '\\':
+					buffer.append( (char)c );
+					switch( c = reader.read() )
+					{
+						default:
+							throw new ParseException( "Only b, f, n, r, t, ', \",  $ or \\ can be escaped", reader.getLineNumber() );
+						case 'b':
+						case 'f':
+						case 'n':
+						case 'r':
+						case 't':
+						case '\'':
+						case '"':
+						case '\\':
+						case '$':
+							buffer.append( (char)c );
+					}
+					break;
+				case '$':
+					if( quote == '"' )
+					{
+						c = reader.read();
+						if( c != '{' )
+							throw new ParseException( "Expecting an { after the $", reader.getLineNumber() );
+						buffer.append( '$' );
+						buffer.append( '{' );
+						readGStringExpression( multiline );
+						buffer.append( '}' );
+						break;
+					}
+					buffer.append( (char)c );
+					break;
+				case '"':
+				case '\'':
+					if( c == quote )
+					{
+						buffer.append( quote );
+						if( !multiline )
+							return;
 
-				reader.reset();
-				continue;
+						reader.mark( 2 );
+						if( reader.read() == quote && reader.read() == quote )
+						{
+							buffer.append( quote );
+							buffer.append( quote );
+							return;
+						}
+
+						reader.reset();
+						break;
+					}
+					buffer.append( (char)c );
+					break;
+				default:
+					buffer.append( (char)c );
 			}
-
-			buffer.append( (char)c );
-		}
 	}
 
 	private void readGStringExpression( boolean multiline )

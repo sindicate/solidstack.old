@@ -66,15 +66,15 @@ public class Basic
 				"\n" +
 				"\n" +
 				"writer.write(\"\"\"WHERE 1 = 1\n" +
-				"\"\"\");\t\t if( prefix ) { \n" +
+				"\"\"\"); if( prefix ) { \n" +
 				";writer.write(\"\"\"AND TABLENAME LIKE '\"\"\");writer.write( prefix );writer.write(\"\"\"%'\n" +
-				"\"\"\");\t\t } \n" +
-				";\t\t if( name ) { \n" +
+				"\"\"\"); } \n" +
+				"; if( name ) { \n" +
 				";writer.write(\"\"\"AND TABLENAME = \"\"\");writer.write(escape(name));writer.write(\"\"\"\n" +
-				"\"\"\");\t\t } \n" +
-				";\t\t if( names ) { \n" +
+				"\"\"\"); } \n" +
+				"; if( names ) { \n" +
 				";writer.write(\"\"\"AND TABLENAME IN (\"\"\");writer.write(escape(names));writer.write(\"\"\")\n" +
-				"\"\"\");\t\t } \n" +
+				"\"\"\"); } \n" +
 				";\n" +
 				"}}}"
 				);
