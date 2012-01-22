@@ -17,6 +17,7 @@
 package solidstack.template;
 
 import java.io.FileNotFoundException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -84,7 +85,7 @@ public class TemplateManager
 	 */
 	public void setReloading( boolean reloading )
 	{
-		log.info( "Reloading = [" + reloading + "]" );
+		log.info( "Reloading = [{}]", reloading );
 		this.reloading = reloading;
 	}
 
@@ -96,7 +97,7 @@ public class TemplateManager
 	 */
 	synchronized public Template getTemplate( String path )
 	{
-		log.debug( "getTemplate [" + path + "]" );
+		log.debug( "getTemplate [{}]", path );
 
 		Assert.isTrue( !path.startsWith( "/" ), "path should not start with a /" );
 
@@ -111,7 +112,7 @@ public class TemplateManager
 				resource = getResource( path );
 				if( resource.exists() && resource.getLastModified() > template.getLastModified() )
 				{
-					log.info( resource.toString() + " changed, reloading" );
+					log.info( "{} changed, reloading", resource );
 					template = null;
 				}
 			}
@@ -125,7 +126,7 @@ public class TemplateManager
 			if( !resource.exists() )
 				throw new QueryNotFoundException( resource.toString() + " not found" );
 
-			log.info( "Loading " + resource.toString() );
+			log.info( "Loading {}", resource );
 
 			LineReader reader;
 			try
@@ -136,7 +137,7 @@ public class TemplateManager
 			{
 				throw new QueryNotFoundException( resource.toString() + " not found" );
 			}
-			template = TemplateTransformer.compile( reader, this.packageSlashed + path, resource.getLastModified() );
+			template = TemplateCompiler.compile( reader, this.packageSlashed + path, resource.getLastModified() );
 
 			this.templates.put( path, template );
 		}
@@ -145,17 +146,15 @@ public class TemplateManager
 	}
 
 	/**
-	 * Returns the {@link UrlResource} with the given path.
+	 * Returns the {@link Resource} with the given path.
 	 * 
 	 * @param path The path of the resource.
-	 * @return The {@link UrlResource}.
+	 * @return The {@link Resource}.
 	 */
 	public Resource getResource( String path )
 	{
-//		if( LOGGER.isDebugEnabled() )
-//			LOGGER.debug( resource.toString() + ", lastModified: " + new Date( resource.getLastModified() ) + " (" + resource.getLastModified() + ")" );
-		return ResourceFactory.getResource( "classpath:" + this.packageSlashed + path );
-//		if( url == null )
-//			throw new QueryNotFoundException( file + " not found in classpath" );
+		Resource result = ResourceFactory.getResource( "classpath:" + this.packageSlashed + path );
+		log.debug( "{}, lastModified: {} ({})", new Object[] { result, new Date( result.getLastModified() ), result.getLastModified() } );
+		return result;
 	}
 }

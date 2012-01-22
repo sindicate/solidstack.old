@@ -38,28 +38,30 @@ import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
 
 /**
- * Translates a query template into a Groovy {@link Closure}.
+ * Template compiler.
  * 
  * @author René M. de Bloois
  */
-public class TemplateTransformer
+public class TemplateCompiler
 {
-	static final private Logger LOGGER = LoggerFactory.getLogger( TemplateTransformer.class );
+	static private Logger log = LoggerFactory.getLogger( TemplateCompiler.class );
 
 	static final private Pattern pathPattern = Pattern.compile( "/*(?:(.+?)/+)?([^\\/]+)" );
 	static final private Pattern contentTypePattern = Pattern.compile( "^[ \\t]*(\\S*)[ \\t]*(?:;[ \\t]*charset[ \\t]*=[ \\t]*(\\S*)[ \\t]*)$" ); // TODO Improve
 
+
 	/**
 	 * Compiles a template into a {@link Template}.
 	 * 
-	 * @param reader The {@link Reader} for the template text.
+	 * @param reader The {@link Reader} for the template.
 	 * @param path The path of the template.
 	 * @param lastModified The last modified time stamp of the template.
 	 * @return A {@link Template}.
 	 */
+	// TODO Use Resource instead of LineReader
 	static public Template compile( LineReader reader, String path, long lastModified )
 	{
-		LOGGER.info( "compile [" + path + "]" );
+		log.info( "compile [{}]", path );
 		Matcher matcher = pathPattern.matcher( path );
 		Assert.isTrue( matcher.matches() );
 		path = matcher.group( 1 );
@@ -69,22 +71,26 @@ public class TemplateTransformer
 		if( path != null )
 			pkg += "." + path.replaceAll( "/", "." );
 
-		String[] script = translate( pkg, name, reader );
-		if( LOGGER.isTraceEnabled() )
-			LOGGER.trace( "Generated groovy:\n" + script );
+		Template template = translate( pkg, name, reader );
+		log.trace( "Generated groovy:\n{}", template.getSource() );
 
-		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script[ 0 ], name, "x" ) );
+		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( template.getSource(), name, "x" ) );
 		GroovyObject object = Util.newInstance( groovyClass );
-		String contentType = null;
-		String charSet = null;
-		if( script[ 1 ] != null )
+
+		template.setClosure( (Closure)object.invokeMethod( "getClosure", null ) );
+		template.setLastModified( lastModified );
+		template.clearSource();
+
+		Directive d = template.getDirective( "template", "contentType" );
+		if( d != null )
 		{
-			matcher = contentTypePattern.matcher( script[ 1 ] );
-			Assert.isTrue( matcher.matches(), "Couldn't interpret contentType " + script[ 1 ] );
-			contentType = matcher.group( 1 );
-			charSet = matcher.group( 2 );
+			matcher = contentTypePattern.matcher( d.getValue() );
+			Assert.isTrue( matcher.matches(), "Couldn't interpret contentType " + d.getValue() );
+			template.setContentType( matcher.group( 1 ) );
+			template.setCharSet( matcher.group( 2 ) );
 		}
-		return new Template( (Closure)object.invokeMethod( "getClosure", null ), contentType, charSet, lastModified );
+
+		return template;
 	}
 
 	/**
@@ -117,13 +123,13 @@ public class TemplateTransformer
 		}
 	}
 
-	static String[] translate( String pkg, String cls, LineReader reader )
+	static Template translate( String pkg, String cls, LineReader reader )
 	{
 		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( reader );
 		StringBuilder buffer = new StringBuilder();
 		boolean text = false;
 		List< String > imports = null;
-		String contentType = null;
+		List< Directive > directives = null;
 		loop: while( true )
 		{
 			ParseEvent event = parser.next();
@@ -165,27 +171,19 @@ public class TemplateTransformer
 					break;
 
 				case DIRECTIVE:
+					if( directives == null )
+						directives = new ArrayList< Directive >();
+					directives.addAll( event.getDirectives() );
+
 					for( Directive directive : event.getDirectives() )
-					{
-						Assert.isTrue( directive.getName().equals( "template" ), "Unexpected directive '" + directive.getName() + "'" );
 						if( directive.getAttribute().equals( "import" ) )
 						{
 							if( imports == null )
 								imports = new ArrayList< String >();
 							imports.add( directive.getValue() ); // TODO Need to be checked, name and attribute
 						}
-						else if( directive.getAttribute().equals( "encoding" ) )
-						{
-							// ignore
-						}
-						else if( directive.getAttribute().equals( "contentType" ) )
-						{
-							contentType = directive.getValue();
-						}
-						else
-							Assert.fail( "Unexpected attribute '" + directive.getAttribute() + "' for directive '" + directive.getName() + "'" );
-					}
 					//$FALL-THROUGH$
+
 				case COMMENT:
 					if( event.getData().length() == 0 )
 						break;
@@ -220,11 +218,11 @@ public class TemplateTransformer
 		prelude.append( "{Closure getClosure(){return{writer->" );
 		buffer.insert( 0, prelude );
 		buffer.append( "}}}" );
-		return new String[] { buffer.toString(), contentType };
+		return new Template( buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
 	}
 
 	// For testing purposes
-	static String[] translate( String text )
+	static Template translate( String text )
 	{
 		return translate( "p", "c", new StringLineReader( text ) );
 	}
@@ -239,78 +237,4 @@ public class TemplateTransformer
 			closure.setDelegate( parameters );
 		return closure.call().toString();
 	}
-
-//	static class Writer extends ModalWriter
-//	{
-//		private String pckg;
-//		private String cls;
-//		private List< String > imports = new ArrayList< String >();
-//
-//		public Writer( String pckg, String cls )
-//		{
-//			this.pckg = pckg;
-//			this.cls = cls;
-//		}
-//
-//		@Override
-//		protected void directive( String name, String attribute, String value, int lineNumber )
-//		{
-//			if( !name.equals( "template" ) )
-//				throw new ParseException( "Only expecting template directives", lineNumber );
-//			if( !attribute.equals( "import" ) )
-//				throw new ParseException( "The query directive only allows import attributes", lineNumber );
-//			this.imports.add( value );
-//		}
-//
-//		@Override
-//		protected void activateMode( Mode mode )
-//		{
-//			if( this.mode == mode )
-//				return;
-//
-//			// TODO Use switch?
-//			if( this.mode == Mode.TEXT )
-//				append( "\"\"\");" );
-//			else if( this.mode == Mode.EXPRESSION )
-//				append( ");" );
-//			else if( this.mode == Mode.EXPRESSION2 )
-//				append( "));" );
-//			else if( this.mode == Mode.SCRIPT )
-//				append( ';' ); // Groovy does not understand: "...} builder.append(..." Need extra ; when coming from SCRIPT
-//			else
-//				Assert.fail( "Unknown mode " + this.mode );
-//
-//			if( mode == Mode.TEXT )
-//				append( "writer.write(\"\"\"" );
-//			else if( mode == Mode.EXPRESSION )
-//				append( "writer.write(" );
-//			else if( mode == Mode.EXPRESSION2 )
-//				append( "writer.write(escape(" );
-//			else if( mode != Mode.SCRIPT )
-//				Assert.fail( "Unknown mode " + mode );
-//
-//			this.nextMode = this.mode = mode;
-//		}
-//
-//		@Override
-//		protected String getResult()
-//		{
-//			StringBuilder result = new StringBuilder();
-//			result.append( "package " );
-//			result.append( this.pckg );
-//			result.append( ";" );
-//			for( String imprt : this.imports )
-//			{
-//				result.append( "import " );
-//				result.append( imprt );
-//				result.append( ';' );
-//			}
-//			result.append( "class " );
-//			result.append( this.cls );
-//			result.append( "{Closure getClosure(){return{writer->" );
-//			result.append( super.getBuffer() );
-//			result.append( "}}}" );
-//			return result.toString();
-//		}
-//	}
 }

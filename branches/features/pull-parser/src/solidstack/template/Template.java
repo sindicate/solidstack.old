@@ -26,6 +26,7 @@ import java.io.Writer;
 import java.util.Map;
 
 import solidstack.SystemException;
+import solidstack.template.JSPLikeTemplateParser.Directive;
 
 /**
  * A compiled template.
@@ -34,23 +35,18 @@ import solidstack.SystemException;
  */
 public class Template
 {
-	private final Closure template;
+	private String source;
+	private Directive[] directives;
+
+	private Closure template;
 	private String contentType;
 	private String charSet;
 	private long lastModified;
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param closure A groovy closure which is the compiled version of the template.
-	 * @param lastModified The last modified time stamp of the file that contains the template.
-	 */
-	public Template( Closure closure, String contentType, String charSet, long lastModified )
+	public Template( String source, Directive[] directives )
 	{
-		this.template = closure;
-		this.contentType = contentType;
-		this.charSet = charSet;
-		this.lastModified = lastModified;
+		this.source = source;
+		this.directives = directives;
 	}
 
 	/**
@@ -123,5 +119,45 @@ public class Template
 	public long getLastModified()
 	{
 		return this.lastModified;
+	}
+
+	public String getSource()
+	{
+		return this.source;
+	}
+
+	public Directive getDirective( String name, String attribute )
+	{
+		if( this.directives == null )
+			return null;
+		for( Directive directive : this.directives )
+			if( directive.getName().equals( name ) && directive.getAttribute().equals( attribute ) )
+				return directive;
+		return null;
+	}
+
+	public void setContentType( String contentType )
+	{
+		this.contentType = contentType;
+	}
+
+	public void setCharSet( String charSet )
+	{
+		this.charSet = charSet;
+	}
+
+	public void setLastModified( long lastModified )
+	{
+		this.lastModified = lastModified;
+	}
+
+	public void setClosure( Closure closure )
+	{
+		this.template = closure;
+	}
+
+	public void clearSource()
+	{
+		this.source = null;
 	}
 }

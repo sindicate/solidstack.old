@@ -51,11 +51,11 @@ public class Basic
 	public void testTransform() throws Exception
 	{
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/template/test.gtext" );
-		String[] groovy = TemplateTransformer.translate( "p", "c", new BOMDetectingLineReader( resource ) );
+		Template template = TemplateCompiler.translate( "p", "c", new BOMDetectingLineReader( resource ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
 		// TODO What about the class name?
-		Assert.assertEquals( groovy[ 0 ], "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{writer->\n" +
+		Assert.assertEquals( template.getSource(), "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{writer->\n" +
 				" // Test if the import at the bottom works, and this comment too of course\n" +
 				"new Timestamp( new Date().time ) \n" +
 				";writer.write(\"\"\"SELECT *\n" +
@@ -84,7 +84,7 @@ public class Basic
 
 		Map< String, Object > params = new HashMap< String, Object >();
 		params.put( "prefix", "SYST" );
-		Template template = queries.getTemplate( "test.gtext" );
+		template = queries.getTemplate( "test.gtext" );
 		String result = template.apply( params );
 
 		Writer out = new OutputStreamWriter( new FileOutputStream( "test2.out" ), "UTF-8" );
@@ -106,10 +106,10 @@ public class Basic
 				"%>\n" +
 				"TEST" );
 
-		String[] groovy = TemplateTransformer.translate( "p", "c", reader );
+		Template template = TemplateCompiler.translate( "p", "c", reader );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		Assert.assertEquals( groovy[ 0 ], "package p;import uk.co.tntpost.umbrella.common.utils.QueryUtils;import uk.co.tntpost.umbrella.common.enums.*;class c{Closure getClosure(){return{writer->\n" +
+		Assert.assertEquals( template.getSource(), "package p;import uk.co.tntpost.umbrella.common.utils.QueryUtils;import uk.co.tntpost.umbrella.common.enums.*;class c{Closure getClosure(){return{writer->\n" +
 				"\n" +
 				"\n" +
 				"\n" +
