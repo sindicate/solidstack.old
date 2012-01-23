@@ -19,6 +19,8 @@ package solidstack.template;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,21 +52,29 @@ import solidstack.query.QueryNotFoundException;
 public class TemplateManager
 {
 	static private Logger log = LoggerFactory.getLogger( TemplateManager.class );
+	static public final Pattern XML_MIME_TYPE_PATTERN = Pattern.compile( "^[a-z]+/.+\\+xml" ); // TODO http://www.iana.org/assignments/media-types/index.html
 
 	private String packageSlashed = ""; // when setPackage is not called
 	private boolean reloading;
 	private Map< String, Template > templates = new HashMap< String, Template >();
-	protected Map< String, Object > mimeTypeMap = new HashMap< String, Object >();
+	private Map< String, Object > mimeTypeMap = new HashMap< String, Object >();
 
 	public TemplateManager()
 	{
 		this.mimeTypeMap.put( "text/xml", XMLEncodingWriter.getFactory() );
 		// TODO Put this in a properties file
-		// TODO And we need something for all the application/xxxx+xml mime types
-		this.mimeTypeMap.put( "application/soap+xml", "text/xml" );
 		this.mimeTypeMap.put( "application/xml", "text/xml" );
-		this.mimeTypeMap.put( "application/xhtml+xml", "text/xml" );
 		this.mimeTypeMap.put( "text/html", "text/xml" );
+	}
+
+	public void registerEncodingWriter( String mimeType, EncodingWriterFactory factory )
+	{
+		this.mimeTypeMap.put( mimeType, factory );
+	}
+
+	public void registerMimeTypeMapping( String mimeType, String encodeAsMimeType )
+	{
+		this.mimeTypeMap.put( mimeType, encodeAsMimeType );
 	}
 
 	public EncodingWriterFactory getWriterFactory( String mimeType )
@@ -75,6 +85,9 @@ public class TemplateManager
 
 		if( object != null )
 			return (EncodingWriterFactory)object;
+
+		if( XML_MIME_TYPE_PATTERN.matcher( mimeType ).matches() )
+			return getWriterFactory( "text/xml" );
 
 		return null;
 	}
