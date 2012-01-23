@@ -117,7 +117,7 @@ public class Template
 			if( factory != null )
 				return factory.createWriter( writer );
 		}
-		return new EncodingWriter( writer );
+		return new NoEncodingWriter( writer );
 	}
 
 	public String getContentType()

@@ -9,14 +9,14 @@ import java.io.Writer;
  * 
  * @author René M. de Bloois
  */
-public class XMLEncodingWriter extends EncodingWriter
+public class XMLEncodingWriter extends NoEncodingWriter implements EncodingWriter
 {
 	static public EncodingWriterFactory getFactory()
 	{
 		return new EncodingWriterFactory()
 		{
 			//@Override
-			public EncodingWriter createWriter( Writer writer )
+			public NoEncodingWriter createWriter( Writer writer )
 			{
 				return new XMLEncodingWriter( writer );
 			}
