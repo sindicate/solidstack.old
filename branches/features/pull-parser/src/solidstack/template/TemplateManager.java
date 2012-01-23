@@ -54,6 +54,30 @@ public class TemplateManager
 	private String packageSlashed = ""; // when setPackage is not called
 	private boolean reloading;
 	private Map< String, Template > templates = new HashMap< String, Template >();
+	protected Map< String, Object > mimeTypeMap = new HashMap< String, Object >();
+
+	public TemplateManager()
+	{
+		this.mimeTypeMap.put( "text/xml", XMLEncodingWriter.getFactory() );
+		// TODO Put this in a properties file
+		// TODO And we need something for all the application/xxxx+xml mime types
+		this.mimeTypeMap.put( "application/soap+xml", "text/xml" );
+		this.mimeTypeMap.put( "application/xml", "text/xml" );
+		this.mimeTypeMap.put( "application/xhtml+xml", "text/xml" );
+		this.mimeTypeMap.put( "text/html", "text/xml" );
+	}
+
+	public EncodingWriterFactory getWriterFactory( String mimeType )
+	{
+		Object object = this.mimeTypeMap.get( mimeType );
+		while( object != null && object instanceof String )
+			object = this.mimeTypeMap.get( object );
+
+		if( object != null )
+			return (EncodingWriterFactory)object;
+
+		return null;
+	}
 
 	/**
 	 * Configures the package which is the root of the template files.
@@ -117,6 +141,7 @@ public class TemplateManager
 				throw new QueryNotFoundException( resource.toString() + " not found" );
 
 			template = TemplateCompiler.compile( resource, this.packageSlashed + path, resource.getLastModified() );
+			template.setManager( this );
 			this.templates.put( path, template );
 		}
 

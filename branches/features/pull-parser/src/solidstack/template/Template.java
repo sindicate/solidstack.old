@@ -42,11 +42,17 @@ public class Template
 	private String contentType;
 	private String charSet;
 	private long lastModified;
+	private TemplateManager manager;
 
 	public Template( String source, Directive[] directives )
 	{
 		this.source = source;
 		this.directives = directives;
+	}
+
+	public void setManager( TemplateManager manager )
+	{
+		this.manager = manager;
 	}
 
 	/**
@@ -59,7 +65,7 @@ public class Template
 	{
 		Closure template = (Closure)this.template.clone();
 		template.setDelegate( params );
-		template.call( new EncodingWriter( writer ) );
+		template.call( getEncodingWriter( writer ) );
 	}
 
 	/**
@@ -87,7 +93,7 @@ public class Template
 			writer = new OutputStreamWriter( out ); // TODO Should we use the encoding from the source file?
 		Closure template = (Closure)this.template.clone();
 		template.setDelegate( params ); // TODO Escaping should depend on the content type
-		template.call( new EncodingWriter( writer ) );
+		template.call( getEncodingWriter( writer ) );
 	}
 
 	/**
@@ -101,6 +107,17 @@ public class Template
 		StringWriter writer = new StringWriter();
 		apply( params, writer );
 		return writer.toString();
+	}
+
+	protected EncodingWriter getEncodingWriter( Writer writer )
+	{
+		if( this.contentType != null )
+		{
+			EncodingWriterFactory factory = this.manager.getWriterFactory( this.contentType );
+			if( factory != null )
+				return factory.createWriter( writer );
+		}
+		return new EncodingWriter( writer );
 	}
 
 	public String getContentType()

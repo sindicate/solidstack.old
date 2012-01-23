@@ -51,7 +51,7 @@ public class TemplateCompiler
 	static private Logger log = LoggerFactory.getLogger( TemplateCompiler.class );
 
 	static final public Pattern PATH_PATTERN = Pattern.compile( "/*(?:(.+?)/+)?([^\\/]+)" );
-	static final public Pattern CONTENT_TYPE_PATTERN = Pattern.compile( "^[ \\t]*(\\S*)[ \\t]*(?:;[ \\t]*charset[ \\t]*=[ \\t]*(\\S*)[ \\t]*)$" ); // TODO Improve
+	static final public Pattern CONTENT_TYPE_PATTERN = Pattern.compile( "^[ \\t]*(\\S*)[ \\t]*(?:;[ \\t]*charset[ \\t]*=[ \\t]*(\\S*)[ \\t]*)?$" ); // TODO Improve
 	static final public Pattern ENCODING_PATTERN = Pattern.compile( "^<%@[ \t]*template[ \t]+encoding[ \t]*=\"([^\"]*)\"[ \t]*%>[ \t]*$", Pattern.CASE_INSENSITIVE );
 
 
@@ -170,7 +170,7 @@ public class TemplateCompiler
 					if( text )
 						buffer.append( "\"\"\");" );
 					text = false;
-					buffer.append( "writer.writeEscaped(" );
+					buffer.append( "writer.writeEncoded(" );
 					buffer.append( event.getData() );
 					buffer.append( ");" );
 					break;

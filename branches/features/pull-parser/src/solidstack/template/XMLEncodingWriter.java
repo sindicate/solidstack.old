@@ -11,6 +11,18 @@ import java.io.Writer;
  */
 public class XMLEncodingWriter extends EncodingWriter
 {
+	static public EncodingWriterFactory getFactory()
+	{
+		return new EncodingWriterFactory()
+		{
+			//@Override
+			public EncodingWriter createWriter( Writer writer )
+			{
+				return new XMLEncodingWriter( writer );
+			}
+		};
+	}
+
 	/**
 	 * Constructor.
 	 * 

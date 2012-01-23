@@ -18,13 +18,16 @@ package solidstack.template;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 
 public class TemplateWriterTests
 {
-	@Test(groups="new")
+	@Test
 	public void testXMLWriter() throws IOException
 	{
 		StringWriter s = new StringWriter();
@@ -35,5 +38,19 @@ public class TemplateWriterTests
 
 		writer.writeEncoded( "&<>\"'" );
 		Assert.assertEquals( s.toString(), "1234&amp;1234&amp;&lt;&gt;&#034;&#039;" );
+	}
+
+	@Test
+	public void testXMLTemplate() throws IOException
+	{
+		TemplateManager templates = new TemplateManager();
+		templates.setPackage( "solidstack.template" );
+
+		Template template = templates.getTemplate( "test.gxml" );
+		Map< String, Object > pars = new HashMap< String, Object >();
+		pars.put( "test", "&" );
+
+		String result = template.apply( pars );
+		Assert.assertEquals( result, "<test>&amp;&</test>" );
 	}
 }
