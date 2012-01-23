@@ -114,18 +114,18 @@ public class TemplateCompiler
 	// TODO We should really have some kind of GroovyWriter which can do the escaping
 	static void writeString( StringBuilder buffer, String s )
 	{
-		int len = s.length();
+		char[] chars = s.toCharArray();
+		int len = chars.length;
+		char c;
 		for( int i = 0; i < len; i++ )
-		{
-			char c = s.charAt( i );
-			if( c == '"' )
+			switch( c = chars[ i ] )
 			{
-				buffer.append( '\\' );
-				buffer.append( c );
+				case '"':
+				case '\\':
+					buffer.append( '\\' ); //$FALL-THROUGH$
+				default:
+					buffer.append( c );
 			}
-			else
-				buffer.append( c );
-		}
 	}
 
 	static Template translate( String pkg, String cls, LineReader reader )
@@ -226,13 +226,13 @@ public class TemplateCompiler
 		return new Template( buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
 	}
 
-	// For testing purposes
+// For testing purposes
 	static Template translate( String text )
 	{
 		return translate( "p", "c", new StringLineReader( text ) );
 	}
 
-	// For testing purposes
+// For testing purposes
 	static String execute( String script, Map< String, ? > parameters )
 	{
 		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script, "n", "x" ) );

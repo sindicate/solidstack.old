@@ -41,6 +41,21 @@ public class TemplateWriterTests
 	}
 
 	@Test
+	public void testPlainTemplate() throws IOException
+	{
+		TemplateManager templates = new TemplateManager();
+		templates.setPackage( "solidstack.template" );
+
+		Template template = templates.getTemplate( "test.gxml" );
+		template.setContentType( null );
+		Map< String, Object > pars = new HashMap< String, Object >();
+		pars.put( "test", "&<>\"'" );
+
+		String result = template.apply( pars );
+		Assert.assertEquals( result, "<test test=\"&<>\"'\"> &<>\"' &<>\"' &<>\"' </test>" );
+	}
+
+	@Test
 	public void testXMLTemplate() throws IOException
 	{
 		TemplateManager templates = new TemplateManager();
@@ -48,9 +63,9 @@ public class TemplateWriterTests
 
 		Template template = templates.getTemplate( "test.gxml" );
 		Map< String, Object > pars = new HashMap< String, Object >();
-		pars.put( "test", "&" );
+		pars.put( "test", "&<>\"'" );
 
 		String result = template.apply( pars );
-		Assert.assertEquals( result, "<test>&amp;&</test>" );
+		Assert.assertEquals( result, "<test test=\"&amp;&lt;&gt;&#034;&#039;\"> &amp;&lt;&gt;&#034;&#039; &<>\"' &<>\"' </test>" );
 	}
 }
