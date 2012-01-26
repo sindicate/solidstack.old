@@ -66,7 +66,7 @@ public class TemplateManager
 		this.mimeTypeMap.put( "text/html", "text/xml" );
 	}
 
-	public TemplateCompiler getCompiler()
+	protected TemplateCompiler getCompiler()
 	{
 		return new TemplateCompiler();
 	}
@@ -171,7 +171,7 @@ public class TemplateManager
 	 * @param path The path of the resource.
 	 * @return The {@link Resource}.
 	 */
-	public Resource getResource( String path )
+	private Resource getResource( String path )
 	{
 		Resource result = ResourceFactory.getResource( "classpath:" + this.packageSlashed + path );
 		log.debug( "{}, lastModified: {} ({})", new Object[] { result, new Date( result.getLastModified() ), result.getLastModified() } );

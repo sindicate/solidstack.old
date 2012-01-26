@@ -20,9 +20,6 @@ import groovy.lang.Closure;
 
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import solidstack.template.Template;
 import solidstack.template.TemplateManager;
 
@@ -55,21 +52,29 @@ import solidstack.template.TemplateManager;
  * 
  * @author René M. de Bloois
  */
-public class QueryManager extends TemplateManager
+public class QueryManager
 {
-	static private Logger log = LoggerFactory.getLogger( QueryManager.class );
+	protected InternalManager templateManager = new InternalManager();
 
 
-	@Override
-	public QueryCompiler getCompiler()
+	/**
+	 * Configures the package which is the root of the template files.
+	 * 
+	 * @param pkg The package.
+	 */
+	public void setPackage( String pkg )
 	{
-		return new QueryCompiler();
+		this.templateManager.setPackage( pkg );
 	}
 
-	@Override
-	public Template getTemplate( String path )
+	/**
+	 * Enable or disable reloading. When enabled, the lastModified time stamp of the file is used to check if it needs reloading.
+	 * 
+	 * @param reloading When true, the file is reloaded when updated.
+	 */
+	public void setReloading( boolean reloading )
 	{
-		return super.getTemplate( path + ".gsql" );
+		this.templateManager.setReloading( reloading );
 	}
 
 	/**
@@ -81,9 +86,24 @@ public class QueryManager extends TemplateManager
 	 */
 	public Query bind( String path, Map< String, ? > args )
 	{
-		Template template = getTemplate( path );
+		Template template = this.templateManager.getTemplate( path );
 		Query query = new Query( (Closure)template.getClosure().clone() );
 		query.bind( args );
 		return query;
+	}
+
+	protected class InternalManager extends TemplateManager
+	{
+		@Override
+		protected QueryCompiler getCompiler()
+		{
+			return new QueryCompiler();
+		}
+
+		@Override
+		public Template getTemplate( String path )
+		{
+			return super.getTemplate( path + ".gsql" );
+		}
 	}
 }

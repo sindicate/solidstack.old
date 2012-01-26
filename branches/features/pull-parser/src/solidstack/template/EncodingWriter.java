@@ -16,7 +16,7 @@ public interface EncodingWriter
 	 * @param s The string to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
-	public void write( String s ) throws IOException;
+	void write( String s ) throws IOException;
 
 	/**
 	 * Write the specified string to the writer encoded.
@@ -24,5 +24,5 @@ public interface EncodingWriter
 	 * @param s The string to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
-	public void writeEncoded( String s ) throws IOException;
+	void writeEncoded( String s ) throws IOException;
 }
