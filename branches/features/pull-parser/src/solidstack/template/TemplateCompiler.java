@@ -37,7 +37,6 @@ import solidbase.io.LineReader;
 import solidbase.io.Resource;
 import solidbase.io.StringLineReader;
 import solidstack.Assert;
-import solidstack.query.QueryNotFoundException;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
 
@@ -64,8 +63,7 @@ public class TemplateCompiler
 	 * @param lastModified The last modified time stamp of the template.
 	 * @return A {@link Template}.
 	 */
-	// TODO Use Resource instead of LineReader
-	static public Template compile( Resource resource, String path, long lastModified )
+	public Template compile( Resource resource, String path, long lastModified )
 	{
 		log.info( "Compiling {}", resource );
 
@@ -76,7 +74,7 @@ public class TemplateCompiler
 		}
 		catch( FileNotFoundException e )
 		{
-			throw new QueryNotFoundException( resource.toString() + " not found" );
+			throw new TemplateNotFoundException( resource.toString() + " not found" );
 		}
 
 		log.info( "compile [{}]", path );
@@ -112,7 +110,7 @@ public class TemplateCompiler
 	}
 
 	// TODO We should really have some kind of GroovyWriter which can do the escaping
-	static void writeString( StringBuilder buffer, String s )
+	static protected void writeString( StringBuilder buffer, String s )
 	{
 		char[] chars = s.toCharArray();
 		int len = chars.length;
@@ -122,13 +120,14 @@ public class TemplateCompiler
 			{
 				case '"':
 				case '\\':
+				case '$':
 					buffer.append( '\\' ); //$FALL-THROUGH$
 				default:
 					buffer.append( c );
 			}
 	}
 
-	static Template translate( String pkg, String cls, LineReader reader )
+	public Template translate( String pkg, String cls, LineReader reader )
 	{
 		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( reader );
 		StringBuilder buffer = new StringBuilder();
@@ -227,7 +226,7 @@ public class TemplateCompiler
 	}
 
 // For testing purposes
-	static Template translate( String text )
+	public Template translate( String text )
 	{
 		return translate( "p", "c", new StringLineReader( text ) );
 	}

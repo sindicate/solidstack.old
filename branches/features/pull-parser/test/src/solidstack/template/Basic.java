@@ -51,7 +51,7 @@ public class Basic
 	public void testTransform() throws Exception
 	{
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/template/test.gtext" );
-		Template template = TemplateCompiler.translate( "p", "c", new BOMDetectingLineReader( resource ) );
+		Template template = new TemplateCompiler().translate( "p", "c", new BOMDetectingLineReader( resource ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
 		// TODO What about the class name?
@@ -106,7 +106,7 @@ public class Basic
 				"%>\n" +
 				"TEST" );
 
-		Template template = TemplateCompiler.translate( "p", "c", reader );
+		Template template = new TemplateCompiler().translate( "p", "c", reader );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
 		Assert.assertEquals( template.getSource(), "package p;import uk.co.tntpost.umbrella.common.utils.QueryUtils;import uk.co.tntpost.umbrella.common.enums.*;class c{Closure getClosure(){return{writer->\n" +

@@ -16,6 +16,11 @@
 
 package solidstack.query;
 
+import groovy.lang.Closure;
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyCodeSource;
+import groovy.lang.GroovyObject;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -34,6 +39,8 @@ import solidbase.io.Resource;
 import solidbase.io.ResourceFactory;
 import solidbase.io.StringLineReader;
 import solidstack.template.ParseException;
+import solidstack.template.Template;
+import solidstack.template.Util;
 
 
 public class Basic
@@ -84,10 +91,10 @@ public class Basic
 	public void testTransform() throws Exception
 	{
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/test.gsql" );
-		String groovy = QueryTransformer.translate( "p", "c", new BOMDetectingLineReader( resource ) );
+		Template template = new QueryCompiler().translate( "p", "c", new BOMDetectingLineReader( resource ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		Assert.assertEquals( groovy, "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder(); // Test if the import at the bottom works, and this comment too of course\n" +
+		Assert.assertEquals( template.getSource(), "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder(); // Test if the import at the bottom works, and this comment too of course\n" +
 				"new Timestamp( new Date().time ) \n" +
 				";builder.append(\"\"\"SELECT *\n" +
 				"FROM SYS.SYSTABLES\n" +
@@ -171,10 +178,10 @@ public class Basic
 				"%>\n" +
 				"TEST" );
 
-		String groovy = QueryTransformer.translate( "p", "c", reader );
+		Template template = new QueryCompiler().translate( "p", "c", reader );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		Assert.assertEquals( groovy, "package p;import uk.co.tntpost.umbrella.common.utils.QueryUtils;import uk.co.tntpost.umbrella.common.enums.*;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();\n" +
+		Assert.assertEquals( template.getSource(), "package p;import uk.co.tntpost.umbrella.common.utils.QueryUtils;import uk.co.tntpost.umbrella.common.enums.*;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();\n" +
 				"\n" +
 				"\n" +
 				"\n" +
@@ -205,13 +212,24 @@ public class Basic
 		this.parameters.put( "var", "value" );
 	}
 
+	static String execute( String script, Map< String, ? > parameters )
+	{
+		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script, "n", "x" ) );
+		GroovyObject object = Util.newInstance( groovyClass );
+		Closure closure = (Closure)object.invokeMethod( "getClosure", null );
+		if( parameters != null )
+			closure.setDelegate( parameters );
+		return closure.call().toString();
+	}
+
 	private void translateTest( String input, String groovy, String output )
 	{
-		String g = QueryTransformer.translate( input ).toString();
+		Template template = new QueryCompiler().translate( input );
+		String g = template.getSource();
 //		System.out.println( g );
 		Assert.assertEquals( g, this.start + groovy + this.end );
 
-		String result = QueryTransformer.execute( g, this.parameters );
+		String result = execute( g, this.parameters );
 //		System.out.println( result );
 		Assert.assertEquals( result, output );
 	}
@@ -220,8 +238,8 @@ public class Basic
 	{
 		try
 		{
-			String result = QueryTransformer.translate( "X${\"te\"xt\"}X" );
-			System.out.println( result );
+			Template template = new QueryCompiler().translate( "X${\"te\"xt\"}X" );
+			System.out.println( template.getSource() );
 			assert false;
 		}
 		catch( ParseException e )

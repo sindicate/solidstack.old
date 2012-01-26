@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import solidbase.io.Resource;
 import solidbase.io.ResourceFactory;
 import solidstack.Assert;
-import solidstack.query.QueryNotFoundException;
 
 
 /**
@@ -65,6 +64,11 @@ public class TemplateManager
 		// TODO Put this in a properties file
 		this.mimeTypeMap.put( "application/xml", "text/xml" );
 		this.mimeTypeMap.put( "text/html", "text/xml" );
+	}
+
+	public TemplateCompiler getCompiler()
+	{
+		return new TemplateCompiler();
 	}
 
 	public void registerEncodingWriter( String mimeType, EncodingWriterFactory factory )
@@ -151,9 +155,9 @@ public class TemplateManager
 				resource = getResource( path );
 
 			if( !resource.exists() )
-				throw new QueryNotFoundException( resource.toString() + " not found" );
+				throw new TemplateNotFoundException( resource.toString() + " not found" );
 
-			template = TemplateCompiler.compile( resource, this.packageSlashed + path, resource.getLastModified() );
+			template = getCompiler().compile( resource, this.packageSlashed + path, resource.getLastModified() );
 			template.setManager( this );
 			this.templates.put( path, template );
 		}

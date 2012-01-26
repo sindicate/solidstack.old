@@ -145,6 +145,11 @@ public class Template
 		return this.source;
 	}
 
+	public Closure getClosure()
+	{
+		return this.template;
+	}
+
 	public Directive getDirective( String name, String attribute )
 	{
 		if( this.directives == null )

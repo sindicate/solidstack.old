@@ -16,18 +16,15 @@
 
 package solidstack.query;
 
-import java.io.FileNotFoundException;
-import java.util.HashMap;
+import groovy.lang.Closure;
+
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import solidbase.io.BOMDetectingLineReader;
-import solidbase.io.LineReader;
-import solidbase.io.Resource;
-import solidbase.io.ResourceFactory;
-import solidstack.Assert;
+import solidstack.template.Template;
+import solidstack.template.TemplateManager;
 
 
 /**
@@ -58,122 +55,35 @@ import solidstack.Assert;
  * 
  * @author René M. de Bloois
  */
-public class QueryManager
+public class QueryManager extends TemplateManager
 {
-	static final private Logger LOGGER = LoggerFactory.getLogger( QueryManager.class );
+	static private Logger log = LoggerFactory.getLogger( QueryManager.class );
 
-	private String packageSlashed = ""; // when setPackage is not called
-	private boolean reloading;
-	private Map< String, QueryTemplate > queries = new HashMap< String, QueryTemplate >();
 
-	/**
-	 * Configures the package which is the root of the gsql file.
-	 * 
-	 * @param pkg The package.
-	 */
-	public void setPackage( String pkg )
+	@Override
+	public QueryCompiler getCompiler()
 	{
-		Assert.isTrue( !pkg.startsWith( "." ) && !pkg.endsWith( "." ), "package should not start or end with a ." );
-		Assert.isTrue( pkg.indexOf('/') < 0 && pkg.indexOf('\\') < 0 , "package should not contain a \\ or /" );
-
-		if( pkg.length() > 0 )
-			this.packageSlashed = pkg.replaceAll( "\\.", "/" ) + "/";
-		else
-			this.packageSlashed = "";
+		return new QueryCompiler();
 	}
 
-	/**
-	 * Enable or disable reloading. When enabled, the lastModified time stamp of the file is used to check if it needs reloading.
-	 * 
-	 * @param reloading When true, the file is reloaded when updated.
-	 */
-	public void setReloading( boolean reloading )
+	@Override
+	public Template getTemplate( String path )
 	{
-		LOGGER.info( "Reloading = [" + reloading + "]" );
-		this.reloading = reloading;
-	}
-
-	/**
-	 * Returns the {@link QueryTemplate} with the given path.
-	 * 
-	 * @param path The path of the query.
-	 * @return The {@link QueryTemplate}.
-	 */
-	synchronized public QueryTemplate getQueryTemplate( String path )
-	{
-		LOGGER.debug( "getQuery [" + path + "]" );
-
-		Assert.isTrue( !path.startsWith( "/" ), "path should not start with a /" );
-
-		QueryTemplate query = this.queries.get( path );
-
-		Resource resource = null;
-
-		// If reloading == true and resource is changed, clear current query
-		if( this.reloading )
-			if( query != null && query.getLastModified() > 0 )
-			{
-				resource = getResource( path );
-				if( resource.exists() && resource.getLastModified() > query.getLastModified() )
-				{
-					LOGGER.info( resource.toString() + " changed, reloading" );
-					query = null;
-				}
-			}
-
-		// Compile the query if needed
-		if( query == null )
-		{
-			if( resource == null )
-				resource = getResource( path );
-
-			if( !resource.exists() )
-				throw new QueryNotFoundException( resource.toString() + " not found" );
-
-			LOGGER.info( "Loading " + resource.toString() );
-
-			LineReader reader;
-			try
-			{
-				reader = new BOMDetectingLineReader( resource );
-			}
-			catch( FileNotFoundException e )
-			{
-				throw new QueryNotFoundException( resource.toString() + " not found" );
-			}
-			query = QueryTransformer.compile( reader, this.packageSlashed + path, resource.getLastModified() );
-
-			this.queries.put( path, query );
-		}
-
-		return query;
-	}
-
-	/**
-	 * Returns the {@link UrlResource} with the given path.
-	 * 
-	 * @param path The path of the resource.
-	 * @return The {@link UrlResource}.
-	 */
-	public Resource getResource( String path )
-	{
-//		if( LOGGER.isDebugEnabled() )
-//			LOGGER.debug( resource.toString() + ", lastModified: " + new Date( resource.getLastModified() ) + " (" + resource.getLastModified() + ")" );
-		return ResourceFactory.getResource( "classpath:" + this.packageSlashed + path + ".gsql" );
-//		if( url == null )
-//			throw new QueryNotFoundException( file + " not found in classpath" );
+		return super.getTemplate( path + ".gsql" );
 	}
 
 	/**
 	 * Binds the arguments and the template and returns the {@link Query}.
-	 * 
+	 *
 	 * @param path The path of the query.
 	 * @param args The arguments.
 	 * @return The {@link Query}.
 	 */
 	public Query bind( String path, Map< String, ? > args )
 	{
-		QueryTemplate query = getQueryTemplate( path );
-		return query.bind( args );
+		Template template = getTemplate( path );
+		Query query = new Query( (Closure)template.getClosure().clone() );
+		query.bind( args );
+		return query;
 	}
 }
