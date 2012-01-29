@@ -21,11 +21,9 @@ import groovy.lang.Closure;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.Map;
 
-import solidstack.SystemException;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 
 /**
@@ -98,15 +96,15 @@ public class Template
 			{
 				writer = new OutputStreamWriter( out, this.charSet );
 			}
-			catch( UnsupportedEncodingException e )
+			catch( java.io.UnsupportedEncodingException e )
 			{
-				throw new SystemException( e ); // TODO Better exception?
+				throw new UnsupportedEncodingException( e.getMessage() );
 			}
 		}
 		else
-			writer = new OutputStreamWriter( out ); // TODO Should we use the encoding from the source file?
+			writer = new OutputStreamWriter( out );
 		Closure template = (Closure)this.template.clone();
-		template.setDelegate( params ); // TODO Escaping should depend on the content type
+		template.setDelegate( params );
 		template.call( createEncodingWriter( writer ) );
 	}
 

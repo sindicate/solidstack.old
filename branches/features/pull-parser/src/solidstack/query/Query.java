@@ -60,8 +60,7 @@ public class Query
 	private Closure closure;
 	private Map< String, ? > params;
 	private Connection connection;
-	// TODO Shouldn't this be true by default?
-	private boolean flyWeight;
+	private boolean flyWeight = true;
 
 	/**
 	 * Constructor.
@@ -114,7 +113,7 @@ public class Query
 	}
 
 	/**
-	 * If set to true, duplicate values from a query will only be stored once in memory.
+	 * If set to true, which is the default, duplicate values from a query will only be stored once in memory.
 	 * 
 	 * @param flyWeight If set to true, duplicate values from a query will only be stored once in memory.
 	 */

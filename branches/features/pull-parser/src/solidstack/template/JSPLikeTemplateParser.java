@@ -196,7 +196,7 @@ public class JSPLikeTemplateParser
 					}
 					if( buffer.length() > 0 )
 					{
-						// TODO Return text segments with maximum size
+						// TODO Return text segments with maximum size, so that we can parse huge files that have no newlines
 						reader.push( c );
 						reader.push( '<' );
 						ParseEvent result = new ParseEvent( textFound ? EVENT.TEXT : EVENT.WHITESPACE, popBuffer() );

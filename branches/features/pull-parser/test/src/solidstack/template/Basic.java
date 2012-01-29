@@ -55,7 +55,6 @@ public class Basic
 		Template template = new TemplateCompiler().translate( "p", "c", new BOMDetectingLineReader( resource ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		// TODO What about the class name?
 		Assert.assertEquals( template.getSource(), "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{writer->\n" +
 				" // Test if the import at the bottom works, and this comment too of course\n" +
 				"new Timestamp( new Date().time ) \n" +
