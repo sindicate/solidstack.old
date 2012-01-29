@@ -28,9 +28,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -40,7 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import solidstack.Assert;
-import solidstack.util.PrimitiveArrayListIterator;
 
 
 /**
@@ -52,9 +49,6 @@ import solidstack.util.PrimitiveArrayListIterator;
 public class Query
 {
 	static final private Logger LOGGER = LoggerFactory.getLogger( Query.class );
-
-	static private final String parameterMarkupStart = "#{";
-	static private final char parameterMarkupEnd = '}';
 
 	private GString sql;
 	private Closure closure;
@@ -374,43 +368,6 @@ public class Query
 		}
 	}
 
-	private void appendLiteralParameter( Object object, String name, StringBuilder buildSql )
-	{
-		if( object instanceof Collection<?> )
-		{
-			int size = ( (Collection<?>)object ).size();
-			Assert.isTrue( size > 0, "Parameter [" + name + "] is empty collection" );
-			boolean first = true;
-			for( Object object2 : ( (Collection<?>)object ) )
-			{
-				if( !first )
-					buildSql.append( ',' );
-				else
-					first = false;
-				appendLiteral( buildSql, object2 );
-			}
-		}
-		else if( object.getClass().isArray() )
-		{
-			int size = Array.getLength( object );
-			Assert.isTrue( size > 0, "Parameter [" + name + "] is empty array" );
-			boolean first = true;
-			for( int j = 0; j < size; j++ )
-			{
-				if( !first )
-					buildSql.append( ',' );
-				else
-					first = false;
-				Object object2 = Array.get( object, j );
-				appendLiteral( buildSql, object2 );
-			}
-		}
-		else
-		{
-			appendLiteral( buildSql, object );
-		}
-	}
-
 	private void appendParameter( Object object, String name, StringBuilder buildSql, List< Object > pars )
 	{
 		buildSql.append( '?' );
@@ -458,133 +415,14 @@ public class Query
 		int len = values.length;
 		for( int i = 0; i <= len; i++ )
 		{
-			String sql = strings[ i ];
-
-			int currentPos = 0;
-			int pos = sql.indexOf( parameterMarkupStart );
-			while( pos >= 0 )
-			{
-				buildSql.append( sql.substring( currentPos, pos ) );
-
-				int pos2 = sql.indexOf( parameterMarkupEnd, pos + 3 );
-				Assert.isTrue( pos2 >= 0, "Couldn't find corresponding '}'" );
-
-				if( sql.indexOf( "ORACLE-IN ", pos + 2 ) == pos + 2 )
-				{
-					processOracleIn( sql, pos, pos2, buildSql, pars );
-				}
-				else if( sql.charAt( pos + 2 ) == '\'' )
-				{
-					String name = sql.substring( pos + 3, pos2 );
-					appendLiteralParameter( getParameter( name ), name, buildSql );
-				}
-				else
-				{
-					String name = sql.substring( pos + 2, pos2 );
-					appendParameter( getParameter( name ), name, buildSql, pars );
-				}
-
-				currentPos = pos2 + 1;
-				pos = sql.indexOf( parameterMarkupStart, pos2 + 1 );
-			}
-
-			buildSql.append( sql.substring( currentPos ) );
-
+			buildSql.append( strings[ i ] );
 			if( i < len )
-			{
 				appendParameter( values[ i ], "unknown", buildSql, pars );
-			}
 		}
 
 		String sql = buildSql.toString();
 		printDebug( sql );
 		return sql;
-	}
-
-	private void processOracleIn( String sql, int pos, int pos2, StringBuilder builder, List< Object > pars )
-	{
-		int pos3 = sql.indexOf( ' ', pos + 12 );
-		Assert.isTrue( pos3 >= 0 && pos3 < pos2, "Need 2 parameters when using ORACLE-IN" );
-
-		String column = sql.substring( pos + 12, pos3 ).trim();
-		String name = sql.substring( pos3 + 1, pos2 ).trim();
-		boolean literal = name.charAt( 0 ) == '\'';
-		if( literal )
-			name = name.substring( 1 );
-
-		Assert.notEmpty( column );
-		Assert.notEmpty( name );
-
-		Object object = getParameter( name );
-		if( object instanceof Collection<?> )
-		{
-			Assert.isTrue( ( (Collection<?>)object ).size() > 0, "Parameter [" + name + "] is empty collection" );
-			processOracleIn2( builder, column, ( (Collection<?>)object ).iterator(), literal, pars );
-		}
-		else if( object.getClass().isArray() )
-		{
-			Assert.isTrue( Array.getLength( object ) > 0, "Parameter [" + name + "] is empty array" );
-			processOracleIn2( builder, column, new PrimitiveArrayListIterator( object ), literal, pars );
-		}
-		else
-			Assert.fail( "ORACLE-IN needs an Array or Collection parameter" );
-	}
-
-	private Object getParameter( String name )
-	{
-		if( !this.params.containsKey( name ) )
-			Assert.fail( "Parameter [" + name + "] not set" );
-		return this.params.get( name );
-	}
-
-	private void appendLiteral( StringBuilder builder, Object object )
-	{
-		if( object instanceof Date )
-			throw new UnsupportedOperationException( "String/Date *literal* parameters can not be used, remove the single quote: '" );
-
-		if( object instanceof String )
-		{
-			builder.append( '\'' );
-			builder.append( object );
-			builder.append( '\'' );
-		}
-		else
-			builder.append( object );
-	}
-
-	private void processOracleIn2( StringBuilder builder, String column, Iterator<?> iter, boolean literal, List< Object > pars )
-	{
-		builder.append( '(' );
-		boolean first = true;
-		int count = 0;
-		while( iter.hasNext() )
-		{
-			Object object = iter.next();
-			if( count == 0 )
-			{
-				if( !first )
-					builder.append( ") OR " );
-				else
-					first = false;
-				builder.append( column );
-				builder.append( " IN (" );
-			}
-			else
-				builder.append( ',' );
-
-			if( literal )
-				appendLiteral( builder, object );
-			else
-			{
-				pars.add( object );
-				builder.append( '?' );
-			}
-
-			count++;
-			if( count >= 1000 )
-				count = 0;
-		}
-		builder.append( "))" );
 	}
 
 	private void appendExtraQuestionMarks( StringBuilder s, int count )
