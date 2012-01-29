@@ -180,6 +180,8 @@ public class JSPLikeTemplateParser
 						case '\\':
 						case '<':
 							buffer.append( (char)c );
+							if( buffer.length() >= 0x1000 )
+								return new ParseEvent( EVENT.TEXT, popBuffer() );
 							continue;
 						default:
 							throw new ParseException( "Only <, $ or \\ can be escaped", reader.getLineNumber() );
@@ -192,6 +194,8 @@ public class JSPLikeTemplateParser
 						reader.push( c );
 						buffer.append( '<' );
 						textFound = true;
+						if( buffer.length() >= 0x1000 )
+							return new ParseEvent( EVENT.TEXT, popBuffer() );
 						continue;
 					}
 					if( buffer.length() > 0 )
@@ -200,7 +204,6 @@ public class JSPLikeTemplateParser
 						reader.push( c );
 						reader.push( '<' );
 						ParseEvent result = new ParseEvent( textFound ? EVENT.TEXT : EVENT.WHITESPACE, popBuffer() );
-						textFound = false;
 						return result;
 					}
 					return readMarkup();
@@ -210,7 +213,6 @@ public class JSPLikeTemplateParser
 					{
 						reader.push( c );
 						ParseEvent result = new ParseEvent( textFound ? EVENT.TEXT : EVENT.WHITESPACE, popBuffer() );
-						textFound = false;
 						return result;
 					}
 					return readDollar();
@@ -223,6 +225,7 @@ public class JSPLikeTemplateParser
 						textFound = false;
 						return result;
 					}
+					textFound = false;
 					return NEWLINE;
 
 				default:
@@ -232,6 +235,8 @@ public class JSPLikeTemplateParser
 				case '\t':
 				case ' ':
 					buffer.append( (char)c );
+					if( buffer.length() >= 0x1000 )
+						return new ParseEvent( textFound ? EVENT.TEXT : EVENT.WHITESPACE, popBuffer() );
 			}
 	}
 

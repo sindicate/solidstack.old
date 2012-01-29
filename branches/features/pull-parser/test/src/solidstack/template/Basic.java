@@ -32,6 +32,8 @@ import solidbase.io.LineReader;
 import solidbase.io.Resource;
 import solidbase.io.ResourceFactory;
 import solidbase.io.StringLineReader;
+import solidstack.template.JSPLikeTemplateParser.EVENT;
+import solidstack.template.JSPLikeTemplateParser.ParseEvent;
 
 
 public class Basic
@@ -117,7 +119,7 @@ public class Basic
 				);
 	}
 
-	@Test(groups="new")
+	@Test
 	public void testNulls() throws IOException
 	{
 		TemplateManager templates = new TemplateManager();
@@ -141,112 +143,19 @@ public class Basic
 				"</html>\n" );
 	}
 
-//	@Test
-//	public void testInJar() throws SQLException, ClassNotFoundException
-//	{
-//		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
-//		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
-//
-//		TemplateManager queries = new TemplateManager();
-//		queries.setPackage( "solidstack.query" );
-//
-//		Map< String, Object > params = new HashMap< String, Object >();
-//		Template template = queries.getTemplate( "test2" );
-//		List< Map< String, Object > > result = template.listOfMaps( connection );
-//		assert result.size() == 22;
-//	}
+	@Test(groups="new")
+	public void testHuge() throws IOException
+	{
+		StringBuilder buffer = new StringBuilder();
+		for( int i = 0; i < 1000; i++ )
+			buffer.append( "abcdefghijklmnopqrstuvwxyz" );
 
-//	private String start = "package p;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();";
-//	private String end = ";return builder.toGString()}}}";
-//	private Map parameters;
-//	{
-//		this.parameters = new HashMap();
-//		this.parameters.put( "var", "value" );
-//	}
-//
-//	private void translateTest( String input, String groovy, String output )
-//	{
-//		String g = QueryTransformer.translate( input ).toString();
-//		System.out.println( g );
-//		assert g.equals( this.start + groovy + this.end );
-//
-//		String result = QueryTransformer.execute( g, this.parameters );
-//		System.out.println( result );
-//		assert result.equals( output );
-//	}
-//
-//	private void translateError( String input )
-//	{
-//		try
-//		{
-//			String result = QueryTransformer.translate( "X${\"te\"xt\"}X" );
-//			System.out.println( result );
-//			assert false;
-//		}
-//		catch( ParseException e )
-//		{
-//			assert e.getMessage().contains( "Unexpected end of " );
-//		}
-//	}
-//
-//	@Test
-//	public void testGroovy() throws SQLException, ClassNotFoundException
-//	{
-//		// Escaping in the text
-//
-//		translateTest( "X\"X'X", ";builder.append(\"\"\"X\\\"X'X\"\"\");", "X\"X'X" );
-//		translateTest( "X\\\\\"X'X", ";builder.append(\"\"\"X\\\\\\\"X'X\"\"\");", "X\\\"X'X" );
-//		translateTest( "X\\\\X'X", ";builder.append(\"\"\"X\\\\X'X\"\"\");", "X\\X'X" );
-//		translateTest( "X\"\"\"X'X", ";builder.append(\"\"\"X\\\"\\\"\\\"X'X\"\"\");", "X\"\"\"X'X" );
-//		translateTest( "X\\<%X", ";builder.append(\"\"\"X<%X\"\"\");", "X<%X" );
-//		translateTest( "X\\${X", ";builder.append(\"\"\"X\\${X\"\"\");", "X${X" );
-//
-//		// Expressions with "
-//
-//		translateTest( "X<%=\"X\"%>X", ";builder.append(\"\"\"X\"\"\");builder.append(\"X\");builder.append(\"\"\"X\"\"\");", "XXX" );
-//		translateTest( "X<%=\"%>\"%>X", ";builder.append(\"\"\"X\"\"\");builder.append(\"%>\");builder.append(\"\"\"X\"\"\");", "X%>X" );
-//		translateTest( "X<%=\"${var}\"%>X", ";builder.append(\"\"\"X\"\"\");builder.append(\"${var}\");builder.append(\"\"\"X\"\"\");", "XvalueX" );
-//		translateTest( "X<%=\"${\"te\\\"xt\"}\"%>X", ";builder.append(\"\"\"X\"\"\");builder.append(\"${\"te\\\"xt\"}\");builder.append(\"\"\"X\"\"\");", "Xte\"xtX" );
-//		translateTest( "X<%=\"${\"te\\${x}t\"}\"%>X", ";builder.append(\"\"\"X\"\"\");builder.append(\"${\"te\\${x}t\"}\");builder.append(\"\"\"X\"\"\");", "Xte${x}tX" );
-//		translateError( "X<%=\"${\"te\"xt\"}\"%>X" );
-//		translateTest( "X<%=\"${\"te\\\"xt\"}\"%>X", ";builder.append(\"\"\"X\"\"\");builder.append(\"${\"te\\\"xt\"}\");builder.append(\"\"\"X\"\"\");", "Xte\"xtX" );
-//		translateTest( "X<%=\"Y${\"Z${\"text\"}Z\"}Y\"%>X", ";builder.append(\"\"\"X\"\"\");builder.append(\"Y${\"Z${\"text\"}Z\"}Y\");builder.append(\"\"\"X\"\"\");", "XYZtextZYX" );
-//
-//		// Expressions with '
-//
-//		translateTest( "X<%='X'%>X", ";builder.append(\"\"\"X\"\"\");builder.append('X');builder.append(\"\"\"X\"\"\");", "XXX" );
-//		translateTest( "X<%='%>'%>X", ";builder.append(\"\"\"X\"\"\");builder.append('%>');builder.append(\"\"\"X\"\"\");", "X%>X" );
-//		translateTest( "X<%='${var}'%>X", ";builder.append(\"\"\"X\"\"\");builder.append('${var}');builder.append(\"\"\"X\"\"\");", "X${var}X" );
-//		translateTest( "X<%=\"${'te${x}t'}\"%>X", ";builder.append(\"\"\"X\"\"\");builder.append(\"${'te${x}t'}\");builder.append(\"\"\"X\"\"\");", "Xte${x}tX" );
-//
-//		// GString expressions with "
-//
-//		translateTest( "X${var}X", ";builder.append(\"\"\"X${var}X\"\"\");", "XvalueX" );
-//		translateTest( "X${\nvar}X", ";builder.append(\"\"\"X${\nvar}X\"\"\");", "XvalueX" );
-//		translateTest( "X${\"te\\nxt\"}X", ";builder.append(\"\"\"X${\"te\\nxt\"}X\"\"\");", "Xte\nxtX" );
-//		translateTest( "X${\"Y\\${Y\"}X", ";builder.append(\"\"\"X${\"Y\\${Y\"}X\"\"\");", "XY${YX" );
-//		translateError( "X${\"te\"xt\"}X" );
-//		translateTest( "X${\"te\\\"xt\"}X", ";builder.append(\"\"\"X${\"te\\\"xt\"}X\"\"\");", "Xte\"xtX" );
-//		translateError( "X${\"text\ntext\"}X" );
-//		translateError( "X${\"${\"text\ntext\"}\"}X" );
-//		translateTest( "X${\"\"\"te\"xt\ntext\\\"\"\"\"}X", ";builder.append(\"\"\"X${\"\"\"te\"xt\ntext\\\"\"\"\"}X\"\"\");", "Xte\"xt\ntext\"X" );
-//		translateTest( "${if(var){\"true\"}else{\"false\"}}", ";builder.append(\"\"\"${if(var){\"true\"}else{\"false\"}}\"\"\");", "true" );
-//		translateError( "X${\"Y${\n}Y\"}X" );
-//		translateTest( "X${\"\"\"Y${\nvar\n}Y\"\"\"}X", ";builder.append(\"\"\"X${\"\"\"Y${\nvar\n}Y\"\"\"}X\"\"\");", "XYvalueYX" );
-//
-//		// GString expressions with '
-//
-//		translateTest( "X${'text'}X", ";builder.append(\"\"\"X${'text'}X\"\"\");", "XtextX" );
-//		translateTest( "X${'Y${Y'}X", ";builder.append(\"\"\"X${'Y${Y'}X\"\"\");", "XY${YX" );
-//		translateError( "X${'te'xt'}X" );
-//		translateTest( "X${'te\"xt'}X", ";builder.append(\"\"\"X${'te\"xt'}X\"\"\");", "Xte\"xtX" );
-//		translateError( "X${'text\ntext'}X" );
-//		translateTest( "X${'''te\"xt\ntext\\''''}X", ";builder.append(\"\"\"X${'''te\"xt\ntext\\''''}X\"\"\");", "Xte\"xt\ntext'X" );
-//
-//		// Groovy BUG
-//
-//		translateTest( "<%if(true){%>X<%}%>Y", "if(true){;builder.append(\"\"\"X\"\"\");};builder.append(\"\"\"Y\"\"\");", "XY" );
-//		translateTest( "<%if(true){%>X<%}else{%>Y<%}%>", "if(true){;builder.append(\"\"\"X\"\"\");}else{;builder.append(\"\"\"Y\"\"\");}", "X" );
-//		translateTest( "<%if(true){%>X<%};if(false){%>X<%}%>", "if(true){;builder.append(\"\"\"X\"\"\");};if(false){;builder.append(\"\"\"X\"\"\");}", "X" );
-//	}
+		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( new StringLineReader( buffer.toString() ) );
+		ParseEvent event = parser.next();
+		while( event.getEvent() != EVENT.EOF )
+		{
+			Assert.assertTrue( event.getData().length() <= 0x1000 );
+			event = parser.next();
+		}
+	}
 }

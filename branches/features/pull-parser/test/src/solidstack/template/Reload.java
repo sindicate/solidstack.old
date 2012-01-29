@@ -33,7 +33,7 @@ import solidbase.io.URLResource;
 
 public class Reload
 {
-	@Test(groups="new")
+	@Test
 	public void testResourceFactory() throws IOException
 	{
 		Resource resource = ResourceFactory.getResource( "classpath:java/lang/String.class" );
@@ -65,7 +65,7 @@ public class Reload
 		in.close();
 	}
 
-	@Test(groups="new")
+	@Test
 	public void testReloading() throws SQLException, ClassNotFoundException, IOException
 	{
 		TemplateManager templates = new TemplateManager();
