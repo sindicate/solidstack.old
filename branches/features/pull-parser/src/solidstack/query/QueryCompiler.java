@@ -22,7 +22,6 @@ import java.util.List;
 import solidbase.io.LineReader;
 import solidstack.Assert;
 import solidstack.template.JSPLikeTemplateParser;
-import solidstack.template.Template;
 import solidstack.template.TemplateCompiler;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
@@ -35,7 +34,7 @@ import solidstack.template.JSPLikeTemplateParser.ParseEvent;
 public class QueryCompiler extends TemplateCompiler
 {
 	@Override
-	public Template translate( String pkg, String cls, LineReader reader )
+	public QueryTemplate translate( String pkg, String cls, LineReader reader )
 	{
 		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( reader );
 		StringBuilder buffer = new StringBuilder();
@@ -121,6 +120,6 @@ public class QueryCompiler extends TemplateCompiler
 		prelude.append( "{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();" );
 		buffer.insert( 0, prelude );
 		buffer.append( ";return builder.toGString()}}}" ); // Groovy does not understand: "...} return ..." Need extra ; to be sure
-		return new Template( buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
+		return new QueryTemplate( buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
 	}
 }

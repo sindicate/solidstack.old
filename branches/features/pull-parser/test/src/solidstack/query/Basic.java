@@ -39,7 +39,6 @@ import solidbase.io.Resource;
 import solidbase.io.ResourceFactory;
 import solidbase.io.StringLineReader;
 import solidstack.template.ParseException;
-import solidstack.template.Template;
 import solidstack.template.Util;
 
 
@@ -91,7 +90,7 @@ public class Basic
 	public void testTransform() throws Exception
 	{
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/test.gsql" );
-		Template template = new QueryCompiler().translate( "p", "c", new BOMDetectingLineReader( resource ) );
+		QueryTemplate template = new QueryCompiler().translate( "p", "c", new BOMDetectingLineReader( resource ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
 		Assert.assertEquals( template.getSource(), "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder(); // Test if the import at the bottom works, and this comment too of course\n" +
@@ -178,7 +177,7 @@ public class Basic
 				"%>\n" +
 				"TEST" );
 
-		Template template = new QueryCompiler().translate( "p", "c", reader );
+		QueryTemplate template = new QueryCompiler().translate( "p", "c", reader );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
 		Assert.assertEquals( template.getSource(), "package p;import uk.co.tntpost.umbrella.common.utils.QueryUtils;import uk.co.tntpost.umbrella.common.enums.*;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();\n" +
@@ -222,9 +221,15 @@ public class Basic
 		return closure.call().toString();
 	}
 
+	// For testing purposes
+	static QueryTemplate translate( String text )
+	{
+		return new QueryCompiler().translate( "p", "c", new StringLineReader( text ) );
+	}
+
 	private void translateTest( String input, String groovy, String output )
 	{
-		Template template = new QueryCompiler().translate( input );
+		QueryTemplate template = translate( input );
 		String g = template.getSource();
 //		System.out.println( g );
 		Assert.assertEquals( g, this.start + groovy + this.end );
@@ -238,7 +243,7 @@ public class Basic
 	{
 		try
 		{
-			Template template = new QueryCompiler().translate( "X${\"te\"xt\"}X" );
+			QueryTemplate template = translate( "X${\"te\"xt\"}X" );
 			System.out.println( template.getSource() );
 			assert false;
 		}

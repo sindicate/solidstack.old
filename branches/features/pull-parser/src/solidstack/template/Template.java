@@ -44,13 +44,25 @@ public class Template
 	private long lastModified;
 	private TemplateManager manager;
 
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param source The source code of the template. This is the template translated to the source code of the desired language.
+	 * @param directives The directives found in the template text.
+	 */
 	public Template( String source, Directive[] directives )
 	{
 		this.source = source;
 		this.directives = directives;
 	}
 
-	public void setManager( TemplateManager manager )
+	/**
+	 * Sets the manager of the template. The template needs this to access the MIME type registry.
+	 * 
+	 * @param manager A template manager.
+	 */
+	protected void setManager( TemplateManager manager )
 	{
 		this.manager = manager;
 	}
@@ -65,16 +77,18 @@ public class Template
 	{
 		Closure template = (Closure)this.template.clone();
 		template.setDelegate( params );
-		template.call( getEncodingWriter( writer ) );
+		template.call( createEncodingWriter( writer ) );
 	}
 
 	/**
-	 * Apply this template.
+	 * Applies this template and writes the result to an OutputStream. The character set used is the one configured in
+	 * the template. If none is configured the default character encoding of the operating system is used.
 	 * 
 	 * @param params The parameters to be applied.
-	 * @param writer The result of applying this template is written to this writer.
+	 * @param out The result of applying this template is written to this OutputStream.
 	 */
 	// TODO Test this one
+	// TODO Use default per MIME type too, then use the encoding of the source file, then the operating system
 	public void apply( Map< String, ? > params, OutputStream out )
 	{
 		Writer writer;
@@ -93,7 +107,7 @@ public class Template
 			writer = new OutputStreamWriter( out ); // TODO Should we use the encoding from the source file?
 		Closure template = (Closure)this.template.clone();
 		template.setDelegate( params ); // TODO Escaping should depend on the content type
-		template.call( getEncodingWriter( writer ) );
+		template.call( createEncodingWriter( writer ) );
 	}
 
 	/**
@@ -109,7 +123,13 @@ public class Template
 		return writer.toString();
 	}
 
-	protected EncodingWriter getEncodingWriter( Writer writer )
+	/**
+	 * Returns the EncodingWriter for the configured MIME type.
+	 * 
+	 * @param writer The writer to write to.
+	 * @return The EncodingWriter.
+	 */
+	protected EncodingWriter createEncodingWriter( Writer writer )
 	{
 		if( this.contentType != null )
 		{
@@ -120,11 +140,21 @@ public class Template
 		return new NoEncodingWriter( writer );
 	}
 
+	/**
+	 * Returns the content type of this template.
+	 * 
+	 * @return The content type of this template.
+	 */
 	public String getContentType()
 	{
 		return this.contentType;
 	}
 
+	/**
+	 * Returns the output character set of this template.
+	 * 
+	 * @return The output character set of this template.
+	 */
 	public String getCharSet()
 	{
 		return this.charSet;
@@ -140,16 +170,33 @@ public class Template
 		return this.lastModified;
 	}
 
-	public String getSource()
+	/**
+	 * Returns the source code for the template.
+	 * 
+	 * @return The source code for the template.
+	 */
+	protected String getSource()
 	{
 		return this.source;
 	}
 
-	public Closure getClosure()
+	/**
+	 * Returns the Groovy closure.
+	 * 
+	 * @return The Groovy closure.
+	 */
+	protected Closure getClosure()
 	{
 		return this.template;
 	}
 
+	/**
+	 * Returns the directive attribute with the given directive name and attribute name.
+	 * 
+	 * @param name The name of the directive.
+	 * @param attribute The name of the attribute.
+	 * @return The directive.
+	 */
 	public Directive getDirective( String name, String attribute )
 	{
 		if( this.directives == null )
@@ -160,27 +207,50 @@ public class Template
 		return null;
 	}
 
+	/**
+	 * Sets the content type of the template.
+	 * 
+	 * @param contentType The content type.
+	 */
 	public void setContentType( String contentType )
 	{
 		this.contentType = contentType;
 	}
 
+	/**
+	 * Sets the character set of the output of the template.
+	 * 
+	 * @param charSet The character set.
+	 */
 	public void setCharSet( String charSet )
 	{
 		this.charSet = charSet;
 	}
 
-	public void setLastModified( long lastModified )
+	/**
+	 * Sets the last modified timestamp of the template.
+	 * 
+	 * @param lastModified The last modified timestamp.
+	 */
+	protected void setLastModified( long lastModified )
 	{
 		this.lastModified = lastModified;
 	}
 
-	public void setClosure( Closure closure )
+	/**
+	 * Sets the Groovy closure.
+	 * 
+	 * @param closure The Groovy closure.
+	 */
+	protected void setClosure( Closure closure )
 	{
 		this.template = closure;
 	}
 
-	public void clearSource()
+	/**
+	 * Removes the templates source from memory.
+	 */
+	protected void clearSource()
 	{
 		this.source = null;
 	}

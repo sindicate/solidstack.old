@@ -20,7 +20,6 @@ import groovy.lang.Closure;
 
 import java.util.Map;
 
-import solidstack.template.Template;
 import solidstack.template.TemplateManager;
 
 
@@ -54,6 +53,9 @@ import solidstack.template.TemplateManager;
  */
 public class QueryManager
 {
+	/**
+	 * The {@link TemplateManager} that is used to manage the templates for the QueryManager.
+	 */
 	protected InternalManager templateManager = new InternalManager();
 
 
@@ -86,13 +88,19 @@ public class QueryManager
 	 */
 	public Query bind( String path, Map< String, ? > args )
 	{
-		Template template = this.templateManager.getTemplate( path );
+		QueryTemplate template = this.templateManager.getTemplate( path );
 		Query query = new Query( (Closure)template.getClosure().clone() );
 		query.bind( args );
 		return query;
 	}
 
-	protected class InternalManager extends TemplateManager
+	/**
+	 * This is a customized TemplateManager that uses the {@link QueryCompiler} instead of the default template
+	 * compiler. Also, query templates use the .gsql extension which is automatically added to the template name.
+	 * 
+	 * @author René de Bloois
+	 */
+	static protected class InternalManager extends TemplateManager
 	{
 		@Override
 		protected QueryCompiler getCompiler()
@@ -101,9 +109,9 @@ public class QueryManager
 		}
 
 		@Override
-		public Template getTemplate( String path )
+		public QueryTemplate getTemplate( String path )
 		{
-			return super.getTemplate( path + ".gsql" );
+			return (QueryTemplate)super.getTemplate( path + ".gsql" );
 		}
 	}
 }

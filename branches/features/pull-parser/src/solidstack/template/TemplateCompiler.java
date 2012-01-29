@@ -22,10 +22,8 @@ import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyObject;
 
 import java.io.FileNotFoundException;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import solidbase.io.BOMDetectingLineReader;
 import solidbase.io.LineReader;
 import solidbase.io.Resource;
-import solidbase.io.StringLineReader;
 import solidstack.Assert;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
@@ -49,21 +46,20 @@ public class TemplateCompiler
 {
 	static private Logger log = LoggerFactory.getLogger( TemplateCompiler.class );
 
-	static final public Pattern PATH_PATTERN = Pattern.compile( "/*(?:(.+?)/+)?([^\\/]+)" );
-	static final public Pattern CONTENT_TYPE_PATTERN = Pattern.compile( "^[ \\t]*(\\S*)[ \\t]*(?:;[ \\t]*charset[ \\t]*=[ \\t]*(\\S*)[ \\t]*)?$" ); // TODO case sensitive & http://www.iana.org/assignments/media-types/index.html
-	static final public Pattern ENCODING_PATTERN = Pattern.compile( "^<%@[ \t]*template[ \t]+encoding[ \t]*=\"([^\"]*)\".*", Pattern.CASE_INSENSITIVE ); // TODO Improve, case sensitive?
+	static final private Pattern PATH_PATTERN = Pattern.compile( "/*(?:(.+?)/+)?([^\\/]+)" );
+	static final private Pattern CONTENT_TYPE_PATTERN = Pattern.compile( "^[ \\t]*(\\S*)[ \\t]*(?:;[ \\t]*charset[ \\t]*=[ \\t]*(\\S*)[ \\t]*)?$" ); // TODO case sensitive & http://www.iana.org/assignments/media-types/index.html
+	static final private Pattern ENCODING_PATTERN = Pattern.compile( "^<%@[ \t]*template[ \t]+encoding[ \t]*=\"([^\"]*)\".*", Pattern.CASE_INSENSITIVE ); // TODO Improve, case sensitive?
 
 
 
 	/**
 	 * Compiles a template into a {@link Template}.
 	 * 
-	 * @param reader The {@link Reader} for the template.
-	 * @param path The path of the template.
-	 * @param lastModified The last modified time stamp of the template.
+	 * @param resource The {@link Resource} that contains the template.
+	 * @param path The path of the template, needed to generate a name for the class in memory.
 	 * @return A {@link Template}.
 	 */
-	public Template compile( Resource resource, String path, long lastModified )
+	public Template compile( Resource resource, String path )
 	{
 		log.info( "Compiling {}", resource );
 
@@ -94,7 +90,6 @@ public class TemplateCompiler
 		GroovyObject object = Util.newInstance( groovyClass );
 
 		template.setClosure( (Closure)object.invokeMethod( "getClosure", null ) );
-		template.setLastModified( lastModified );
 		template.clearSource();
 
 		Directive d = template.getDirective( "template", "contentType" );
@@ -109,6 +104,12 @@ public class TemplateCompiler
 		return template;
 	}
 
+	/**
+	 * Writes a string with escaping of sensitive characters ", \ and $.
+	 * 
+	 * @param buffer The buffer to write to.
+	 * @param s The string to write.
+	 */
 	// TODO We should really have some kind of GroovyWriter which can do the escaping
 	static protected void writeString( StringBuilder buffer, String s )
 	{
@@ -127,7 +128,15 @@ public class TemplateCompiler
 			}
 	}
 
-	public Template translate( String pkg, String cls, LineReader reader )
+	/**
+	 * Translates the template text to source code of the desired programming language.
+	 * 
+	 * @param pkg The package for naming the class.
+	 * @param cls The class name.
+	 * @param reader The reader to read the template text.
+	 * @return The translated template.
+	 */
+	protected Template translate( String pkg, String cls, LineReader reader )
 	{
 		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( reader );
 		StringBuilder buffer = new StringBuilder();
@@ -223,22 +232,5 @@ public class TemplateCompiler
 		buffer.insert( 0, prelude );
 		buffer.append( "}}}" );
 		return new Template( buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
-	}
-
-// For testing purposes
-	public Template translate( String text )
-	{
-		return translate( "p", "c", new StringLineReader( text ) );
-	}
-
-// For testing purposes
-	static String execute( String script, Map< String, ? > parameters )
-	{
-		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script, "n", "x" ) );
-		GroovyObject object = Util.newInstance( groovyClass );
-		Closure closure = (Closure)object.invokeMethod( "getClosure", null );
-		if( parameters != null )
-			closure.setDelegate( parameters );
-		return closure.call().toString();
 	}
 }

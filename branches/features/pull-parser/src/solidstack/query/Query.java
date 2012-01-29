@@ -103,6 +103,11 @@ public class Query
 		this.params = params;
 	}
 
+	/**
+	 * Returns an adapter for Hibernate which enables you to use the query with Hibernate.
+	 * 
+	 * @return An adapter for Hibernate.
+	 */
 	public QueryHibernateAdapter hibernate()
 	{
 		return new QueryHibernateAdapter( this );

@@ -14,8 +14,17 @@ import org.hibernate.Session;
  */
 public class QueryHibernateAdapter
 {
+	/**
+	 * The query that is adapted to Hibernate.
+	 */
 	protected Query query;
 
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param query A query to adapt to Hibernate.
+	 */
 	public QueryHibernateAdapter( Query query )
 	{
 		this.query = query;

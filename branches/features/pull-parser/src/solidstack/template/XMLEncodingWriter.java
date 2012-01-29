@@ -9,19 +9,19 @@ import java.io.Writer;
  * 
  * @author René M. de Bloois
  */
-public class XMLEncodingWriter extends NoEncodingWriter implements EncodingWriter
+public class XMLEncodingWriter extends NoEncodingWriter
 {
-	static public EncodingWriterFactory getFactory()
+	/**
+	 * A factory for producing new XMLEncodingWriters.
+	 */
+	static public final EncodingWriterFactory FACTORY = new EncodingWriterFactory()
 	{
-		return new EncodingWriterFactory()
+		//@Override
+		public NoEncodingWriter createWriter( Writer writer )
 		{
-			//@Override
-			public NoEncodingWriter createWriter( Writer writer )
-			{
-				return new XMLEncodingWriter( writer );
-			}
-		};
-	}
+			return new XMLEncodingWriter( writer );
+		}
+	};
 
 	/**
 	 * Constructor.

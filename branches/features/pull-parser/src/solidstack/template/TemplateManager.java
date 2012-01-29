@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import solidbase.io.Resource;
 import solidbase.io.ResourceFactory;
 import solidstack.Assert;
+import solidstack.query.QueryManager;
 
 
 /**
@@ -51,53 +52,56 @@ import solidstack.Assert;
 public class TemplateManager
 {
 	static private Logger log = LoggerFactory.getLogger( TemplateManager.class );
-	static public final Pattern XML_MIME_TYPE_PATTERN = Pattern.compile( "^[a-z]+/.+\\+xml" ); // TODO http://www.iana.org/assignments/media-types/index.html
+
+	static private final Pattern XML_MIME_TYPE_PATTERN = Pattern.compile( "^[a-z]+/.+\\+xml" ); // TODO http://www.iana.org/assignments/media-types/index.html
 
 	private String packageSlashed = ""; // when setPackage is not called
 	private boolean reloading;
 	private Map< String, Template > templates = new HashMap< String, Template >();
 	private Map< String, Object > mimeTypeMap = new HashMap< String, Object >();
 
+
+	/**
+	 * Constructor.
+	 */
 	public TemplateManager()
 	{
-		this.mimeTypeMap.put( "text/xml", XMLEncodingWriter.getFactory() );
+		this.mimeTypeMap.put( "text/xml", XMLEncodingWriter.FACTORY );
 		// TODO Put this in a properties file
 		this.mimeTypeMap.put( "application/xml", "text/xml" );
 		this.mimeTypeMap.put( "text/html", "text/xml" );
 	}
 
-	protected TemplateCompiler getCompiler()
-	{
-		return new TemplateCompiler();
-	}
-
+	/**
+	 * Registers a factory for an encoding writer for a specific MIME type.
+	 * 
+	 * @param mimeType The MIME type to register the writer for.
+	 * @param factory The factory for the writer.
+	 */
 	public void registerEncodingWriter( String mimeType, EncodingWriterFactory factory )
 	{
-		this.mimeTypeMap.put( mimeType, factory );
-	}
-
-	public void registerMimeTypeMapping( String mimeType, String encodeAsMimeType )
-	{
-		this.mimeTypeMap.put( mimeType, encodeAsMimeType );
-	}
-
-	public EncodingWriterFactory getWriterFactory( String mimeType )
-	{
-		Object object = this.mimeTypeMap.get( mimeType );
-		while( object != null && object instanceof String )
-			object = this.mimeTypeMap.get( object );
-
-		if( object != null )
-			return (EncodingWriterFactory)object;
-
-		if( XML_MIME_TYPE_PATTERN.matcher( mimeType ).matches() )
-			return getWriterFactory( "text/xml" );
-
-		return null;
+		synchronized( this.mimeTypeMap )
+		{
+			this.mimeTypeMap.put( mimeType, factory );
+		}
 	}
 
 	/**
-	 * Configures the package which is the root of the template files.
+	 * Registers a MIME type mapping. The first MIME type will be written with the encoding writer of the second MIME type.
+	 * 
+	 * @param mimeType The MIME type that should be mapped to another.
+	 * @param encodeAsMimeType The MIME type to map to.
+	 */
+	public void registerMimeTypeMapping( String mimeType, String encodeAsMimeType )
+	{
+		synchronized( this.mimeTypeMap )
+		{
+			this.mimeTypeMap.put( mimeType, encodeAsMimeType );
+		}
+	}
+
+	/**
+	 * Configures the package that will function as the root of the template resources.
 	 * 
 	 * @param pkg The package.
 	 */
@@ -124,45 +128,86 @@ public class TemplateManager
 	}
 
 	/**
-	 * Returns the compiled {@link Template} with the given path.
+	 * Returns the compiled {@link Template} with the given path. Compiled templates are cached in memory. When
+	 * {@link #setReloading(boolean)} has been enabled, file change detection will cause the templates to be reloaded
+	 * and recompiled.
 	 * 
 	 * @param path The path of the template.
 	 * @return The {@link Template}.
 	 */
-	synchronized public Template getTemplate( String path )
+	public Template getTemplate( String path )
 	{
 		log.debug( "getTemplate [{}]", path );
 		Assert.isTrue( !path.startsWith( "/" ), "path should not start with a /" );
 
-		Template template = this.templates.get( path );
-		Resource resource = null;
-
-		// If reloading == true and resource is changed, clear current query
-		if( this.reloading && template != null && template.getLastModified() > 0 )
+		synchronized( this.templates )
 		{
-			resource = getResource( path );
-			if( resource.exists() && resource.getLastModified() > template.getLastModified() )
+			Template template = this.templates.get( path );
+			Resource resource = null;
+
+			// If reloading == true and resource is changed, clear current query
+			if( this.reloading && template != null && template.getLastModified() > 0 )
 			{
-				log.info( "{} changed, reloading", resource );
-				template = null;
-			}
-		}
-
-		// Compile the query if needed
-		if( template == null )
-		{
-			if( resource == null )
 				resource = getResource( path );
+				if( resource.exists() && resource.getLastModified() > template.getLastModified() )
+				{
+					log.info( "{} changed, reloading", resource );
+					template = null;
+				}
+			}
 
-			if( !resource.exists() )
-				throw new TemplateNotFoundException( resource.toString() + " not found" );
+			// Compile the query if needed
+			if( template == null )
+			{
+				if( resource == null )
+					resource = getResource( path );
 
-			template = getCompiler().compile( resource, this.packageSlashed + path, resource.getLastModified() );
-			template.setManager( this );
-			this.templates.put( path, template );
+				if( !resource.exists() )
+					throw new TemplateNotFoundException( resource.toString() + " not found" );
+
+				template = getCompiler().compile( resource, this.packageSlashed + path );
+				template.setLastModified( resource.getLastModified() );
+				template.setManager( this );
+				this.templates.put( path, template );
+			}
+
+			return template;
+		}
+	}
+
+	/**
+	 * Returns the encoding writer factory for the given MIME type. This method is called by {@link Template}.
+	 * 
+	 * @param mimeType The MIME type to return the writer factory for.
+	 * @return The encoding writer factory for the given MIME type.
+	 */
+	protected EncodingWriterFactory getWriterFactory( String mimeType )
+	{
+		synchronized( this.mimeTypeMap )
+		{
+			Object object = this.mimeTypeMap.get( mimeType );
+			while( object != null && object instanceof String )
+				object = this.mimeTypeMap.get( object );
+
+			if( object != null )
+				return (EncodingWriterFactory)object;
+
+			if( XML_MIME_TYPE_PATTERN.matcher( mimeType ).matches() )
+				return getWriterFactory( "text/xml" );
 		}
 
-		return template;
+		return null;
+	}
+
+	/**
+	 * Ability to override which compiler is used to compile the template.
+	 * 
+	 * @return The compiler to compile the template with.
+	 * @see QueryManager
+	 */
+	protected TemplateCompiler getCompiler()
+	{
+		return new TemplateCompiler();
 	}
 
 	/**

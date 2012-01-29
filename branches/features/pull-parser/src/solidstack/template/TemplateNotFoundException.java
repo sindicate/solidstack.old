@@ -17,7 +17,7 @@
 package solidstack.template;
 
 /**
- * The requested query is not found.
+ * The requested template is not found.
  * 
  * @author René M. de Bloois
  */
