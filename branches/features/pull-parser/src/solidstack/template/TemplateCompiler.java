@@ -50,6 +50,8 @@ public class TemplateCompiler
 	static final private Pattern CONTENT_TYPE_PATTERN = Pattern.compile( "^[ \\t]*(\\S*)[ \\t]*(?:;[ \\t]*charset[ \\t]*=[ \\t]*(\\S*)[ \\t]*)?$" ); // TODO case sensitive & http://www.iana.org/assignments/media-types/index.html
 	static final private Pattern ENCODING_PATTERN = Pattern.compile( "^<%@[ \t]*template[ \t]+encoding[ \t]*=\"([^\"]*)\".*", Pattern.CASE_INSENSITIVE ); // TODO Improve, case sensitive?
 
+	static boolean keepSource = false;
+
 
 
 	/**
@@ -90,7 +92,8 @@ public class TemplateCompiler
 		GroovyObject object = Util.newInstance( groovyClass );
 
 		template.setClosure( (Closure)object.invokeMethod( "getClosure", null ) );
-		template.clearSource();
+		if( !keepSource )
+			template.clearSource();
 
 		Directive d = template.getDirective( "template", "contentType" );
 		if( d != null )

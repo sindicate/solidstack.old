@@ -42,6 +42,9 @@ public class XMLEncodingWriter extends NoEncodingWriter
 	@Override
 	public void writeEncoded( String s ) throws IOException
 	{
+		if( s == null )
+			return;
+
 		char[] chars = s.toCharArray();
 		int len = chars.length;
 		int start = 0;
@@ -59,14 +62,14 @@ public class XMLEncodingWriter extends NoEncodingWriter
 			}
 			if( replace != null )
 			{
-				write( chars, start, i - start );
-				write( replace );
+				this.writer.write( chars, start, i - start );
+				this.writer.write( replace );
 				replace = null;
 				start = ++i;
 			}
 			else
 				i++;
 		}
-		write( chars, start, len - start );
+		this.writer.write( chars, start, len - start );
 	}
 }

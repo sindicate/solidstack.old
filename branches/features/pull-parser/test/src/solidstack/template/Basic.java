@@ -17,6 +17,7 @@
 package solidstack.template;
 
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.sql.SQLException;
@@ -115,6 +116,30 @@ public class Basic
 				"\n" +
 				"writer.write(\"\"\"TEST\"\"\");}}}"
 				);
+	}
+
+	@Test(groups="new")
+	public void testNulls() throws IOException
+	{
+		TemplateManager templates = new TemplateManager();
+		TemplateCompiler.keepSource = true;
+		templates.setPackage( "solidstack.template" );
+
+		Template template = templates.getTemplate( "test2.gxml" );
+		System.out.println( template.getSource() );
+		Map< String, Object > pars = new HashMap< String, Object >();
+		String result = template.apply( pars );
+		Assert.assertEquals( result, "<!DOCTYPE html>\n" +
+				"<html>\n" +
+				"	<head>\n" +
+				"		<title></title>\n" +
+				"	</head>\n" +
+				"	<body>\n" +
+				"		<h1></h1>\n" +
+				"		<p>This is a <a href=\"demo.html\">simple</a> sample.</p>\n" +
+				"		<!-- this is a comment -->\n" +
+				"	</body>\n" +
+				"</html>\n" );
 	}
 
 //	@Test

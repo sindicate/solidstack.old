@@ -9,7 +9,8 @@ import java.io.Writer;
  * @author René M. de Bloois
  *
  */
-public class NoEncodingWriter extends Writer implements EncodingWriter
+// Can't implement Writer. DefaultGroovyMethods.write(Writer self, Writable writable) will be called when value is null, which results in NPE.
+public class NoEncodingWriter implements EncodingWriter
 {
 	/**
 	 * The writer to write to.
@@ -26,10 +27,18 @@ public class NoEncodingWriter extends Writer implements EncodingWriter
 		this.writer = writer;
 	}
 
-	@Override
-	public void write( char buf[], int off, int len ) throws IOException
+	/**
+	 * Write the specified string to the writer unencoded.
+	 * 
+	 * @param s The string to write.
+	 * @throws IOException Whenever an IOException occurs.
+	 */
+	public void write( String s ) throws IOException
 	{
-		this.writer.write( buf, off, len );
+		if( s == null )
+			return;
+
+		this.writer.write( s );
 	}
 
 	/**
@@ -40,18 +49,9 @@ public class NoEncodingWriter extends Writer implements EncodingWriter
 	 */
 	public void writeEncoded( String s ) throws IOException
 	{
+		if( s == null )
+			return;
+
 		write( s );
-	}
-
-	@Override
-	public void flush() throws IOException
-	{
-		this.writer.flush();
-	}
-
-	@Override
-	public void close() throws IOException
-	{
-		this.writer.close();
 	}
 }
