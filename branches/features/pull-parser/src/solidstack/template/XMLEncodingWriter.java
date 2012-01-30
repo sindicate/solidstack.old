@@ -78,14 +78,14 @@ public class XMLEncodingWriter extends NoEncodingWriter
 			}
 			if( replace != null )
 			{
-				this.writer.write( chars, start, i - start );
-				this.writer.write( replace );
+				this.out.write( chars, start, i - start );
+				this.out.write( replace );
 				replace = null;
 				start = ++i;
 			}
 			else
 				i++;
 		}
-		this.writer.write( chars, start, len - start );
+		this.out.write( chars, start, len - start );
 	}
 }

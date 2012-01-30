@@ -31,6 +31,7 @@ import solidstack.template.JSPLikeTemplateParser.ParseEvent;
  * 
  * @author René M. de Bloois
  */
+// TODO Closures in the query template
 public class QueryCompiler extends TemplateCompiler
 {
 	@Override
@@ -50,7 +51,7 @@ public class QueryCompiler extends TemplateCompiler
 				case NEWLINE:
 				case WHITESPACE:
 					if( !text )
-						buffer.append( "builder.append(\"\"\"" );
+						buffer.append( "builder.append(\"\"\"" ); // TODO Change to out.write(
 					text = true;
 					writeString( buffer, event.getData() );
 					break;
@@ -117,6 +118,7 @@ public class QueryCompiler extends TemplateCompiler
 			}
 		prelude.append( "class " );
 		prelude.append( cls );
+		// TODO Create the GStringBuilder outside the closure
 		prelude.append( "{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();" );
 		buffer.insert( 0, prelude );
 		buffer.append( ";return builder.toGString()}}}" ); // Groovy does not understand: "...} return ..." Need extra ; to be sure

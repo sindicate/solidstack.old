@@ -57,25 +57,25 @@ public class Basic
 		Template template = new TemplateCompiler().translate( "p", "c", new BOMDetectingLineReader( resource ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		Assert.assertEquals( template.getSource(), "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{writer->\n" +
+		Assert.assertEquals( template.getSource(), "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{out->\n" +
 				" // Test if the import at the bottom works, and this comment too of course\n" +
 				"new Timestamp( new Date().time ) \n" +
-				";writer.write(\"\"\"SELECT *\n" +
+				";out.write(\"\"\"SELECT *\n" +
 				"\"\"\");\n" +
-				"writer.write(\"\"\"FROM SYS.SYSTABLES\n" +
+				"out.write(\"\"\"FROM SYS.SYSTABLES\n" +
 				"\"\"\");\n" +
 				"\n" +
 				"\n" +
 				"\n" +
-				"writer.write(\"\"\"WHERE 1 = 1\n" +
+				"out.write(\"\"\"WHERE 1 = 1\n" +
 				"\"\"\"); if( prefix ) { \n" +
-				";writer.write(\"\"\"AND TABLENAME LIKE '\"\"\");writer.write( prefix );writer.write(\"\"\"%'\n" +
+				";out.write(\"\"\"AND TABLENAME LIKE '\"\"\");out.write( prefix );out.write(\"\"\"%'\n" +
 				"\"\"\"); } \n" +
 				"; if( name ) { \n" +
-				";writer.write(\"\"\"AND TABLENAME = \"\"\");writer.writeEncoded(name);writer.write(\"\"\"\n" +
+				";out.write(\"\"\"AND TABLENAME = \"\"\");out.writeEncoded(name);out.write(\"\"\"\n" +
 				"\"\"\"); } \n" +
 				"; if( names ) { \n" +
-				";writer.write(\"\"\"AND TABLENAME IN (\"\"\");writer.writeEncoded(names);writer.write(\"\"\")\n" +
+				";out.write(\"\"\"AND TABLENAME IN (\"\"\");out.writeEncoded(names);out.write(\"\"\")\n" +
 				"\"\"\"); } \n" +
 				";\n" +
 				"}}}"
@@ -111,11 +111,11 @@ public class Basic
 		Template template = new TemplateCompiler().translate( "p", "c", reader );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		Assert.assertEquals( template.getSource(), "package p;import uk.co.tntpost.umbrella.common.utils.QueryUtils;import uk.co.tntpost.umbrella.common.enums.*;class c{Closure getClosure(){return{writer->\n" +
+		Assert.assertEquals( template.getSource(), "package p;import uk.co.tntpost.umbrella.common.utils.QueryUtils;import uk.co.tntpost.umbrella.common.enums.*;class c{Closure getClosure(){return{out->\n" +
 				"\n" +
 				"\n" +
 				"\n" +
-				"writer.write(\"\"\"TEST\"\"\");}}}"
+				"out.write(\"\"\"TEST\"\"\");}}}"
 				);
 	}
 

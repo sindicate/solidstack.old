@@ -16,6 +16,8 @@
 
 package solidstack.template;
 
+import groovy.lang.Closure;
+
 import java.io.IOException;
 
 /**
@@ -27,12 +29,28 @@ import java.io.IOException;
 public interface EncodingWriter
 {
 	/**
-	 * Write the specified string to the writer unencoded.
+	 * Write the string to the writer unencoded.
 	 * 
 	 * @param s The string to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
 	void write( String s ) throws IOException;
+
+	/**
+	 * Write the object to the writer unencoded.
+	 * 
+	 * @param o The object to write.
+	 * @throws IOException Whenever an IOException occurs.
+	 */
+	void write( Object o ) throws IOException;
+
+	/**
+	 * Write the output of the closure to the writer unencoded.
+	 * 
+	 * @param c The closure.
+	 * @throws IOException Whenever an IOException occurs.
+	 */
+	void write( Closure c ) throws IOException;
 
 	/**
 	 * Write the specified string to the writer encoded.
@@ -41,4 +59,20 @@ public interface EncodingWriter
 	 * @throws IOException Whenever an IOException occurs.
 	 */
 	void writeEncoded( String s ) throws IOException;
+
+	/**
+	 * Write the object to the writer encoded.
+	 * 
+	 * @param o The object to write.
+	 * @throws IOException Whenever an IOException occurs.
+	 */
+	void writeEncoded( Object o ) throws IOException;
+
+	/**
+	 * Write the output of the closure to the writer encoded.
+	 * 
+	 * @param c The closure.
+	 * @throws IOException Whenever an IOException occurs.
+	 */
+	void writeEncoded( Closure c ) throws IOException;
 }

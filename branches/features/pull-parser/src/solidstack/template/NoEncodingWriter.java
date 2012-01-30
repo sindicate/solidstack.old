@@ -16,8 +16,12 @@
 
 package solidstack.template;
 
+import groovy.lang.Closure;
+
 import java.io.IOException;
 import java.io.Writer;
+
+import org.codehaus.groovy.runtime.InvokerHelper;
 
 /**
  * An encoding writer. Adds a {@link #writeEncoded(String)} method. This implementation does not encode.
@@ -31,43 +35,65 @@ public class NoEncodingWriter implements EncodingWriter
 	/**
 	 * The writer to write to.
 	 */
-	protected Writer writer;
+	protected Writer out;
 
 	/**
 	 * Constructor.
 	 * 
-	 * @param writer The writer to write to.
+	 * @param out The writer to write to.
 	 */
-	public NoEncodingWriter( Writer writer )
+	public NoEncodingWriter( Writer out )
 	{
-		this.writer = writer;
+		this.out = out;
 	}
 
-	/**
-	 * Write the specified string to the writer unencoded.
-	 * 
-	 * @param s The string to write.
-	 * @throws IOException Whenever an IOException occurs.
-	 */
 	public void write( String s ) throws IOException
 	{
-		if( s == null )
-			return;
-
-		this.writer.write( s );
+		if( s != null )
+			this.out.write( s );
 	}
 
-	/**
-	 * Write the specified string to the writer unencoded.
-	 * 
-	 * @param s The string to write.
-	 * @throws IOException Whenever an IOException occurs.
-	 */
+	public void write( Object o ) throws IOException
+	{
+		if( o != null )
+			write( (String)InvokerHelper.invokeMethod( o, "asType", String.class ) );
+	}
+
+	public void write( Closure c ) throws IOException
+	{
+		if( c != null )
+		{
+			int pars = c.getMaximumNumberOfParameters();
+			if( pars > 0 )
+				throw new TemplateException( "Closures with parameters are not supported in expressions." );
+			Object result = c.call();
+			if( result != null )
+				write( result.toString() ); // TODO Use groovy type conversion
+		}
+	}
+
 	public void writeEncoded( String s ) throws IOException
 	{
-		if( s == null )
-			return;
+		if( s != null )
+			write( s );
+	}
 
-		write( s );
+	public void writeEncoded( Object o ) throws IOException
+	{
+		if( o != null )
+			writeEncoded( (String)InvokerHelper.invokeMethod( o, "asType", String.class ) );
+	}
+
+	public void writeEncoded( Closure c ) throws IOException
+	{
+		if( c != null )
+		{
+			int pars = c.getMaximumNumberOfParameters();
+			if( pars > 0 )
+				throw new TemplateException( "Closures with parameters are not supported in expressions." );
+			Object result = c.call();
+			if( result != null )
+				writeEncoded( result.toString() ); // TODO Use groovy type conversion
+		}
 	}
 }

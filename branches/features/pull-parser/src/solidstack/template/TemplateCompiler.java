@@ -155,7 +155,7 @@ public class TemplateCompiler
 				case NEWLINE:
 				case WHITESPACE:
 					if( !text )
-						buffer.append( "writer.write(\"\"\"" );
+						buffer.append( "out.write(\"\"\"" );
 					text = true;
 					writeString( buffer, event.getData() );
 					break;
@@ -172,7 +172,7 @@ public class TemplateCompiler
 					if( text )
 						buffer.append( "\"\"\");" );
 					text = false;
-					buffer.append( "writer.write(" );
+					buffer.append( "out.write(" );
 					buffer.append( event.getData() );
 					buffer.append( ");" );
 					break;
@@ -181,7 +181,7 @@ public class TemplateCompiler
 					if( text )
 						buffer.append( "\"\"\");" );
 					text = false;
-					buffer.append( "writer.writeEncoded(" );
+					buffer.append( "out.writeEncoded(" );
 					buffer.append( event.getData() );
 					buffer.append( ");" );
 					break;
@@ -231,7 +231,7 @@ public class TemplateCompiler
 			}
 		prelude.append( "class " );
 		prelude.append( cls );
-		prelude.append( "{Closure getClosure(){return{writer->" );
+		prelude.append( "{Closure getClosure(){return{out->" );
 		buffer.insert( 0, prelude );
 		buffer.append( "}}}" );
 		return new Template( buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
