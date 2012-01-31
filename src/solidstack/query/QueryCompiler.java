@@ -51,7 +51,7 @@ public class QueryCompiler extends TemplateCompiler
 				case NEWLINE:
 				case WHITESPACE:
 					if( !text )
-						buffer.append( "builder.append(\"\"\"" ); // TODO Change to out.write(
+						buffer.append( "out.write(\"\"\"" );
 					text = true;
 					writeString( buffer, event.getData() );
 					break;
@@ -66,13 +66,13 @@ public class QueryCompiler extends TemplateCompiler
 					if( text )
 						buffer.append( "\"\"\");" );
 					text = false;
-					buffer.append( "builder.append(" );
+					buffer.append( "out.write(" );
 					buffer.append( event.getData() );
 					buffer.append( ");" );
 					break;
 				case EXPRESSION2:
 					if( !text )
-						buffer.append( "builder.append(\"\"\"" );
+						buffer.append( "out.write(\"\"\"" );
 					text = true;
 					buffer.append( "${" );
 					buffer.append( event.getData() );
@@ -118,10 +118,9 @@ public class QueryCompiler extends TemplateCompiler
 			}
 		prelude.append( "class " );
 		prelude.append( cls );
-		// TODO Create the GStringBuilder outside the closure
-		prelude.append( "{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();" );
+		prelude.append( "{Closure getClosure(){return{out->" );
 		buffer.insert( 0, prelude );
-		buffer.append( ";return builder.toGString()}}}" ); // Groovy does not understand: "...} return ..." Need extra ; to be sure
+		buffer.append( "}}}" );
 		return new QueryTemplate( buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
 	}
 }
