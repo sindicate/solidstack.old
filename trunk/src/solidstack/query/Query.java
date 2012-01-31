@@ -101,9 +101,19 @@ public class Query
 	 * 
 	 * @return An adapter for Hibernate.
 	 */
-	public QueryHibernateAdapter hibernate()
+	public HibernateQueryAdapter hibernate()
 	{
-		return new QueryHibernateAdapter( this );
+		return new HibernateQueryAdapter( this );
+	}
+
+	/**
+	 * Returns an adapter for JPA which enables you to use the query with JPA.
+	 * 
+	 * @return An adapter for JPA.
+	 */
+	public JPAQueryAdapter jpa()
+	{
+		return new JPAQueryAdapter( this );
 	}
 
 	/**
@@ -368,7 +378,7 @@ public class Query
 		}
 	}
 
-	private void appendParameter( Object object, String name, StringBuilder buildSql, List< Object > pars )
+	static private void appendParameter( Object object, String name, StringBuilder buildSql, List< Object > pars )
 	{
 		buildSql.append( '?' );
 		if( object instanceof Collection<?> )
@@ -425,7 +435,7 @@ public class Query
 		return sql;
 	}
 
-	private void appendExtraQuestionMarks( StringBuilder s, int count )
+	static private void appendExtraQuestionMarks( StringBuilder s, int count )
 	{
 		while( count > 0 )
 		{

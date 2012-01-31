@@ -28,7 +28,7 @@ import org.hibernate.Session;
  * 
  * @author René M. de Bloois
  */
-public class QueryHibernateAdapter
+public class HibernateQueryAdapter
 {
 	/**
 	 * The query that is adapted to Hibernate.
@@ -41,7 +41,7 @@ public class QueryHibernateAdapter
 	 * 
 	 * @param query A query to adapt to Hibernate.
 	 */
-	public QueryHibernateAdapter( Query query )
+	public HibernateQueryAdapter( Query query )
 	{
 		this.query = query;
 	}

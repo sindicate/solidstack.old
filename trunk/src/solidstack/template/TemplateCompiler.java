@@ -139,6 +139,7 @@ public class TemplateCompiler
 	 * @param reader The reader to read the template text.
 	 * @return The translated template.
 	 */
+	@SuppressWarnings( "static-method" )
 	protected Template translate( String pkg, String cls, LineReader reader )
 	{
 		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( reader );
