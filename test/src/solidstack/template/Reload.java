@@ -19,15 +19,18 @@ package solidstack.template;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.sql.SQLException;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import solidbase.io.ClassPathResource;
+import solidbase.io.FatalIOException;
 import solidbase.io.FileResource;
 import solidbase.io.Resource;
 import solidbase.io.ResourceFactory;
+import solidbase.io.URLResource;
 
 
 public class Reload
