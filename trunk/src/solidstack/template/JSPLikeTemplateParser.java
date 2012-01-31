@@ -342,7 +342,6 @@ public class JSPLikeTemplateParser
 	 * 
 	 * @return The ${ expression.
 	 */
-	// TODO Can we test if closures also in $ expressions? And with the <%= expressions?
 	// TODO We should understand $var too? Like in Groovy?
 	private ParseEvent readDollar()
 	{

@@ -410,7 +410,9 @@ public class Query
 		if( this.closure != null )
 		{
 			this.closure.setDelegate( this.params );
-			gsql = (GString)this.closure.call();
+			GStringWriter out = new GStringWriter();
+			this.closure.call( out );
+			gsql = out.toGString();
 		}
 		else
 			gsql = this.sql;

@@ -28,7 +28,7 @@ import org.codehaus.groovy.runtime.GStringImpl;
  * 
  * @author René M. de Bloois
  */
-public class GStringBuilder
+public class GStringWriter
 {
 	private List< String > strings = new ArrayList< String >();
 	private List< Object > values = new ArrayList< Object >();
@@ -37,9 +37,8 @@ public class GStringBuilder
 	 * Append a {@link GString}.
 	 * 
 	 * @param gString The {@link GString} to append.
-	 * @return The {@link GStringBuilder} itself.
 	 */
-	public GStringBuilder append( GString gString )
+	public void write( GString gString )
 	{
 		if( !( this.strings.size() == 0 || this.strings.size() == this.values.size() + 1 ) )
 			throw new IllegalStateException();
@@ -49,7 +48,7 @@ public class GStringBuilder
 		if( !( strings.length == values.length + 1 ) )
 			throw new IllegalStateException();
 
-		append( strings[ 0 ] );
+		write( strings[ 0 ] );
 
 		for( int i = 0; i < values.length; i++ )
 			this.values.add( values[ i ] );
@@ -58,16 +57,14 @@ public class GStringBuilder
 
 		if( !( this.strings.size() == this.values.size() + 1 ) )
 			throw new IllegalStateException();
-		return this;
 	}
 
 	/**
 	 * Append a {@link String}.
 	 * 
 	 * @param string The string to append.
-	 * @return The {@link GStringBuilder} itself.
 	 */
-	public GStringBuilder append( String string )
+	public void write( String string )
 	{
 		if( !( this.strings.size() == 0 || this.strings.size() == this.values.size() + 1 ) )
 			throw new IllegalStateException();
@@ -80,25 +77,23 @@ public class GStringBuilder
 
 		if( !( this.strings.size() == this.values.size() + 1 ) )
 			throw new IllegalStateException();
-		return this;
 	}
 
 	/**
 	 * Append an object. The object's {@link #toString()} will be called to convert it to a string.
 	 * 
 	 * @param object The object to append.
-	 * @return The {@link GStringBuilder} itself.
 	 */
-	public GStringBuilder append( Object object )
+	public void write( Object object )
 	{
 		// Use Groovy's asType (see NoEncodingWriter)
-		return append( object != null ? object.toString() : "null" );
+		write( object != null ? object.toString() : "null" );
 	}
 
 	/**
-	 * Returns the {@link GString} end result.
+	 * Returns the {@link GString} result.
 	 * 
-	 * @return The {@link GString} end result.
+	 * @return The {@link GString} result.
 	 */
 	public GString toGString()
 	{
@@ -106,5 +101,11 @@ public class GStringBuilder
 		if( !( this.strings.size() == size + 1 ) )
 			throw new IllegalStateException();
 		return new GStringImpl( this.values.toArray( new Object[ size ] ), this.strings.toArray( new String[ size + 1 ] ) );
+	}
+
+	@Override
+	public String toString()
+	{
+		return toGString().toString();
 	}
 }
