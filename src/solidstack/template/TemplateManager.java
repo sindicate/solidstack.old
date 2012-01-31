@@ -16,20 +16,18 @@
 
 package solidstack.template;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import solidbase.io.Resource;
+import solidbase.io.ResourceFactory;
 import solidstack.Assert;
-import solidstack.SystemException;
-import solidstack.query.UrlResource;
+import solidstack.query.QueryManager;
 
 
 /**
@@ -55,12 +53,55 @@ public class TemplateManager
 {
 	static private Logger log = LoggerFactory.getLogger( TemplateManager.class );
 
+	static private final Pattern XML_MIME_TYPE_PATTERN = Pattern.compile( "^[a-z]+/.+\\+xml" ); // TODO http://www.iana.org/assignments/media-types/index.html
+
 	private String packageSlashed = ""; // when setPackage is not called
 	private boolean reloading;
 	private Map< String, Template > templates = new HashMap< String, Template >();
+	private Map< String, Object > mimeTypeMap = new HashMap< String, Object >();
+
 
 	/**
-	 * Configures the package which is the root of the template files.
+	 * Constructor.
+	 */
+	public TemplateManager()
+	{
+		this.mimeTypeMap.put( "text/xml", XMLEncodingWriter.FACTORY );
+		// TODO Put this in a properties file
+		this.mimeTypeMap.put( "application/xml", "text/xml" );
+		this.mimeTypeMap.put( "text/html", "text/xml" );
+	}
+
+	/**
+	 * Registers a factory for an encoding writer for a specific MIME type.
+	 * 
+	 * @param mimeType The MIME type to register the writer for.
+	 * @param factory The factory for the writer.
+	 */
+	public void registerEncodingWriter( String mimeType, EncodingWriterFactory factory )
+	{
+		synchronized( this.mimeTypeMap )
+		{
+			this.mimeTypeMap.put( mimeType, factory );
+		}
+	}
+
+	/**
+	 * Registers a MIME type mapping. The first MIME type will be written with the encoding writer of the second MIME type.
+	 * 
+	 * @param mimeType The MIME type that should be mapped to another.
+	 * @param encodeAsMimeType The MIME type to map to.
+	 */
+	public void registerMimeTypeMapping( String mimeType, String encodeAsMimeType )
+	{
+		synchronized( this.mimeTypeMap )
+		{
+			this.mimeTypeMap.put( mimeType, encodeAsMimeType );
+		}
+	}
+
+	/**
+	 * Configures the package that will function as the root of the template resources.
 	 * 
 	 * @param pkg The package.
 	 */
@@ -82,88 +123,103 @@ public class TemplateManager
 	 */
 	public void setReloading( boolean reloading )
 	{
-		log.info( "Reloading = [" + reloading + "]" );
+		log.info( "Reloading = [{}]", reloading );
 		this.reloading = reloading;
 	}
 
 	/**
-	 * Returns the compiled {@link Template} with the given path.
+	 * Returns the compiled {@link Template} with the given path. Compiled templates are cached in memory. When
+	 * {@link #setReloading(boolean)} has been enabled, file change detection will cause the templates to be reloaded
+	 * and recompiled.
 	 * 
 	 * @param path The path of the template.
 	 * @return The {@link Template}.
 	 */
-	synchronized public Template getTemplate( String path )
+	public Template getTemplate( String path )
 	{
-		log.debug( "getTemplate [" + path + "]" );
-
+		log.debug( "getTemplate [{}]", path );
 		Assert.isTrue( !path.startsWith( "/" ), "path should not start with a /" );
 
-		Template template = this.templates.get( path );
+		synchronized( this.templates )
+		{
+			Template template = this.templates.get( path );
+			Resource resource = null;
 
-		UrlResource resource = null;
-
-		// If reloading == true and resource is changed, clear current query
-		if( this.reloading )
-			if( template != null && template.getLastModified() > 0 )
+			// If reloading == true and resource is changed, clear current query
+			if( this.reloading && template != null && template.getLastModified() > 0 )
 			{
 				resource = getResource( path );
 				if( resource.exists() && resource.getLastModified() > template.getLastModified() )
 				{
-					log.info( resource.toString() + " changed, reloading" );
+					log.info( "{} changed, reloading", resource );
 					template = null;
 				}
 			}
 
-		// Compile the query if needed
-		if( template == null )
-		{
-			if( resource == null )
-				resource = getResource( path );
-
-			if( !resource.exists() )
+			// Compile the query if needed
+			if( template == null )
 			{
-				String error = resource.toString() + " not found";
-				throw new TemplateNotFoundException( error );
+				if( resource == null )
+					resource = getResource( path );
+
+				if( !resource.exists() )
+					throw new TemplateNotFoundException( resource.toString() + " not found" );
+
+				template = getCompiler().compile( resource, this.packageSlashed + path );
+				template.setLastModified( resource.getLastModified() );
+				template.setManager( this );
+				this.templates.put( path, template );
 			}
 
-			log.info( "Loading " + resource.toString() );
-
-			try
-			{
-				Reader reader = new InputStreamReader( resource.getInputStream(), "UTF-8" );
-				template = TemplateTransformer.compile( reader, this.packageSlashed + path, resource.getLastModified() );
-			}
-			catch( UnsupportedEncodingException e )
-			{
-				throw new SystemException( e );
-			}
-
-			this.templates.put( path, template );
+			return template;
 		}
-
-		return template;
 	}
 
 	/**
-	 * Returns the {@link UrlResource} with the given path.
+	 * Returns the encoding writer factory for the given MIME type. This method is called by {@link Template}.
+	 * 
+	 * @param mimeType The MIME type to return the writer factory for.
+	 * @return The encoding writer factory for the given MIME type.
+	 */
+	protected EncodingWriterFactory getWriterFactory( String mimeType )
+	{
+		synchronized( this.mimeTypeMap )
+		{
+			Object object = this.mimeTypeMap.get( mimeType );
+			while( object != null && object instanceof String )
+				object = this.mimeTypeMap.get( object );
+
+			if( object != null )
+				return (EncodingWriterFactory)object;
+
+			if( XML_MIME_TYPE_PATTERN.matcher( mimeType ).matches() )
+				return getWriterFactory( "text/xml" );
+		}
+
+		return null;
+	}
+
+	/**
+	 * Ability to override which compiler is used to compile the template.
+	 * 
+	 * @return The compiler to compile the template with.
+	 * @see QueryManager
+	 */
+	protected TemplateCompiler getCompiler()
+	{
+		return new TemplateCompiler();
+	}
+
+	/**
+	 * Returns the {@link Resource} with the given path.
 	 * 
 	 * @param path The path of the resource.
-	 * @return The {@link UrlResource}.
+	 * @return The {@link Resource}.
 	 */
-	public UrlResource getResource( String path )
+	private Resource getResource( String path )
 	{
-		String file = this.packageSlashed + path;
-		//ClassLoader loader = Thread.currentThread().getContextClassLoader();
-		ClassLoader loader = getClass().getClassLoader();
-		URL url = loader.getResource( file );
-		if( url == null )
-			throw new TemplateNotFoundException( file + " not found in classpath" );
-
-		UrlResource resource = new UrlResource( url );
-
-		if( log.isDebugEnabled() )
-			log.debug( resource.toString() + ", lastModified: " + new Date( resource.getLastModified() ) + " (" + resource.getLastModified() + ")" );
-
-		return resource;
+		Resource result = ResourceFactory.getResource( "classpath:" + this.packageSlashed + path );
+		log.debug( "{}, lastModified: {} ({})", new Object[] { result, new Date( result.getLastModified() ), result.getLastModified() } );
+		return result;
 	}
 }

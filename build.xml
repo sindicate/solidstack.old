@@ -44,6 +44,10 @@
 		<fileset dir="tools/svnkit" includes="*.jar" />
 	</path>
 
+	<path id="jarjar.classpath">
+		<fileset dir="tools/jarjar" includes="*.jar" />
+	</path>
+
 	<path id="testng.classpath">
 		<fileset dir="tools/testng" includes="*.jar" />
 	</path>
@@ -71,6 +75,7 @@
 
 	<taskdef resource="testngtasks" classpathref="testng.classpath" />
 	<taskdef name="groovy" classname="org.codehaus.groovy.ant.Groovy" classpathref="groovy.classpath" />
+	<taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="jarjar.classpath" />
 
 
 	<!-- Targets -->
@@ -84,7 +89,8 @@
 	<target name="compile">
 		<echo message="java.home=${java.home}" />
 		<mkdir dir="${build.home}/classes" />
-		<javac srcdir="src" destdir="${build.home}/classes" source="${target-jre}" target="${target-jre}" optimize="true" debug="true" deprecation="true" classpathref="compile.classpath" />
+		<javac srcdir="src:../solidbase/src" includes="solidbase/io/*.java,solidstack/**/*.java" destdir="${build.home}/classes" 
+			classpathref="compile.classpath" source="${target-jre}" target="${target-jre}" optimize="true" debug="true" deprecation="true" />
 		<sync todir="${build.home}/classes">
 			<fileset dir="src" excludes="**/*.java,**/*.html" />
 			<preserveInTarget includes="**/*.class" />
@@ -100,11 +106,13 @@
 				</resourcecount>
 			</condition>
 		</fail>
-		<mkdir dir="${dist.home}" />
-		<groovy src="scripts/getsvninfo.groovy" />
-		<jar compress="yes" destfile="${dist.home}/solidstack.jar">
+
+		
+		<jarjar compress="yes" destfile="${dist.home}/solidstack.jar">
 			<zipfileset dir="${build.home}/classes" />
 			<zipfileset dir="." includes="LICENSE.txt,NOTICE.txt,CHANGELOG.TXT" prefix="META-INF" />
+			<rule pattern="solidbase.**" result="solidstack.@0" />
+			<keep pattern="solidstack.**" />
 			<manifest>
 				<attribute name="Implementation-Title" value="SolidStack" />
 				<attribute name="Implementation-Version" value="${release.number}.${svn.revision}" />
@@ -116,7 +124,7 @@
 				<attribute name="SVN-url" value="${svn.url}" />
 				<attribute name="SVN-revision" value="${svn.committedRevision}" />
 			</manifest>
-		</jar>
+		</jarjar>
 	</target>
 
 
