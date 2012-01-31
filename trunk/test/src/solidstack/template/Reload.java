@@ -19,12 +19,14 @@ package solidstack.template;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.sql.SQLException;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import solidbase.io.ClassPathResource;
+import solidbase.io.FatalIOException;
 import solidbase.io.FileResource;
 import solidbase.io.Resource;
 import solidbase.io.ResourceFactory;
@@ -60,9 +62,17 @@ public class Reload
 		resource = ResourceFactory.getResource( "http://nu.nl" );
 		Assert.assertTrue( resource instanceof URLResource );
 		Assert.assertEquals( resource.getURL().getProtocol(), "http" );
-		in = resource.getInputStream();
-		Assert.assertTrue( in.read() >= 0 );
-		in.close();
+		try
+		{
+			in = resource.getInputStream();
+			Assert.assertTrue( in.read() >= 0 );
+			in.close();
+		}
+		catch( FatalIOException e )
+		{
+			Assert.assertTrue( e.getCause() instanceof ConnectException );
+			System.out.println( "Couldn't test http protocol: " + e.getCause().getMessage() );
+		}
 	}
 
 	@Test
