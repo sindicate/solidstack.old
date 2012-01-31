@@ -205,7 +205,6 @@ public class TemplateManager
 	 * @return The compiler to compile the template with.
 	 * @see QueryManager
 	 */
-	@SuppressWarnings( "static-method" )
 	protected TemplateCompiler getCompiler()
 	{
 		return new TemplateCompiler();
