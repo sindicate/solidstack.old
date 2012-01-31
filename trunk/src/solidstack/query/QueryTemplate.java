@@ -1,5 +1,5 @@
 /*--
- * Copyright 2006 René M. de Bloois
+ * Copyright 2012 René M. de Bloois
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,53 +17,37 @@
 package solidstack.query;
 
 import groovy.lang.Closure;
-import groovy.lang.GString;
+import solidstack.template.Template;
+import solidstack.template.JSPLikeTemplateParser.Directive;
 
-import java.sql.Connection;
-import java.util.Map;
 
 /**
- * Represents the query template.
+ * A compiled query template.
  * 
  * @author René M. de Bloois
  */
-public class QueryTemplate
+public class QueryTemplate extends Template
 {
-	private final Closure query;
-	private long lastModified;
-
 	/**
 	 * Constructor.
 	 * 
-	 * @param closure The closure that produces the {@link GString} for the query.
-	 * @param lastModified The last modified time stamp of the file that contains the query template.
+	 * @param source The source code of the template. This is the template translated to the source code of the desired language.
+	 * @param directives The directives found in the template text.
 	 */
-	public QueryTemplate( Closure closure, long lastModified )
+	public QueryTemplate( String source, Directive[] directives )
 	{
-		this.query = closure;
-		this.lastModified = lastModified;
+		super( source, directives );
 	}
 
-	/**
-	 * Bind the template with the given parameters. This produces a {@link Query} that can be executed against a {@link Connection}.
-	 * 
-	 * @param params The parameters for the query.
-	 * @return A {@link Query}.
-	 */
-	public Query bind( Map< String, ? > params )
+	@Override
+	protected Closure getClosure()
 	{
-		Query query = new Query( (Closure)this.query.clone() );
-		query.bind( params );
-		return query;
+		return super.getClosure();
 	}
 
-	/**
-	 * Returns the last modification time stamp for the file that contains the query template.
-	 * 
-	 * @return The last modification time stamp for the file that contains the query template.
-	 */
-	public long getLastModified()
+	@Override
+	protected String getSource()
 	{
-		return this.lastModified;
+		return super.getSource();
 	}
 }

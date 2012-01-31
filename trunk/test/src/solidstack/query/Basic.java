@@ -16,9 +16,11 @@
 
 package solidstack.query;
 
-import java.io.FileReader;
-import java.io.Reader;
-import java.io.StringReader;
+import groovy.lang.Closure;
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyCodeSource;
+import groovy.lang.GroovyObject;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -28,9 +30,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import solidbase.io.BOMDetectingLineReader;
+import solidbase.io.LineReader;
+import solidbase.io.Resource;
+import solidbase.io.ResourceFactory;
+import solidbase.io.StringLineReader;
 import solidstack.template.ParseException;
+import solidstack.template.Util;
 
 
 public class Basic
@@ -80,11 +89,11 @@ public class Basic
 	@Test
 	public void testTransform() throws Exception
 	{
-		String groovy = QueryTransformer.translate( new FileReader( "test/src/solidstack/query/test.gsql" ) );
+		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/test.gsql" );
+		QueryTemplate template = new QueryCompiler().translate( "p", "c", new BOMDetectingLineReader( resource ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		assert groovy.equals(
-				"package p;import java.sql.Timestamp;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder(); // Test if the import at the bottom works, and this comment too of course\n" +
+		Assert.assertEquals( template.getSource(), "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder(); // Test if the import at the bottom works, and this comment too of course\n" +
 				"new Timestamp( new Date().time ) \n" +
 				";builder.append(\"\"\"SELECT *\n" +
 				"FROM SYS.SYSTABLES\n" +
@@ -92,19 +101,19 @@ public class Basic
 				"\n" +
 				"\n" +
 				"\n" +
-				";builder.append(\"\"\"WHERE 1 = 1\n" +
-				"\"\"\");\t\t if( prefix ) { \n" +
+				"builder.append(\"\"\"WHERE 1 = 1\n" +
+				"\"\"\"); if( prefix ) { \n" +
 				";builder.append(\"\"\"AND TABLENAME LIKE '\"\"\");builder.append( prefix );builder.append(\"\"\"%'\n" +
-				"\"\"\");\t\t } \n" +
-				"\t\t if( name ) { \n" +
+				"\"\"\"); } \n" +
+				"; if( name ) { \n" +
 				";builder.append(\"\"\"AND TABLENAME = ${name}\n" +
-				"\"\"\");\t\t } \n" +
-				"\t\t if( names ) { \n" +
+				"\"\"\"); } \n" +
+				"; if( names ) { \n" +
 				";builder.append(\"\"\"AND TABLENAME IN (${names})\n" +
-				"\"\"\");\t\t } \n" +
-				"\n" +
+				"\"\"\"); } \n" +
+				";\n" +
 				";return builder.toGString()}}}"
-		);
+				);
 
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query" );
@@ -120,7 +129,7 @@ public class Basic
 				"FROM SYS.SYSTABLES\n" +
 				"WHERE 1 = 1\n" +
 				"AND TABLENAME LIKE 'SYST%'\n" +
-		"AND TABLENAME IN (?,?)\n" );
+				"AND TABLENAME IN (?,?)\n" );
 
 //		Writer out = new OutputStreamWriter( new FileOutputStream( "test.out" ), "UTF-8" );
 //		out.write( sql );
@@ -149,7 +158,7 @@ public class Basic
 				"WHERE TABLENAME IN ( ?,?,?,?,? )\n" +
 				"OR TABLENAME IN ( ?,?,?,?,? )\n" +
 				"OR TABLENAME IN ( ?,?,?,?,? )\n" +
-		"OR TABLENAME IN ( ?,?,? )\n" );
+				"OR TABLENAME IN ( ?,?,? )\n" );
 
 		List< Map< String, Object > > result = query.listOfMaps( connection );
 		assert result.size() == 2;
@@ -162,22 +171,21 @@ public class Basic
 	@Test
 	public void testNewlinesWithinDirective() throws Exception
 	{
-		Reader reader = new StringReader( "<%@ query\n" +
+		LineReader reader = new StringLineReader( "<%@ query\n" +
 				"import=\"uk.co.tntpost.umbrella.common.utils.QueryUtils\"\n" +
 				"import=\"uk.co.tntpost.umbrella.common.enums.*\"\n" +
 				"%>\n" +
-		"TEST" );
+				"TEST" );
 
-		String groovy = QueryTransformer.translate( reader );
+		QueryTemplate template = new QueryCompiler().translate( "p", "c", reader );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		assert groovy.equals(
-				"package p;import uk.co.tntpost.umbrella.common.utils.QueryUtils;import uk.co.tntpost.umbrella.common.enums.*;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();\n" +
+		Assert.assertEquals( template.getSource(), "package p;import uk.co.tntpost.umbrella.common.utils.QueryUtils;import uk.co.tntpost.umbrella.common.enums.*;class c{Closure getClosure(){return{def builder=new solidstack.query.GStringBuilder();\n" +
 				"\n" +
 				"\n" +
 				"\n" +
-				";builder.append(\"\"\"TEST\"\"\");;return builder.toGString()}}}"
-		);
+				"builder.append(\"\"\"TEST\"\"\");;return builder.toGString()}}}"
+				);
 	}
 
 	@Test
@@ -203,23 +211,40 @@ public class Basic
 		this.parameters.put( "var", "value" );
 	}
 
+	static String execute( String script, Map< String, ? > parameters )
+	{
+		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script, "n", "x" ) );
+		GroovyObject object = Util.newInstance( groovyClass );
+		Closure closure = (Closure)object.invokeMethod( "getClosure", null );
+		if( parameters != null )
+			closure.setDelegate( parameters );
+		return closure.call().toString();
+	}
+
+	// For testing purposes
+	static QueryTemplate translate( String text )
+	{
+		return new QueryCompiler().translate( "p", "c", new StringLineReader( text ) );
+	}
+
 	private void translateTest( String input, String groovy, String output )
 	{
-		String g = QueryTransformer.translate( input ).toString();
-		System.out.println( g );
-		assert g.equals( this.start + groovy + this.end );
+		QueryTemplate template = translate( input );
+		String g = template.getSource();
+//		System.out.println( g );
+		Assert.assertEquals( g, this.start + groovy + this.end );
 
-		String result = QueryTransformer.execute( g, this.parameters );
-		System.out.println( result );
-		assert result.equals( output );
+		String result = execute( g, this.parameters );
+//		System.out.println( result );
+		Assert.assertEquals( result, output );
 	}
 
 	private void translateError( String input )
 	{
 		try
 		{
-			String result = QueryTransformer.translate( "X${\"te\"xt\"}X" );
-			System.out.println( result );
+			QueryTemplate template = translate( "X${\"te\"xt\"}X" );
+			System.out.println( template.getSource() );
 			assert false;
 		}
 		catch( ParseException e )
@@ -233,59 +258,60 @@ public class Basic
 	{
 		// Escaping in the text
 
-		translateTest( "X\"X'X", ";builder.append(\"\"\"X\\\"X'X\"\"\");", "X\"X'X" );
-		translateTest( "X\\\\\"X'X", ";builder.append(\"\"\"X\\\\\\\"X'X\"\"\");", "X\\\"X'X" );
-		translateTest( "X\\\\X'X", ";builder.append(\"\"\"X\\\\X'X\"\"\");", "X\\X'X" );
-		translateTest( "X\"\"\"X'X", ";builder.append(\"\"\"X\\\"\\\"\\\"X'X\"\"\");", "X\"\"\"X'X" );
-		translateTest( "X\\<%X", ";builder.append(\"\"\"X<%X\"\"\");", "X<%X" );
-		translateTest( "X\\${X", ";builder.append(\"\"\"X\\${X\"\"\");", "X${X" );
+		translateTest( "\"\"\"", "builder.append(\"\"\"\\\"\\\"\\\"\"\"\");", "\"\"\"" );
+		translateTest( "X\"X'X", "builder.append(\"\"\"X\\\"X'X\"\"\");", "X\"X'X" );
+		translateTest( "X\\\\\"X'X", "builder.append(\"\"\"X\\\\\\\"X'X\"\"\");", "X\\\"X'X" );
+		translateTest( "X\\\\X'X", "builder.append(\"\"\"X\\\\X'X\"\"\");", "X\\X'X" );
+		translateTest( "X\"\"\"X'X", "builder.append(\"\"\"X\\\"\\\"\\\"X'X\"\"\");", "X\"\"\"X'X" );
+		translateTest( "X\\<%X", "builder.append(\"\"\"X<%X\"\"\");", "X<%X" );
+		translateTest( "X\\${X", "builder.append(\"\"\"X\\${X\"\"\");", "X${X" );
 
 		// Expressions with "
 
-		translateTest( "X<%=\"X\"%>X", ";builder.append(\"\"\"X\"\"\");builder.append(\"X\");builder.append(\"\"\"X\"\"\");", "XXX" );
-		translateTest( "X<%=\"%>\"%>X", ";builder.append(\"\"\"X\"\"\");builder.append(\"%>\");builder.append(\"\"\"X\"\"\");", "X%>X" );
-		translateTest( "X<%=\"${var}\"%>X", ";builder.append(\"\"\"X\"\"\");builder.append(\"${var}\");builder.append(\"\"\"X\"\"\");", "XvalueX" );
-		translateTest( "X<%=\"${\"te\\\"xt\"}\"%>X", ";builder.append(\"\"\"X\"\"\");builder.append(\"${\"te\\\"xt\"}\");builder.append(\"\"\"X\"\"\");", "Xte\"xtX" );
-		translateTest( "X<%=\"${\"te\\${x}t\"}\"%>X", ";builder.append(\"\"\"X\"\"\");builder.append(\"${\"te\\${x}t\"}\");builder.append(\"\"\"X\"\"\");", "Xte${x}tX" );
+		translateTest( "X<%=\"X\"%>X", "builder.append(\"\"\"X\"\"\");builder.append(\"X\");builder.append(\"\"\"X\"\"\");", "XXX" );
+		translateTest( "X<%=\"%>\"%>X", "builder.append(\"\"\"X\"\"\");builder.append(\"%>\");builder.append(\"\"\"X\"\"\");", "X%>X" );
+		translateTest( "X<%=\"${var}\"%>X", "builder.append(\"\"\"X\"\"\");builder.append(\"${var}\");builder.append(\"\"\"X\"\"\");", "XvalueX" );
+		translateTest( "X<%=\"${\"te\\\"xt\"}\"%>X", "builder.append(\"\"\"X\"\"\");builder.append(\"${\"te\\\"xt\"}\");builder.append(\"\"\"X\"\"\");", "Xte\"xtX" );
+		translateTest( "X<%=\"${\"te\\${x}t\"}\"%>X", "builder.append(\"\"\"X\"\"\");builder.append(\"${\"te\\${x}t\"}\");builder.append(\"\"\"X\"\"\");", "Xte${x}tX" );
 		translateError( "X<%=\"${\"te\"xt\"}\"%>X" );
-		translateTest( "X<%=\"${\"te\\\"xt\"}\"%>X", ";builder.append(\"\"\"X\"\"\");builder.append(\"${\"te\\\"xt\"}\");builder.append(\"\"\"X\"\"\");", "Xte\"xtX" );
-		translateTest( "X<%=\"Y${\"Z${\"text\"}Z\"}Y\"%>X", ";builder.append(\"\"\"X\"\"\");builder.append(\"Y${\"Z${\"text\"}Z\"}Y\");builder.append(\"\"\"X\"\"\");", "XYZtextZYX" );
+		translateTest( "X<%=\"${\"te\\\"xt\"}\"%>X", "builder.append(\"\"\"X\"\"\");builder.append(\"${\"te\\\"xt\"}\");builder.append(\"\"\"X\"\"\");", "Xte\"xtX" );
+		translateTest( "X<%=\"Y${\"Z${\"text\"}Z\"}Y\"%>X", "builder.append(\"\"\"X\"\"\");builder.append(\"Y${\"Z${\"text\"}Z\"}Y\");builder.append(\"\"\"X\"\"\");", "XYZtextZYX" );
 
 		// Expressions with '
 
-		translateTest( "X<%='X'%>X", ";builder.append(\"\"\"X\"\"\");builder.append('X');builder.append(\"\"\"X\"\"\");", "XXX" );
-		translateTest( "X<%='%>'%>X", ";builder.append(\"\"\"X\"\"\");builder.append('%>');builder.append(\"\"\"X\"\"\");", "X%>X" );
-		translateTest( "X<%='${var}'%>X", ";builder.append(\"\"\"X\"\"\");builder.append('${var}');builder.append(\"\"\"X\"\"\");", "X${var}X" );
-		translateTest( "X<%=\"${'te${x}t'}\"%>X", ";builder.append(\"\"\"X\"\"\");builder.append(\"${'te${x}t'}\");builder.append(\"\"\"X\"\"\");", "Xte${x}tX" );
+		translateTest( "X<%='X'%>X", "builder.append(\"\"\"X\"\"\");builder.append('X');builder.append(\"\"\"X\"\"\");", "XXX" );
+		translateTest( "X<%='%>'%>X", "builder.append(\"\"\"X\"\"\");builder.append('%>');builder.append(\"\"\"X\"\"\");", "X%>X" );
+		translateTest( "X<%='${var}'%>X", "builder.append(\"\"\"X\"\"\");builder.append('${var}');builder.append(\"\"\"X\"\"\");", "X${var}X" );
+		translateTest( "X<%=\"${'te${x}t'}\"%>X", "builder.append(\"\"\"X\"\"\");builder.append(\"${'te${x}t'}\");builder.append(\"\"\"X\"\"\");", "Xte${x}tX" );
 
 		// GString expressions with "
 
-		translateTest( "X${var}X", ";builder.append(\"\"\"X${var}X\"\"\");", "XvalueX" );
-		translateTest( "X${\nvar}X", ";builder.append(\"\"\"X${\nvar}X\"\"\");", "XvalueX" );
-		translateTest( "X${\"te\\nxt\"}X", ";builder.append(\"\"\"X${\"te\\nxt\"}X\"\"\");", "Xte\nxtX" );
-		translateTest( "X${\"Y\\${Y\"}X", ";builder.append(\"\"\"X${\"Y\\${Y\"}X\"\"\");", "XY${YX" );
+		translateTest( "X${var}X", "builder.append(\"\"\"X${var}X\"\"\");", "XvalueX" );
+		translateTest( "X${\nvar}X", "builder.append(\"\"\"X${\nvar}X\"\"\");", "XvalueX" );
+		translateTest( "X${\"te\\nxt\"}X", "builder.append(\"\"\"X${\"te\\nxt\"}X\"\"\");", "Xte\nxtX" );
+		translateTest( "X${\"Y\\${Y\"}X", "builder.append(\"\"\"X${\"Y\\${Y\"}X\"\"\");", "XY${YX" );
 		translateError( "X${\"te\"xt\"}X" );
-		translateTest( "X${\"te\\\"xt\"}X", ";builder.append(\"\"\"X${\"te\\\"xt\"}X\"\"\");", "Xte\"xtX" );
+		translateTest( "X${\"te\\\"xt\"}X", "builder.append(\"\"\"X${\"te\\\"xt\"}X\"\"\");", "Xte\"xtX" );
 		translateError( "X${\"text\ntext\"}X" );
 		translateError( "X${\"${\"text\ntext\"}\"}X" );
-		translateTest( "X${\"\"\"te\"xt\ntext\\\"\"\"\"}X", ";builder.append(\"\"\"X${\"\"\"te\"xt\ntext\\\"\"\"\"}X\"\"\");", "Xte\"xt\ntext\"X" );
-		translateTest( "${if(var){\"true\"}else{\"false\"}}", ";builder.append(\"\"\"${if(var){\"true\"}else{\"false\"}}\"\"\");", "true" );
+		translateTest( "X${\"\"\"te\"xt\ntext\\\"\"\"\"}X", "builder.append(\"\"\"X${\"\"\"te\"xt\ntext\\\"\"\"\"}X\"\"\");", "Xte\"xt\ntext\"X" );
+		translateTest( "${if(var){\"true\"}else{\"false\"}}", "builder.append(\"\"\"${if(var){\"true\"}else{\"false\"}}\"\"\");", "true" );
 		translateError( "X${\"Y${\n}Y\"}X" );
-		translateTest( "X${\"\"\"Y${\nvar\n}Y\"\"\"}X", ";builder.append(\"\"\"X${\"\"\"Y${\nvar\n}Y\"\"\"}X\"\"\");", "XYvalueYX" );
+		translateTest( "X${\"\"\"Y${\nvar\n}Y\"\"\"}X", "builder.append(\"\"\"X${\"\"\"Y${\nvar\n}Y\"\"\"}X\"\"\");", "XYvalueYX" );
 
 		// GString expressions with '
 
-		translateTest( "X${'text'}X", ";builder.append(\"\"\"X${'text'}X\"\"\");", "XtextX" );
-		translateTest( "X${'Y${Y'}X", ";builder.append(\"\"\"X${'Y${Y'}X\"\"\");", "XY${YX" );
+		translateTest( "X${'text'}X", "builder.append(\"\"\"X${'text'}X\"\"\");", "XtextX" );
+		translateTest( "X${'Y${Y'}X", "builder.append(\"\"\"X${'Y${Y'}X\"\"\");", "XY${YX" );
 		translateError( "X${'te'xt'}X" );
-		translateTest( "X${'te\"xt'}X", ";builder.append(\"\"\"X${'te\"xt'}X\"\"\");", "Xte\"xtX" );
+		translateTest( "X${'te\"xt'}X", "builder.append(\"\"\"X${'te\"xt'}X\"\"\");", "Xte\"xtX" );
 		translateError( "X${'text\ntext'}X" );
-		translateTest( "X${'''te\"xt\ntext\\''''}X", ";builder.append(\"\"\"X${'''te\"xt\ntext\\''''}X\"\"\");", "Xte\"xt\ntext'X" );
+		translateTest( "X${'''te\"xt\ntext\\''''}X", "builder.append(\"\"\"X${'''te\"xt\ntext\\''''}X\"\"\");", "Xte\"xt\ntext'X" );
 
 		// Groovy BUG
 
 		translateTest( "<%if(true){%>X<%}%>Y", "if(true){;builder.append(\"\"\"X\"\"\");};builder.append(\"\"\"Y\"\"\");", "XY" );
-		translateTest( "<%if(true){%>X<%}else{%>Y<%}%>", "if(true){;builder.append(\"\"\"X\"\"\");}else{;builder.append(\"\"\"Y\"\"\");}", "X" );
-		translateTest( "<%if(true){%>X<%};if(false){%>X<%}%>", "if(true){;builder.append(\"\"\"X\"\"\");};if(false){;builder.append(\"\"\"X\"\"\");}", "X" );
+		translateTest( "<%if(true){%>X<%}else{%>Y<%}%>", "if(true){;builder.append(\"\"\"X\"\"\");}else{;builder.append(\"\"\"Y\"\"\");};", "X" );
+		translateTest( "<%if(true){%>X<%};if(false){%>X<%}%>", "if(true){;builder.append(\"\"\"X\"\"\");};if(false){;builder.append(\"\"\"X\"\"\");};", "X" );
 	}
 }

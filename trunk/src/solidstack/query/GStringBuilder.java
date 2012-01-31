@@ -91,6 +91,7 @@ public class GStringBuilder
 	 */
 	public GStringBuilder append( Object object )
 	{
+		// Use Groovy's asType (see NoEncodingWriter)
 		return append( object != null ? object.toString() : "null" );
 	}
 

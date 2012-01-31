@@ -16,19 +16,11 @@
 
 package solidstack.query;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.util.Date;
-import java.util.HashMap;
+import groovy.lang.Closure;
+
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import solidstack.Assert;
-import solidstack.SystemException;
+import solidstack.template.TemplateManager;
 
 
 /**
@@ -61,26 +53,20 @@ import solidstack.SystemException;
  */
 public class QueryManager
 {
-	static final private Logger LOGGER = LoggerFactory.getLogger( QueryManager.class );
+	/**
+	 * The {@link TemplateManager} that is used to manage the templates for the QueryManager.
+	 */
+	protected InternalManager templateManager = new InternalManager();
 
-	private String packageSlashed = ""; // when setPackage is not called
-	private boolean reloading;
-	private Map< String, QueryTemplate > queries = new HashMap< String, QueryTemplate >();
 
 	/**
-	 * Configures the package which is the root of the gsql file.
+	 * Configures the package which is the root of the template files.
 	 * 
 	 * @param pkg The package.
 	 */
 	public void setPackage( String pkg )
 	{
-		Assert.isTrue( !pkg.startsWith( "." ) && !pkg.endsWith( "." ), "package should not start or end with a ." );
-		Assert.isTrue( pkg.indexOf('/') < 0 && pkg.indexOf('\\') < 0 , "package should not contain a \\ or /" );
-
-		if( pkg.length() > 0 )
-			this.packageSlashed = pkg.replaceAll( "\\.", "/" ) + "/";
-		else
-			this.packageSlashed = "";
+		this.templateManager.setPackage( pkg );
 	}
 
 	/**
@@ -90,101 +76,42 @@ public class QueryManager
 	 */
 	public void setReloading( boolean reloading )
 	{
-		LOGGER.info( "Reloading = [" + reloading + "]" );
-		this.reloading = reloading;
-	}
-
-	/**
-	 * Returns the {@link QueryTemplate} with the given path.
-	 * 
-	 * @param path The path of the query.
-	 * @return The {@link QueryTemplate}.
-	 */
-	synchronized public QueryTemplate getQueryTemplate( String path )
-	{
-		LOGGER.debug( "getQuery [" + path + "]" );
-
-		Assert.isTrue( !path.startsWith( "/" ), "path should not start with a /" );
-
-		QueryTemplate query = this.queries.get( path );
-
-		UrlResource resource = null;
-
-		// If reloading == true and resource is changed, clear current query
-		if( this.reloading )
-			if( query != null && query.getLastModified() > 0 )
-			{
-				resource = getResource( path );
-				if( resource.exists() && resource.getLastModified() > query.getLastModified() )
-				{
-					LOGGER.info( resource.toString() + " changed, reloading" );
-					query = null;
-				}
-			}
-
-		// Compile the query if needed
-		if( query == null )
-		{
-			if( resource == null )
-				resource = getResource( path );
-
-			if( !resource.exists() )
-			{
-				String error = resource.toString() + " not found";
-				throw new QueryNotFoundException( error );
-			}
-
-			LOGGER.info( "Loading " + resource.toString() );
-
-			try
-			{
-				Reader reader = new InputStreamReader( resource.getInputStream(), "ISO-8859-1" );
-				query = QueryTransformer.compile( reader, this.packageSlashed + path, resource.getLastModified() );
-			}
-			catch( UnsupportedEncodingException e )
-			{
-				throw new SystemException( e );
-			}
-
-			this.queries.put( path, query );
-		}
-
-		return query;
-	}
-
-	/**
-	 * Returns the {@link UrlResource} with the given path.
-	 * 
-	 * @param path The path of the resource.
-	 * @return The {@link UrlResource}.
-	 */
-	public UrlResource getResource( String path )
-	{
-		String file = this.packageSlashed + path + ".gsql";
-		//ClassLoader loader = Thread.currentThread().getContextClassLoader();
-		ClassLoader loader = getClass().getClassLoader();
-		URL url = loader.getResource( file );
-		if( url == null )
-			throw new QueryNotFoundException( file + " not found in classpath" );
-
-		UrlResource resource = new UrlResource( url );
-
-		if( LOGGER.isDebugEnabled() )
-			LOGGER.debug( resource.toString() + ", lastModified: " + new Date( resource.getLastModified() ) + " (" + resource.getLastModified() + ")" );
-
-		return resource;
+		this.templateManager.setReloading( reloading );
 	}
 
 	/**
 	 * Binds the arguments and the template and returns the {@link Query}.
-	 * 
+	 *
 	 * @param path The path of the query.
 	 * @param args The arguments.
 	 * @return The {@link Query}.
 	 */
 	public Query bind( String path, Map< String, ? > args )
 	{
-		QueryTemplate query = getQueryTemplate( path );
-		return query.bind( args );
+		QueryTemplate template = this.templateManager.getTemplate( path );
+		Query query = new Query( (Closure)template.getClosure().clone() );
+		query.bind( args );
+		return query;
+	}
+
+	/**
+	 * This is a customized TemplateManager that uses the {@link QueryCompiler} instead of the default template
+	 * compiler. Also, query templates use the .gsql extension which is automatically added to the template name.
+	 * 
+	 * @author René de Bloois
+	 */
+	static protected class InternalManager extends TemplateManager
+	{
+		@Override
+		protected QueryCompiler getCompiler()
+		{
+			return new QueryCompiler();
+		}
+
+		@Override
+		public QueryTemplate getTemplate( String path )
+		{
+			return (QueryTemplate)super.getTemplate( path + ".gsql" );
+		}
 	}
 }

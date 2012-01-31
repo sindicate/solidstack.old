@@ -16,20 +16,24 @@
 
 package solidstack.template;
 
-/**
- * The requested template is not found.
- * 
- * @author René M. de Bloois
- */
-public class TemplateNotFoundException extends RuntimeException
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.testng.annotations.Test;
+
+
+public class Closures
 {
-	/**
-	 * Constructor.
-	 * 
-	 * @param message The message.
-	 */
-	public TemplateNotFoundException( String message )
+	@Test(groups="new")
+	public void testClosures() throws SQLException, ClassNotFoundException
 	{
-		super( message );
+		TemplateManager templates = new TemplateManager();
+		templates.setPackage( "solidstack.template" );
+
+		Map< String, Object > params = new HashMap< String, Object >();
+		Template template = templates.getTemplate( "closures.gxml" );
+		String result = template.apply( params );
+		System.out.println( result );
 	}
 }

@@ -1,5 +1,5 @@
 /*--
- * Copyright 2006 René M. de Bloois
+ * Copyright 2012 René M. de Bloois
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,20 @@
 
 package solidstack.template;
 
+
 /**
- * The requested template is not found.
+ * The Character Encoding is not supported.
  * 
- * @author René M. de Bloois
+ * @author René de Bloois
  */
-public class TemplateNotFoundException extends RuntimeException
+public class UnsupportedEncodingException extends RuntimeException
 {
 	/**
 	 * Constructor.
 	 * 
 	 * @param message The message.
 	 */
-	public TemplateNotFoundException( String message )
+	public UnsupportedEncodingException( String message )
 	{
 		super( message );
 	}

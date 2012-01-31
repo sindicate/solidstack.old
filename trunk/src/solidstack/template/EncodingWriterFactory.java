@@ -1,5 +1,5 @@
 /*--
- * Copyright 2006 René M. de Bloois
+ * Copyright 2012 René M. de Bloois
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,21 @@
 
 package solidstack.template;
 
+import java.io.Writer;
+
+
 /**
- * The requested template is not found.
+ * Creates a new {@link EncodingWriter}.
  * 
- * @author René M. de Bloois
+ * @author René de Bloois
  */
-public class TemplateNotFoundException extends RuntimeException
+public interface EncodingWriterFactory
 {
 	/**
-	 * Constructor.
+	 * Creates a new {@link EncodingWriter}.
 	 * 
-	 * @param message The message.
+	 * @param writer The writer that the EncodingWriter should write to.
+	 * @return The EncodingWriter.
 	 */
-	public TemplateNotFoundException( String message )
-	{
-		super( message );
-	}
+	EncodingWriter createWriter( Writer writer );
 }
