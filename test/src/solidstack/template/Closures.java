@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 
@@ -35,5 +36,22 @@ public class Closures
 		Template template = templates.getTemplate( "closures.gxml" );
 		String result = template.apply( params );
 		System.out.println( result );
+		Assert.assertEquals( result, "te&lt;st\n" +
+				"te<st\n" +
+				"te<st\n" +
+				"te<st\n" +
+				"te<st\n" +
+				"te<st\n" +
+				"how deep is deep? deeper and deepest\n" +
+				"how deep is deep? deeper and deepest\n" +
+				"how deep is deep? deeper and deepest\n" +
+				"how deep is deep? deeper and deepest\n" +
+				"item: \"bread\"\n" +
+				"item: \"apple\"\n" +
+				"item: \"egg\"\n" +
+				"ABCDEFGHIJKLMNOPQRSTUVWXYZ\n" +
+				"0123456789\n" +
+				"ABCDEFGHIJKLMNOPQRSTUVWXYZ\n" +
+				"0123456789\n" );
 	}
 }
