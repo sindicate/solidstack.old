@@ -73,9 +73,14 @@ public class Template
 	 */
 	public void apply( Map< String, ? > params, Writer writer )
 	{
+		apply( params, createEncodingWriter( writer ) );
+	}
+
+	public void apply( Map< String, ? > params, EncodingWriter writer )
+	{
 		Closure template = (Closure)this.template.clone();
 		template.setDelegate( params );
-		template.call( createEncodingWriter( writer ) );
+		template.call( writer );
 	}
 
 	/**
@@ -103,9 +108,7 @@ public class Template
 		}
 		else
 			writer = new OutputStreamWriter( out );
-		Closure template = (Closure)this.template.clone();
-		template.setDelegate( params );
-		template.call( createEncodingWriter( writer ) );
+		apply( params, createEncodingWriter( writer ) );
 	}
 
 	/**

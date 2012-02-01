@@ -16,7 +16,6 @@
 
 package solidstack.query;
 
-import groovy.lang.Closure;
 import groovy.lang.GString;
 
 import java.lang.reflect.Array;
@@ -27,6 +26,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import solidstack.Assert;
+import solidstack.template.Template;
 
 
 /**
@@ -50,8 +51,8 @@ public class Query
 {
 	static final private Logger LOGGER = LoggerFactory.getLogger( Query.class );
 
-	private GString sql;
-	private Closure closure;
+//	private GString sql;
+	private Template template;
 	private Map< String, ? > params;
 	private Connection connection;
 	private boolean flyWeight = true;
@@ -59,21 +60,11 @@ public class Query
 	/**
 	 * Constructor.
 	 * 
-	 * @param sql A {@link GString} query.
-	 */
-	public Query( GString sql )
-	{
-		this.sql = sql;
-	}
-
-	/**
-	 * Constructor.
-	 * 
 	 * @param closure A closure that returns a {@link GString} when called.
 	 */
-	public Query( Closure closure )
+	public Query( Template template )
 	{
-		this.closure = closure;
+		this.template = template;
 	}
 
 	/**
@@ -406,30 +397,25 @@ public class Query
 
 	String getPreparedSQL( List< Object > pars )
 	{
-		GString gsql;
-		if( this.closure != null )
-		{
-			this.closure.setDelegate( this.params );
-			GStringWriter out = new GStringWriter();
-			this.closure.call( out );
-			gsql = out.toGString();
-		}
-		else
-			gsql = this.sql;
+		QueryEncodingWriter writer = new QueryEncodingWriter();
+		this.template.apply( this.params, writer );
 
 		Assert.notNull( pars );
 		Assert.isTrue( pars.isEmpty() );
 
 		StringBuilder buildSql = new StringBuilder();
 
-		String[] strings = gsql.getStrings();
-		Object[] values = gsql.getValues();
-		int len = values.length;
-		for( int i = 0; i <= len; i++ )
+		List< Object > values = writer.getValues();
+		BitSet isValue = writer.getIsValue();
+
+		int len = values.size();
+		for( int i = 0; i < len; i++ )
 		{
-			buildSql.append( strings[ i ] );
-			if( i < len )
-				appendParameter( values[ i ], "unknown", buildSql, pars );
+			Object value = values.get( i );
+			if( isValue.get( i ) )
+				appendParameter( value, "unknown", buildSql, pars );
+			else
+				buildSql.append( (String)value );
 		}
 
 		String sql = buildSql.toString();

@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-package solidstack.template;
+package solidstack.query;
 
 import groovy.lang.Closure;
 
 import java.io.IOException;
-import java.io.Writer;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.List;
 
 import org.codehaus.groovy.runtime.InvokerHelper;
+
+import solidstack.template.EncodingWriter;
+import solidstack.template.TemplateException;
 
 /**
  * An encoding writer. Adds a {@link #writeEncoded(String)} method. This implementation does not encode.
@@ -30,33 +35,21 @@ import org.codehaus.groovy.runtime.InvokerHelper;
  *
  */
 // Can't implement Writer. DefaultGroovyMethods.write(Writer self, Writable writable) will be called when value is null, which results in NPE.
-public class NoEncodingWriter implements EncodingWriter
+public class QueryEncodingWriter implements EncodingWriter
 {
-	/**
-	 * The writer to write to.
-	 */
-	protected Writer out;
-
-	/**
-	 * Constructor.
-	 * 
-	 * @param out The writer to write to.
-	 */
-	public NoEncodingWriter( Writer out )
-	{
-		this.out = out;
-	}
+	private List< Object > values = new ArrayList< Object >();
+	private BitSet isValue = new BitSet();
 
 	public void write( String s ) throws IOException
 	{
 		if( s != null )
-			this.out.write( s );
+			this.values.add( s );
 	}
 
 	public void write( Object o ) throws IOException
 	{
 		if( o != null )
-			write( (String)InvokerHelper.invokeMethod( o, "asType", String.class ) );
+			this.values.add( InvokerHelper.invokeMethod( o, "asType", String.class ) );
 	}
 
 	public void write( Closure c ) throws IOException
@@ -68,14 +61,16 @@ public class NoEncodingWriter implements EncodingWriter
 				throw new TemplateException( "Closures with parameters are not supported in expressions." );
 			Object result = c.call();
 			if( result != null )
-				write( (String)InvokerHelper.invokeMethod( result, "asType", String.class ) );
+				this.values.add( InvokerHelper.invokeMethod( result, "asType", String.class ) );
 		}
 	}
 
 	public void writeEncoded( String s ) throws IOException
 	{
-		if( s != null )
-			write( s );
+		if( s == null )
+			return;
+		this.isValue.set( this.values.size() );
+		write( s );
 	}
 
 	public void writeEncoded( Object o ) throws IOException
@@ -95,5 +90,15 @@ public class NoEncodingWriter implements EncodingWriter
 			if( result != null )
 				writeEncoded( result );
 		}
+	}
+
+	public List< Object > getValues()
+	{
+		return this.values;
+	}
+
+	public BitSet getIsValue()
+	{
+		return this.isValue;
 	}
 }

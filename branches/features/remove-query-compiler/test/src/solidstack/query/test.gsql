@@ -11,9 +11,9 @@ WHERE 1 = 1
 AND TABLENAME LIKE '<%= prefix %>%'
 		<% } %>
 		<% if( name ) { %>
-AND TABLENAME = ${name}
+AND TABLENAME = ${"${name}"} <%-- Don't use it like this, this is just a test --%>
 		<% } %>
 		<% if( names ) { %>
-AND TABLENAME IN (${names})
+AND <% out.write( "${"TABLENAME"}" ) %> IN (${names})
 		<% } %>
 <%@ query import = "java.sql.Timestamp" %>

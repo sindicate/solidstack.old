@@ -21,6 +21,7 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyObject;
 
+import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -33,12 +34,13 @@ import java.util.Map;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import solidbase.io.BOMDetectingLineReader;
 import solidbase.io.LineReader;
 import solidbase.io.Resource;
 import solidbase.io.ResourceFactory;
 import solidbase.io.StringLineReader;
 import solidstack.template.ParseException;
+import solidstack.template.Template;
+import solidstack.template.TestSupport;
 import solidstack.template.Util;
 
 
@@ -90,10 +92,10 @@ public class Basic
 	public void testTransform() throws Exception
 	{
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/test.gsql" );
-		QueryTemplate template = new QueryCompiler().translate( "p", "c", new BOMDetectingLineReader( resource ) );
+		Template template = TestSupport.translate( resource );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		Assert.assertEquals( template.getSource(), "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{out-> // Test if the import at the bottom works, and this comment too of course\n" +
+		Assert.assertEquals( TestSupport.getSource( template ), "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{out-> // Test if the import at the bottom works, and this comment too of course\n" +
 				"new Timestamp( new Date().time ) \n" +
 				";out.write(\"\"\"SELECT *\n" +
 				"FROM SYS.SYSTABLES\n" +
@@ -106,10 +108,10 @@ public class Basic
 				";out.write(\"\"\"AND TABLENAME LIKE '\"\"\");out.write( prefix );out.write(\"\"\"%'\n" +
 				"\"\"\"); } \n" +
 				"; if( name ) { \n" +
-				";out.write(\"\"\"AND TABLENAME = ${name}\n" +
-				"\"\"\"); } \n" +
+				";out.write(\"\"\"AND TABLENAME = \"\"\");out.writeEncoded(\"${name}\");\n" + // TODO What about multiline ${name}?
+				" } \n" +
 				"; if( names ) { \n" +
-				";out.write(\"\"\"AND TABLENAME IN (${names})\n" +
+				";out.write(\"\"\"AND \"\"\"); out.write( \"${\"TABLENAME\"}\" ) ;out.write(\"\"\" IN (\"\"\");out.writeEncoded(names);out.write(\"\"\")\n" +
 				"\"\"\"); } \n" +
 				";\n" +
 				"}}}"
@@ -177,10 +179,10 @@ public class Basic
 				"%>\n" +
 				"TEST" );
 
-		QueryTemplate template = new QueryCompiler().translate( "p", "c", reader );
+		Template template = TestSupport.translate( reader );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		Assert.assertEquals( template.getSource(), "package p;import uk.co.tntpost.umbrella.common.utils.QueryUtils;import uk.co.tntpost.umbrella.common.enums.*;class c{Closure getClosure(){return{out->\n" +
+		Assert.assertEquals( TestSupport.getSource( template ), "package p;import uk.co.tntpost.umbrella.common.utils.QueryUtils;import uk.co.tntpost.umbrella.common.enums.*;class c{Closure getClosure(){return{out->\n" +
 				"\n" +
 				"\n" +
 				"\n" +
@@ -224,15 +226,15 @@ public class Basic
 	}
 
 	// For testing purposes
-	static QueryTemplate translate( String text )
+	static Template translate( String text ) throws FileNotFoundException
 	{
-		return new QueryCompiler().translate( "p", "c", new StringLineReader( text ) );
+		return TestSupport.translate( new StringLineReader( text ) );
 	}
 
-	private void translateTest( String input, String groovy, String output )
+	private void translateTest( String input, String groovy, String output ) throws FileNotFoundException
 	{
-		QueryTemplate template = translate( input );
-		String g = template.getSource();
+		Template template = translate( input );
+		String g = TestSupport.getSource( template );
 //		System.out.println( g );
 		Assert.assertEquals( g, this.start + groovy + this.end );
 
@@ -241,12 +243,12 @@ public class Basic
 		Assert.assertEquals( result, output );
 	}
 
-	private void translateError( String input )
+	private void translateError( String input ) throws FileNotFoundException
 	{
 		try
 		{
-			QueryTemplate template = translate( "X${\"te\"xt\"}X" );
-			System.out.println( template.getSource() );
+			Template template = translate( "X${\"te\"xt\"}X" );
+			System.out.println( TestSupport.getSource( template ) );
 			assert false;
 		}
 		catch( ParseException e )
@@ -315,5 +317,5 @@ public class Basic
 		translateTest( "<%if(true){%>X<%}%>Y", "if(true){;out.write(\"\"\"X\"\"\");};out.write(\"\"\"Y\"\"\");", "XY" );
 		translateTest( "<%if(true){%>X<%}else{%>Y<%}%>", "if(true){;out.write(\"\"\"X\"\"\");}else{;out.write(\"\"\"Y\"\"\");};", "X" );
 		translateTest( "<%if(true){%>X<%};if(false){%>X<%}%>", "if(true){;out.write(\"\"\"X\"\"\");};if(false){;out.write(\"\"\"X\"\"\");};", "X" );
-	}
+}
 }
