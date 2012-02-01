@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!--
+   Copyright 2006 René M. de Bloois
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<project basedir="." name="solidstack" default="dist" xmlns:maven="antlib:org.apache.maven.artifact.ant">
+
+	<!-- Maven Ant Task -->
+	
+	<path id="maven.classpath">
+		<fileset dir="tools/maven" includes="*.jar" />
+	</path>
+
+	<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="antlib:org.apache.maven.artifact.ant" classpathref="maven.classpath" />
+	
+	<!-- Properties -->
+	<property file="build.properties" />
+	<property name="target-jre" value="1.5" />
+	<property name="build.sysclasspath" value="ignore" />
+
+	<!-- Product folders -->
+	<property name="build.home" location="../BUILDS/solidstack" />
+	<property name="temp.home" value="../TEMP/solidstack" />
+	<property name="dist.home" location="${build.home}/dist" />
+
+
+	<!-- Classpaths -->
+
+	<path id="groovy.classpath">
+		<fileset dir="lib" includes="groovy*.jar" />
+		<fileset dir="tools/svnkit" includes="*.jar" />
+	</path>
+
+	<path id="jarjar.classpath">
+		<fileset dir="tools/jarjar" includes="*.jar" />
+	</path>
+
+	<path id="testng.classpath">
+		<fileset dir="tools/testng" includes="*.jar" />
+	</path>
+
+	<path id="compile.classpath">
+		<fileset dir="lib" includes="**/*.jar" />
+	</path>
+
+	<path id="compiletest.classpath">
+		<pathelement location="${build.home}/classes" />
+		<path refid="compile.classpath" />
+		<path refid="testng.classpath" />
+	</path>
+
+	<path id="test.classpath">
+		<pathelement location="${build.home}/testclasses" />
+		<pathelement location="${build.home}/classes" />
+		<fileset dir="lib" includes="*.jar" />
+		<fileset dir="test/lib" includes="*.jar" />
+		<path refid="testng.classpath" />
+	</path>
+
+	
+	<!-- Custom Ant Task Definitions -->
+
+	<taskdef resource="testngtasks" classpathref="testng.classpath" />
+	<taskdef name="groovy" classname="org.codehaus.groovy.ant.Groovy" classpathref="groovy.classpath" />
+	<taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="jarjar.classpath" />
+
+
+	<!-- Targets -->
+
+	<target name="clean" description="Clean out the output directories ">
+		<delete dir="${build.home}" />
+		<delete dir="${temp.home}" />
+	</target>
+
+
+	<target name="compile">
+		<echo message="java.home=${java.home}" />
+		<mkdir dir="${build.home}/classes" />
+		<javac srcdir="src:../solidbase/src" includes="solidbase/io/*.java,solidstack/**/*.java" destdir="${build.home}/classes" 
+			classpathref="compile.classpath" source="${target-jre}" target="${target-jre}" optimize="true" debug="true" deprecation="true" />
+		<sync todir="${build.home}/classes">
+			<fileset dir="src" excludes="**/*.java,**/*.html" />
+			<preserveInTarget includes="**/*.class" />
+		</sync>
+	</target>
+
+
+	<target name="jar" depends="compile">
+		<fail message="A *.txt file is missing">
+			<condition>
+				<resourcecount when="ne" count="2">
+					<fileset dir="." includes="LICENSE.txt,NOTICE.txt,CHANGELOG.TXT" />
+				</resourcecount>
+			</condition>
+		</fail>
+
+		
+		<jarjar compress="yes" destfile="${dist.home}/solidstack.jar">
+			<zipfileset dir="${build.home}/classes" />
+			<zipfileset dir="." includes="LICENSE.txt,NOTICE.txt,CHANGELOG.TXT" prefix="META-INF" />
+			<rule pattern="solidbase.**" result="solidstack.@0" />
+			<keep pattern="solidstack.**" />
+			<manifest>
+				<attribute name="Implementation-Title" value="SolidStack" />
+				<attribute name="Implementation-Version" value="${release.number}.${svn.revision}" />
+				<attribute name="Implementation-Vendor-Id" value="solidstack.googlecode.com" />
+				<attribute name="Version" value="${release.number}.${svn.revision}" />
+				<attribute name="Project-Name" value="${ant.project.name}" />
+				<attribute name="Built-By" value="${user.name}" />
+				<attribute name="Target-JRE" value="${target-jre}" />
+				<attribute name="SVN-url" value="${svn.url}" />
+				<attribute name="SVN-revision" value="${svn.committedRevision}" />
+			</manifest>
+		</jarjar>
+	</target>
+
+
+	<target name="compiletest" depends="compile">
+		<mkdir dir="${build.home}/testclasses" />
+		<javac source="${target-jre}" target="${target-jre}" srcdir="test/src" destdir="${build.home}/testclasses" debug="true" deprecation="true" optimize="true">
+			<classpath refid="compiletest.classpath" />
+		</javac>
+		<sync todir="${build.home}/testclasses">
+			<fileset dir="test/src" excludes="**/*.java" />
+			<preserveInTarget includes="**/*.class" />
+		</sync>
+	</target>
+
+
+	<target name="test" depends="compiletest" description="Run the tests">
+		<testng classpathref="test.classpath" outputDir="${build.home}/testreports" haltOnFailure="true" verbose="3">
+			<classfileset dir="${build.home}/testclasses" />
+		</testng>
+	</target>
+
+	
+	<target name="testnew" depends="compiletest" description="Run new tests">
+		<testng classpathref="test.classpath" outputDir="${build.home}/testreports" haltOnFailure="true" verbose="3" groups="new">
+			<classfileset dir="${build.home}/testclasses" />
+		</testng>
+	</target>
+
+
+	<target name="build" depends="jar" description="Do an (incremental) build">
+	</target>
+
+
+	<target name="checksvnstatus">
+	</target>
+
+	
+	<target name="getsvninfo">
+		<groovy src="scripts/getsvninfo.groovy" />
+	</target>
+
+	
+	<target name="dist" depends="checksvnstatus,getsvninfo,clean,build,test" description="Complete build process to create the distribution files">
+		<echo message="Distribution files created in ${dist.home}" />
+	</target>
+
+
+	<target name="javadoc" depends="compile" description="Generate Javadoc">
+		<mkdir dir="doc/api" />
+		<delete dir="doc/api" includes="**/*" />
+		<javadoc sourcepath="src" destdir="doc/api" packagenames="*" linkoffline="http://java.sun.com/j2se/1.5.0/docs/api doc/jdk1.5.0">
+			<classpath refid="compile.classpath" />
+		</javadoc>
+		<replaceregexp match="- Generated by javadoc [^\-]+-" replace="- Generated by javadoc -" flags="g" byline="true">
+			<fileset dir="doc/api" includes="**/*.html" />
+		</replaceregexp>
+		<replaceregexp match="&lt;META NAME=&quot;date&quot; CONTENT=&quot;[\d\-]+&quot;&gt;" replace="" flags="g" byline="true">
+			<fileset dir="doc/api" includes="**/*.html" />
+		</replaceregexp>
+	</target>
+
+
+	<target name="maven:deploy" depends="build" description="Deploys to the remote repo">
+		<maven:deploy file="${dist.home}/solidstack.jar">
+			<pom file="deploy-pom.xml" />
+		</maven:deploy>
+	</target>
+	
+	
+</project>
