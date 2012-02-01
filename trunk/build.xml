@@ -159,11 +159,15 @@
 
 
 	<target name="checksvnstatus">
-		<groovy src="scripts/checksvnstatus.groovy" />
 	</target>
 
 	
-	<target name="dist" depends="checksvnstatus,clean,build,test" description="Complete build process to create the distribution files">
+	<target name="getsvninfo">
+		<groovy src="scripts/getsvninfo.groovy" />
+	</target>
+
+	
+	<target name="dist" depends="checksvnstatus,getsvninfo,clean,build,test" description="Complete build process to create the distribution files">
 		<echo message="Distribution files created in ${dist.home}" />
 	</target>
 
