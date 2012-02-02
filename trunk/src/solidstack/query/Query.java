@@ -27,11 +27,13 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +50,7 @@ public class Query
 {
 	static  private Logger log = LoggerFactory.getLogger( Query.class );
 
-	private GString sql;
+	private GStringWriter sql;
 	private Closure closure;
 	private Map< String, ? > params;
 	private Connection connection;
@@ -61,7 +63,8 @@ public class Query
 	 */
 	public Query( GString sql )
 	{
-		this.sql = sql;
+		this.sql = new GStringWriter();
+		this.sql.write( sql );
 	}
 
 	/**
@@ -442,13 +445,12 @@ public class Query
 
 	String getPreparedSQL( List< Object > pars )
 	{
-		GString gsql;
+		GStringWriter gsql;
 		if( this.closure != null )
 		{
 			this.closure.setDelegate( this.params );
-			GStringWriter out = new GStringWriter();
-			this.closure.call( out );
-			gsql = out.toGString();
+			gsql = new GStringWriter();
+			this.closure.call( gsql );
 		}
 		else
 			gsql = this.sql;
@@ -456,19 +458,18 @@ public class Query
 		Assert.notNull( pars );
 		Assert.isTrue( pars.isEmpty() );
 
-		StringBuilder buildSql = new StringBuilder();
-
-		String[] strings = gsql.getStrings();
-		Object[] values = gsql.getValues();
-		int len = values.length;
-		for( int i = 0; i <= len; i++ )
+		StringBuilder result = new StringBuilder();
+		List< Object > values = gsql.getValues();
+		BitSet isValue = gsql.getIsValue();
+		int len = values.size();
+		for( int i = 0; i < len; i++ )
 		{
-			buildSql.append( strings[ i ] );
-			if( i < len )
-				appendParameter( values[ i ], "unknown", buildSql, pars );
+			if( isValue.get( i ) )
+				appendParameter( values.get( i ), "unknown", result, pars );
+			else
+				result.append( (String)values.get( i ) );
 		}
-
-		return buildSql.toString();
+		return result.toString();
 	}
 
 	static private void appendExtraQuestionMarks( StringBuilder s, int count )

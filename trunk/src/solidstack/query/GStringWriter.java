@@ -16,48 +16,26 @@
 
 package solidstack.query;
 
+import groovy.lang.Closure;
 import groovy.lang.GString;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 
-import org.codehaus.groovy.runtime.GStringImpl;
+import org.codehaus.groovy.runtime.InvokerHelper;
+
+import solidstack.template.TemplateException;
 
 /**
- * A builder for Groovy's {@link GString}.
+ * A writer that accepts Groovy's {@link GString} and keeps the values of the GStrings separate from the string segments.
  * 
  * @author René M. de Bloois
  */
 public class GStringWriter
 {
-	private List< String > strings = new ArrayList< String >();
 	private List< Object > values = new ArrayList< Object >();
-
-	/**
-	 * Append a {@link GString}.
-	 * 
-	 * @param gString The {@link GString} to append.
-	 */
-	public void write( GString gString )
-	{
-		if( !( this.strings.size() == 0 || this.strings.size() == this.values.size() + 1 ) )
-			throw new IllegalStateException();
-
-		String[] strings = gString.getStrings();
-		Object[] values = gString.getValues();
-		if( !( strings.length == values.length + 1 ) )
-			throw new IllegalStateException();
-
-		write( strings[ 0 ] );
-
-		for( int i = 0; i < values.length; i++ )
-			this.values.add( values[ i ] );
-		for( int i = 1; i < strings.length; i++ )
-			this.strings.add( strings[ i ] );
-
-		if( !( this.strings.size() == this.values.size() + 1 ) )
-			throw new IllegalStateException();
-	}
+	private BitSet isValue = new BitSet();
 
 	/**
 	 * Append a {@link String}.
@@ -66,46 +44,90 @@ public class GStringWriter
 	 */
 	public void write( String string )
 	{
-		if( !( this.strings.size() == 0 || this.strings.size() == this.values.size() + 1 ) )
-			throw new IllegalStateException();
-
-		int last = this.strings.size() - 1;
-		if( last >= 0 )
-			this.strings.set( last, this.strings.get( last ) + string );
-		else
-			this.strings.add( string );
-
-		if( !( this.strings.size() == this.values.size() + 1 ) )
-			throw new IllegalStateException();
+		if( string != null && string.length() > 0 )
+			this.values.add( string );
 	}
 
 	/**
-	 * Append an object. The object's {@link #toString()} will be called to convert it to a string.
+	 * Append a {@link GString}. The values of the GString are kept separate from the string segments.
+	 * 
+	 * @param gString The {@link GString} to append.
+	 */
+	public void write( GString gString )
+	{
+		String[] strings = gString.getStrings();
+		Object[] values = gString.getValues();
+		if( !( strings.length == values.length + 1 ) )
+			throw new IllegalStateException();
+
+		for( int i = 0; i < values.length; i++ )
+		{
+			write( strings[ i ] );
+			this.isValue.set( this.values.size() );
+			this.values.add( values[ i ] );
+		}
+		write( strings[ values.length ] );
+	}
+
+	/**
+	 * Append an object as a string. Groovy logic is used to convert the object to a string.
 	 * 
 	 * @param object The object to append.
 	 */
 	public void write( Object object )
 	{
-		// Use Groovy's asType (see NoEncodingWriter)
-		write( object != null ? object.toString() : "null" );
+		if( object != null )
+			write( InvokerHelper.invokeMethod( object, "asType", String.class ) );
 	}
 
 	/**
-	 * Returns the {@link GString} result.
+	 * Write a closure. Only closures with no parameters are allowed. The closure is called an the result is written.
 	 * 
-	 * @return The {@link GString} result.
+	 * @param c The closure.
 	 */
-	public GString toGString()
+	public void write( Closure c )
 	{
-		int size = this.values.size();
-		if( !( this.strings.size() == size + 1 ) )
-			throw new IllegalStateException();
-		return new GStringImpl( this.values.toArray( new Object[ size ] ), this.strings.toArray( new String[ size + 1 ] ) );
+		if( c != null )
+		{
+			int pars = c.getMaximumNumberOfParameters();
+			if( pars > 0 )
+				throw new TemplateException( "Closures with parameters are not supported in expressions." );
+			write( c.call() );
+		}
+	}
+
+	/**
+	 * Returns the string segments and the values.
+	 * 
+	 * @return An array of string segments (String) and the values (unknown Object).
+	 */
+	public List< Object > getValues()
+	{
+		return this.values;
+	}
+
+	/**
+	 * Returns a bitset that indicates which indexes in the {@link #getValues()} list is a value.
+	 * 
+	 * @return A bitset that indicates which indexes in the {@link #getValues()} list is a value.
+	 */
+	public BitSet getIsValue()
+	{
+		return this.isValue;
 	}
 
 	@Override
 	public String toString()
 	{
-		return toGString().toString();
+		StringBuilder result = new StringBuilder();
+		int len = this.values.size();
+		for( int i = 0; i < len; i++ )
+		{
+			if( this.isValue.get( i ) )
+				result.append( InvokerHelper.invokeMethod( this.values.get( i ), "asType", String.class ) );
+			else
+				result.append( (String)this.values.get( i ) );
+		}
+		return result.toString();
 	}
 }
