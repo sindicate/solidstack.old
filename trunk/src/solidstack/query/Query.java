@@ -32,8 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +46,7 @@ import solidstack.Assert;
  */
 public class Query
 {
-	static final private Logger LOGGER = LoggerFactory.getLogger( Query.class );
+	static  private Logger log = LoggerFactory.getLogger( Query.class );
 
 	private GString sql;
 	private Closure closure;
@@ -352,6 +350,44 @@ public class Query
 		List< Object > pars = new ArrayList< Object >();
 		String preparedSql = getPreparedSQL( pars );
 
+		if( log.isDebugEnabled() )
+		{
+			StringBuilder debug = new StringBuilder();
+			debug.append( "Prepare statement:\n" );
+			debug.append( preparedSql );
+			debug.append( "\nParameters:" );
+			int i = 1;
+			for( Object par : pars )
+			{
+				debug.append( '\n' );
+				debug.append( i++ );
+				debug.append( ":\t" );
+				if( par == null )
+					debug.append( "(null)" );
+				else
+				{
+					debug.append( '(' );
+					debug.append( par.getClass().getName() );
+					debug.append( ')' );
+					if( !par.getClass().isArray() )
+						debug.append( par.toString() );
+					else
+					{
+						debug.append( '[' );
+						int size = Array.getLength( par );
+						for( int j = 0; j < size; j++ )
+						{
+							if( j > 0 )
+								debug.append( ',' );
+							debug.append( Array.get( par, j ) );
+						}
+						debug.append( ',' );
+					}
+				}
+			}
+			log.debug( debug.toString() );
+		}
+
 		try
 		{
 			PreparedStatement statement = connection.prepareStatement( preparedSql );
@@ -432,9 +468,7 @@ public class Query
 				appendParameter( values[ i ], "unknown", buildSql, pars );
 		}
 
-		String sql = buildSql.toString();
-		printDebug( sql );
-		return sql;
+		return buildSql.toString();
 	}
 
 	static private void appendExtraQuestionMarks( StringBuilder s, int count )
@@ -444,52 +478,5 @@ public class Query
 			s.append( ",?" );
 			count--;
 		}
-	}
-
-	private void printDebug( String sql )
-	{
-		if( !LOGGER.isDebugEnabled() )
-			return;
-
-		StringBuilder builder = new StringBuilder( "Execution:\n" );
-		builder.append( sql );
-		builder.append( "\nParameters:" );
-		if( this.params == null )
-			builder.append( " none" );
-		else
-			for( Entry< String, ? > entry : this.params.entrySet() )
-			{
-				builder.append( "\n\t" );
-				builder.append( entry.getKey() );
-				Object value = entry.getValue();
-				if( value != null )
-				{
-					if( value.getClass().isArray() )
-					{
-						builder.append( " = (" );
-						builder.append( entry.getValue().getClass().getName() );
-						builder.append( ")[" );
-						int size = Array.getLength( value );
-						for( int j = 0; j < size; j++ )
-						{
-							if( j > 0 )
-								builder.append( ", " );
-							builder.append( Array.get( value, j ) );
-						}
-						builder.append( "]" );
-					}
-					else
-					{
-						builder.append( " = (" );
-						builder.append( entry.getValue().getClass().getName() );
-						builder.append( ')' );
-						builder.append( entry.getValue() );
-					}
-				}
-				else
-					builder.append( " = (null)" );
-			}
-
-		LOGGER.debug( builder.toString() );
 	}
 }
