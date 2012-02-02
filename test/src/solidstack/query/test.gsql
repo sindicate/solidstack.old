@@ -12,6 +12,8 @@ AND TABLENAME LIKE '<%= prefix %>%'
 		<% } %>
 		<% if( name ) { %>
 AND TABLENAME = ${name}
+AND TABLENAME = ${"${name}"}
+AND TABLENAME = ${{->name}}
 		<% } %>
 		<% if( names ) { %>
 AND TABLENAME IN (${names})

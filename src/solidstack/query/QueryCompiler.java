@@ -31,7 +31,6 @@ import solidstack.template.JSPLikeTemplateParser.ParseEvent;
  * 
  * @author René M. de Bloois
  */
-// TODO Closures in the query template
 public class QueryCompiler extends TemplateCompiler
 {
 	@Override

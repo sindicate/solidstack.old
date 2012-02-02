@@ -42,8 +42,7 @@ import solidstack.template.JSPLikeTemplateParser.ParseEvent;
  * 
  * @author René M. de Bloois
  */
-// TODO Gstring as (query) parameter
-// TODO Out.write gstring in queries
+// TODO Out.write gstring in queries? Act as JDBC bind parameters or not?
 // TODO SQL array parameter in queries
 // TODO Include during runtime or compiletime
 // TODO Scriptonly: (whole template is just <% fjlkj%>) check no newlines?

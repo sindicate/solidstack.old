@@ -66,9 +66,7 @@ public class NoEncodingWriter implements EncodingWriter
 			int pars = c.getMaximumNumberOfParameters();
 			if( pars > 0 )
 				throw new TemplateException( "Closures with parameters are not supported in expressions." );
-			Object result = c.call();
-			if( result != null )
-				write( result.toString() ); // TODO Use groovy type conversion
+			write( c.call() );
 		}
 	}
 
@@ -88,12 +86,9 @@ public class NoEncodingWriter implements EncodingWriter
 	{
 		if( c != null )
 		{
-			int pars = c.getMaximumNumberOfParameters();
-			if( pars > 0 )
+			if( c.getMaximumNumberOfParameters() > 0 )
 				throw new TemplateException( "Closures with parameters are not supported in expressions." );
-			Object result = c.call();
-			if( result != null )
-				writeEncoded( result.toString() ); // TODO Use groovy type conversion
+			writeEncoded( c.call() );
 		}
 	}
 }
