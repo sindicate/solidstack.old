@@ -40,6 +40,7 @@ import solidbase.io.ResourceFactory;
 import solidbase.io.StringLineReader;
 import solidstack.template.ParseException;
 import solidstack.template.Util;
+import solidstack.util.Par;
 
 
 public class Basic
@@ -53,8 +54,7 @@ public class Basic
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query" );
 
-		Map< String, Object > params = new HashMap< String, Object >();
-		Query query = queries.bind( "test", params );
+		Query query = queries.bind( "test", Par.EMPTY );
 		List< Map< String, Object > > result = query.listOfMaps( connection );
 		for( String name : result.get( 0 ).keySet() )
 			System.out.println( "Column: " + name );
@@ -62,26 +62,21 @@ public class Basic
 			System.out.println( "Table: " + row.get( "TABLEname" ) );
 		assert result.size() == 22;
 
-		params.put( "prefix", "SYST" );
-		query = queries.bind( "test", params );
+		query = queries.bind( "test", new Par( "prefix", "SYST" ) );
 		result = query.listOfMaps( connection );
 		assert result.size() == 3;
 
-		params.clear();
-		params.put( "name", "SYSTABLES" );
-		query = queries.bind( "test", params );
+		query = queries.bind( "test", new Par().set( "name", "SYSTABLES" ) );
 		List< Object[] > array = query.listOfArrays( connection );
 		assert array.size() == 1;
 
-		params.put( "name", "SYSTABLES" );
-		params.put( "prefix", "SYST" );
-		query = queries.bind( "test", params );
+		query = queries.bind( "test", new Par(
+				"name", "SYSTABLES",
+				"prefix", "SYST" ) );
 		result = query.listOfMaps( connection );
 		assert result.size() == 1;
 
-		params.clear();
-		params.put( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } );
-		query = queries.bind( "test", params );
+		query = queries.bind( "test", new Par().set( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } ) );
 		result = query.listOfMaps( connection );
 		assert result.size() == 2;
 	}
