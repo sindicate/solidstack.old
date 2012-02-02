@@ -102,6 +102,8 @@ public class Basic
 				"\"\"\"); } \n" +
 				"; if( name ) { \n" +
 				";out.write(\"\"\"AND TABLENAME = ${name}\n" +
+				"AND TABLENAME = ${\"${name}\"}\n" +
+				"AND TABLENAME = ${{->name}}\n" +
 				"\"\"\"); } \n" +
 				"; if( names ) { \n" +
 				";out.write(\"\"\"AND TABLENAME IN (${names})\n" +
@@ -292,6 +294,7 @@ public class Basic
 		translateError( "X${\"text\ntext\"}X" );
 		translateError( "X${\"${\"text\ntext\"}\"}X" );
 		translateTest( "X${\"\"\"te\"xt\ntext\\\"\"\"\"}X", "out.write(\"\"\"X${\"\"\"te\"xt\ntext\\\"\"\"\"}X\"\"\");", "Xte\"xt\ntext\"X" );
+		// TODO An if in an expression? Can we do that for the other kind of expression to?
 		translateTest( "${if(var){\"true\"}else{\"false\"}}", "out.write(\"\"\"${if(var){\"true\"}else{\"false\"}}\"\"\");", "true" );
 		translateError( "X${\"Y${\n}Y\"}X" );
 		translateTest( "X${\"\"\"Y${\nvar\n}Y\"\"\"}X", "out.write(\"\"\"X${\"\"\"Y${\nvar\n}Y\"\"\"}X\"\"\");", "XYvalueYX" );
