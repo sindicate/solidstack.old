@@ -16,8 +16,6 @@
 
 package solidstack.template;
 
-import groovy.lang.Closure;
-
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
@@ -31,12 +29,11 @@ import solidstack.template.JSPLikeTemplateParser.Directive;
  * 
  * @author René M. de Bloois
  */
-public class Template
+abstract public class Template
 {
 	private String source;
 	private Directive[] directives;
 
-	private Closure template;
 	private String contentType;
 	private String charSet;
 	private long lastModified;
@@ -71,12 +68,7 @@ public class Template
 	 * @param params The parameters to be applied.
 	 * @param writer The result of applying this template is written to this writer.
 	 */
-	public void apply( Map< String, ? > params, Writer writer )
-	{
-		Closure template = (Closure)this.template.clone();
-		template.setDelegate( params );
-		template.call( createEncodingWriter( writer ) );
-	}
+	abstract public void apply( Map< String, ? > params, Writer writer );
 
 	/**
 	 * Applies this template and writes the result to an OutputStream. The character set used is the one configured in
@@ -103,9 +95,7 @@ public class Template
 		}
 		else
 			writer = new OutputStreamWriter( out );
-		Closure template = (Closure)this.template.clone();
-		template.setDelegate( params );
-		template.call( createEncodingWriter( writer ) );
+		apply( params, writer );
 	}
 
 	/**
@@ -179,16 +169,6 @@ public class Template
 	}
 
 	/**
-	 * Returns the Groovy closure.
-	 * 
-	 * @return The Groovy closure.
-	 */
-	protected Closure getClosure()
-	{
-		return this.template;
-	}
-
-	/**
 	 * Returns the directive attribute with the given directive name and attribute name.
 	 * 
 	 * @param name The name of the directive.
@@ -233,16 +213,6 @@ public class Template
 	protected void setLastModified( long lastModified )
 	{
 		this.lastModified = lastModified;
-	}
-
-	/**
-	 * Sets the Groovy closure.
-	 * 
-	 * @param closure The Groovy closure.
-	 */
-	protected void setClosure( Closure closure )
-	{
-		this.template = closure;
 	}
 
 	/**

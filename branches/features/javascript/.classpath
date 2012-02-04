@@ -10,7 +10,6 @@
 	<classpathentry kind="lib" path="lib/optional/persistence-api-1.0.jar"/>
 	<classpathentry kind="lib" path="test/lib/derby-10.6.1.0.jar"/>
 	<classpathentry kind="lib" path="test/lib/testquery.jar"/>
-	<classpathentry kind="lib" path="test/lib/slf4j-simple-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/rhino-1.7R2.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/solidbase"/>
 	<classpathentry kind="output" path="bin"/>

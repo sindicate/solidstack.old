@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Script;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +37,7 @@ import solidbase.io.LineReader;
 import solidbase.io.Resource;
 import solidstack.Assert;
 import solidstack.template.JSPLikeTemplateParser.Directive;
+import solidstack.template.JSPLikeTemplateParser.EVENT;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
 
 /**
@@ -59,11 +62,11 @@ public class TemplateCompiler
 
 
 	/**
-	 * Compiles a template into a {@link Template}.
+	 * Compiles a template into a {@link GroovyTemplate}.
 	 * 
 	 * @param resource The {@link Resource} that contains the template.
 	 * @param path The path of the template, needed to generate a name for the class in memory.
-	 * @return A {@link Template}.
+	 * @return A {@link GroovyTemplate}.
 	 */
 	public Template compile( Resource resource, String path )
 	{
@@ -90,12 +93,7 @@ public class TemplateCompiler
 			pkg += "." + path.replaceAll( "/", "." );
 
 		Template template = translate( pkg, name, reader );
-		log.trace( "Generated groovy:\n{}", template.getSource() );
 
-		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( template.getSource(), name, "x" ) );
-		GroovyObject object = Util.newInstance( groovyClass );
-
-		template.setClosure( (Closure)object.invokeMethod( "getClosure", null ) );
 		if( !keepSource )
 			template.clearSource();
 
@@ -145,15 +143,60 @@ public class TemplateCompiler
 	 */
 	protected Template translate( String pkg, String cls, LineReader reader )
 	{
+		// Parse and collect directives
 		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( reader );
-		StringBuilder buffer = new StringBuilder();
-		boolean text = false;
-		List< String > imports = null;
+		List< ParseEvent > events = new ArrayList< ParseEvent >();
 		List< Directive > directives = null;
-		loop: while( true )
+		ParseEvent event = parser.next();
+		while( event.getEvent() != EVENT.EOF )
 		{
-			ParseEvent event = parser.next();
-			switch( event.getEvent() )
+			events.add( event );
+			if( event.getEvent() == EVENT.DIRECTIVE )
+			{
+				if( directives == null )
+					directives = new ArrayList< Directive >();
+				directives.addAll( event.getDirectives() );
+			}
+			event = parser.next();
+		}
+
+		// Collect imports & language
+		List< String > imports = null;
+		String lang = null;
+		if( directives != null )
+			for( Directive directive : directives )
+				if( directive.getName().equals( "template" ) )
+					if( directive.getAttribute().equals( "import" ) )
+					{
+						if( imports == null )
+							imports = new ArrayList< String >();
+						imports.add( directive.getValue() );
+					}
+					else if( directive.getAttribute().equals( "language" ) )
+						lang = directive.getValue();
+
+		// TODO Javascript must become the default, but overridable
+		if( lang == null || lang.equals( "groovy" ) )
+			return toGroovy( pkg, cls, events, directives, imports );
+		if( lang.equals( "javascript" ) )
+			return toJavaScript( events, directives, imports );
+		throw new TemplateException( "Unsupported template language: " + lang );
+	}
+
+	protected GroovyTemplate toGroovy( String pkg, String cls, List< ParseEvent > events, List< Directive > directives, List< String > imports )
+	{
+		StringBuilder buffer = new StringBuilder( 1024 );
+		buffer.append( "package " ).append( pkg ).append( ";" );
+		if( imports != null )
+			for( String imprt : imports )
+				buffer.append( "import " ).append( imprt ).append( ';' );
+		buffer.append( "class " ).append( cls );
+		buffer.append( "{Closure getClosure(){return{out->" );
+
+		boolean text = false;
+		for( ParseEvent event2 : events )
+		{
+			switch( event2.getEvent() )
 			{
 				case TEXT:
 				case NEWLINE:
@@ -161,83 +204,139 @@ public class TemplateCompiler
 					if( !text )
 						buffer.append( "out.write(\"\"\"" );
 					text = true;
-					writeString( buffer, event.getData() );
+					writeString( buffer, event2.getData() );
 					break;
 
 				case SCRIPT:
 					if( text )
 						buffer.append( "\"\"\");" );
 					text = false;
-					buffer.append( event.getData() );
-					buffer.append( ';' );
+					buffer.append( event2.getData() ).append( ';' );
 					break;
 
 				case EXPRESSION:
 					if( text )
 						buffer.append( "\"\"\");" );
 					text = false;
-					buffer.append( "out.write(" );
-					buffer.append( event.getData() );
-					buffer.append( ");" );
+					buffer.append( "out.write(" ).append( event2.getData() ).append( ");" );
 					break;
 
 				case EXPRESSION2:
 					if( text )
 						buffer.append( "\"\"\");" );
 					text = false;
-					buffer.append( "out.writeEncoded(" );
-					buffer.append( event.getData() );
-					buffer.append( ");" );
+					buffer.append( "out.writeEncoded(" ).append( event2.getData() ).append( ");" );
 					break;
 
 				case DIRECTIVE:
-					if( directives == null )
-						directives = new ArrayList< Directive >();
-					directives.addAll( event.getDirectives() );
-
-					for( Directive directive : event.getDirectives() )
-						if( directive.getName().equals( "template" ) && directive.getAttribute().equals( "import" ) )
-						{
-							if( imports == null )
-								imports = new ArrayList< String >();
-							imports.add( directive.getValue() );
-						}
-					//$FALL-THROUGH$
-
 				case COMMENT:
-					if( event.getData().length() == 0 )
+					if( event2.getData().length() == 0 )
 						break;
 					if( text )
 						buffer.append( "\"\"\");" );
 					text = false;
-					buffer.append( event.getData() );
+					buffer.append( event2.getData() );
 					break;
 
-				case EOF:
-					if( text )
-						buffer.append( "\"\"\");" );
-					break loop;
-
 				default:
-					Assert.fail( "Unexpected event " + event.getEvent() );
+					Assert.fail( "Unexpected event " + event2.getEvent() );
 			}
 		}
-		StringBuilder prelude = new StringBuilder( 256 );
-		prelude.append( "package " );
-		prelude.append( pkg );
-		prelude.append( ";" );
+
+		if( text )
+			buffer.append( "\"\"\");" );
+		buffer.append( "}}}" );
+
+		GroovyTemplate template = new GroovyTemplate( buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
+		log.trace( "Generated Groovy:\n{}", template.getSource() );
+
+		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( template.getSource(), cls, "x" ) );
+		GroovyObject object = Util.newInstance( groovyClass );
+		template.setClosure( (Closure)object.invokeMethod( "getClosure", null ) );
+
+		return template;
+	}
+
+	protected JavaScriptTemplate toJavaScript( List< ParseEvent > events, List< Directive > directives, List< String > imports )
+	{
+		StringBuilder buffer = new StringBuilder( 1024 );
 		if( imports != null )
 			for( String imprt : imports )
+				buffer.append( "importClass(Packages." ).append( imprt ).append( ");" );
+
+		boolean text = false;
+		for( ParseEvent event2 : events )
+		{
+			switch( event2.getEvent() )
 			{
-				prelude.append( "import " );
-				prelude.append( imprt );
-				prelude.append( ';' );
+				case TEXT:
+				case WHITESPACE:
+					if( !text )
+						buffer.append( "out.write(\"" );
+					text = true;
+					writeString( buffer, event2.getData() );
+					break;
+
+				case NEWLINE:
+					if( !text )
+						buffer.append( "out.write(\"" );
+					text = true;
+					buffer.append( "\\n\\\n" );
+					break;
+
+				case SCRIPT:
+					if( text )
+						buffer.append( "\");" );
+					text = false;
+					buffer.append( event2.getData() ).append( ';' );
+					break;
+
+				case EXPRESSION:
+					if( text )
+						buffer.append( "\");" );
+					text = false;
+					buffer.append( "out.write(" ).append( event2.getData() ).append( ");" );
+					break;
+
+				case EXPRESSION2:
+					if( text )
+						buffer.append( "\");" );
+					text = false;
+					buffer.append( "out.writeEncoded(" ).append( event2.getData() ).append( ");" );
+					break;
+
+				case DIRECTIVE:
+				case COMMENT:
+					if( event2.getData().length() == 0 )
+						break;
+					if( text )
+						buffer.append( "\");" );
+					text = false;
+					buffer.append( event2.getData() );
+					break;
+
+				default:
+					Assert.fail( "Unexpected event " + event2.getEvent() );
 			}
-		prelude.append( "class " );
-		prelude.append( cls );
-		prelude.append( "{Closure getClosure(){return{out->" );
-		buffer.insert( 0, prelude );
-		buffer.append( "}}}" );
-		return new Template( buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
+		}
+
+		if( text )
+			buffer.append( "\");" );
+
+		JavaScriptTemplate template = new JavaScriptTemplate( buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
+		log.trace( "Generated JavaScript:\n{}", template.getSource() );
+
+		Context cx = Context.enter();
+		try
+		{
+			cx.setOptimizationLevel( -1 );
+			Script script = cx.compileString( template.getSource(), "<cmd>", 1, null ); // TODO Name
+			template.setScript( script );
+			return template;
+		}
+		finally
+		{
+			Context.exit();
+		}
 	}
 }

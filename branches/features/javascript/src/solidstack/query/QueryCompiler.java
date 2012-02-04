@@ -58,24 +58,19 @@ public class QueryCompiler extends TemplateCompiler
 					if( text )
 						buffer.append( "\"\"\");" );
 					text = false;
-					buffer.append( event.getData() );
-					buffer.append( ';' );
+					buffer.append( event.getData() ).append( ';' );
 					break;
 				case EXPRESSION:
 					if( text )
 						buffer.append( "\"\"\");" );
 					text = false;
-					buffer.append( "out.write(" );
-					buffer.append( event.getData() );
-					buffer.append( ");" );
+					buffer.append( "out.write(" ).append( event.getData() ).append( ");" );
 					break;
 				case EXPRESSION2:
 					if( !text )
 						buffer.append( "out.write(\"\"\"" );
 					text = true;
-					buffer.append( "${" );
-					buffer.append( event.getData() );
-					buffer.append( '}' );
+					buffer.append( "${" ).append( event.getData() ).append( '}' );
 					break;
 				case DIRECTIVE:
 					if( directives == null )
@@ -105,18 +100,11 @@ public class QueryCompiler extends TemplateCompiler
 			}
 		}
 		StringBuilder prelude = new StringBuilder( 256 );
-		prelude.append( "package " );
-		prelude.append( pkg );
-		prelude.append( ";" );
+		prelude.append( "package " ).append( pkg ).append( ";" );
 		if( imports != null )
 			for( String imprt : imports )
-			{
-				prelude.append( "import " );
-				prelude.append( imprt );
-				prelude.append( ';' );
-			}
-		prelude.append( "class " );
-		prelude.append( cls );
+				prelude.append( "import " ).append( imprt ).append( ';' );
+		prelude.append( "class " ).append( cls );
 		prelude.append( "{Closure getClosure(){return{out->" );
 		buffer.insert( 0, prelude );
 		buffer.append( "}}}" );

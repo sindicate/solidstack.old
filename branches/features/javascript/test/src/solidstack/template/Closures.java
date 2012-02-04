@@ -26,7 +26,7 @@ import org.testng.annotations.Test;
 
 public class Closures
 {
-	@Test(groups="new")
+	@Test
 	public void testClosures() throws SQLException, ClassNotFoundException
 	{
 		TemplateManager templates = new TemplateManager();

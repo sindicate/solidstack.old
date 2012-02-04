@@ -143,7 +143,7 @@ public class Basic
 				"</html>\n" );
 	}
 
-	@Test(groups="new")
+	@Test
 	public void testHuge() throws IOException
 	{
 		StringBuilder buffer = new StringBuilder();

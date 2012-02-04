@@ -17,7 +17,7 @@
 package solidstack.query;
 
 import groovy.lang.Closure;
-import solidstack.template.Template;
+import solidstack.template.GroovyTemplate;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 
 
@@ -26,7 +26,7 @@ import solidstack.template.JSPLikeTemplateParser.Directive;
  * 
  * @author René M. de Bloois
  */
-public class QueryTemplate extends Template
+public class QueryTemplate extends GroovyTemplate // TODO Must be Template
 {
 	/**
 	 * Constructor.
