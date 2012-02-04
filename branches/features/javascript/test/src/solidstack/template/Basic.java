@@ -34,6 +34,7 @@ import solidbase.io.ResourceFactory;
 import solidbase.io.StringLineReader;
 import solidstack.template.JSPLikeTemplateParser.EVENT;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
+import solidstack.util.Par;
 
 
 public class Basic
@@ -44,10 +45,12 @@ public class Basic
 		TemplateManager templates = new TemplateManager();
 		templates.setPackage( "solidstack.template" );
 
-		Map< String, Object > params = new HashMap< String, Object >();
 		Template template = templates.getTemplate( "test.gtext" );
-		String result = template.apply( params );
-//		System.out.println( result );
+		String result = template.apply( new Par( "names", new String[] { "name1", "name2" } ) );
+		Assert.assertEquals( result, "SELECT *\n" +
+				"FROM SYS.SYSTABLES\n" +
+				"WHERE 1 = 1\n" +
+				"AND TABLENAME IN ([name1, name2])\n" );
 	}
 
 	@Test //(groups="new")

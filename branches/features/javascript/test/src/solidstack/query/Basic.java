@@ -16,11 +16,6 @@
 
 package solidstack.query;
 
-import groovy.lang.Closure;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyCodeSource;
-import groovy.lang.GroovyObject;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -40,7 +35,6 @@ import solidbase.io.ResourceFactory;
 import solidbase.io.StringLineReader;
 import solidstack.template.ParseException;
 import solidstack.template.Template;
-import solidstack.template.Util;
 import solidstack.util.Par;
 
 
@@ -209,16 +203,9 @@ public class Basic
 		this.parameters.put( "var", "value" );
 	}
 
-	static String execute( String script, Map< String, ? > parameters )
+	static String execute( Template template, Map< String, ? > parameters )
 	{
-		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script, "n", "x" ) );
-		GroovyObject object = Util.newInstance( groovyClass );
-		Closure closure = (Closure)object.invokeMethod( "getClosure", null );
-		if( parameters != null )
-			closure.setDelegate( parameters );
-		GStringWriter out = new GStringWriter();
-		closure.call( out );
-		return out.toString();
+		return template.apply( parameters );
 	}
 
 	// For testing purposes
@@ -234,7 +221,8 @@ public class Basic
 //		System.out.println( g );
 		Assert.assertEquals( g, this.start + groovy + this.end );
 
-		String result = execute( g, this.parameters );
+		template.compile( "c" );
+		String result = execute( template, this.parameters );
 //		System.out.println( result );
 		Assert.assertEquals( result, output );
 	}

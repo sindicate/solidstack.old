@@ -46,6 +46,21 @@ public class JavaScriptTemplate extends Template
 		super( source, directives );
 	}
 
+	@Override
+	public void compile( String name )
+	{
+		Context cx = Context.enter();
+		try
+		{
+			cx.setOptimizationLevel( -1 );
+			this.script = cx.compileString( getSource(), "<cmd>", 1, null ); // TODO Name
+		}
+		finally
+		{
+			Context.exit();
+		}
+	}
+
 	/**
 	 * Apply this template.
 	 * 
@@ -68,10 +83,5 @@ public class JavaScriptTemplate extends Template
 		{
 			Context.exit();
 		}
-	}
-
-	public void setScript( Script script )
-	{
-		this.script = script;
 	}
 }

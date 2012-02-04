@@ -100,31 +100,27 @@ public class JavascriptTest
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/template/testjs.gtext" );
 		Template template = new TemplateCompiler().translate( "p", "c", new BOMDetectingLineReader( resource ) );
 		System.out.println( template.getSource().replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
-		// TODO Remove comments
-//		System.out.println( groovy );
-//		Assert.assertEquals( template.getSource(), "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{out->\n" +
-//				" // Test if the import at the bottom works, and this comment too of course\n" +
-//				"new Timestamp( new Date().time ) \n" +
-//				";out.write(\"\"\"SELECT *\n" +
-//				"\"\"\");\n" +
-//				"out.write(\"\"\"FROM SYS.SYSTABLES\n" +
-//				"\"\"\");\n" +
-//				"\n" +
-//				"\n" +
-//				"\n" +
-//				"out.write(\"\"\"WHERE 1 = 1\n" +
-//				"\"\"\"); if( prefix ) { \n" +
-//				";out.write(\"\"\"AND TABLENAME LIKE '\"\"\");out.write( prefix );out.write(\"\"\"%'\n" +
-//				"\"\"\"); } \n" +
-//				"; if( name ) { \n" +
-//				";out.write(\"\"\"AND TABLENAME = \"\"\");out.writeEncoded(name);out.write(\"\"\"\n" +
-//				"\"\"\"); } \n" +
-//				"; if( names ) { \n" +
-//				";out.write(\"\"\"AND TABLENAME IN (\"\"\");out.writeEncoded(names);out.write(\"\"\")\n" +
-//				"\"\"\"); } \n" +
-//				";\n" +
-//				"}}}"
-//				);
+		Assert.assertEquals( template.getSource(), "importClass(Packages.java.sql.Timestamp);\n" +
+				" // Test if the import at the bottom works, and this comment too of course\n" +
+				"new Timestamp( new java.util.Date().time ) \n" +
+				";out.write(\"SELECT *\\n\\\n" +
+				"\");\n" +
+				"out.write(\"FROM SYS.SYSTABLES\");out.write( null );out.write(\"\\n\\\n" +
+				"\");\n" +
+				"\n" +
+				"\n" +
+				"\n" +
+				"out.write(\"WHERE 1 = 1\\n\\\n" +
+				"\"); if( prefix ) { \n" +
+				";out.write(\"AND TABLENAME LIKE '\");out.write( prefix );out.write(\"%'\\n\\\n" +
+				"\"); } \n" +
+				"; if( name ) { \n" +
+				";out.write(\"AND TABLENAME = \");out.writeEncoded(name);out.write(\"\\n\\\n" +
+				"\"); } \n" +
+				"; if( names ) { \n" +
+				";out.write(\"AND TABLENAME IN (\");out.writeEncoded(names);out.write(\")\\n\\\n" +
+				"\"); } \n" +
+				";\n" );
 
 		TemplateManager queries = new TemplateManager();
 		queries.setPackage( "solidstack.template" );

@@ -17,8 +17,10 @@
 package solidstack.template;
 
 import groovy.lang.Closure;
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyCodeSource;
+import groovy.lang.GroovyObject;
 
-import java.io.Writer;
 import java.util.Map;
 
 import solidstack.template.JSPLikeTemplateParser.Directive;
@@ -30,7 +32,7 @@ import solidstack.template.JSPLikeTemplateParser.Directive;
  */
 public class GroovyTemplate extends Template
 {
-	private Closure template;
+	private Closure closure;
 
 
 	/**
@@ -44,6 +46,15 @@ public class GroovyTemplate extends Template
 		super( source, directives );
 	}
 
+	@SuppressWarnings( "unchecked" )
+	@Override
+	public void compile( String name )
+	{
+		Class< GroovyObject > groovyClass = new GroovyClassLoader().parseClass( new GroovyCodeSource( getSource(), name, "x" ) );
+		GroovyObject object = Util.newInstance( groovyClass );
+		this.closure = (Closure)object.invokeMethod( "getClosure", null );
+	}
+
 	/**
 	 * Apply this template.
 	 * 
@@ -53,7 +64,7 @@ public class GroovyTemplate extends Template
 	@Override
 	public void apply( Map< String, ? > params, EncodingWriter writer )
 	{
-		Closure template = (Closure)this.template.clone();
+		Closure template = (Closure)this.closure.clone();
 		template.setDelegate( params );
 		template.call( writer );
 	}
@@ -65,16 +76,6 @@ public class GroovyTemplate extends Template
 	 */
 	protected Closure getClosure()
 	{
-		return this.template;
-	}
-
-	/**
-	 * Sets the Groovy closure.
-	 * 
-	 * @param closure The Groovy closure.
-	 */
-	public void setClosure( Closure closure ) // TODO Remove public
-	{
-		this.template = closure;
+		return this.closure;
 	}
 }

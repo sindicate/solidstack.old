@@ -62,6 +62,8 @@ abstract public class Template
 		this.manager = manager;
 	}
 
+	abstract public void compile( String name );
+
 	/**
 	 * Apply this template.
 	 * 

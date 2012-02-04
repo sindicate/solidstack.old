@@ -16,19 +16,12 @@
 
 package solidstack.template;
 
-import groovy.lang.Closure;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyCodeSource;
-import groovy.lang.GroovyObject;
-
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.Script;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,27 +86,7 @@ public class TemplateCompiler
 			pkg += "." + path.replaceAll( "/", "." );
 
 		Template template = translate( pkg, name, reader );
-		if( template instanceof GroovyTemplate )
-		{
-			Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( template.getSource(), name, "x" ) );
-			GroovyObject object = Util.newInstance( groovyClass );
-			( (GroovyTemplate)template ).setClosure( (Closure)object.invokeMethod( "getClosure", null ) );
-		}
-		else
-		{
-			Context cx = Context.enter();
-			try
-			{
-				cx.setOptimizationLevel( -1 );
-				Script script = cx.compileString( template.getSource(), "<cmd>", 1, null ); // TODO Name
-				( (JavaScriptTemplate)template ).setScript( script );
-			}
-			finally
-			{
-				Context.exit();
-			}
-		}
-
+		template.compile( name );
 		if( !keepSource )
 			template.clearSource();
 
