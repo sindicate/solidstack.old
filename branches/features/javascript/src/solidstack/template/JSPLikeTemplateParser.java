@@ -30,6 +30,8 @@ import solidstack.Assert;
  * 
  * @author René M. de Bloois
  */
+// TODO Language-less version, so just with ${name}, <%= name %> and <% if(name) { %>
+// TODO JavaScript version
 public class JSPLikeTemplateParser
 {
 	/**
