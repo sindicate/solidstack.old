@@ -16,17 +16,13 @@
 
 package solidstack.query;
 
-import groovy.lang.Closure;
-import groovy.lang.GString;
-
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
-import org.codehaus.groovy.runtime.InvokerHelper;
-
 import solidstack.template.EncodingWriter;
-import solidstack.template.TemplateException;
+
 
 /**
  * A writer that accepts Groovy's {@link GString} and keeps the values of the GStrings separate from the string segments.
@@ -39,56 +35,28 @@ public class GStringWriter implements EncodingWriter
 	private BitSet isValue = new BitSet();
 
 	//@Override
-	public void write( Object o )
+	public void write( String s )
 	{
-		if( o != null )
-			if( o instanceof String )
-				writeString( (String)o );
-			else if( o instanceof GString )
-				writeGString( (GString)o );
-			else if( o instanceof Closure )
-			{
-				Closure c = (Closure)o;
-				int pars = c.getMaximumNumberOfParameters();
-				if( pars > 0 )
-					throw new TemplateException( "Closures with parameters are not supported in expressions." );
-				write( c.call() );
-			}
-			else
-				writeString( (String)InvokerHelper.invokeMethod( o, "asType", String.class ) );
+		if( s != null && s.length() > 0 )
+			this.values.add( s );
 	}
 
 	//@Override
-	public void writeEncoded( Object o )
+	public void writeEncoded( String s ) throws IOException
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	//@Override
+	public void writeValue( Object o )
 	{
 		this.isValue.set( this.values.size() );
 		this.values.add( o );
 	}
 
-	protected void writeString( String string )
+	public boolean supportsValues()
 	{
-		if( string != null && string.length() > 0 )
-			this.values.add( string );
-	}
-
-	/**
-	 * Append a {@link GString}. The values of the GString are kept separate from the string segments.
-	 * 
-	 * @param gString The {@link GString} to append.
-	 */
-	protected void writeGString( GString gString )
-	{
-		String[] strings = gString.getStrings();
-		Object[] values = gString.getValues();
-		if( !( strings.length == values.length + 1 ) )
-			throw new IllegalStateException();
-
-		for( int i = 0; i < values.length; i++ )
-		{
-			writeString( strings[ i ] );
-			writeEncoded( values[ i ] );
-		}
-		writeString( strings[ values.length ] );
+		return true;
 	}
 
 	/**
@@ -119,7 +87,7 @@ public class GStringWriter implements EncodingWriter
 		for( int i = 0; i < len; i++ )
 		{
 			if( this.isValue.get( i ) )
-				result.append( InvokerHelper.invokeMethod( this.values.get( i ), "asType", String.class ) );
+				result.append( this.values.get( i ).toString() );
 			else
 				result.append( (String)this.values.get( i ) );
 		}

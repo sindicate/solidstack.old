@@ -76,7 +76,7 @@ public class JavaScriptTemplate extends Template
 			TopLevel scope = new ImporterTopLevel(cx);
 			for( Map.Entry< String, ? > param : params.entrySet() )
 				scope.put( param.getKey(), scope, param.getValue() );
-			scope.put( "out", scope, writer );
+			scope.put( "out", scope, new JavaScriptConvertingWriter( writer ) );
 			cx.executeScriptWithContinuations( this.script, scope );
 		}
 		finally

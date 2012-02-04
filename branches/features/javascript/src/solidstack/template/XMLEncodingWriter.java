@@ -56,7 +56,7 @@ public class XMLEncodingWriter extends NoEncodingWriter
 	 * @throws IOException Whenever an IOException occurs.
 	 */
 	@Override
-	public void writeStringEncoded( String s ) throws IOException
+	public void writeEncoded( String s ) throws IOException
 	{
 		if( s == null )
 			return;
@@ -78,7 +78,7 @@ public class XMLEncodingWriter extends NoEncodingWriter
 			}
 			if( replace != null )
 			{
-				this.out.write( chars, start, i - start );
+				this.out.write( chars, start, i - start ); // TODO Should call the write() in the super
 				this.out.write( replace );
 				replace = null;
 				start = ++i;

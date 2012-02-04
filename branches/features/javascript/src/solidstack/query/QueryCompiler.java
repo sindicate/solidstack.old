@@ -16,7 +16,6 @@
 
 package solidstack.query;
 
-import groovy.lang.Closure;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +29,7 @@ import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
 
 /**
- * Translates a query template into a Groovy {@link Closure}.
+ * 
  * 
  * @author René M. de Bloois
  */

@@ -16,9 +16,6 @@
 
 package solidstack.query;
 
-import groovy.lang.Closure;
-import groovy.lang.GString;
-
 import java.lang.reflect.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -39,7 +36,6 @@ import org.slf4j.LoggerFactory;
 
 import solidstack.Assert;
 import solidstack.template.Template;
-import solidstack.template.TemplateException;
 
 
 /**
@@ -57,17 +53,6 @@ public class Query
 	private Map< String, ? > params;
 	private Connection connection;
 	private boolean flyWeight = true;
-
-	/**
-	 * Constructor.
-	 * 
-	 * @param sql A {@link GString} query.
-	 */
-	public Query( GString sql )
-	{
-		this.sql = new GStringWriter();
-		this.sql.write( sql );
-	}
 
 	/**
 	 * Constructor.
@@ -421,15 +406,6 @@ public class Query
 
 	static private void appendParameter( Object object, String name, StringBuilder buildSql, List< Object > pars )
 	{
-		// TODO while loop to support closure returning closure?
-		if( object instanceof Closure )
-		{
-			Closure closure = (Closure)object;
-			if( closure.getMaximumNumberOfParameters() > 0 )
-				throw new TemplateException( "Closures with parameters are not supported in expressions." );
-			object = closure.call();
-		}
-
 		buildSql.append( '?' );
 		if( object instanceof Collection<?> )
 		{
@@ -448,8 +424,6 @@ public class Query
 				pars.add( Array.get( object, j ) );
 			appendExtraQuestionMarks( buildSql, size - 1 );
 		}
-		else if( object instanceof GString )
-			pars.add( ( (GString)object ).toString() );
 		else
 			pars.add( object );
 	}

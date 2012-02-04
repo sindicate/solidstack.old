@@ -16,12 +16,8 @@
 
 package solidstack.template;
 
-import groovy.lang.Closure;
-
 import java.io.IOException;
 import java.io.Writer;
-
-import org.codehaus.groovy.runtime.InvokerHelper;
 
 /**
  * An encoding writer. This implementation does not encode.
@@ -47,47 +43,24 @@ public class NoEncodingWriter implements EncodingWriter
 		this.out = out;
 	}
 
-	public void write( Object o ) throws IOException
+	public void write( String s ) throws IOException
 	{
-		if( o != null )
-			if( o instanceof String )
-				writeString( (String)o );
-			else if( o instanceof Closure )
-			{
-				Closure c = (Closure)o;
-				int pars = c.getMaximumNumberOfParameters();
-				if( pars > 0 )
-					throw new TemplateException( "Closures with parameters are not supported in expressions." );
-				write( c.call() );
-			}
-			else
-				writeString( (String)InvokerHelper.invokeMethod( o, "asType", String.class ) );
+		if( s != null )
+			this.out.write( s );
 	}
 
-	public void writeEncoded( Object o ) throws IOException
+	public void writeEncoded( String s ) throws IOException
 	{
-		if( o != null )
-			if( o instanceof String )
-				writeStringEncoded( (String)o );
-			else if( o instanceof Closure )
-			{
-				Closure c = (Closure)o;
-				int pars = c.getMaximumNumberOfParameters();
-				if( pars > 0 )
-					throw new TemplateException( "Closures with parameters are not supported in expressions." );
-				writeEncoded( c.call() );
-			}
-			else
-				writeStringEncoded( (String)InvokerHelper.invokeMethod( o, "asType", String.class ) );
+		write( s );
 	}
 
-	protected void writeString( String s ) throws IOException
+	public void writeValue( Object o ) throws IOException
 	{
-		this.out.write( s );
+		throw new UnsupportedOperationException();
 	}
 
-	protected void writeStringEncoded( String s ) throws IOException
+	public boolean supportsValues()
 	{
-		writeString( s );
+		return false;
 	}
 }

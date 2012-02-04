@@ -31,7 +31,7 @@ public interface EncodingWriter
 	 * @param o The object to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
-	void write( Object o ) throws IOException;
+	void write( String o ) throws IOException;
 
 	/**
 	 * Write the object to the writer encoded.
@@ -39,5 +39,15 @@ public interface EncodingWriter
 	 * @param o The object to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
-	void writeEncoded( Object o ) throws IOException;
+	void writeEncoded( String s ) throws IOException;
+
+	/**
+	 * Write the object to the writer encoded.
+	 * 
+	 * @param o The object to write.
+	 * @throws IOException Whenever an IOException occurs.
+	 */
+	void writeValue( Object o ) throws IOException;
+
+	boolean supportsValues();
 }

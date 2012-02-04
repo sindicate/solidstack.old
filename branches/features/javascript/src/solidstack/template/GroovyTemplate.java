@@ -66,7 +66,7 @@ public class GroovyTemplate extends Template
 	{
 		Closure template = (Closure)this.closure.clone();
 		template.setDelegate( params );
-		template.call( writer );
+		template.call( new GroovyConvertingWriter( writer ) );
 	}
 
 	/**
