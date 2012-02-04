@@ -39,6 +39,7 @@ import solidbase.io.Resource;
 import solidbase.io.ResourceFactory;
 import solidbase.io.StringLineReader;
 import solidstack.template.ParseException;
+import solidstack.template.Template;
 import solidstack.template.Util;
 import solidstack.util.Par;
 
@@ -85,7 +86,7 @@ public class Basic
 	public void testTransform() throws Exception
 	{
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/test.gsql" );
-		QueryTemplate template = new QueryCompiler().translate( "p", "c", new BOMDetectingLineReader( resource ) );
+		Template template = new QueryCompiler().translate( "p", "c", new BOMDetectingLineReader( resource ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
 		Assert.assertEquals( template.getSource(), "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{out-> // Test if the import at the bottom works, and this comment too of course\n" +
@@ -168,16 +169,16 @@ public class Basic
 	@Test
 	public void testNewlinesWithinDirective() throws Exception
 	{
-		LineReader reader = new StringLineReader( "<%@ query\n" +
-				"import=\"uk.co.tntpost.umbrella.common.utils.QueryUtils\"\n" +
-				"import=\"uk.co.tntpost.umbrella.common.enums.*\"\n" +
+		LineReader reader = new StringLineReader( "<%@ template\n" +
+				"import=\"common.utils.QueryUtils\"\n" +
+				"import=\"common.enums.*\"\n" +
 				"%>\n" +
 				"TEST" );
 
-		QueryTemplate template = new QueryCompiler().translate( "p", "c", reader );
+		Template template = new QueryCompiler().translate( "p", "c", reader );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		Assert.assertEquals( template.getSource(), "package p;import uk.co.tntpost.umbrella.common.utils.QueryUtils;import uk.co.tntpost.umbrella.common.enums.*;class c{Closure getClosure(){return{out->\n" +
+		Assert.assertEquals( template.getSource(), "package p;import common.utils.QueryUtils;import common.enums.*;class c{Closure getClosure(){return{out->\n" +
 				"\n" +
 				"\n" +
 				"\n" +
@@ -221,14 +222,14 @@ public class Basic
 	}
 
 	// For testing purposes
-	static QueryTemplate translate( String text )
+	static Template translate( String text )
 	{
 		return new QueryCompiler().translate( "p", "c", new StringLineReader( text ) );
 	}
 
 	private void translateTest( String input, String groovy, String output )
 	{
-		QueryTemplate template = translate( input );
+		Template template = translate( input );
 		String g = template.getSource();
 //		System.out.println( g );
 		Assert.assertEquals( g, this.start + groovy + this.end );
@@ -242,7 +243,7 @@ public class Basic
 	{
 		try
 		{
-			QueryTemplate template = translate( "X${\"te\"xt\"}X" );
+			Template template = translate( "X${\"te\"xt\"}X" );
 			System.out.println( template.getSource() );
 			assert false;
 		}

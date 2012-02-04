@@ -19,9 +19,12 @@ package solidstack.query;
 import groovy.lang.Closure;
 import java.util.ArrayList;
 import java.util.List;
-import solidbase.io.LineReader;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import solidstack.Assert;
-import solidstack.template.JSPLikeTemplateParser;
+import solidstack.template.GroovyTemplate;
 import solidstack.template.TemplateCompiler;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
@@ -33,17 +36,21 @@ import solidstack.template.JSPLikeTemplateParser.ParseEvent;
  */
 public class QueryCompiler extends TemplateCompiler
 {
+	static private Logger log = LoggerFactory.getLogger( QueryCompiler.class );
+
 	@Override
-	public QueryTemplate translate( String pkg, String cls, LineReader reader )
+	protected GroovyTemplate toGroovy( String pkg, String cls, List< ParseEvent > events, List< Directive > directives, List< String > imports )
 	{
-		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( reader );
-		StringBuilder buffer = new StringBuilder();
+		StringBuilder buffer = new StringBuilder( 1024 );
+		buffer.append( "package " ).append( pkg ).append( ";" );
+		if( imports != null )
+			for( String imprt : imports )
+				buffer.append( "import " ).append( imprt ).append( ';' );
+		buffer.append( "class " ).append( cls );
+		buffer.append( "{Closure getClosure(){return{out->" );
+
 		boolean text = false;
-		List< String > imports = null;
-		List< Directive > directives = null;
-		loop: while( true )
-		{
-			ParseEvent event = parser.next();
+		for( ParseEvent event : events )
 			switch( event.getEvent() )
 			{
 				case TEXT:
@@ -92,22 +99,15 @@ public class QueryCompiler extends TemplateCompiler
 					buffer.append( event.getData() );
 					break;
 				case EOF:
-					if( text )
-						buffer.append( "\"\"\");" );
-					break loop;
 				default:
 					Assert.fail( "Unexpected event " + event.getEvent() );
 			}
-		}
-		StringBuilder prelude = new StringBuilder( 256 );
-		prelude.append( "package " ).append( pkg ).append( ";" );
-		if( imports != null )
-			for( String imprt : imports )
-				prelude.append( "import " ).append( imprt ).append( ';' );
-		prelude.append( "class " ).append( cls );
-		prelude.append( "{Closure getClosure(){return{out->" );
-		buffer.insert( 0, prelude );
+		if( text )
+			buffer.append( "\"\"\");" );
 		buffer.append( "}}}" );
-		return new QueryTemplate( buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
+
+		GroovyTemplate template = new GroovyTemplate( buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
+		log.trace( "Generated Groovy:\n{}", template.getSource() );
+		return template;
 	}
 }

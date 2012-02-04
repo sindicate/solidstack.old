@@ -16,8 +16,6 @@
 
 package solidstack.query;
 
-import groovy.lang.Closure;
-
 import java.util.Map;
 
 import solidstack.template.TemplateManager;
@@ -51,33 +49,33 @@ import solidstack.template.TemplateManager;
  * 
  * @author René M. de Bloois
  */
-public class QueryManager
+public class QueryManager extends TemplateManager
 {
-	/**
-	 * The {@link TemplateManager} that is used to manage the templates for the QueryManager.
-	 */
-	protected InternalManager templateManager = new InternalManager();
+//	/**
+//	 * The {@link TemplateManager} that is used to manage the templates for the QueryManager.
+//	 */
+//	protected InternalManager templateManager = new InternalManager();
 
 
-	/**
-	 * Configures the package which is the root of the template files.
-	 * 
-	 * @param pkg The package.
-	 */
-	public void setPackage( String pkg )
-	{
-		this.templateManager.setPackage( pkg );
-	}
+//	/**
+//	 * Configures the package which is the root of the template files.
+//	 *
+//	 * @param pkg The package.
+//	 */
+//	public void setPackage( String pkg )
+//	{
+//		this.templateManager.setPackage( pkg );
+//	}
 
-	/**
-	 * Enable or disable reloading. When enabled, the lastModified time stamp of the file is used to check if it needs reloading.
-	 * 
-	 * @param reloading When true, the file is reloaded when updated.
-	 */
-	public void setReloading( boolean reloading )
-	{
-		this.templateManager.setReloading( reloading );
-	}
+//	/**
+//	 * Enable or disable reloading. When enabled, the lastModified time stamp of the file is used to check if it needs reloading.
+//	 *
+//	 * @param reloading When true, the file is reloaded when updated.
+//	 */
+//	public void setReloading( boolean reloading )
+//	{
+//		this.templateManager.setReloading( reloading );
+//	}
 
 	/**
 	 * Binds the arguments and the template and returns the {@link Query}.
@@ -88,30 +86,29 @@ public class QueryManager
 	 */
 	public Query bind( String path, Map< String, ? > args )
 	{
-		QueryTemplate template = this.templateManager.getTemplate( path );
-		Query query = new Query( (Closure)template.getClosure().clone() );
+		Query query = new Query( getTemplate( path + ".gsql" ) );
 		query.bind( args );
 		return query;
 	}
 
-	/**
-	 * This is a customized TemplateManager that uses the {@link QueryCompiler} instead of the default template
-	 * compiler. Also, query templates use the .gsql extension which is automatically added to the template name.
-	 * 
-	 * @author René de Bloois
-	 */
-	static protected class InternalManager extends TemplateManager
-	{
-		@Override
-		protected QueryCompiler getCompiler()
-		{
-			return new QueryCompiler();
-		}
-
-		@Override
-		public QueryTemplate getTemplate( String path )
-		{
-			return (QueryTemplate)super.getTemplate( path + ".gsql" );
-		}
-	}
+//	/**
+//	 * This is a customized TemplateManager that uses the {@link QueryCompiler} instead of the default template
+//	 * compiler. Also, query templates use the .gsql extension which is automatically added to the template name.
+//	 *
+//	 * @author René de Bloois
+//	 */
+//	static protected class InternalManager extends TemplateManager
+//	{
+//		@Override
+//		protected QueryCompiler getCompiler()
+//		{
+//			return new QueryCompiler();
+//		}
+//
+//		@Override
+//		public QueryTemplate getTemplate( String path )
+//		{
+//			return new QueryTemplate( super.getTemplate( path + ".gsql" ) );
+//		}
+//	}
 }

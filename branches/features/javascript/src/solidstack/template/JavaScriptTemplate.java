@@ -16,7 +16,6 @@
 
 package solidstack.template;
 
-import java.io.Writer;
 import java.util.Map;
 
 import org.mozilla.javascript.Context;
@@ -54,7 +53,7 @@ public class JavaScriptTemplate extends Template
 	 * @param writer The result of applying this template is written to this writer.
 	 */
 	@Override
-	public void apply( Map< String, ? > params, Writer writer )
+	public void apply( Map< String, ? > params, EncodingWriter writer )
 	{
 		Context cx = Context.enter();
 		try
@@ -62,7 +61,7 @@ public class JavaScriptTemplate extends Template
 			TopLevel scope = new ImporterTopLevel(cx);
 			for( Map.Entry< String, ? > param : params.entrySet() )
 				scope.put( param.getKey(), scope, param.getValue() );
-			scope.put( "out", scope, createEncodingWriter( writer ) );
+			scope.put( "out", scope, writer );
 			cx.executeScriptWithContinuations( this.script, scope );
 		}
 		finally

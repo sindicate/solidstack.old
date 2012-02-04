@@ -16,26 +16,15 @@
 
 package solidstack.template;
 
-import groovy.lang.Closure;
-
 import java.io.IOException;
 
 /**
- * An encoding writer. Adds a {@link #writeEncoded(String)} method. This implementation does not encode.
+ * An encoding writer. No multi methods here, cause some scripting languages can't handle them, especially with null parameters.
  * 
  * @author René M. de Bloois
- *
  */
 public interface EncodingWriter
 {
-	/**
-	 * Write the string to the writer unencoded.
-	 * 
-	 * @param s The string to write.
-	 * @throws IOException Whenever an IOException occurs.
-	 */
-	void write( String s ) throws IOException;
-
 	/**
 	 * Write the object to the writer unencoded.
 	 * 
@@ -45,34 +34,10 @@ public interface EncodingWriter
 	void write( Object o ) throws IOException;
 
 	/**
-	 * Write the output of the closure to the writer unencoded.
-	 * 
-	 * @param c The closure.
-	 * @throws IOException Whenever an IOException occurs.
-	 */
-	void write( Closure c ) throws IOException;
-
-	/**
-	 * Write the specified string to the writer encoded.
-	 * 
-	 * @param s The string to write.
-	 * @throws IOException Whenever an IOException occurs.
-	 */
-	void writeEncoded( String s ) throws IOException;
-
-	/**
 	 * Write the object to the writer encoded.
 	 * 
 	 * @param o The object to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
 	void writeEncoded( Object o ) throws IOException;
-
-	/**
-	 * Write the output of the closure to the writer encoded.
-	 * 
-	 * @param c The closure.
-	 * @throws IOException Whenever an IOException occurs.
-	 */
-	void writeEncoded( Closure c ) throws IOException;
 }

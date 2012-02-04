@@ -51,11 +51,11 @@ public class GroovyTemplate extends Template
 	 * @param writer The result of applying this template is written to this writer.
 	 */
 	@Override
-	public void apply( Map< String, ? > params, Writer writer )
+	public void apply( Map< String, ? > params, EncodingWriter writer )
 	{
 		Closure template = (Closure)this.template.clone();
 		template.setDelegate( params );
-		template.call( createEncodingWriter( writer ) );
+		template.call( writer );
 	}
 
 	/**
@@ -73,7 +73,7 @@ public class GroovyTemplate extends Template
 	 * 
 	 * @param closure The Groovy closure.
 	 */
-	protected void setClosure( Closure closure )
+	public void setClosure( Closure closure ) // TODO Remove public
 	{
 		this.template = closure;
 	}

@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import solidstack.Assert;
+import solidstack.template.Template;
 import solidstack.template.TemplateException;
 
 
@@ -52,7 +53,7 @@ public class Query
 	static  private Logger log = LoggerFactory.getLogger( Query.class );
 
 	private GStringWriter sql;
-	private Closure closure;
+	private Template template;
 	private Map< String, ? > params;
 	private Connection connection;
 	private boolean flyWeight = true;
@@ -71,11 +72,11 @@ public class Query
 	/**
 	 * Constructor.
 	 * 
-	 * @param closure A closure that returns a {@link GString} when called.
+	 * @param template The template for the query.
 	 */
-	public Query( Closure closure )
+	public Query( Template template )
 	{
-		this.closure = closure;
+		this.template = template;
 	}
 
 	/**
@@ -456,11 +457,10 @@ public class Query
 	String getPreparedSQL( List< Object > pars )
 	{
 		GStringWriter gsql;
-		if( this.closure != null )
+		if( this.template != null )
 		{
-			this.closure.setDelegate( this.params );
 			gsql = new GStringWriter();
-			this.closure.call( gsql );
+			this.template.apply( this.params, gsql );
 		}
 		else
 			gsql = this.sql;

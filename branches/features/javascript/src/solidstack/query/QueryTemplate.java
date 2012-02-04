@@ -16,9 +16,7 @@
 
 package solidstack.query;
 
-import groovy.lang.Closure;
-import solidstack.template.GroovyTemplate;
-import solidstack.template.JSPLikeTemplateParser.Directive;
+import solidstack.template.Template;
 
 
 /**
@@ -26,28 +24,31 @@ import solidstack.template.JSPLikeTemplateParser.Directive;
  * 
  * @author René M. de Bloois
  */
-public class QueryTemplate extends GroovyTemplate // TODO Must be Template
+// TODO Currently not used
+public class QueryTemplate
 {
+	private Template template;
+
 	/**
 	 * Constructor.
 	 * 
 	 * @param source The source code of the template. This is the template translated to the source code of the desired language.
 	 * @param directives The directives found in the template text.
 	 */
-	public QueryTemplate( String source, Directive[] directives )
+	public QueryTemplate( Template template )
 	{
-		super( source, directives );
+		this.template = template;
 	}
+//
+//	@Override
+//	protected Closure getClosure()
+//	{
+//		return super.getClosure();
+//	}
 
-	@Override
-	protected Closure getClosure()
-	{
-		return super.getClosure();
-	}
-
-	@Override
-	protected String getSource()
-	{
-		return super.getSource();
-	}
+//	@Override
+//	protected String getSource()
+//	{
+//		return super.getSource();
+//	}
 }

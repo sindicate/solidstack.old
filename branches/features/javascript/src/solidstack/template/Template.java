@@ -68,7 +68,10 @@ abstract public class Template
 	 * @param params The parameters to be applied.
 	 * @param writer The result of applying this template is written to this writer.
 	 */
-	abstract public void apply( Map< String, ? > params, Writer writer );
+	public void apply( Map< String, ? > params, Writer writer )
+	{
+		apply( params, createEncodingWriter( writer ) );
+	}
 
 	/**
 	 * Applies this template and writes the result to an OutputStream. The character set used is the one configured in
@@ -110,6 +113,8 @@ abstract public class Template
 		apply( params, writer );
 		return writer.toString();
 	}
+
+	abstract public void apply( Map< String, ? > params, EncodingWriter writer );
 
 	/**
 	 * Returns the EncodingWriter for the configured MIME type.
@@ -163,7 +168,7 @@ abstract public class Template
 	 * 
 	 * @return The source code for the template.
 	 */
-	protected String getSource()
+	public String getSource() // TODO Remove public
 	{
 		return this.source;
 	}

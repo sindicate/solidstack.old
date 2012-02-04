@@ -18,4 +18,4 @@ AND TABLENAME = ${{->name}}
 		<% if( names ) { %>
 AND TABLENAME IN (${names})
 		<% } %>
-<%@ query import = "java.sql.Timestamp" %>
+<%@ template import = "java.sql.Timestamp" %>

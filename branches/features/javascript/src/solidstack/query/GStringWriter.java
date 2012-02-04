@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.codehaus.groovy.runtime.InvokerHelper;
 
+import solidstack.template.EncodingWriter;
 import solidstack.template.TemplateException;
 
 /**
@@ -32,17 +33,39 @@ import solidstack.template.TemplateException;
  * 
  * @author René M. de Bloois
  */
-public class GStringWriter
+public class GStringWriter implements EncodingWriter
 {
 	private List< Object > values = new ArrayList< Object >();
 	private BitSet isValue = new BitSet();
 
-	/**
-	 * Append a {@link String}.
-	 * 
-	 * @param string The string to append.
-	 */
-	public void write( String string )
+	//@Override
+	public void write( Object o )
+	{
+		if( o != null )
+			if( o instanceof String )
+				writeString( (String)o );
+			else if( o instanceof GString )
+				writeGString( (GString)o );
+			else if( o instanceof Closure )
+			{
+				Closure c = (Closure)o;
+				int pars = c.getMaximumNumberOfParameters();
+				if( pars > 0 )
+					throw new TemplateException( "Closures with parameters are not supported in expressions." );
+				write( c.call() );
+			}
+			else
+				writeString( (String)InvokerHelper.invokeMethod( o, "asType", String.class ) );
+	}
+
+	//@Override
+	public void writeEncoded( Object o )
+	{
+		this.isValue.set( this.values.size() );
+		this.values.add( o );
+	}
+
+	protected void writeString( String string )
 	{
 		if( string != null && string.length() > 0 )
 			this.values.add( string );
@@ -53,7 +76,7 @@ public class GStringWriter
 	 * 
 	 * @param gString The {@link GString} to append.
 	 */
-	public void write( GString gString )
+	protected void writeGString( GString gString )
 	{
 		String[] strings = gString.getStrings();
 		Object[] values = gString.getValues();
@@ -62,38 +85,10 @@ public class GStringWriter
 
 		for( int i = 0; i < values.length; i++ )
 		{
-			write( strings[ i ] );
-			this.isValue.set( this.values.size() );
-			this.values.add( values[ i ] );
+			writeString( strings[ i ] );
+			writeEncoded( values[ i ] );
 		}
-		write( strings[ values.length ] );
-	}
-
-	/**
-	 * Append an object as a string. Groovy logic is used to convert the object to a string.
-	 * 
-	 * @param object The object to append.
-	 */
-	public void write( Object object )
-	{
-		if( object != null )
-			write( InvokerHelper.invokeMethod( object, "asType", String.class ) );
-	}
-
-	/**
-	 * Write a closure. Only closures with no parameters are allowed. The closure is called an the result is written.
-	 * 
-	 * @param c The closure.
-	 */
-	public void write( Closure c )
-	{
-		if( c != null )
-		{
-			int pars = c.getMaximumNumberOfParameters();
-			if( pars > 0 )
-				throw new TemplateException( "Closures with parameters are not supported in expressions." );
-			write( c.call() );
-		}
+		writeString( strings[ values.length ] );
 	}
 
 	/**
