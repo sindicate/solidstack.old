@@ -221,7 +221,7 @@ public class Basic
 //		System.out.println( g );
 		Assert.assertEquals( g, this.start + groovy + this.end );
 
-		template.compile( "c" );
+		template.compile();
 		String result = execute( template, this.parameters );
 //		System.out.println( result );
 		Assert.assertEquals( result, output );
