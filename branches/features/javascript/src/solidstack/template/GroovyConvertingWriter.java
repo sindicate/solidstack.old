@@ -81,39 +81,26 @@ public class GroovyConvertingWriter implements ConvertingWriter
 
 	public void writeEncoded( Object o ) throws IOException
 	{
-		if( this.writer.supportsValues() )
+		if( o == null )
+			this.writer.writeEncoded( null );
+		else if( o instanceof String )
+			this.writer.writeEncoded( o );
+		else if( o instanceof GString )
+			this.writer.writeEncoded( o.toString() );
+		else if( o instanceof Closure )
 		{
-			if( o instanceof GString )
-				this.writer.writeValue( o.toString() );
-			else if( o instanceof Closure )
-			{
-				Closure c = (Closure)o;
-				int pars = c.getMaximumNumberOfParameters();
-				if( pars > 0 )
-					throw new TemplateException( "Closures with parameters are not supported in expressions." );
-				this.writer.writeValue( c.call() );
-			}
-			else
-				this.writer.writeValue( o );
+			Closure c = (Closure)o;
+			int pars = c.getMaximumNumberOfParameters();
+			if( pars > 0 )
+				throw new TemplateException( "Closures with parameters are not supported in expressions." );
+			writeEncoded( c.call() ); // May be recursive
 		}
 		else
 		{
-			if( o == null )
-				this.writer.writeEncoded( null );
-			else if( o instanceof String )
-				this.writer.writeEncoded( (String)o );
-			else if( o instanceof GString )
-				this.writer.writeEncoded( o.toString() );
-			else if( o instanceof Closure )
-			{
-				Closure c = (Closure)o;
-				int pars = c.getMaximumNumberOfParameters();
-				if( pars > 0 )
-					throw new TemplateException( "Closures with parameters are not supported in expressions." );
-				writeEncoded( c.call() ); // May be recursive
-			}
+			if( this.writer.stringsOnly() )
+				this.writer.writeEncoded( InvokerHelper.invokeMethod( o, "asType", String.class ) );
 			else
-				this.writer.writeEncoded( (String)InvokerHelper.invokeMethod( o, "asType", String.class ) );
+				this.writer.writeEncoded( o );
 		}
 	}
 }

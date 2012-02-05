@@ -18,8 +18,6 @@ package solidstack.template;
 
 import java.io.IOException;
 
-import solidstack.query.GStringWriter;
-
 
 /**
  * A ConvertingWriter that converts JavaScript specific data types to Java data types.
@@ -53,14 +51,14 @@ public class JavaScriptConvertingWriter implements ConvertingWriter
 
 	public void writeEncoded( Object o ) throws IOException
 	{
-		if( this.writer.supportsValues() )
-			( (GStringWriter)this.writer ).writeValue( o );
+		if( o == null )
+			this.writer.writeEncoded( null );
 		else
 		{
-			if( o == null )
-				this.writer.writeEncoded( null );
-			else
+			if( this.writer.stringsOnly() )
 				this.writer.writeEncoded( o.toString() );
+			else
+				this.writer.writeEncoded( o );
 		}
 	}
 }

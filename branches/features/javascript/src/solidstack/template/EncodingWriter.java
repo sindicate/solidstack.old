@@ -39,20 +39,12 @@ public interface EncodingWriter
 	 * @param s The string to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
-	void writeEncoded( String s ) throws IOException;
-
-	/**
-	 * Write the value to the writer.
-	 * 
-	 * @param value The value to write.
-	 * @throws IOException Whenever an IOException occurs.
-	 */
-	void writeValue( Object value ) throws IOException;
+	void writeEncoded( Object value ) throws IOException;
 
 	/**
 	 * Indicates that the writes accepts values that are kept separate from the strings.
 	 * 
 	 * @return True when the writer accepts values.
 	 */
-	boolean supportsValues();
+	boolean stringsOnly();
 }

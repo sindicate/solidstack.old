@@ -42,21 +42,15 @@ public class GStringWriter implements EncodingWriter
 	}
 
 	//@Override
-	public void writeEncoded( String s ) throws IOException
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	//@Override
-	public void writeValue( Object o )
+	public void writeEncoded( Object o ) throws IOException
 	{
 		this.isValue.set( this.values.size() );
 		this.values.add( o );
 	}
 
-	public boolean supportsValues()
+	public boolean stringsOnly()
 	{
-		return true;
+		return false;
 	}
 
 	/**

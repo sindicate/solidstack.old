@@ -48,18 +48,13 @@ public class NoEncodingWriter implements EncodingWriter
 			this.out.write( s );
 	}
 
-	public void writeEncoded( String s ) throws IOException
+	public void writeEncoded( Object o ) throws IOException
 	{
-		write( s );
+		write( (String)o );
 	}
 
-	public void writeValue( Object o ) throws IOException
+	public boolean stringsOnly()
 	{
-		throw new UnsupportedOperationException();
-	}
-
-	public boolean supportsValues()
-	{
-		return false;
+		return true;
 	}
 }
