@@ -35,7 +35,7 @@ import solidbase.io.ResourceFactory;
 import solidbase.io.StringLineReader;
 import solidstack.template.ParseException;
 import solidstack.template.Template;
-import solidstack.util.Par;
+import solidstack.util.Pars;
 
 
 public class Basic
@@ -49,7 +49,7 @@ public class Basic
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query" );
 
-		Query query = queries.bind( "test", Par.EMPTY );
+		Query query = queries.bind( "test", Pars.EMPTY );
 		List< Map< String, Object > > result = query.listOfMaps( connection );
 		for( String name : result.get( 0 ).keySet() )
 			System.out.println( "Column: " + name );
@@ -57,21 +57,57 @@ public class Basic
 			System.out.println( "Table: " + row.get( "TABLEname" ) );
 		assert result.size() == 22;
 
-		query = queries.bind( "test", new Par( "prefix", "SYST" ) );
+		query = queries.bind( "test", new Pars( "prefix", "SYST" ) );
 		result = query.listOfMaps( connection );
 		assert result.size() == 3;
 
-		query = queries.bind( "test", new Par().set( "name", "SYSTABLES" ) );
+		query = queries.bind( "test", new Pars().set( "name", "SYSTABLES" ) );
 		List< Object[] > array = query.listOfArrays( connection );
 		assert array.size() == 1;
 
-		query = queries.bind( "test", new Par(
+		query = queries.bind( "test", new Pars(
 				"name", "SYSTABLES",
 				"prefix", "SYST" ) );
 		result = query.listOfMaps( connection );
 		assert result.size() == 1;
 
-		query = queries.bind( "test", new Par().set( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } ) );
+		query = queries.bind( "test", new Pars().set( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } ) );
+		result = query.listOfMaps( connection );
+		assert result.size() == 2;
+	}
+
+	@Test(groups="new")
+	public void testBasicJS() throws SQLException, ClassNotFoundException
+	{
+		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
+		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
+
+		QueryManager queries = new QueryManager();
+		queries.setPackage( "solidstack.query" );
+
+		Pars pars = new Pars( "prefix", null, "name", null, "names", null );
+
+		Query query = queries.bind( "testjs", pars );
+		List< Map< String, Object > > result = query.listOfMaps( connection );
+		for( String name : result.get( 0 ).keySet() )
+			System.out.println( "Column: " + name );
+		for( Map< String, Object > row : result )
+			System.out.println( "Table: " + row.get( "TABLEname" ) );
+		assert result.size() == 22;
+
+		query = queries.bind( "testjs", pars.set( "prefix", "SYST" ) );
+		result = query.listOfMaps( connection );
+		assert result.size() == 3;
+
+		query = queries.bind( "testjs", pars.set( "prefix", null, "name", "SYSTABLES" ) );
+		List< Object[] > array = query.listOfArrays( connection );
+		assert array.size() == 1;
+
+		query = queries.bind( "testjs", pars.set( "prefix", "SYST" ) );
+		result = query.listOfMaps( connection );
+		assert result.size() == 1;
+
+		query = queries.bind( "testjs", new Pars().set( "prefix", null, "name", null, "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } ) );
 		result = query.listOfMaps( connection );
 		assert result.size() == 2;
 	}
@@ -114,6 +150,55 @@ public class Basic
 		params.put( "prefix", "SYST" );
 		params.put( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } );
 		Query query = queries.bind( "test", params );
+		List< Object > pars = new ArrayList< Object >();
+		String sql = query.getPreparedSQL( pars );
+
+		assert sql.equals( "SELECT *\n" +
+				"FROM SYS.SYSTABLES\n" +
+				"WHERE 1 = 1\n" +
+				"AND TABLENAME LIKE 'SYST%'\n" +
+				"AND TABLENAME IN (?,?)\n" );
+
+//		Writer out = new OutputStreamWriter( new FileOutputStream( "test.out" ), "UTF-8" );
+//		out.write( sql );
+//		out.close();
+	}
+
+	@Test(groups="new")
+	public void testTransformJS() throws Exception
+	{
+		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/testjs.gsql" );
+		Template template = new QueryCompiler().translate( "p", "c", new BOMDetectingLineReader( resource ) );
+//		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
+		Assert.assertEquals( template.getSource(), "importClass(Packages.java.sql.Timestamp);\n" +
+				" // Test if the import at the bottom works, and this comment too of course\n" +
+				"new Timestamp( new java.util.Date().time ) \n" +
+				";out.write(\"SELECT *\\n\\\n" +
+				"FROM SYS.SYSTABLES\\n\\\n" +
+				"\");\n" +
+				"\n" +
+				"\n" +
+				"\n" +
+				"out.write(\"WHERE 1 = 1\\n\\\n" +
+				"\"); if( prefix ) { \n" +
+				";out.write(\"AND TABLENAME LIKE '\");out.write( prefix );out.write(\"%'\\n\\\n" +
+				"\"); } \n" +
+				"; if( name ) { \n" +
+				";out.write(\"AND TABLENAME = \");out.writeEncoded(name);out.write(\"\\n\\\n" +
+				"\"); } \n" +
+				"; if( names ) { \n" +
+				";out.write(\"AND TABLENAME IN (\");out.writeEncoded(names);out.write(\")\\n\\\n" +
+				"\"); } \n" +
+				";\n" );
+
+		QueryManager queries = new QueryManager();
+		queries.setPackage( "solidstack.query" );
+
+		Map< String, Object > params = new HashMap< String, Object >();
+		params.put( "prefix", "SYST" );
+		params.put( "name", null );
+		params.put( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } );
+		Query query = queries.bind( "testjs", params );
 		List< Object > pars = new ArrayList< Object >();
 		String sql = query.getPreparedSQL( pars );
 

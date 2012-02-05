@@ -26,7 +26,7 @@ import java.util.Map;
  * 
  * @author René de Bloois
  */
-public class Par extends HashMap< String, Object >
+public class Pars extends HashMap< String, Object >
 {
 	/**
 	 * An empty map.
@@ -39,7 +39,7 @@ public class Par extends HashMap< String, Object >
 	 * @param name The name of the parameter.
 	 * @param value The value of the parameter.
 	 */
-	public Par( String name, Object value )
+	public Pars( String name, Object value )
 	{
 		set( name, value );
 	}
@@ -49,7 +49,7 @@ public class Par extends HashMap< String, Object >
 	 * 
 	 * @param nameValue Pairs of names and values.
 	 */
-	public Par( Object... nameValue )
+	public Pars( Object... nameValue )
 	{
 		set( nameValue );
 	}
@@ -61,7 +61,7 @@ public class Par extends HashMap< String, Object >
 	 * @param value The value of the parameter.
 	 * @return This object so that you can chain set calls.
 	 */
-	public Par set( String name, Object value )
+	public Pars set( String name, Object value )
 	{
 		put( name, value );
 		return this;
@@ -73,7 +73,7 @@ public class Par extends HashMap< String, Object >
 	 * @param nameValue Pairs of names and values.
 	 * @return This object so that you can chain set calls.
 	 */
-	public Par set( Object... nameValue )
+	public Pars set( Object... nameValue )
 	{
 		int len = nameValue.length;
 		if( len % 2 != 0 )

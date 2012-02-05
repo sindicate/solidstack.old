@@ -100,7 +100,7 @@ public class JavascriptTest
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/template/testjs.gtext" );
 		Template template = new TemplateCompiler().translate( "p", "c", new BOMDetectingLineReader( resource ) );
 		System.out.println( template.getSource().replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
-		Assert.assertEquals( template.getSource(), "importClass(Packages.java.sql.Timestamp);\n" +
+		Assert.assertEquals( template.getSource(), "importClass(Packages.java.sql.Timestamp);importPackage(Packages.java.util);\n" +
 				" // Test if the import at the bottom works, and this comment too of course\n" +
 				"new Timestamp( new java.util.Date().time ) \n" +
 				";out.write(\"SELECT *\\n\\\n" +

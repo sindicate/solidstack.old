@@ -34,7 +34,7 @@ import solidbase.io.ResourceFactory;
 import solidbase.io.StringLineReader;
 import solidstack.template.JSPLikeTemplateParser.EVENT;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
-import solidstack.util.Par;
+import solidstack.util.Pars;
 
 
 public class Basic
@@ -46,7 +46,7 @@ public class Basic
 		templates.setPackage( "solidstack.template" );
 
 		Template template = templates.getTemplate( "test.gtext" );
-		String result = template.apply( new Par( "names", new String[] { "name1", "name2" } ) );
+		String result = template.apply( new Pars( "names", new String[] { "name1", "name2" } ) );
 		Assert.assertEquals( result, "SELECT *\n" +
 				"FROM SYS.SYSTABLES\n" +
 				"WHERE 1 = 1\n" +

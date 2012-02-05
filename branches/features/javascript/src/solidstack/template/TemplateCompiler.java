@@ -256,9 +256,14 @@ public class TemplateCompiler
 	protected JavaScriptTemplate toJavaScript( String cls, List< ParseEvent > events, List< Directive > directives, List< String > imports )
 	{
 		StringBuilder buffer = new StringBuilder( 1024 );
+
+		// TODO Should imports be trimmed?
 		if( imports != null )
 			for( String imprt : imports )
-				buffer.append( "importClass(Packages." ).append( imprt ).append( ");" );
+				if( imprt.endsWith( ".*" ) )
+					buffer.append( "importPackage(Packages." ).append( imprt.substring( 0, imprt.length() - 2 ) ).append( ");" );
+				else
+					buffer.append( "importClass(Packages." ).append( imprt ).append( ");" );
 
 		boolean text = false;
 		for( ParseEvent event : events )
