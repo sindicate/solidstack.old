@@ -16,7 +16,6 @@
 
 package solidstack.query;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -60,43 +59,38 @@ public class QueryCompiler extends TemplateCompiler
 					text = true;
 					writeString( buffer, event.getData() );
 					break;
+
 				case SCRIPT:
 					if( text )
 						buffer.append( "\"\"\");" );
 					text = false;
 					buffer.append( event.getData() ).append( ';' );
 					break;
+
 				case EXPRESSION:
 					if( text )
 						buffer.append( "\"\"\");" );
 					text = false;
 					buffer.append( "out.write(" ).append( event.getData() ).append( ");" );
 					break;
+
 				case EXPRESSION2:
 					if( !text )
 						buffer.append( "out.write(\"\"\"" );
 					text = true;
 					buffer.append( "${" ).append( event.getData() ).append( '}' );
 					break;
-				case DIRECTIVE:
-					if( directives == null )
-						directives = new ArrayList< Directive >();
-					directives.addAll( event.getDirectives() );
 
-					for( Directive directive : event.getDirectives() )
-						if( ( directive.getName().equals( "template" ) || directive.getName().equals( "query" ) ) && directive.getAttribute().equals( "import" ) )
-						{
-							if( imports == null )
-								imports = new ArrayList< String >();
-							imports.add( directive.getValue() );
-						}
-					//$FALL-THROUGH$
+				case DIRECTIVE:
 				case COMMENT:
+					if( event.getData().length() == 0 )
+						break;
 					if( text )
 						buffer.append( "\"\"\");" );
 					text = false;
 					buffer.append( event.getData() );
 					break;
+
 				case EOF:
 				default:
 					Assert.fail( "Unexpected event " + event.getEvent() );

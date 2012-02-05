@@ -106,15 +106,17 @@ public class Basic
 	public void testNewlinesWithinDirective() throws Exception
 	{
 		LineReader reader = new StringLineReader( "<%@ template\n" +
-				"import=\"uk.co.tntpost.umbrella.common.utils.QueryUtils\"\n" +
-				"import=\"uk.co.tntpost.umbrella.common.enums.*\"\n" +
+				"import=\"common.utils.QueryUtils\"\n" +
+				"import=\"common.enums.*\"\n" +
+				"language=\"groovy\"\n" +
 				"%>\n" +
 				"TEST" );
 
 		Template template = new TemplateCompiler().translate( "p", "c", reader );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		Assert.assertEquals( template.getSource(), "package p;import uk.co.tntpost.umbrella.common.utils.QueryUtils;import uk.co.tntpost.umbrella.common.enums.*;class c{Closure getClosure(){return{out->\n" +
+		Assert.assertEquals( template.getSource(), "package p;import common.utils.QueryUtils;import common.enums.*;class c{Closure getClosure(){return{out->\n" +
+				"\n" +
 				"\n" +
 				"\n" +
 				"\n" +

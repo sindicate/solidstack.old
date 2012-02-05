@@ -119,7 +119,8 @@ public class Basic
 		Template template = new QueryCompiler().translate( "p", "c", new BOMDetectingLineReader( resource ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		Assert.assertEquals( template.getSource(), "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{out-> // Test if the import at the bottom works, and this comment too of course\n" +
+		Assert.assertEquals( template.getSource(), "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{out->\n" +
+				" // Test if the import at the bottom works, and this comment too of course\n" +
 				"new Timestamp( new Date().time ) \n" +
 				";out.write(\"\"\"SELECT *\n" +
 				"FROM SYS.SYSTABLES\n" +
@@ -170,8 +171,7 @@ public class Basic
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/testjs.gsql" );
 		Template template = new QueryCompiler().translate( "p", "c", new BOMDetectingLineReader( resource ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
-		Assert.assertEquals( template.getSource(), "importClass(Packages.java.sql.Timestamp);\n" +
-				" // Test if the import at the bottom works, and this comment too of course\n" +
+		Assert.assertEquals( template.getSource(), "importClass(Packages.java.sql.Timestamp); // Test if the import at the bottom works, and this comment too of course\n" +
 				"new Timestamp( new java.util.Date().time ) \n" +
 				";out.write(\"SELECT *\\n\\\n" +
 				"FROM SYS.SYSTABLES\\n\\\n" +
@@ -251,6 +251,7 @@ public class Basic
 		LineReader reader = new StringLineReader( "<%@ template\n" +
 				"import=\"common.utils.QueryUtils\"\n" +
 				"import=\"common.enums.*\"\n" +
+				"language=\"groovy\"\n" +
 				"%>\n" +
 				"TEST" );
 
@@ -258,6 +259,7 @@ public class Basic
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
 		Assert.assertEquals( template.getSource(), "package p;import common.utils.QueryUtils;import common.enums.*;class c{Closure getClosure(){return{out->\n" +
+				"\n" +
 				"\n" +
 				"\n" +
 				"\n" +
@@ -274,8 +276,7 @@ public class Basic
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query" );
 
-		Map< String, Object > params = new HashMap< String, Object >();
-		Query query = queries.bind( "test2", params );
+		Query query = queries.bind( "test2", new Pars( "prefix", null, "name", null, "names", null ) );
 		List< Map< String, Object > > result = query.listOfMaps( connection );
 		assert result.size() == 22;
 	}
@@ -301,7 +302,7 @@ public class Basic
 
 	private void translateTest( String input, String groovy, String output )
 	{
-		Template template = translate( input );
+		Template template = translate( "<%@template language=\"groovy\"%>" + input );
 		String g = template.getSource();
 //		System.out.println( g );
 		Assert.assertEquals( g, this.start + groovy + this.end );

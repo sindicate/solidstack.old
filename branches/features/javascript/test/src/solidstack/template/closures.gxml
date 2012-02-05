@@ -1,4 +1,4 @@
-<%@ template contentType="text/xml" %>
+<%@ template contentType="text/xml" language="groovy" %>
 ${{->"te<st"}}
 ${{->out.write("te<st")}}
 ${out.write("te<st")}

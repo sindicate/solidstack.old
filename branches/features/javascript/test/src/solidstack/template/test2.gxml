@@ -1,4 +1,4 @@
-<%@ template encoding="UTF-8" contentType="text/html" %>
+<%@ template encoding="UTF-8" contentType="text/html" language = "groovy" %>
 <%-- This is a HTML5 page --%>
 <!DOCTYPE html>
 <html>

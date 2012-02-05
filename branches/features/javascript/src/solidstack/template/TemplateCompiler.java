@@ -168,11 +168,10 @@ public class TemplateCompiler
 					else if( directive.getAttribute().equals( "language" ) )
 						lang = directive.getValue();
 
-		// TODO Javascript must become the default, but overridable
-		if( lang == null || lang.equals( "groovy" ) )
-			return toGroovy( pkg, cls, events, directives, imports );
-		if( lang.equals( "javascript" ) )
+		if( lang == null || lang.equals( "javascript" ) )
 			return toJavaScript( cls, events, directives, imports ); // TODO cls is not right
+		if( lang.equals( "groovy" ) )
+			return toGroovy( pkg, cls, events, directives, imports );
 		throw new TemplateException( "Unsupported template language: " + lang );
 	}
 
@@ -240,6 +239,7 @@ public class TemplateCompiler
 					buffer.append( event.getData() );
 					break;
 
+				case EOF:
 				default:
 					Assert.fail( "Unexpected event " + event.getEvent() );
 			}

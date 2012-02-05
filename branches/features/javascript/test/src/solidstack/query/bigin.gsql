@@ -1,3 +1,4 @@
+<%@ template language = "groovy" %>
 SELECT *
 FROM SYS.SYSTABLES
 WHERE TABLENAME IN ( ${ names.subList( 0, Math.min( names.size(), 5 ) ) } )

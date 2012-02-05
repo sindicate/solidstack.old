@@ -1,1 +1,1 @@
-<%@ template encoding="UTF-8" contentType="application/xhtml+xml" %><test test="${test}"> ${test} <%=test%> &<>"' </test>
+<%@ template encoding="UTF-8" contentType="application/xhtml+xml" language="groovy" %><test test="${test}"> ${test} <%=test%> &<>"' </test>
