@@ -17,12 +17,16 @@
 package solidstack.template;
 
 import groovy.lang.Closure;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyObject;
 
+import java.util.List;
 import java.util.Map;
 
+import org.codehaus.groovy.control.CompilationUnit;
+import org.codehaus.groovy.control.Phases;
+import org.codehaus.groovy.tools.GroovyClass;
+
+import solidstack.Assert;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 
 /**
@@ -51,9 +55,33 @@ public class GroovyTemplate extends Template
 	@Override
 	public void compile()
 	{
-		Class< GroovyObject > groovyClass = new GroovyClassLoader().parseClass( new GroovyCodeSource( getSource(), getName(), "x" ) );
-		GroovyObject object = Util.newInstance( groovyClass );
+		// Compile to bytes
+		CompilationUnit unit = new CompilationUnit();
+		unit.addSource( getName(), getSource() );
+		unit.compile( Phases.CLASS_GENERATION );
+
+		// Results
+		List< GroovyClass > classes = unit.getClasses();
+		Assert.isTrue( classes.size() > 0, "Expecting 1 or more classes" );
+
+		// Use class loader to define the classes
+		// TODO Configurable class loader
+		DefiningClassLoader classLoader = new DefiningClassLoader( GroovyTemplate.class.getClassLoader() );
+		Class< ? > first = null;
+		for( GroovyClass cls : classes )
+		{
+			Class< ? > clas = classLoader.defineClass( cls.getName(), cls.getBytes() );
+			if( first == null )
+				first = clas;
+		}
+
+		// Instantiate the first
+		GroovyObject object = (GroovyObject)Util.newInstance( first );
 		this.closure = (Closure)object.invokeMethod( "getClosure", null );
+
+//		Class< GroovyObject > groovyClass = new GroovyClassLoader().parseClass( new GroovyCodeSource( getSource(), getName(), "x" ) );
+//		GroovyObject object = Util.newInstance( groovyClass );
+//		this.closure = (Closure)object.invokeMethod( "getClosure", null );
 	}
 
 	@Override

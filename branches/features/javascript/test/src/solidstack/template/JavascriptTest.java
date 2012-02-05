@@ -32,7 +32,7 @@ public class JavascriptTest
 {
 	static public final String CONSTANT = "CONSTANT";
 
-	@Test( groups = "new" )
+	@Test//( groups = "new" )
 	public void test() throws ScriptException, IOException
 	{
 		{
@@ -94,7 +94,7 @@ public class JavascriptTest
 		System.out.println( test );
 	}
 
-	@Test(groups="new")
+	@Test//(groups="new")
 	public void testTransform() throws Exception
 	{
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/template/testjs.gtext" );

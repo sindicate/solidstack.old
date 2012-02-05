@@ -76,7 +76,7 @@ public class Basic
 		assert result.size() == 2;
 	}
 
-	@Test(groups="new")
+	@Test//(groups="new")
 	public void testBasicJS() throws SQLException, ClassNotFoundException
 	{
 		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
@@ -164,7 +164,7 @@ public class Basic
 //		out.close();
 	}
 
-	@Test(groups="new")
+	@Test//(groups="new")
 	public void testTransformJS() throws Exception
 	{
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/testjs.gsql" );
