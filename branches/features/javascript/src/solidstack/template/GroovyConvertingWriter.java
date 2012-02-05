@@ -52,7 +52,7 @@ public class GroovyConvertingWriter implements ConvertingWriter
 			this.writer.write( null );
 		else if( o instanceof String )
 			this.writer.write( (String)o );
-		else if( o instanceof GString && this.writer.supportsValues() )
+		else if( o instanceof GString )
 		{
 			GString gString = (GString)o;
 			String[] strings = gString.getStrings();
@@ -63,9 +63,9 @@ public class GroovyConvertingWriter implements ConvertingWriter
 			for( int i = 0; i < values.length; i++ )
 			{
 				this.writer.write( strings[ i ] );
-				this.writer.writeValue( values[ i ] );
+				writeEncoded( values[ i ] );
 			}
-			write( strings[ values.length ] );
+			this.writer.write( strings[ values.length ] );
 		}
 		else if( o instanceof Closure )
 		{
@@ -73,7 +73,7 @@ public class GroovyConvertingWriter implements ConvertingWriter
 			int pars = c.getMaximumNumberOfParameters();
 			if( pars > 0 )
 				throw new TemplateException( "Closures with parameters are not supported in expressions." );
-			write( c.call() );
+			write( c.call() ); // May be recursive
 		}
 		else
 			this.writer.write( (String)InvokerHelper.invokeMethod( o, "asType", String.class ) );
@@ -82,6 +82,7 @@ public class GroovyConvertingWriter implements ConvertingWriter
 	public void writeEncoded( Object o ) throws IOException
 	{
 		if( this.writer.supportsValues() )
+		{
 			if( o instanceof GString )
 				this.writer.writeValue( o.toString() );
 			else if( o instanceof Closure )
@@ -90,23 +91,29 @@ public class GroovyConvertingWriter implements ConvertingWriter
 				int pars = c.getMaximumNumberOfParameters();
 				if( pars > 0 )
 					throw new TemplateException( "Closures with parameters are not supported in expressions." );
-				writeEncoded( c.call() );
+				this.writer.writeValue( c.call() );
 			}
 			else
 				this.writer.writeValue( o );
-		else if( o == null )
-			this.writer.writeEncoded( null );
-		else if( o instanceof String )
-			this.writer.writeEncoded( (String)o );
-		else if( o instanceof Closure )
-		{
-			Closure c = (Closure)o;
-			int pars = c.getMaximumNumberOfParameters();
-			if( pars > 0 )
-				throw new TemplateException( "Closures with parameters are not supported in expressions." );
-			writeEncoded( c.call() );
 		}
 		else
-			this.writer.writeEncoded( (String)InvokerHelper.invokeMethod( o, "asType", String.class ) );
+		{
+			if( o == null )
+				this.writer.writeEncoded( null );
+			else if( o instanceof String )
+				this.writer.writeEncoded( (String)o );
+			else if( o instanceof GString )
+				this.writer.writeEncoded( o.toString() );
+			else if( o instanceof Closure )
+			{
+				Closure c = (Closure)o;
+				int pars = c.getMaximumNumberOfParameters();
+				if( pars > 0 )
+					throw new TemplateException( "Closures with parameters are not supported in expressions." );
+				writeEncoded( c.call() ); // May be recursive
+			}
+			else
+				this.writer.writeEncoded( (String)InvokerHelper.invokeMethod( o, "asType", String.class ) );
+		}
 	}
 }

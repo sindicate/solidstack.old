@@ -223,10 +223,10 @@ public class TemplateCompiler
 					break;
 
 				case EXPRESSION2:
-					if( text )
-						buffer.append( "\"\"\");" );
-					text = false;
-					buffer.append( "out.writeEncoded(" ).append( event.getData() ).append( ");" );
+					if( !text )
+						buffer.append( "out.write(\"\"\"" );
+					text = true;
+					buffer.append( "${" ).append( event.getData() ).append( '}' );
 					break;
 
 				case DIRECTIVE:

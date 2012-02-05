@@ -47,8 +47,6 @@ public class JavaScriptConvertingWriter implements ConvertingWriter
 	{
 		if( o == null )
 			this.writer.write( null );
-		else if( o instanceof String )
-			this.writer.write( (String)o );
 		else
 			this.writer.write( o.toString() );
 	}
@@ -57,11 +55,12 @@ public class JavaScriptConvertingWriter implements ConvertingWriter
 	{
 		if( this.writer.supportsValues() )
 			( (GStringWriter)this.writer ).writeValue( o );
-		else if( o == null )
-			this.writer.writeEncoded( null );
-		else if( o instanceof String )
-			this.writer.writeEncoded( (String)o );
 		else
-			this.writer.writeEncoded( o.toString() );
+		{
+			if( o == null )
+				this.writer.writeEncoded( null );
+			else
+				this.writer.writeEncoded( o.toString() );
+		}
 	}
 }

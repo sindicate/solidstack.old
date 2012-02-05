@@ -75,10 +75,10 @@ public class Basic
 				";out.write(\"\"\"AND TABLENAME LIKE '\"\"\");out.write( prefix );out.write(\"\"\"%'\n" +
 				"\"\"\"); } \n" +
 				"; if( name ) { \n" +
-				";out.write(\"\"\"AND TABLENAME = \"\"\");out.writeEncoded(name);out.write(\"\"\"\n" +
+				";out.write(\"\"\"AND TABLENAME = ${name}\n" +
 				"\"\"\"); } \n" +
 				"; if( names ) { \n" +
-				";out.write(\"\"\"AND TABLENAME IN (\"\"\");out.writeEncoded(names);out.write(\"\"\")\n" +
+				";out.write(\"\"\"AND TABLENAME IN (${names})\n" +
 				"\"\"\"); } \n" +
 				";\n" +
 				"}}}"
