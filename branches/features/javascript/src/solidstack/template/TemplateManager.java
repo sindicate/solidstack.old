@@ -31,21 +31,7 @@ import solidstack.query.QueryManager;
 
 
 /**
- * Reads, compiles and caches the queries.
- * 
- * Usage:
- * 
- * <pre>
- *    Map&lt; String, Object &gt; args = new HashMap&lt; String, Object &gt;();
- *    args.put( &quot;arg1&quot;, arg1 );
- *    args.put( &quot;arg2&quot;, arg2 );
- *    Template template = templateManager.getTemplate( &quot;path/filename&quot; );
- *    String result = template.apply( args );</pre>
- * 
- * <p>
- * The {@link #getTemplate(String)} call looks in the classpath for a file 'path/filename' in the package configured
- * with {@link #setPackage(String)}.
- * </p>
+ * Reads, compiles and caches the templates.
  * 
  * @author René M. de Bloois
  */
@@ -89,7 +75,7 @@ public class TemplateManager
 	/**
 	 * Registers a MIME type mapping. The first MIME type will be written with the encoding writer of the second MIME type.
 	 * 
-	 * @param mimeType The MIME type that should be mapped to another.
+	 * @param mimeType The MIME type that should be mapped to the other MIME type.
 	 * @param encodeAsMimeType The MIME type to map to.
 	 */
 	public void registerMimeTypeMapping( String mimeType, String encodeAsMimeType )
@@ -135,6 +121,7 @@ public class TemplateManager
 	 * @param path The path of the template.
 	 * @return The {@link Template}.
 	 */
+	// TODO Ability to configure default template language.
 	public Template getTemplate( String path )
 	{
 		log.debug( "getTemplate [{}]", path );

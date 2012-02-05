@@ -20,10 +20,9 @@ import java.io.IOException;
 import java.io.Writer;
 
 /**
- * An encoding writer. This implementation does not encode.
+ * An encoding writer that passes through everything.
  * 
  * @author René M. de Bloois
- *
  */
 // Can't implement Writer. DefaultGroovyMethods.write(Writer self, Writable writable) will be called when value is null, which results in NPE.
 public class NoEncodingWriter implements EncodingWriter

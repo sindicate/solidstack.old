@@ -86,7 +86,7 @@ public class TemplateCompiler
 			pkg += "." + path.replaceAll( "/", "." );
 
 		Template template = translate( pkg, name, reader );
-		template.compile( name );
+		template.compile();
 		if( !keepSource )
 			template.clearSource();
 
@@ -172,10 +172,20 @@ public class TemplateCompiler
 		if( lang == null || lang.equals( "groovy" ) )
 			return toGroovy( pkg, cls, events, directives, imports );
 		if( lang.equals( "javascript" ) )
-			return toJavaScript( events, directives, imports );
+			return toJavaScript( cls, events, directives, imports ); // TODO cls is not right
 		throw new TemplateException( "Unsupported template language: " + lang );
 	}
 
+	/**
+	 * Translates the input events to Groovy.
+	 * 
+	 * @param pkg
+	 * @param cls
+	 * @param events
+	 * @param directives
+	 * @param imports
+	 * @return
+	 */
 	protected GroovyTemplate toGroovy( String pkg, String cls, List< ParseEvent > events, List< Directive > directives, List< String > imports )
 	{
 		StringBuilder buffer = new StringBuilder( 1024 );
@@ -238,12 +248,12 @@ public class TemplateCompiler
 			buffer.append( "\"\"\");" );
 		buffer.append( "}}}" );
 
-		GroovyTemplate template = new GroovyTemplate( buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
+		GroovyTemplate template = new GroovyTemplate( cls, buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
 		log.trace( "Generated Groovy:\n{}", template.getSource() );
 		return template;
 	}
 
-	protected JavaScriptTemplate toJavaScript( List< ParseEvent > events, List< Directive > directives, List< String > imports )
+	protected JavaScriptTemplate toJavaScript( String cls, List< ParseEvent > events, List< Directive > directives, List< String > imports )
 	{
 		StringBuilder buffer = new StringBuilder( 1024 );
 		if( imports != null )
@@ -307,7 +317,7 @@ public class TemplateCompiler
 		if( text )
 			buffer.append( "\");" );
 
-		JavaScriptTemplate template = new JavaScriptTemplate( buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
+		JavaScriptTemplate template = new JavaScriptTemplate( cls, buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
 		log.trace( "Generated JavaScript:\n{}", template.getSource() );
 		return template;
 	}

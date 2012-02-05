@@ -31,6 +31,7 @@ import solidstack.template.JSPLikeTemplateParser.Directive;
  */
 abstract public class Template
 {
+	private String name;
 	private String source;
 	private Directive[] directives;
 
@@ -43,11 +44,13 @@ abstract public class Template
 	/**
 	 * Constructor.
 	 * 
+	 * @param name The name of the template.
 	 * @param source The source code of the template. This is the template translated to the source code of the desired language.
 	 * @param directives The directives found in the template text.
 	 */
-	public Template( String source, Directive[] directives )
+	public Template( String name, String source, Directive[] directives )
 	{
+		this.name = name;
 		this.source = source;
 		this.directives = directives;
 	}
@@ -62,10 +65,13 @@ abstract public class Template
 		this.manager = manager;
 	}
 
-	abstract public void compile( String name );
+	/**
+	 * Compiles the template to byte code or some other form of intermediate code.
+	 */
+	abstract public void compile();
 
 	/**
-	 * Apply this template.
+	 * Apply the given parameters to the template and writes the result to the given writer.
 	 * 
 	 * @param params The parameters to be applied.
 	 * @param writer The result of applying this template is written to this writer.
@@ -76,7 +82,7 @@ abstract public class Template
 	}
 
 	/**
-	 * Applies this template and writes the result to an OutputStream. The character set used is the one configured in
+	 * Apply the given parameters to the template and writes the output to the given output stream. The character set used is the one configured in
 	 * the template. If none is configured the default character encoding of the operating system is used.
 	 * 
 	 * @param params The parameters to be applied.
@@ -104,7 +110,7 @@ abstract public class Template
 	}
 
 	/**
-	 * Apply this template.
+	 * Apply the given parameters to the template and returns the result as a string.
 	 * 
 	 * @param params The parameters to be applied.
 	 * @return The result of applying this template.
@@ -116,6 +122,12 @@ abstract public class Template
 		return writer.toString();
 	}
 
+	/**
+	 * Applies the given parameters to the template and writes the output to the given writer.
+	 * 
+	 * @param params The parameters to apply to the template.
+	 * @param writer The writer to write the result to.
+	 */
 	abstract public void apply( Map< String, ? > params, EncodingWriter writer );
 
 	/**
@@ -163,6 +175,16 @@ abstract public class Template
 	public long getLastModified()
 	{
 		return this.lastModified;
+	}
+
+	/**
+	 * Returns the name of the template.
+	 * 
+	 * @return The name of the template.
+	 */
+	public String getName()
+	{
+		return this.name;
 	}
 
 	/**

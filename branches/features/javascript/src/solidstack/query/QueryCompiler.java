@@ -105,7 +105,7 @@ public class QueryCompiler extends TemplateCompiler
 			buffer.append( "\"\"\");" );
 		buffer.append( "}}}" );
 
-		GroovyTemplate template = new GroovyTemplate( buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
+		GroovyTemplate template = new GroovyTemplate( cls, buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
 		log.trace( "Generated Groovy:\n{}", template.getSource() );
 		return template;
 	}

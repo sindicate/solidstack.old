@@ -19,35 +19,40 @@ package solidstack.template;
 import java.io.IOException;
 
 /**
- * An encoding writer. No multi methods here, cause some scripting languages can't handle them, especially with null parameters.
+ * An encoding writer. Can encode strings to the target content type.
  * 
  * @author René M. de Bloois
  */
 public interface EncodingWriter
 {
 	/**
-	 * Write the object to the writer unencoded.
+	 * Write the string to the writer unencoded.
 	 * 
-	 * @param o The object to write.
+	 * @param s The string to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
-	void write( String o ) throws IOException;
+	void write( String s ) throws IOException;
 
 	/**
-	 * Write the object to the writer encoded.
+	 * Write the string to the writer encoded.
 	 * 
-	 * @param o The object to write.
+	 * @param s The string to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
 	void writeEncoded( String s ) throws IOException;
 
 	/**
-	 * Write the object to the writer encoded.
+	 * Write the value to the writer.
 	 * 
-	 * @param o The object to write.
+	 * @param value The value to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
-	void writeValue( Object o ) throws IOException;
+	void writeValue( Object value ) throws IOException;
 
+	/**
+	 * Indicates that the writes accepts values that are kept separate from the strings.
+	 * 
+	 * @return True when the writer accepts values.
+	 */
 	boolean supportsValues();
 }

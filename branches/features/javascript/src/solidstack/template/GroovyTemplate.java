@@ -26,7 +26,7 @@ import java.util.Map;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 
 /**
- * A compiled template.
+ * A compiled Groovy template.
  * 
  * @author René M. de Bloois
  */
@@ -38,44 +38,29 @@ public class GroovyTemplate extends Template
 	/**
 	 * Constructor.
 	 * 
-	 * @param source The source code of the template. This is the template translated to the source code of the desired language.
+	 * @param name The name of the template.
+	 * @param source The source code of the template. This is the template translated to Groovy.
 	 * @param directives The directives found in the template text.
 	 */
-	public GroovyTemplate( String source, Directive[] directives )
+	public GroovyTemplate( String name, String source, Directive[] directives )
 	{
-		super( source, directives );
+		super( name, source, directives );
 	}
 
 	@SuppressWarnings( "unchecked" )
 	@Override
-	public void compile( String name )
+	public void compile()
 	{
-		Class< GroovyObject > groovyClass = new GroovyClassLoader().parseClass( new GroovyCodeSource( getSource(), name, "x" ) );
+		Class< GroovyObject > groovyClass = new GroovyClassLoader().parseClass( new GroovyCodeSource( getSource(), getName(), "x" ) );
 		GroovyObject object = Util.newInstance( groovyClass );
 		this.closure = (Closure)object.invokeMethod( "getClosure", null );
 	}
 
-	/**
-	 * Apply this template.
-	 * 
-	 * @param params The parameters to be applied.
-	 * @param writer The result of applying this template is written to this writer.
-	 */
 	@Override
 	public void apply( Map< String, ? > params, EncodingWriter writer )
 	{
 		Closure template = (Closure)this.closure.clone();
 		template.setDelegate( params );
 		template.call( new GroovyConvertingWriter( writer ) );
-	}
-
-	/**
-	 * Returns the Groovy closure.
-	 * 
-	 * @return The Groovy closure.
-	 */
-	protected Closure getClosure()
-	{
-		return this.closure;
 	}
 }
