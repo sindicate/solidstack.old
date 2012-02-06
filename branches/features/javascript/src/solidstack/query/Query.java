@@ -39,7 +39,7 @@ import solidstack.template.Template;
 
 
 /**
- * A query object will normally be constructed by a call to {@link QueryManager#bind(String, Map)}.
+ * A query object will normally be constructed by a call to {@link QueryManager#apply(String, Map)}.
  * The query object can be used to retrieve data from the database or to execute DML or DDL statements.
  * 
  * @author René M. de Bloois
@@ -48,10 +48,7 @@ public class Query
 {
 	static  private Logger log = LoggerFactory.getLogger( Query.class );
 
-	private GStringWriter sql;
 	private Template template;
-	private Map< String, ? > params;
-	private Connection connection;
 	private boolean flyWeight = true;
 
 	/**
@@ -62,26 +59,6 @@ public class Query
 	public Query( Template template )
 	{
 		this.template = template;
-	}
-
-	/**
-	 * Sets the {@link Connection} to use.
-	 * 
-	 * @param connection The {@link Connection} to use.
-	 */
-	public void setConnection( Connection connection )
-	{
-		this.connection = connection;
-	}
-
-	/**
-	 * Sets the parameters to use.
-	 * 
-	 * @param params The parameters to use.
-	 */
-	public void bind( Map< String, ? > params )
-	{
-		this.params = params;
 	}
 
 	/**
@@ -115,30 +92,17 @@ public class Query
 	}
 
 	/**
-	 * Retrieves a {@link ResultSet} from the configured {@link Connection}.
-	 * 
-	 * @return A {@link ResultSet}.
-	 * @see #resultSet(Connection)
-	 */
-	public ResultSet resultSet()
-	{
-		if( this.connection == null )
-			throw new IllegalArgumentException( "Connection not set" );
-		return resultSet( this.connection );
-	}
-
-	/**
 	 * Retrieves a {@link ResultSet} from the given {@link Connection}.
 	 * 
 	 * @param connection The {@link Connection} to use.
 	 * @return a {@link ResultSet}.
 	 * @see #resultSet()
 	 */
-	public ResultSet resultSet( Connection connection )
+	public ResultSet resultSet( Map< String, Object > args, Connection connection )
 	{
 		try
 		{
-			PreparedStatement statement = getPreparedStatement( connection );
+			PreparedStatement statement = getPreparedStatement( args, connection );
 			return statement.executeQuery();
 		}
 		catch( SQLException e )
@@ -148,26 +112,14 @@ public class Query
 	}
 
 	/**
-	 * Retrieves a {@link List} of {@link Object} arrays from the configured {@link Connection}.
-	 * 
-	 * @return A {@link List} of {@link Object} arrays from the given {@link Connection}.
-	 */
-	public List< Object[] > listOfArrays()
-	{
-		if( this.connection == null )
-			throw new IllegalArgumentException( "Connection not set" );
-		return listOfArrays( this.connection );
-	}
-
-	/**
 	 * Retrieves a {@link List} of {@link Object} arrays from the given {@link Connection}.
 	 * 
 	 * @param connection The {@link Connection} to use.
 	 * @return A {@link List} of {@link Object} arrays from the given {@link Connection}.
 	 */
-	public List< Object[] > listOfArrays( Connection connection )
+	public List< Object[] > listOfArrays( Map< String, Object > args, Connection connection )
 	{
-		ResultSet resultSet = resultSet( connection );
+		ResultSet resultSet = resultSet( args, connection );
 		return listOfArrays( resultSet, this.flyWeight );
 	}
 
@@ -236,28 +188,16 @@ public class Query
 	}
 
 	/**
-	 * Retrieve a {@link List} of {@link Map}s from the configured {@link Connection}. The maps contain the column names from the query as keys and the column values as the map's values.
-	 * 
-	 * @return A {@link List} of {@link Map}s.
-	 */
-	public List< Map< String, Object > > listOfMaps()
-	{
-		if( this.connection == null )
-			throw new IllegalArgumentException( "Connection not set" );
-		return listOfMaps( this.connection );
-	}
-
-	/**
 	 * Retrieve a {@link List} of {@link Map}s from the given {@link Connection}. The maps contain the column names from the query as keys and the column values as the map's values.
 	 * 
 	 * @param connection The {@link Connection} to use.
 	 * @return A {@link List} of {@link Map}s.
 	 */
-	public List< Map< String, Object > > listOfMaps( Connection connection )
+	public List< Map< String, Object > > listOfMaps( Map< String, Object > args, Connection connection )
 	{
 		try
 		{
-			ResultSet resultSet = resultSet( connection );
+			ResultSet resultSet = resultSet( args, connection );
 
 			ResultSetMetaData metaData = resultSet.getMetaData();
 			int columnCount = metaData.getColumnCount();
@@ -279,36 +219,13 @@ public class Query
 	/**
 	 * Executes an update (DML) or a DDL query.
 	 * 
-	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
-	 * @throws SQLException Whenever the query caused an {@link SQLException}.
-	 */
-	public int updateChecked() throws SQLException
-	{
-		if( this.connection == null )
-			throw new IllegalArgumentException( "Connection not set" );
-		return updateChecked( this.connection );
-	}
-
-	/**
-	 * Executes an update (DML) or a DDL query.
-	 * 
 	 * @param connection The {@link Connection} to use.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 * @throws SQLException Whenever the query caused an {@link SQLException}.
 	 */
-	public int updateChecked( Connection connection ) throws SQLException
+	public int updateChecked( Map< String, Object > args, Connection connection ) throws SQLException
 	{
-		return getPreparedStatement( connection ).executeUpdate();
-	}
-
-	/**
-	 * Executes an update (DML) or a DDL query. {@link SQLException}s are wrapped in a {@link QueryException}.
-	 * 
-	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
-	 */
-	public int update()
-	{
-		return update( this.connection );
+		return getPreparedStatement( args, connection ).executeUpdate();
 	}
 
 	/**
@@ -317,11 +234,11 @@ public class Query
 	 * @param connection The {@link Connection} to use.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 */
-	public int update( Connection connection )
+	public int update( Map< String, Object > args, Connection connection )
 	{
 		try
 		{
-			return updateChecked( connection );
+			return updateChecked( args, connection );
 		}
 		catch( SQLException e )
 		{
@@ -335,10 +252,10 @@ public class Query
 	 * @param connection The {@link Connection} to use.
 	 * @return a {@link PreparedStatement} for the query.
 	 */
-	public PreparedStatement getPreparedStatement( Connection connection )
+	public PreparedStatement getPreparedStatement( Map< String, Object > args, Connection connection )
 	{
 		List< Object > pars = new ArrayList< Object >();
-		String preparedSql = getPreparedSQL( pars );
+		String preparedSql = getPreparedSQL( args, pars );
 
 		if( log.isDebugEnabled() )
 		{
@@ -428,16 +345,10 @@ public class Query
 			pars.add( object );
 	}
 
-	String getPreparedSQL( List< Object > pars )
+	String getPreparedSQL( Map< String, Object > args, List< Object > pars )
 	{
-		GStringWriter gsql;
-		if( this.template != null )
-		{
-			gsql = new GStringWriter();
-			this.template.apply( this.params, gsql );
-		}
-		else
-			gsql = this.sql;
+		GStringWriter gsql = new GStringWriter();
+		this.template.apply( args, gsql );
 
 		Assert.notNull( pars );
 		Assert.isTrue( pars.isEmpty() );

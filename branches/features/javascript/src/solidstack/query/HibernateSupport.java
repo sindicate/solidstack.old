@@ -40,7 +40,7 @@ public class HibernateSupport
 	 * @return a {@link ResultSet}.
 	 * @see Query#resultSet()
 	 */
-	static public ResultSet resultSet( final Query query, Session session )
+	static public ResultSet resultSet( final Query query, final Map< String, Object > args, Session session )
 	{
 		final ResultHolder< ResultSet > result = new ResultHolder< ResultSet >();
 
@@ -48,7 +48,7 @@ public class HibernateSupport
 		{
 			public void execute( Connection connection )
 			{
-				result.set( query.resultSet( connection ) );
+				result.set( query.resultSet( args, connection ) );
 			}
 		});
 
@@ -62,7 +62,7 @@ public class HibernateSupport
 	 * @param session The Hibernate {@link Session} to use.
 	 * @return a {@link List} of {@link Object} arrays.
 	 */
-	static public List< Object[] > listOfArrays( final Query query, final Session session )
+	static public List< Object[] > listOfArrays( final Query query, final Map< String, Object > args, final Session session )
 	{
 		final ResultHolder< List< Object[] > > result = new ResultHolder< List< Object[] > >();
 
@@ -70,7 +70,7 @@ public class HibernateSupport
 		{
 			public void execute( Connection connection )
 			{
-				result.set( query.listOfArrays( connection ) );
+				result.set( query.listOfArrays( args, connection ) );
 			}
 		});
 
@@ -84,7 +84,7 @@ public class HibernateSupport
 	 * @param session The Hibernate {@link Session} to use.
 	 * @return A {@link List} of {@link Map}s.
 	 */
-	static public List< Map< String, Object > > listOfMaps( final Query query, final Session session )
+	static public List< Map< String, Object > > listOfMaps( final Query query, final Map< String, Object > args, final Session session )
 	{
 		final ResultHolder< List< Map< String, Object > > > result = new ResultHolder< List< Map< String, Object > > >();
 
@@ -92,7 +92,7 @@ public class HibernateSupport
 		{
 			public void execute( Connection connection )
 			{
-				result.set( query.listOfMaps( connection ) );
+				result.set( query.listOfMaps( args, connection ) );
 			}
 		});
 
@@ -107,7 +107,7 @@ public class HibernateSupport
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 * @throws HibernateException SQLExceptions are translated to HibernateExceptions by Hibernate.
 	 */
-	static public int update( final Query query, Session session )
+	static public int update( final Query query, final Map< String, Object > args, Session session )
 	{
 		final ResultHolder< Integer > result = new ResultHolder< Integer >();
 
@@ -115,10 +115,10 @@ public class HibernateSupport
 		{
 			public void execute( Connection connection )
 			{
-				result.set( query.update( connection ) );
+				result.set( query.update( args, connection ) );
 			}
 		});
 
 		return result.get();
 	}
-					}
+}

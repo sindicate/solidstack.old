@@ -29,6 +29,7 @@ import solidstack.template.EncodingWriter;
  * 
  * @author René M. de Bloois
  */
+// TODO Rename to ValueStringWriter
 public class GStringWriter implements EncodingWriter
 {
 	private List< Object > values = new ArrayList< Object >();

@@ -53,9 +53,9 @@ public class HibernateQueryAdapter
 	 * @return a {@link ResultSet}.
 	 * @see Query#resultSet()
 	 */
-	public ResultSet resultSet( Session session )
+	public ResultSet resultSet( Map< String, Object > args, Session session )
 	{
-		return HibernateSupport.resultSet( this.query, session );
+		return HibernateSupport.resultSet( this.query, args, session );
 	}
 
 	/**
@@ -64,9 +64,9 @@ public class HibernateQueryAdapter
 	 * @param session The Hibernate {@link Session} to use.
 	 * @return a {@link List} of {@link Object} arrays.
 	 */
-	public List< Object[] > listOfArrays( final Session session )
+	public List< Object[] > listOfArrays( Map< String, Object > args, final Session session )
 	{
-		return HibernateSupport.listOfArrays( this.query, session );
+		return HibernateSupport.listOfArrays( this.query, args, session );
 	}
 
 	/**
@@ -75,9 +75,9 @@ public class HibernateQueryAdapter
 	 * @param session The Hibernate {@link Session} to use.
 	 * @return A {@link List} of {@link Map}s.
 	 */
-	public List< Map< String, Object > > listOfMaps( final Session session )
+	public List< Map< String, Object > > listOfMaps( Map< String, Object > args, final Session session )
 	{
-		return HibernateSupport.listOfMaps( this.query, session );
+		return HibernateSupport.listOfMaps( this.query, args, session );
 	}
 
 	/**
@@ -87,8 +87,8 @@ public class HibernateQueryAdapter
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 * @throws HibernateException SQLExceptions are translated to HibernateExceptions by Hibernate.
 	 */
-	public int update( Session session )
+	public int update( Map< String, Object > args, Session session )
 	{
-		return HibernateSupport.update( this.query, session );
+		return HibernateSupport.update( this.query, args, session );
 	}
 }

@@ -34,7 +34,7 @@ import solidstack.template.TemplateManager;
  *    List&lt; Map&lt; String, Object &gt;&gt; result = query.listOfMaps( connection );</pre>
  * 
  * <p>
- * The {@link #bind(String, Map)} call looks in the classpath for a file 'path/filename.gsql' in the package configured
+ * The {@link #apply(String, Map)} call looks in the classpath for a file 'path/filename.gsql' in the package configured
  * with {@link #setPackage(String)}.
  * </p>
  * 
@@ -108,17 +108,14 @@ public class QueryManager
 	}
 
 	/**
-	 * Binds the arguments and the template and returns the {@link Query}.
+	 * Returns a {@link Query}.
 	 *
 	 * @param path The path of the query.
-	 * @param args The arguments.
 	 * @return The {@link Query}.
 	 */
-	public Query bind( String path, Map< String, ? > args )
+	public Query getQuery( String path )
 	{
-		Query query = new Query( this.templateManager.getTemplate( path + ".gsql" ) );
-		query.bind( args );
-		return query;
+		return new Query( this.templateManager.getTemplate( path + ".gsql" ) );
 	}
 
 	private void checkLock()
