@@ -115,11 +115,21 @@ public class TemplateManager
 		this.reloading = reloading;
 	}
 
+	/**
+	 * Sets the default scripting language of the templates. This is used when the "language" directive is missing in the template.
+	 * 
+	 * @param language The default scripting language of the templates.
+	 */
 	public void setDefaultLanguage( String language )
 	{
 		this.defaultLanguage = language;
 	}
 
+	/**
+	 * Returns the default scripting language of the templates.
+	 * 
+	 * @return The default scripting language of the templates.
+	 */
 	public String getDefaultLanguage()
 	{
 		return this.defaultLanguage;
@@ -133,7 +143,6 @@ public class TemplateManager
 	 * @param path The path of the template.
 	 * @return The {@link Template}.
 	 */
-	// TODO Ability to configure default template language.
 	public Template getTemplate( String path )
 	{
 		log.debug( "getTemplate [{}]", path );

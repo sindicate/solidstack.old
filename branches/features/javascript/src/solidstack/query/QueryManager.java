@@ -55,11 +55,19 @@ public class QueryManager
 	private boolean locked;
 
 
+	/**
+	 * Constructor.
+	 */
 	public QueryManager()
 	{
 		this.templateManager = new TemplateManager();
 	}
 
+	/**
+	 * Constructor which uses an existing TemplateManager.
+	 * 
+	 * @param templateManager The template manager to use.
+	 */
 	public QueryManager( TemplateManager templateManager )
 	{
 		this.templateManager = templateManager;
@@ -67,7 +75,7 @@ public class QueryManager
 	}
 
 	/**
-	 * Configures the package which is the root of the template files.
+	 * Configures the package which acts the root of the template files.
 	 *
 	 * @param pkg The package.
 	 */
@@ -88,6 +96,11 @@ public class QueryManager
 		this.templateManager.setReloading( reloading );
 	}
 
+	/**
+	 * Sets the default scripting language of the templates. The default scripting language is used when a "language" directive is missing in the template.
+	 * 
+	 * @param language The default scripting language of the templates.
+	 */
 	public void setDefaultLanguage( String language )
 	{
 		checkLock();

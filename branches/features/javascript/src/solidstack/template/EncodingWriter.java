@@ -34,9 +34,9 @@ public interface EncodingWriter
 	void write( String s ) throws IOException;
 
 	/**
-	 * Write the string to the writer encoded.
+	 * Write the value to the writer encoded.
 	 * 
-	 * @param s The string to write.
+	 * @param value The value to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
 	void writeEncoded( Object value ) throws IOException;

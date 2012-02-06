@@ -50,18 +50,18 @@ public class XMLEncodingWriter extends NoEncodingWriter
 	}
 
 	/**
-	 * Write the specified string to the writer XML encoded.
+	 * Write the specified value to the writer XML encoded.
 	 * 
-	 * @param s The string to write.
+	 * @param value The value to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
 	@Override
-	public void writeEncoded( Object o ) throws IOException
+	public void writeEncoded( Object value ) throws IOException
 	{
-		if( o == null )
+		if( value == null )
 			return;
 
-		char[] chars = ( (String)o ).toCharArray();
+		char[] chars = ( (String)value ).toCharArray();
 		int len = chars.length;
 		int start = 0;
 		String replace = null;

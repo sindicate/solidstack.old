@@ -25,7 +25,7 @@ import solidstack.template.EncodingWriter;
 
 
 /**
- * A writer that accepts Groovy's {@link GString} and keeps the values of the GStrings separate from the string segments.
+ * A writer that keeps values separate from the string segments.
  * 
  * @author René M. de Bloois
  */

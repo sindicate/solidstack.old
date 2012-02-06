@@ -52,9 +52,14 @@ public class TemplateCompiler
 
 	static boolean keepSource = false;
 
-	protected TemplateManager manager;
+	private TemplateManager manager;
 
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param manager The template manager that created this compiler.
+	 */
 	public TemplateCompiler( TemplateManager manager )
 	{
 		this.manager = manager;
@@ -192,20 +197,10 @@ public class TemplateCompiler
 		if( lang.equals( "groovy" ) )
 			return toGroovy( pkg, cls, events, directives, imports );
 
-		throw new TemplateException( "Unsupported template language: " + lang );
+		throw new TemplateException( "Unsupported scripting language: " + lang );
 	}
 
-	/**
-	 * Translates the input events to Groovy.
-	 * 
-	 * @param pkg
-	 * @param cls
-	 * @param events
-	 * @param directives
-	 * @param imports
-	 * @return
-	 */
-	protected GroovyTemplate toGroovy( String pkg, String cls, List< ParseEvent > events, List< Directive > directives, List< String > imports )
+	static private GroovyTemplate toGroovy( String pkg, String cls, List< ParseEvent > events, List< Directive > directives, List< String > imports )
 	{
 		StringBuilder buffer = new StringBuilder( 1024 );
 		buffer.append( "package " ).append( pkg ).append( ";" );
@@ -273,7 +268,7 @@ public class TemplateCompiler
 		return template;
 	}
 
-	protected JavaScriptTemplate toJavaScript( String cls, List< ParseEvent > events, List< Directive > directives, List< String > imports )
+	static private JavaScriptTemplate toJavaScript( String cls, List< ParseEvent > events, List< Directive > directives, List< String > imports )
 	{
 		StringBuilder buffer = new StringBuilder( 1024 );
 
