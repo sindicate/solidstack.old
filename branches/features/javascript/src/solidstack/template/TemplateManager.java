@@ -43,6 +43,8 @@ public class TemplateManager
 
 	private String packageSlashed = ""; // when setPackage is not called
 	private boolean reloading;
+	private String defaultLanguage;
+
 	private Map< String, Template > templates = new HashMap< String, Template >();
 	private Map< String, Object > mimeTypeMap = new HashMap< String, Object >();
 
@@ -111,6 +113,16 @@ public class TemplateManager
 	{
 		log.info( "Reloading = [{}]", reloading );
 		this.reloading = reloading;
+	}
+
+	public void setDefaultLanguage( String language )
+	{
+		this.defaultLanguage = language;
+	}
+
+	public String getDefaultLanguage()
+	{
+		return this.defaultLanguage;
 	}
 
 	/**
@@ -194,7 +206,7 @@ public class TemplateManager
 	 */
 	protected TemplateCompiler getCompiler()
 	{
-		return new TemplateCompiler();
+		return new TemplateCompiler( this );
 	}
 
 	/**

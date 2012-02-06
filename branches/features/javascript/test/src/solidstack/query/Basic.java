@@ -36,6 +36,7 @@ import solidbase.io.StringLineReader;
 import solidstack.template.ParseException;
 import solidstack.template.Template;
 import solidstack.template.TemplateCompiler;
+import solidstack.template.TemplateManager;
 import solidstack.util.Pars;
 
 
@@ -85,6 +86,7 @@ public class Basic
 
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query" );
+		queries.setDefaultLanguage( "javascript" );
 
 		Pars pars = new Pars( "prefix", null, "name", null, "names", null );
 
@@ -117,7 +119,7 @@ public class Basic
 	public void testTransform() throws Exception
 	{
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/test.gsql" );
-		Template template = new TemplateCompiler().translate( "p", "c", new BOMDetectingLineReader( resource ) );
+		Template template = new TemplateCompiler( null ).translate( "p", "c", new BOMDetectingLineReader( resource ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
 		Assert.assertEquals( template.getSource(), "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{out->\n" +
@@ -169,9 +171,14 @@ public class Basic
 	@Test//(groups="new")
 	public void testTransformJS() throws Exception
 	{
+		TemplateManager manager = new TemplateManager();
+		manager.setPackage( "solidstack.query" );
+		manager.setDefaultLanguage( "javascript" );
+
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/testjs.gsql" );
-		Template template = new TemplateCompiler().translate( "p", "c", new BOMDetectingLineReader( resource ) );
+		Template template = new TemplateCompiler( manager ).translate( "p", "c", new BOMDetectingLineReader( resource ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
+
 		Assert.assertEquals( template.getSource(), "importClass(Packages.java.sql.Timestamp); // Test if the import at the bottom works, and this comment too of course\n" +
 				"new Timestamp( new java.util.Date().time ) \n" +
 				";out.write(\"SELECT *\\n\\\n" +
@@ -192,8 +199,7 @@ public class Basic
 				"\"); } \n" +
 				";\n" );
 
-		QueryManager queries = new QueryManager();
-		queries.setPackage( "solidstack.query" );
+		QueryManager queries = new QueryManager( manager );
 
 		Map< String, Object > params = new HashMap< String, Object >();
 		params.put( "prefix", "SYST" );
@@ -256,7 +262,7 @@ public class Basic
 				"%>\n" +
 				"TEST" );
 
-		Template template = new TemplateCompiler().translate( "p", "c", reader );
+		Template template = new TemplateCompiler( null ).translate( "p", "c", reader );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
 		Assert.assertEquals( template.getSource(), "package p;import common.utils.QueryUtils;import common.enums.*;class c{Closure getClosure(){return{out->\n" +
@@ -276,6 +282,7 @@ public class Basic
 
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query" );
+		queries.setDefaultLanguage( "groovy" );
 
 		Query query = queries.bind( "test2", new Pars( "prefix", null, "name", null, "names", null ) );
 		List< Map< String, Object > > result = query.listOfMaps( connection );
@@ -298,7 +305,7 @@ public class Basic
 	// For testing purposes
 	static Template translate( String text )
 	{
-		return new TemplateCompiler().translate( "p", "c", new StringLineReader( text ) );
+		return new TemplateCompiler( null ).translate( "p", "c", new StringLineReader( text ) );
 	}
 
 	private void translateTest( String input, String groovy, String output )

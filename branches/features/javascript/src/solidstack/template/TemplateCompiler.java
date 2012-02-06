@@ -52,7 +52,13 @@ public class TemplateCompiler
 
 	static boolean keepSource = false;
 
+	protected TemplateManager manager;
 
+
+	public TemplateCompiler( TemplateManager manager )
+	{
+		this.manager = manager;
+	}
 
 	/**
 	 * Compiles a template into a {@link GroovyTemplate}.
@@ -168,10 +174,24 @@ public class TemplateCompiler
 					else if( directive.getAttribute().equals( "language" ) )
 						lang = directive.getValue();
 
-		if( lang == null || lang.equals( "javascript" ) )
+		if( lang == null )
+		{
+			if( this.manager != null )
+			{
+				lang = this.manager.getDefaultLanguage();
+				if( lang == null )
+					throw new TemplateException( "Template has no \"language\" directive, and no defaultLanguage configured in the TemplateManager" );
+			}
+			else
+				throw new TemplateException( "Template has no \"language\" directive" );
+		}
+
+		if( lang.equals( "javascript" ) )
 			return toJavaScript( cls, events, directives, imports ); // TODO cls is not right
+
 		if( lang.equals( "groovy" ) )
 			return toGroovy( pkg, cls, events, directives, imports );
+
 		throw new TemplateException( "Unsupported template language: " + lang );
 	}
 

@@ -57,7 +57,7 @@ public class Basic
 	public void testTransform() throws Exception
 	{
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/template/test.gtext" );
-		Template template = new TemplateCompiler().translate( "p", "c", new BOMDetectingLineReader( resource ) );
+		Template template = new TemplateCompiler( null ).translate( "p", "c", new BOMDetectingLineReader( resource ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
 		Assert.assertEquals( template.getSource(), "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{out->\n" +
@@ -112,7 +112,7 @@ public class Basic
 				"%>\n" +
 				"TEST" );
 
-		Template template = new TemplateCompiler().translate( "p", "c", reader );
+		Template template = new TemplateCompiler( null ).translate( "p", "c", reader );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
 		Assert.assertEquals( template.getSource(), "package p;import common.utils.QueryUtils;import common.enums.*;class c{Closure getClosure(){return{out->\n" +

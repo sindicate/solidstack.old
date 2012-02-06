@@ -49,33 +49,50 @@ import solidstack.template.TemplateManager;
  * 
  * @author René M. de Bloois
  */
-public class QueryManager extends TemplateManager
+public class QueryManager
 {
-//	/**
-//	 * The {@link TemplateManager} that is used to manage the templates for the QueryManager.
-//	 */
-//	protected InternalManager templateManager = new InternalManager();
+	private TemplateManager templateManager;
+	private boolean locked;
 
 
-//	/**
-//	 * Configures the package which is the root of the template files.
-//	 *
-//	 * @param pkg The package.
-//	 */
-//	public void setPackage( String pkg )
-//	{
-//		this.templateManager.setPackage( pkg );
-//	}
+	public QueryManager()
+	{
+		this.templateManager = new TemplateManager();
+	}
 
-//	/**
-//	 * Enable or disable reloading. When enabled, the lastModified time stamp of the file is used to check if it needs reloading.
-//	 *
-//	 * @param reloading When true, the file is reloaded when updated.
-//	 */
-//	public void setReloading( boolean reloading )
-//	{
-//		this.templateManager.setReloading( reloading );
-//	}
+	public QueryManager( TemplateManager templateManager )
+	{
+		this.templateManager = templateManager;
+		this.locked = true;
+	}
+
+	/**
+	 * Configures the package which is the root of the template files.
+	 *
+	 * @param pkg The package.
+	 */
+	public void setPackage( String pkg )
+	{
+		checkLock();
+		this.templateManager.setPackage( pkg );
+	}
+
+	/**
+	 * Enable or disable reloading. When enabled, the lastModified time stamp of the file is used to check if it needs reloading.
+	 *
+	 * @param reloading When true, the file is reloaded when updated.
+	 */
+	public void setReloading( boolean reloading )
+	{
+		checkLock();
+		this.templateManager.setReloading( reloading );
+	}
+
+	public void setDefaultLanguage( String language )
+	{
+		checkLock();
+		this.templateManager.setDefaultLanguage( language );
+	}
 
 	/**
 	 * Binds the arguments and the template and returns the {@link Query}.
@@ -86,29 +103,14 @@ public class QueryManager extends TemplateManager
 	 */
 	public Query bind( String path, Map< String, ? > args )
 	{
-		Query query = new Query( getTemplate( path + ".gsql" ) );
+		Query query = new Query( this.templateManager.getTemplate( path + ".gsql" ) );
 		query.bind( args );
 		return query;
 	}
 
-//	/**
-//	 * This is a customized TemplateManager that uses the {@link QueryCompiler} instead of the default template
-//	 * compiler. Also, query templates use the .gsql extension which is automatically added to the template name.
-//	 *
-//	 * @author René de Bloois
-//	 */
-//	static protected class InternalManager extends TemplateManager
-//	{
-//		@Override
-//		protected QueryCompiler getCompiler()
-//		{
-//			return new QueryCompiler();
-//		}
-//
-//		@Override
-//		public QueryTemplate getTemplate( String path )
-//		{
-//			return new QueryTemplate( super.getTemplate( path + ".gsql" ) );
-//		}
-//	}
+	private void checkLock()
+	{
+		if( this.locked )
+			throw new IllegalStateException( "Can't configure the TemplateManager indirectly." );
+	}
 }
