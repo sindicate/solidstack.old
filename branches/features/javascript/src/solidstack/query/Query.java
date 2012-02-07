@@ -98,11 +98,12 @@ public class Query
 	 * @return a {@link ResultSet}.
 	 * @see #resultSet()
 	 */
-	public ResultSet resultSet( Map< String, Object > args, Connection connection )
+	// TODO Test the args map with groovy script.
+	public ResultSet resultSet( Connection connection, Map< String, Object > args )
 	{
 		try
 		{
-			PreparedStatement statement = getPreparedStatement( args, connection );
+			PreparedStatement statement = getPreparedStatement( connection, args );
 			return statement.executeQuery();
 		}
 		catch( SQLException e )
@@ -117,9 +118,9 @@ public class Query
 	 * @param connection The {@link Connection} to use.
 	 * @return A {@link List} of {@link Object} arrays from the given {@link Connection}.
 	 */
-	public List< Object[] > listOfArrays( Map< String, Object > args, Connection connection )
+	public List< Object[] > listOfArrays( Connection connection, Map< String, Object > args )
 	{
-		ResultSet resultSet = resultSet( args, connection );
+		ResultSet resultSet = resultSet( connection, args );
 		return listOfArrays( resultSet, this.flyWeight );
 	}
 
@@ -193,11 +194,11 @@ public class Query
 	 * @param connection The {@link Connection} to use.
 	 * @return A {@link List} of {@link Map}s.
 	 */
-	public List< Map< String, Object > > listOfMaps( Map< String, Object > args, Connection connection )
+	public List< Map< String, Object > > listOfMaps( Connection connection, Map< String, Object > args )
 	{
 		try
 		{
-			ResultSet resultSet = resultSet( args, connection );
+			ResultSet resultSet = resultSet( connection, args );
 
 			ResultSetMetaData metaData = resultSet.getMetaData();
 			int columnCount = metaData.getColumnCount();
@@ -223,9 +224,9 @@ public class Query
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 * @throws SQLException Whenever the query caused an {@link SQLException}.
 	 */
-	public int updateChecked( Map< String, Object > args, Connection connection ) throws SQLException
+	public int updateChecked( Connection connection, Map< String, Object > args ) throws SQLException
 	{
-		return getPreparedStatement( args, connection ).executeUpdate();
+		return getPreparedStatement( connection, args ).executeUpdate();
 	}
 
 	/**
@@ -234,11 +235,11 @@ public class Query
 	 * @param connection The {@link Connection} to use.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 */
-	public int update( Map< String, Object > args, Connection connection )
+	public int update( Connection connection, Map< String, Object > args )
 	{
 		try
 		{
-			return updateChecked( args, connection );
+			return updateChecked( connection, args );
 		}
 		catch( SQLException e )
 		{
@@ -252,7 +253,7 @@ public class Query
 	 * @param connection The {@link Connection} to use.
 	 * @return a {@link PreparedStatement} for the query.
 	 */
-	public PreparedStatement getPreparedStatement( Map< String, Object > args, Connection connection )
+	public PreparedStatement getPreparedStatement( Connection connection, Map< String, Object > args )
 	{
 		List< Object > pars = new ArrayList< Object >();
 		String preparedSql = getPreparedSQL( args, pars );

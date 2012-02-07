@@ -41,9 +41,9 @@ public class JPASupport
 	 * @return A {@link List} of entities.
 	 */
 	@SuppressWarnings( "unchecked" )
-	static public <T> List< T > getResultList( Query query, Map< String, Object > args, EntityManager entityManager, Class< T > entityClass )
+	static public <T> List< T > getResultList( Query query, EntityManager entityManager, Class< T > entityClass, Map< String, Object > args )
 	{
-		javax.persistence.Query jpaQuery = createQuery( query, args, entityManager, entityClass );
+		javax.persistence.Query jpaQuery = createQuery( query, entityManager, entityClass, args );
 		return jpaQuery.getResultList();
 	}
 
@@ -56,9 +56,9 @@ public class JPASupport
 	 * @return An entity.
 	 */
 	@SuppressWarnings( "unchecked" )
-	static public <T> T getSingleResult( Query query, Map< String, Object > args, EntityManager entityManager, Class< T > entityClass )
+	static public <T> T getSingleResult( Query query, EntityManager entityManager, Class< T > entityClass, Map< String, Object > args )
 	{
-		javax.persistence.Query jpaQuery = createQuery( query, args, entityManager, entityClass );
+		javax.persistence.Query jpaQuery = createQuery( query, entityManager, entityClass, args );
 		return (T)jpaQuery.getSingleResult();
 	}
 
@@ -70,7 +70,7 @@ public class JPASupport
 	 * @param entityClass The class to map the results to.
 	 * @return The JPA query.
 	 */
-	static public javax.persistence.Query createQuery( Query query, Map< String, Object > args, EntityManager entityManager, Class< ? > entityClass )
+	static public javax.persistence.Query createQuery( Query query, EntityManager entityManager, Class< ? > entityClass, Map< String, Object > args )
 	{
 		List< Object > pars = new ArrayList< Object >();
 		String preparedSql = query.getPreparedSQL( args, pars );
