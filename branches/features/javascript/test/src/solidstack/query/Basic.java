@@ -52,23 +52,23 @@ public class Basic
 		queries.setPackage( "solidstack.query" );
 
 		Query query = queries.getQuery( "test" );
-		List< Map< String, Object > > result = query.listOfMaps( Pars.EMPTY, connection );
+		List< Map< String, Object > > result = query.listOfMaps( connection, Pars.EMPTY );
 		for( String name : result.get( 0 ).keySet() )
 			System.out.println( "Column: " + name );
 		for( Map< String, Object > row : result )
 			System.out.println( "Table: " + row.get( "TABLEname" ) );
 		assert result.size() == 22;
 
-		result = query.listOfMaps( new Pars( "prefix", "SYST" ), connection );
+		result = query.listOfMaps( connection, new Pars( "prefix", "SYST" ) );
 		assert result.size() == 3;
 
-		List< Object[] > array = query.listOfArrays( new Pars().set( "name", "SYSTABLES" ), connection );
+		List< Object[] > array = query.listOfArrays( connection, new Pars().set( "name", "SYSTABLES" ) );
 		assert array.size() == 1;
 
-		result = query.listOfMaps( new Pars( "name", "SYSTABLES", "prefix", "SYST" ), connection );
+		result = query.listOfMaps( connection, new Pars( "name", "SYSTABLES", "prefix", "SYST" ) );
 		assert result.size() == 1;
 
-		result = query.listOfMaps( new Pars().set( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } ), connection );
+		result = query.listOfMaps( connection, new Pars().set( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } ) );
 		assert result.size() == 2;
 	}
 
@@ -85,23 +85,23 @@ public class Basic
 		Pars pars = new Pars( "prefix", null, "name", null, "names", null );
 
 		Query query = queries.getQuery( "testjs" );
-		List< Map< String, Object > > result = query.listOfMaps( pars, connection );
+		List< Map< String, Object > > result = query.listOfMaps( connection, pars );
 		for( String name : result.get( 0 ).keySet() )
 			System.out.println( "Column: " + name );
 		for( Map< String, Object > row : result )
 			System.out.println( "Table: " + row.get( "TABLEname" ) );
 		assert result.size() == 22;
 
-		result = query.listOfMaps( pars.set( "prefix", "SYST" ), connection );
+		result = query.listOfMaps( connection, pars.set( "prefix", "SYST" ) );
 		assert result.size() == 3;
 
-		List< Object[] > array = query.listOfArrays( pars.set( "prefix", null, "name", "SYSTABLES" ), connection );
+		List< Object[] > array = query.listOfArrays( connection, pars.set( "prefix", null, "name", "SYSTABLES" ) );
 		assert array.size() == 1;
 
-		result = query.listOfMaps( pars.set( "prefix", "SYST" ), connection );
+		result = query.listOfMaps( connection, pars.set( "prefix", "SYST" ) );
 		assert result.size() == 1;
 
-		result = query.listOfMaps( new Pars().set( "prefix", null, "name", null, "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } ), connection );
+		result = query.listOfMaps( connection, new Pars().set( "prefix", null, "name", null, "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } ) );
 		assert result.size() == 2;
 	}
 
@@ -234,7 +234,7 @@ public class Basic
 				"OR TABLENAME IN ( ?,?,?,?,? )\n" +
 				"OR TABLENAME IN ( ?,?,? )\n" );
 
-		List< Map< String, Object > > result = query.listOfMaps( params, connection );
+		List< Map< String, Object > > result = query.listOfMaps( connection, params );
 		assert result.size() == 2;
 
 //		Writer out = new OutputStreamWriter( new FileOutputStream( "test.out" ), "UTF-8" );
@@ -275,7 +275,7 @@ public class Basic
 		queries.setDefaultLanguage( "groovy" );
 
 		Query query = queries.getQuery( "test2" );
-		List< Map< String, Object > > result = query.listOfMaps( new Pars( "prefix", null, "name", null, "names", null ), connection );
+		List< Map< String, Object > > result = query.listOfMaps( connection, new Pars( "prefix", null, "name", null, "names", null ) );
 		assert result.size() == 22;
 	}
 
