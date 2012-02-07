@@ -63,13 +63,13 @@ public class JavaScriptTemplate extends Template
 	}
 
 	@Override
-	public void apply( Map< String, ? > params, EncodingWriter writer )
+	public void apply( Map< String, Object > params, EncodingWriter writer )
 	{
 		Context cx = Context.enter();
 		try
 		{
 			TopLevel scope = new ImporterTopLevel(cx);
-			for( Map.Entry< String, ? > param : params.entrySet() )
+			for( Map.Entry< String, Object > param : params.entrySet() )
 				scope.put( param.getKey(), scope, param.getValue() );
 			scope.put( "out", scope, new JavaScriptConvertingWriter( writer ) );
 			cx.executeScriptWithContinuations( this.script, scope );

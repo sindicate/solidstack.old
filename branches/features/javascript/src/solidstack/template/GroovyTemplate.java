@@ -85,7 +85,7 @@ public class GroovyTemplate extends Template
 	}
 
 	@Override
-	public void apply( Map< String, ? > params, EncodingWriter writer )
+	public void apply( Map< String, Object > params, EncodingWriter writer )
 	{
 		Closure template = (Closure)this.closure.clone();
 		template.setDelegate( params );

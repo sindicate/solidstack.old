@@ -287,7 +287,7 @@ public class Basic
 		this.parameters.put( "var", "value" );
 	}
 
-	static String execute( Template template, Map< String, ? > parameters )
+	static String execute( Template template, Map< String, Object > parameters )
 	{
 		return template.apply( parameters );
 	}

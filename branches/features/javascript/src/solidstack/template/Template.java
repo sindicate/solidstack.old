@@ -76,7 +76,7 @@ abstract public class Template
 	 * @param params The parameters to be applied.
 	 * @param writer The result of applying this template is written to this writer.
 	 */
-	public void apply( Map< String, ? > params, Writer writer )
+	public void apply( Map< String, Object > params, Writer writer )
 	{
 		apply( params, createEncodingWriter( writer ) );
 	}
@@ -90,7 +90,7 @@ abstract public class Template
 	 */
 	// TODO Test this one
 	// TODO Use default per MIME type too, then use the encoding of the source file, then the operating system
-	public void apply( Map< String, ? > params, OutputStream out )
+	public void apply( Map< String, Object > params, OutputStream out )
 	{
 		Writer writer;
 		if( this.charSet != null )
@@ -115,7 +115,7 @@ abstract public class Template
 	 * @param params The parameters to be applied.
 	 * @return The result of applying this template.
 	 */
-	public String apply( Map< String, ? > params )
+	public String apply( Map< String, Object > params )
 	{
 		StringWriter writer = new StringWriter();
 		apply( params, writer );
@@ -128,7 +128,7 @@ abstract public class Template
 	 * @param params The parameters to apply to the template.
 	 * @param writer The writer to write the result to.
 	 */
-	abstract public void apply( Map< String, ? > params, EncodingWriter writer );
+	abstract public void apply( Map< String, Object > params, EncodingWriter writer );
 
 	/**
 	 * Returns the EncodingWriter for the configured MIME type.
