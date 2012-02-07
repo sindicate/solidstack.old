@@ -1,9 +1,7 @@
 package solidstack.template;
 
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.HashMap;
@@ -132,9 +130,9 @@ public class JavascriptTest
 		template = queries.getTemplate( "testjs.gtext" );
 		String result = template.apply( params );
 
-		Writer out = new OutputStreamWriter( new FileOutputStream( "test2.out" ), "UTF-8" );
-		out.write( result );
-		out.close();
+//		Writer out = new OutputStreamWriter( new FileOutputStream( "test2.out" ), "UTF-8" );
+//		out.write( result );
+//		out.close();
 
 		Assert.assertEquals( result, "SELECT *\n" +
 				"FROM SYS.SYSTABLES\n" +

@@ -258,6 +258,8 @@ public class Query
 		List< Object > pars = new ArrayList< Object >();
 		String preparedSql = getPreparedSQL( args, pars );
 
+		// TODO DEBUG: Only print query name and parameters
+		// TODO TRACE: Also print SQL
 		if( log.isDebugEnabled() )
 		{
 			StringBuilder debug = new StringBuilder();

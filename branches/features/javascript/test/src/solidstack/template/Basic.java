@@ -16,10 +16,7 @@
 
 package solidstack.template;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -92,9 +89,9 @@ public class Basic
 		template = queries.getTemplate( "test.gtext" );
 		String result = template.apply( params );
 
-		Writer out = new OutputStreamWriter( new FileOutputStream( "test2.out" ), "UTF-8" );
-		out.write( result );
-		out.close();
+//		Writer out = new OutputStreamWriter( new FileOutputStream( "test2.out" ), "UTF-8" );
+//		out.write( result );
+//		out.close();
 
 		assert result.equals( "SELECT *\n" +
 				"FROM SYS.SYSTABLES\n" +
