@@ -16,9 +16,6 @@
 
 package solidstack.query;
 
-import groovy.lang.Closure;
-import groovy.lang.GString;
-
 import java.lang.reflect.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -38,64 +35,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import solidstack.Assert;
-import solidstack.template.TemplateException;
+import solidstack.query.hibernate.HibernateQueryAdapter;
+import solidstack.query.jpa.JPAQueryAdapter;
+import solidstack.template.Template;
 
 
 /**
- * A query object will normally be constructed by a call to {@link QueryManager#bind(String, Map)}.
+ * A query object will normally be constructed by a call to {@link QueryManager#apply(String, Map)}.
  * The query object can be used to retrieve data from the database or to execute DML or DDL statements.
  * 
  * @author René M. de Bloois
  */
 public class Query
 {
+	// TODO We need well defined logger channels like hibernate
 	static  private Logger log = LoggerFactory.getLogger( Query.class );
 
-	private GStringWriter sql;
-	private Closure closure;
-	private Map< String, ? > params;
-	private Connection connection;
+	private Template template;
 	private boolean flyWeight = true;
 
 	/**
 	 * Constructor.
 	 * 
-	 * @param sql A {@link GString} query.
+	 * @param template The template for the query.
 	 */
-	public Query( GString sql )
+	public Query( Template template )
 	{
-		this.sql = new GStringWriter();
-		this.sql.write( sql );
-	}
-
-	/**
-	 * Constructor.
-	 * 
-	 * @param closure A closure that returns a {@link GString} when called.
-	 */
-	public Query( Closure closure )
-	{
-		this.closure = closure;
-	}
-
-	/**
-	 * Sets the {@link Connection} to use.
-	 * 
-	 * @param connection The {@link Connection} to use.
-	 */
-	public void setConnection( Connection connection )
-	{
-		this.connection = connection;
-	}
-
-	/**
-	 * Sets the parameters to use.
-	 * 
-	 * @param params The parameters to use.
-	 */
-	public void bind( Map< String, ? > params )
-	{
-		this.params = params;
+		this.template = template;
 	}
 
 	/**
@@ -129,30 +95,18 @@ public class Query
 	}
 
 	/**
-	 * Retrieves a {@link ResultSet} from the configured {@link Connection}.
-	 * 
-	 * @return A {@link ResultSet}.
-	 * @see #resultSet(Connection)
-	 */
-	public ResultSet resultSet()
-	{
-		if( this.connection == null )
-			throw new IllegalArgumentException( "Connection not set" );
-		return resultSet( this.connection );
-	}
-
-	/**
 	 * Retrieves a {@link ResultSet} from the given {@link Connection}.
 	 * 
 	 * @param connection The {@link Connection} to use.
 	 * @return a {@link ResultSet}.
 	 * @see #resultSet()
 	 */
-	public ResultSet resultSet( Connection connection )
+	// TODO Test the args map with groovy script.
+	public ResultSet resultSet( Connection connection, Map< String, Object > args )
 	{
 		try
 		{
-			PreparedStatement statement = getPreparedStatement( connection );
+			PreparedStatement statement = getPreparedStatement( connection, args );
 			return statement.executeQuery();
 		}
 		catch( SQLException e )
@@ -162,26 +116,14 @@ public class Query
 	}
 
 	/**
-	 * Retrieves a {@link List} of {@link Object} arrays from the configured {@link Connection}.
-	 * 
-	 * @return A {@link List} of {@link Object} arrays from the given {@link Connection}.
-	 */
-	public List< Object[] > listOfArrays()
-	{
-		if( this.connection == null )
-			throw new IllegalArgumentException( "Connection not set" );
-		return listOfArrays( this.connection );
-	}
-
-	/**
 	 * Retrieves a {@link List} of {@link Object} arrays from the given {@link Connection}.
 	 * 
 	 * @param connection The {@link Connection} to use.
 	 * @return A {@link List} of {@link Object} arrays from the given {@link Connection}.
 	 */
-	public List< Object[] > listOfArrays( Connection connection )
+	public List< Object[] > listOfArrays( Connection connection, Map< String, Object > args )
 	{
-		ResultSet resultSet = resultSet( connection );
+		ResultSet resultSet = resultSet( connection, args );
 		return listOfArrays( resultSet, this.flyWeight );
 	}
 
@@ -250,28 +192,16 @@ public class Query
 	}
 
 	/**
-	 * Retrieve a {@link List} of {@link Map}s from the configured {@link Connection}. The maps contain the column names from the query as keys and the column values as the map's values.
-	 * 
-	 * @return A {@link List} of {@link Map}s.
-	 */
-	public List< Map< String, Object > > listOfMaps()
-	{
-		if( this.connection == null )
-			throw new IllegalArgumentException( "Connection not set" );
-		return listOfMaps( this.connection );
-	}
-
-	/**
 	 * Retrieve a {@link List} of {@link Map}s from the given {@link Connection}. The maps contain the column names from the query as keys and the column values as the map's values.
 	 * 
 	 * @param connection The {@link Connection} to use.
 	 * @return A {@link List} of {@link Map}s.
 	 */
-	public List< Map< String, Object > > listOfMaps( Connection connection )
+	public List< Map< String, Object > > listOfMaps( Connection connection, Map< String, Object > args )
 	{
 		try
 		{
-			ResultSet resultSet = resultSet( connection );
+			ResultSet resultSet = resultSet( connection, args );
 
 			ResultSetMetaData metaData = resultSet.getMetaData();
 			int columnCount = metaData.getColumnCount();
@@ -293,36 +223,13 @@ public class Query
 	/**
 	 * Executes an update (DML) or a DDL query.
 	 * 
-	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
-	 * @throws SQLException Whenever the query caused an {@link SQLException}.
-	 */
-	public int updateChecked() throws SQLException
-	{
-		if( this.connection == null )
-			throw new IllegalArgumentException( "Connection not set" );
-		return updateChecked( this.connection );
-	}
-
-	/**
-	 * Executes an update (DML) or a DDL query.
-	 * 
 	 * @param connection The {@link Connection} to use.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 * @throws SQLException Whenever the query caused an {@link SQLException}.
 	 */
-	public int updateChecked( Connection connection ) throws SQLException
+	public int updateChecked( Connection connection, Map< String, Object > args ) throws SQLException
 	{
-		return getPreparedStatement( connection ).executeUpdate();
-	}
-
-	/**
-	 * Executes an update (DML) or a DDL query. {@link SQLException}s are wrapped in a {@link QueryException}.
-	 * 
-	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
-	 */
-	public int update()
-	{
-		return update( this.connection );
+		return getPreparedStatement( connection, args ).executeUpdate();
 	}
 
 	/**
@@ -331,11 +238,11 @@ public class Query
 	 * @param connection The {@link Connection} to use.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 */
-	public int update( Connection connection )
+	public int update( Connection connection, Map< String, Object > args )
 	{
 		try
 		{
-			return updateChecked( connection );
+			return updateChecked( connection, args );
 		}
 		catch( SQLException e )
 		{
@@ -349,30 +256,29 @@ public class Query
 	 * @param connection The {@link Connection} to use.
 	 * @return a {@link PreparedStatement} for the query.
 	 */
-	public PreparedStatement getPreparedStatement( Connection connection )
+	public PreparedStatement getPreparedStatement( Connection connection, Map< String, Object > args )
 	{
-		List< Object > pars = new ArrayList< Object >();
-		String preparedSql = getPreparedSQL( pars );
+		PreparedSQL preparedSql = getPreparedSQL( args );
+		List< Object > pars = preparedSql.getParameters(); // TODO Parameters or Args?;
 
 		if( log.isDebugEnabled() )
 		{
 			StringBuilder debug = new StringBuilder();
-			debug.append( "Prepare statement:\n" );
-			debug.append( preparedSql );
-			debug.append( "\nParameters:" );
+			debug.append( "Prepare statement: " ).append( this.template.getName() ).append( '\n' );
+			if( log.isTraceEnabled() )
+				debug.append( preparedSql.getSQL() ).append( '\n' );
+			debug.append( "Parameters:" );
+			if( pars.size() == 0 )
+				debug.append( "\n\t(none)" );
 			int i = 1;
 			for( Object par : pars )
 			{
-				debug.append( '\n' );
-				debug.append( i++ );
-				debug.append( ":\t" );
+				debug.append( '\n' ).append( i++ ).append( ":\t" );
 				if( par == null )
 					debug.append( "(null)" );
 				else
 				{
-					debug.append( '(' );
-					debug.append( par.getClass().getName() );
-					debug.append( ')' );
+					debug.append( '(' ).append( par.getClass().getName() ).append( ')' );
 					if( !par.getClass().isArray() )
 						debug.append( par.toString() );
 					else
@@ -389,12 +295,15 @@ public class Query
 					}
 				}
 			}
-			log.debug( debug.toString() );
+			if( log.isTraceEnabled() )
+				log.trace( debug.toString() );
+			else
+				log.debug( debug.toString() );
 		}
 
 		try
 		{
-			PreparedStatement statement = connection.prepareStatement( preparedSql );
+			PreparedStatement statement = connection.prepareStatement( preparedSql.getSQL() );
 			int i = 0;
 			for( Object par : pars )
 			{
@@ -420,15 +329,6 @@ public class Query
 
 	static private void appendParameter( Object object, String name, StringBuilder buildSql, List< Object > pars )
 	{
-		// TODO while loop to support closure returning closure?
-		if( object instanceof Closure )
-		{
-			Closure closure = (Closure)object;
-			if( closure.getMaximumNumberOfParameters() > 0 )
-				throw new TemplateException( "Closures with parameters are not supported in expressions." );
-			object = closure.call();
-		}
-
 		buildSql.append( '?' );
 		if( object instanceof Collection<?> )
 		{
@@ -447,39 +347,29 @@ public class Query
 				pars.add( Array.get( object, j ) );
 			appendExtraQuestionMarks( buildSql, size - 1 );
 		}
-		else if( object instanceof GString )
-			pars.add( ( (GString)object ).toString() );
 		else
 			pars.add( object );
 	}
 
-	String getPreparedSQL( List< Object > pars )
+	public PreparedSQL getPreparedSQL( Map< String, Object > args )
 	{
-		GStringWriter gsql;
-		if( this.closure != null )
-		{
-			this.closure.setDelegate( this.params );
-			gsql = new GStringWriter();
-			this.closure.call( gsql );
-		}
-		else
-			gsql = this.sql;
+		QueryEncodingWriter gsql = new QueryEncodingWriter();
+		this.template.apply( args, gsql );
 
-		Assert.notNull( pars );
-		Assert.isTrue( pars.isEmpty() );
-
+		List< Object > pars = new ArrayList< Object >();
 		StringBuilder result = new StringBuilder();
+
 		List< Object > values = gsql.getValues();
 		BitSet isValue = gsql.getIsValue();
 		int len = values.size();
+
 		for( int i = 0; i < len; i++ )
-		{
 			if( isValue.get( i ) )
 				appendParameter( values.get( i ), "unknown", result, pars );
 			else
 				result.append( (String)values.get( i ) );
-		}
-		return result.toString();
+
+		return new PreparedSQL( result.toString(), pars );
 	}
 
 	static private void appendExtraQuestionMarks( StringBuilder s, int count )
@@ -488,6 +378,28 @@ public class Query
 		{
 			s.append( ",?" );
 			count--;
+		}
+	}
+
+	static public class PreparedSQL
+	{
+		private String sql;
+		private List< Object > pars;
+
+		protected PreparedSQL( String sql, List< Object > pars )
+		{
+			this.sql = sql;
+			this.pars = pars;
+		}
+
+		public String getSQL()
+		{
+			return this.sql;
+		}
+
+		public List< Object > getParameters()
+		{
+			return this.pars;
 		}
 	}
 }

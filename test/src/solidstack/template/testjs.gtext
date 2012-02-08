@@ -1,9 +1,9 @@
-<%@ template encoding="UTF-8" language="groovy" %>
+<%@ template encoding="UTF-8" language="javascript" %>
 <% // Test if the import at the bottom works, and this comment too of course
-new Timestamp( new Date().time ) %>
+new Timestamp( new java.util.Date().time ) %>
 SELECT *
 <%@ template contentType="text/html; charset=ISO-8859-1" %>
-FROM SYS.SYSTABLES
+FROM SYS.SYSTABLES<%= null %>
 	<%--
 	This comment should not 
 	interfere with the linenumbers
@@ -18,4 +18,4 @@ AND TABLENAME = ${name}
 		<% if( names ) { %>
 AND TABLENAME IN (${names})
 		<% } %>
-<%@ template import = "java.sql.Timestamp" %>
+<%@ template import = "java.sql.Timestamp" import = "java.util.*" %>

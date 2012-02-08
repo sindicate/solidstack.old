@@ -16,18 +16,13 @@
 
 package solidstack.template;
 
-import groovy.lang.Closure;
-
 import java.io.IOException;
 import java.io.Writer;
 
-import org.codehaus.groovy.runtime.InvokerHelper;
-
 /**
- * An encoding writer. Adds a {@link #writeEncoded(String)} method. This implementation does not encode.
+ * An encoding writer that passes through everything.
  * 
  * @author René M. de Bloois
- *
  */
 // Can't implement Writer. DefaultGroovyMethods.write(Writer self, Writable writable) will be called when value is null, which results in NPE.
 public class NoEncodingWriter implements EncodingWriter
@@ -53,42 +48,13 @@ public class NoEncodingWriter implements EncodingWriter
 			this.out.write( s );
 	}
 
-	public void write( Object o ) throws IOException
-	{
-		if( o != null )
-			write( (String)InvokerHelper.invokeMethod( o, "asType", String.class ) );
-	}
-
-	public void write( Closure c ) throws IOException
-	{
-		if( c != null )
-		{
-			int pars = c.getMaximumNumberOfParameters();
-			if( pars > 0 )
-				throw new TemplateException( "Closures with parameters are not supported in expressions." );
-			write( c.call() );
-		}
-	}
-
-	public void writeEncoded( String s ) throws IOException
-	{
-		if( s != null )
-			write( s );
-	}
-
 	public void writeEncoded( Object o ) throws IOException
 	{
-		if( o != null )
-			writeEncoded( (String)InvokerHelper.invokeMethod( o, "asType", String.class ) );
+		write( (String)o );
 	}
 
-	public void writeEncoded( Closure c ) throws IOException
+	public boolean stringsOnly()
 	{
-		if( c != null )
-		{
-			if( c.getMaximumNumberOfParameters() > 0 )
-				throw new TemplateException( "Closures with parameters are not supported in expressions." );
-			writeEncoded( c.call() );
-		}
+		return true;
 	}
 }

@@ -16,15 +16,9 @@
 
 package solidstack.query;
 
-import groovy.lang.Closure;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyCodeSource;
-import groovy.lang.GroovyObject;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -38,9 +32,12 @@ import solidbase.io.LineReader;
 import solidbase.io.Resource;
 import solidbase.io.ResourceFactory;
 import solidbase.io.StringLineReader;
+import solidstack.query.Query.PreparedSQL;
 import solidstack.template.ParseException;
-import solidstack.template.Util;
-import solidstack.util.Par;
+import solidstack.template.Template;
+import solidstack.template.TemplateCompiler;
+import solidstack.template.TemplateManager;
+import solidstack.util.Pars;
 
 
 public class Basic
@@ -54,30 +51,57 @@ public class Basic
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query" );
 
-		Query query = queries.bind( "test", Par.EMPTY );
-		List< Map< String, Object > > result = query.listOfMaps( connection );
+		Query query = queries.getQuery( "test" );
+		List< Map< String, Object > > result = query.listOfMaps( connection, Pars.EMPTY );
 		for( String name : result.get( 0 ).keySet() )
 			System.out.println( "Column: " + name );
 		for( Map< String, Object > row : result )
 			System.out.println( "Table: " + row.get( "TABLEname" ) );
 		assert result.size() == 22;
 
-		query = queries.bind( "test", new Par( "prefix", "SYST" ) );
-		result = query.listOfMaps( connection );
+		result = query.listOfMaps( connection, new Pars( "prefix", "SYST" ) );
 		assert result.size() == 3;
 
-		query = queries.bind( "test", new Par().set( "name", "SYSTABLES" ) );
-		List< Object[] > array = query.listOfArrays( connection );
+		List< Object[] > array = query.listOfArrays( connection, new Pars().set( "name", "SYSTABLES" ) );
 		assert array.size() == 1;
 
-		query = queries.bind( "test", new Par(
-				"name", "SYSTABLES",
-				"prefix", "SYST" ) );
-		result = query.listOfMaps( connection );
+		result = query.listOfMaps( connection, new Pars( "name", "SYSTABLES", "prefix", "SYST" ) );
 		assert result.size() == 1;
 
-		query = queries.bind( "test", new Par().set( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } ) );
-		result = query.listOfMaps( connection );
+		result = query.listOfMaps( connection, new Pars().set( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } ) );
+		assert result.size() == 2;
+	}
+
+	@Test//(groups="new")
+	public void testBasicJS() throws SQLException, ClassNotFoundException
+	{
+		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
+		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
+
+		QueryManager queries = new QueryManager();
+		queries.setPackage( "solidstack.query" );
+		queries.setDefaultLanguage( "javascript" );
+
+		Pars pars = new Pars( "prefix", null, "name", null, "names", null );
+
+		Query query = queries.getQuery( "testjs" );
+		List< Map< String, Object > > result = query.listOfMaps( connection, pars );
+		for( String name : result.get( 0 ).keySet() )
+			System.out.println( "Column: " + name );
+		for( Map< String, Object > row : result )
+			System.out.println( "Table: " + row.get( "TABLEname" ) );
+		assert result.size() == 22;
+
+		result = query.listOfMaps( connection, pars.set( "prefix", "SYST" ) );
+		assert result.size() == 3;
+
+		List< Object[] > array = query.listOfArrays( connection, pars.set( "prefix", null, "name", "SYSTABLES" ) );
+		assert array.size() == 1;
+
+		result = query.listOfMaps( connection, pars.set( "prefix", "SYST" ) );
+		assert result.size() == 1;
+
+		result = query.listOfMaps( connection, new Pars().set( "prefix", null, "name", null, "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } ) );
 		assert result.size() == 2;
 	}
 
@@ -85,10 +109,11 @@ public class Basic
 	public void testTransform() throws Exception
 	{
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/test.gsql" );
-		QueryTemplate template = new QueryCompiler().translate( "p", "c", new BOMDetectingLineReader( resource ) );
+		Template template = new TemplateCompiler( null ).translate( "p", "c", new BOMDetectingLineReader( resource ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		Assert.assertEquals( template.getSource(), "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{out-> // Test if the import at the bottom works, and this comment too of course\n" +
+		Assert.assertEquals( template.getSource(), "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{out->\n" +
+				" // Test if the import at the bottom works, and this comment too of course\n" +
 				"new Timestamp( new Date().time ) \n" +
 				";out.write(\"\"\"SELECT *\n" +
 				"FROM SYS.SYSTABLES\n" +
@@ -118,11 +143,62 @@ public class Basic
 		Map< String, Object > params = new HashMap< String, Object >();
 		params.put( "prefix", "SYST" );
 		params.put( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } );
-		Query query = queries.bind( "test", params );
-		List< Object > pars = new ArrayList< Object >();
-		String sql = query.getPreparedSQL( pars );
+		Query query = queries.getQuery( "test" );
+		PreparedSQL sql = query.getPreparedSQL( params );
 
-		assert sql.equals( "SELECT *\n" +
+		// TODO SQL or Sql?
+		assert sql.getSQL().equals( "SELECT *\n" +
+				"FROM SYS.SYSTABLES\n" +
+				"WHERE 1 = 1\n" +
+				"AND TABLENAME LIKE 'SYST%'\n" +
+				"AND TABLENAME IN (?,?)\n" );
+
+//		Writer out = new OutputStreamWriter( new FileOutputStream( "test.out" ), "UTF-8" );
+//		out.write( sql );
+//		out.close();
+	}
+
+	@Test//(groups="new")
+	public void testTransformJS() throws Exception
+	{
+		TemplateManager manager = new TemplateManager();
+		manager.setPackage( "solidstack.query" );
+		manager.setDefaultLanguage( "javascript" );
+
+		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/testjs.gsql" );
+		Template template = new TemplateCompiler( manager ).translate( "p", "c", new BOMDetectingLineReader( resource ) );
+//		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
+
+		Assert.assertEquals( template.getSource(), "importClass(Packages.java.sql.Timestamp); // Test if the import at the bottom works, and this comment too of course\n" +
+				"new Timestamp( new java.util.Date().time ) \n" +
+				";out.write(\"SELECT *\\n\\\n" +
+				"FROM SYS.SYSTABLES\\n\\\n" +
+				"\");\n" +
+				"\n" +
+				"\n" +
+				"\n" +
+				"out.write(\"WHERE 1 = 1\\n\\\n" +
+				"\"); if( prefix ) { \n" +
+				";out.write(\"AND TABLENAME LIKE '\");out.write( prefix );out.write(\"%'\\n\\\n" +
+				"\"); } \n" +
+				"; if( name ) { \n" +
+				";out.write(\"AND TABLENAME = \");out.writeEncoded(name);out.write(\"\\n\\\n" +
+				"\"); } \n" +
+				"; if( names ) { \n" +
+				";out.write(\"AND TABLENAME IN (\");out.writeEncoded(names);out.write(\")\\n\\\n" +
+				"\"); } \n" +
+				";\n" );
+
+		QueryManager queries = new QueryManager( manager );
+
+		Map< String, Object > params = new HashMap< String, Object >();
+		params.put( "prefix", "SYST" );
+		params.put( "name", null );
+		params.put( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } );
+		Query query = queries.getQuery( "testjs" );
+		PreparedSQL sql = query.getPreparedSQL( params );
+
+		assert sql.getSQL().equals( "SELECT *\n" +
 				"FROM SYS.SYSTABLES\n" +
 				"WHERE 1 = 1\n" +
 				"AND TABLENAME LIKE 'SYST%'\n" +
@@ -146,18 +222,17 @@ public class Basic
 				"SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS",
 				"SYSTABLES", "SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS", "SYSTABLES",
 				"SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS" } ) );
-		Query query = queries.bind( "bigin", params );
-		List< Object > pars = new ArrayList< Object >();
-		String sql = query.getPreparedSQL( pars );
+		Query query = queries.getQuery( "bigin" );
+		PreparedSQL sql = query.getPreparedSQL( params );
 
-		assert sql.equals( "SELECT *\n" +
+		assert sql.getSQL().equals( "SELECT *\n" +
 				"FROM SYS.SYSTABLES\n" +
 				"WHERE TABLENAME IN ( ?,?,?,?,? )\n" +
 				"OR TABLENAME IN ( ?,?,?,?,? )\n" +
 				"OR TABLENAME IN ( ?,?,?,?,? )\n" +
 				"OR TABLENAME IN ( ?,?,? )\n" );
 
-		List< Map< String, Object > > result = query.listOfMaps( connection );
+		List< Map< String, Object > > result = query.listOfMaps( connection, params );
 		assert result.size() == 2;
 
 //		Writer out = new OutputStreamWriter( new FileOutputStream( "test.out" ), "UTF-8" );
@@ -168,16 +243,18 @@ public class Basic
 	@Test
 	public void testNewlinesWithinDirective() throws Exception
 	{
-		LineReader reader = new StringLineReader( "<%@ query\n" +
-				"import=\"uk.co.tntpost.umbrella.common.utils.QueryUtils\"\n" +
-				"import=\"uk.co.tntpost.umbrella.common.enums.*\"\n" +
+		LineReader reader = new StringLineReader( "<%@ template\n" +
+				"import=\"common.utils.QueryUtils\"\n" +
+				"import=\"common.enums.*\"\n" +
+				"language=\"groovy\"\n" +
 				"%>\n" +
 				"TEST" );
 
-		QueryTemplate template = new QueryCompiler().translate( "p", "c", reader );
+		Template template = new TemplateCompiler( null ).translate( "p", "c", reader );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		Assert.assertEquals( template.getSource(), "package p;import uk.co.tntpost.umbrella.common.utils.QueryUtils;import uk.co.tntpost.umbrella.common.enums.*;class c{Closure getClosure(){return{out->\n" +
+		Assert.assertEquals( template.getSource(), "package p;import common.utils.QueryUtils;import common.enums.*;class c{Closure getClosure(){return{out->\n" +
+				"\n" +
 				"\n" +
 				"\n" +
 				"\n" +
@@ -193,10 +270,10 @@ public class Basic
 
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query" );
+		queries.setDefaultLanguage( "groovy" );
 
-		Map< String, Object > params = new HashMap< String, Object >();
-		Query query = queries.bind( "test2", params );
-		List< Map< String, Object > > result = query.listOfMaps( connection );
+		Query query = queries.getQuery( "test2" );
+		List< Map< String, Object > > result = query.listOfMaps( connection, new Pars( "prefix", null, "name", null, "names", null ) );
 		assert result.size() == 22;
 	}
 
@@ -208,32 +285,26 @@ public class Basic
 		this.parameters.put( "var", "value" );
 	}
 
-	static String execute( String script, Map< String, ? > parameters )
+	static String execute( Template template, Map< String, Object > parameters )
 	{
-		Class< GroovyObject > groovyClass = Util.parseClass( new GroovyClassLoader(), new GroovyCodeSource( script, "n", "x" ) );
-		GroovyObject object = Util.newInstance( groovyClass );
-		Closure closure = (Closure)object.invokeMethod( "getClosure", null );
-		if( parameters != null )
-			closure.setDelegate( parameters );
-		GStringWriter out = new GStringWriter();
-		closure.call( out );
-		return out.toString();
+		return template.apply( parameters );
 	}
 
 	// For testing purposes
-	static QueryTemplate translate( String text )
+	static Template translate( String text )
 	{
-		return new QueryCompiler().translate( "p", "c", new StringLineReader( text ) );
+		return new TemplateCompiler( null ).translate( "p", "c", new StringLineReader( text ) );
 	}
 
 	private void translateTest( String input, String groovy, String output )
 	{
-		QueryTemplate template = translate( input );
+		Template template = translate( "<%@template language=\"groovy\"%>" + input );
 		String g = template.getSource();
 //		System.out.println( g );
 		Assert.assertEquals( g, this.start + groovy + this.end );
 
-		String result = execute( g, this.parameters );
+		template.compile();
+		String result = execute( template, this.parameters );
 //		System.out.println( result );
 		Assert.assertEquals( result, output );
 	}
@@ -242,7 +313,7 @@ public class Basic
 	{
 		try
 		{
-			QueryTemplate template = translate( "X${\"te\"xt\"}X" );
+			Template template = translate( "X${\"te\"xt\"}X" );
 			System.out.println( template.getSource() );
 			assert false;
 		}
@@ -294,7 +365,7 @@ public class Basic
 		translateError( "X${\"text\ntext\"}X" );
 		translateError( "X${\"${\"text\ntext\"}\"}X" );
 		translateTest( "X${\"\"\"te\"xt\ntext\\\"\"\"\"}X", "out.write(\"\"\"X${\"\"\"te\"xt\ntext\\\"\"\"\"}X\"\"\");", "Xte\"xt\ntext\"X" );
-		// TODO An if in an expression? Can we do that for the other kind of expression to?
+		// TODO An if in an expression? Can we do that for the other kind of expression too?
 		translateTest( "${if(var){\"true\"}else{\"false\"}}", "out.write(\"\"\"${if(var){\"true\"}else{\"false\"}}\"\"\");", "true" );
 		translateError( "X${\"Y${\n}Y\"}X" );
 		translateTest( "X${\"\"\"Y${\nvar\n}Y\"\"\"}X", "out.write(\"\"\"X${\"\"\"Y${\nvar\n}Y\"\"\"}X\"\"\");", "XYvalueYX" );

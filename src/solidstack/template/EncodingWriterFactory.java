@@ -30,7 +30,7 @@ public interface EncodingWriterFactory
 	 * Creates a new {@link EncodingWriter}.
 	 * 
 	 * @param writer The writer that the EncodingWriter should write to.
-	 * @return The EncodingWriter.
+	 * @return The newly created EncodingWriter.
 	 */
 	EncodingWriter createWriter( Writer writer );
 }

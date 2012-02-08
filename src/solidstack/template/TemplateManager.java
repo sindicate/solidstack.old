@@ -27,25 +27,10 @@ import org.slf4j.LoggerFactory;
 import solidbase.io.Resource;
 import solidbase.io.ResourceFactory;
 import solidstack.Assert;
-import solidstack.query.QueryManager;
 
 
 /**
- * Reads, compiles and caches the queries.
- * 
- * Usage:
- * 
- * <pre>
- *    Map&lt; String, Object &gt; args = new HashMap&lt; String, Object &gt;();
- *    args.put( &quot;arg1&quot;, arg1 );
- *    args.put( &quot;arg2&quot;, arg2 );
- *    Template template = templateManager.getTemplate( &quot;path/filename&quot; );
- *    String result = template.apply( args );</pre>
- * 
- * <p>
- * The {@link #getTemplate(String)} call looks in the classpath for a file 'path/filename' in the package configured
- * with {@link #setPackage(String)}.
- * </p>
+ * Reads, compiles and caches the templates.
  * 
  * @author René M. de Bloois
  */
@@ -57,6 +42,8 @@ public class TemplateManager
 
 	private String packageSlashed = ""; // when setPackage is not called
 	private boolean reloading;
+	private String defaultLanguage;
+
 	private Map< String, Template > templates = new HashMap< String, Template >();
 	private Map< String, Object > mimeTypeMap = new HashMap< String, Object >();
 
@@ -78,6 +65,7 @@ public class TemplateManager
 	 * @param mimeType The MIME type to register the writer for.
 	 * @param factory The factory for the writer.
 	 */
+	// TODO Ability to set these with a Spring context
 	public void registerEncodingWriter( String mimeType, EncodingWriterFactory factory )
 	{
 		synchronized( this.mimeTypeMap )
@@ -89,9 +77,10 @@ public class TemplateManager
 	/**
 	 * Registers a MIME type mapping. The first MIME type will be written with the encoding writer of the second MIME type.
 	 * 
-	 * @param mimeType The MIME type that should be mapped to another.
+	 * @param mimeType The MIME type that should be mapped to the other MIME type.
 	 * @param encodeAsMimeType The MIME type to map to.
 	 */
+	// TODO Ability to set these with a Spring context
 	public void registerMimeTypeMapping( String mimeType, String encodeAsMimeType )
 	{
 		synchronized( this.mimeTypeMap )
@@ -125,6 +114,26 @@ public class TemplateManager
 	{
 		log.info( "Reloading = [{}]", reloading );
 		this.reloading = reloading;
+	}
+
+	/**
+	 * Sets the default scripting language of the templates. This is used when the "language" directive is missing in the template.
+	 * 
+	 * @param language The default scripting language of the templates.
+	 */
+	public void setDefaultLanguage( String language )
+	{
+		this.defaultLanguage = language;
+	}
+
+	/**
+	 * Returns the default scripting language of the templates.
+	 * 
+	 * @return The default scripting language of the templates.
+	 */
+	public String getDefaultLanguage()
+	{
+		return this.defaultLanguage;
 	}
 
 	/**
@@ -165,7 +174,7 @@ public class TemplateManager
 				if( !resource.exists() )
 					throw new TemplateNotFoundException( resource.toString() + " not found" );
 
-				template = getCompiler().compile( resource, this.packageSlashed + path );
+				template = new TemplateCompiler( this ).compile( resource, this.packageSlashed + path );
 				template.setLastModified( resource.getLastModified() );
 				template.setManager( this );
 				this.templates.put( path, template );
@@ -197,17 +206,6 @@ public class TemplateManager
 		}
 
 		return null;
-	}
-
-	/**
-	 * Ability to override which compiler is used to compile the template.
-	 * 
-	 * @return The compiler to compile the template with.
-	 * @see QueryManager
-	 */
-	protected TemplateCompiler getCompiler()
-	{
-		return new TemplateCompiler();
 	}
 
 	/**

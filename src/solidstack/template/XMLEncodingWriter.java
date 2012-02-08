@@ -50,18 +50,18 @@ public class XMLEncodingWriter extends NoEncodingWriter
 	}
 
 	/**
-	 * Write the specified string to the writer XML encoded.
+	 * Write the specified value to the writer XML encoded.
 	 * 
-	 * @param s The string to write.
+	 * @param value The value to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
 	@Override
-	public void writeEncoded( String s ) throws IOException
+	public void writeEncoded( Object value ) throws IOException
 	{
-		if( s == null )
+		if( value == null )
 			return;
 
-		char[] chars = s.toCharArray();
+		char[] chars = ( (String)value ).toCharArray();
 		int len = chars.length;
 		int start = 0;
 		String replace = null;
@@ -78,7 +78,7 @@ public class XMLEncodingWriter extends NoEncodingWriter
 			}
 			if( replace != null )
 			{
-				this.out.write( chars, start, i - start );
+				this.out.write( chars, start, i - start ); // TODO Should call the write() in the super
 				this.out.write( replace );
 				replace = null;
 				start = ++i;

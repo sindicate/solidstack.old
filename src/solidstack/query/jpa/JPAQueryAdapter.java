@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-package solidstack.query;
+package solidstack.query.jpa;
 
 import java.util.List;
+import java.util.Map;
+
 import javax.persistence.EntityManager;
+
+import solidstack.query.Query;
 
 
 /**
@@ -49,9 +53,9 @@ public class JPAQueryAdapter
 	 * @param entityClass The class to map the results to.
 	 * @return A {@link List} of entities.
 	 */
-	public <T> List< T > getResultList( EntityManager entityManager, Class< T > entityClass )
+	public <T> List< T > getResultList( EntityManager entityManager, Class< T > entityClass, Map< String, Object > args )
 	{
-		return JPASupport.getResultList( this.query, entityManager, entityClass );
+		return JPASupport.getResultList( this.query, entityManager, entityClass, args );
 	}
 
 	/**
@@ -61,9 +65,9 @@ public class JPAQueryAdapter
 	 * @param entityClass The class to map the results to.
 	 * @return An entity.
 	 */
-	public <T> T getSingleResult( EntityManager entityManager, Class< T > entityClass )
+	public <T> T getSingleResult( EntityManager entityManager, Class< T > entityClass, Map< String, Object > args )
 	{
-		return JPASupport.getSingleResult( this.query, entityManager, entityClass );
+		return JPASupport.getSingleResult( this.query, entityManager, entityClass, args );
 	}
 
 	/**
@@ -73,8 +77,8 @@ public class JPAQueryAdapter
 	 * @param entityClass The class to map the results to.
 	 * @return The JPA query.
 	 */
-	public javax.persistence.Query createQuery( EntityManager entityManager, Class< ? > entityClass )
+	public javax.persistence.Query createQuery( EntityManager entityManager, Class< ? > entityClass, Map< String, Object > args )
 	{
-		return JPASupport.createQuery( this.query, entityManager, entityClass );
+		return JPASupport.createQuery( this.query, entityManager, entityClass, args );
 	}
 }
