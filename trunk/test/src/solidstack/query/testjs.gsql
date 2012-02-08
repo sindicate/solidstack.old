@@ -1,8 +1,6 @@
-<%@ template encoding="UTF-8" language="groovy" %>
 <% // Test if the import at the bottom works, and this comment too of course
-new Timestamp( new Date().time ) %>
+new Timestamp( new java.util.Date().time ) %>
 SELECT *
-<%@ template contentType="text/html; charset=ISO-8859-1" %>
 FROM SYS.SYSTABLES
 	<%--
 	This comment should not 

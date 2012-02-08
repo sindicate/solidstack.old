@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-package solidstack.query;
+package solidstack.query.jpa;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.EntityManager;
 
 import solidstack.Assert;
+import solidstack.query.Query;
+import solidstack.query.Query.PreparedSQL;
 
 
 /**
@@ -40,9 +42,9 @@ public class JPASupport
 	 * @return A {@link List} of entities.
 	 */
 	@SuppressWarnings( "unchecked" )
-	static public <T> List< T > getResultList( Query query, EntityManager entityManager, Class< T > entityClass )
+	static public <T> List< T > getResultList( Query query, EntityManager entityManager, Class< T > entityClass, Map< String, Object > args )
 	{
-		javax.persistence.Query jpaQuery = createQuery( query, entityManager, entityClass );
+		javax.persistence.Query jpaQuery = createQuery( query, entityManager, entityClass, args );
 		return jpaQuery.getResultList();
 	}
 
@@ -55,9 +57,9 @@ public class JPASupport
 	 * @return An entity.
 	 */
 	@SuppressWarnings( "unchecked" )
-	static public <T> T getSingleResult( Query query, EntityManager entityManager, Class< T > entityClass )
+	static public <T> T getSingleResult( Query query, EntityManager entityManager, Class< T > entityClass, Map< String, Object > args )
 	{
-		javax.persistence.Query jpaQuery = createQuery( query, entityManager, entityClass );
+		javax.persistence.Query jpaQuery = createQuery( query, entityManager, entityClass, args );
 		return (T)jpaQuery.getSingleResult();
 	}
 
@@ -69,12 +71,12 @@ public class JPASupport
 	 * @param entityClass The class to map the results to.
 	 * @return The JPA query.
 	 */
-	static public javax.persistence.Query createQuery( Query query, EntityManager entityManager, Class< ? > entityClass )
+	static public javax.persistence.Query createQuery( Query query, EntityManager entityManager, Class< ? > entityClass, Map< String, Object > args )
 	{
-		List< Object > pars = new ArrayList< Object >();
-		String preparedSql = query.getPreparedSQL( pars );
+		PreparedSQL preparedSql = query.getPreparedSQL( args );
+		List< Object > pars = preparedSql.getParameters();
 
-		javax.persistence.Query result = entityManager.createNativeQuery( preparedSql, entityClass );
+		javax.persistence.Query result = entityManager.createNativeQuery( preparedSql.getSQL(), entityClass );
 		int i = 0;
 		for( Object par : pars )
 		{

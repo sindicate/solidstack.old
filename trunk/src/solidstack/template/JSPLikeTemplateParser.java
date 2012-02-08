@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+
 import solidbase.io.LineReader;
 import solidbase.io.PushbackReader;
 import solidstack.Assert;
@@ -30,6 +31,7 @@ import solidstack.Assert;
  * 
  * @author René M. de Bloois
  */
+// TODO Language-less version, so just with ${name}, <%= name %> and <% if(name) { %>
 public class JSPLikeTemplateParser
 {
 	/**

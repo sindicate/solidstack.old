@@ -16,8 +16,6 @@
 
 package solidstack.query;
 
-import groovy.lang.Closure;
-
 import java.util.Map;
 
 import solidstack.template.TemplateManager;
@@ -36,7 +34,7 @@ import solidstack.template.TemplateManager;
  *    List&lt; Map&lt; String, Object &gt;&gt; result = query.listOfMaps( connection );</pre>
  * 
  * <p>
- * The {@link #bind(String, Map)} call looks in the classpath for a file 'path/filename.gsql' in the package configured
+ * The {@link #apply(String, Map)} call looks in the classpath for a file 'path/filename.gsql' in the package configured
  * with {@link #setPackage(String)}.
  * </p>
  * 
@@ -53,65 +51,76 @@ import solidstack.template.TemplateManager;
  */
 public class QueryManager
 {
+	private TemplateManager templateManager;
+	private boolean locked;
+
+
 	/**
-	 * The {@link TemplateManager} that is used to manage the templates for the QueryManager.
+	 * Constructor.
 	 */
-	protected InternalManager templateManager = new InternalManager();
-
+	public QueryManager()
+	{
+		this.templateManager = new TemplateManager();
+	}
 
 	/**
-	 * Configures the package which is the root of the template files.
+	 * Constructor which uses an existing TemplateManager.
 	 * 
+	 * @param templateManager The template manager to use.
+	 */
+	public QueryManager( TemplateManager templateManager )
+	{
+		this.templateManager = templateManager;
+		this.locked = true;
+	}
+
+	/**
+	 * Configures the package which acts the root of the template files.
+	 *
 	 * @param pkg The package.
 	 */
 	public void setPackage( String pkg )
 	{
+		checkLock();
 		this.templateManager.setPackage( pkg );
 	}
 
 	/**
 	 * Enable or disable reloading. When enabled, the lastModified time stamp of the file is used to check if it needs reloading.
-	 * 
+	 *
 	 * @param reloading When true, the file is reloaded when updated.
 	 */
 	public void setReloading( boolean reloading )
 	{
+		checkLock();
 		this.templateManager.setReloading( reloading );
 	}
 
 	/**
-	 * Binds the arguments and the template and returns the {@link Query}.
-	 *
-	 * @param path The path of the query.
-	 * @param args The arguments.
-	 * @return The {@link Query}.
+	 * Sets the default scripting language of the templates. The default scripting language is used when a "language" directive is missing in the template.
+	 * 
+	 * @param language The default scripting language of the templates.
 	 */
-	public Query bind( String path, Map< String, ? > args )
+	public void setDefaultLanguage( String language )
 	{
-		QueryTemplate template = this.templateManager.getTemplate( path );
-		Query query = new Query( (Closure)template.getClosure().clone() );
-		query.bind( args );
-		return query;
+		checkLock();
+		this.templateManager.setDefaultLanguage( language );
 	}
 
 	/**
-	 * This is a customized TemplateManager that uses the {@link QueryCompiler} instead of the default template
-	 * compiler. Also, query templates use the .gsql extension which is automatically added to the template name.
-	 * 
-	 * @author René de Bloois
+	 * Returns a {@link Query}.
+	 *
+	 * @param path The path of the query.
+	 * @return The {@link Query}.
 	 */
-	static protected class InternalManager extends TemplateManager
+	public Query getQuery( String path )
 	{
-		@Override
-		protected QueryCompiler getCompiler()
-		{
-			return new QueryCompiler();
-		}
+		return new Query( this.templateManager.getTemplate( path + ".gsql" ) );
+	}
 
-		@Override
-		public QueryTemplate getTemplate( String path )
-		{
-			return (QueryTemplate)super.getTemplate( path + ".gsql" );
-		}
+	private void checkLock()
+	{
+		if( this.locked )
+			throw new IllegalStateException( "Can't configure the TemplateManager indirectly." );
 	}
 }

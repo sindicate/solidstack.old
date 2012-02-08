@@ -80,6 +80,7 @@ public class Reload
 	{
 		TemplateManager templates = new TemplateManager();
 		templates.setPackage( "solidstack.template" );
+		templates.setDefaultLanguage( "javascript" );
 
 		Template template = templates.getTemplate( "dummy.tmpl" );
 

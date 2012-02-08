@@ -16,8 +16,6 @@
 
 package solidstack.template;
 
-import groovy.lang.Closure;
-
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
@@ -31,12 +29,12 @@ import solidstack.template.JSPLikeTemplateParser.Directive;
  * 
  * @author René M. de Bloois
  */
-public class Template
+abstract public class Template
 {
+	private String name;
 	private String source;
 	private Directive[] directives;
 
-	private Closure template;
 	private String contentType;
 	private String charSet;
 	private long lastModified;
@@ -46,11 +44,13 @@ public class Template
 	/**
 	 * Constructor.
 	 * 
+	 * @param name The name of the template.
 	 * @param source The source code of the template. This is the template translated to the source code of the desired language.
 	 * @param directives The directives found in the template text.
 	 */
-	public Template( String source, Directive[] directives )
+	public Template( String name, String source, Directive[] directives )
 	{
+		this.name = name;
 		this.source = source;
 		this.directives = directives;
 	}
@@ -66,20 +66,23 @@ public class Template
 	}
 
 	/**
-	 * Apply this template.
+	 * Compiles the template to byte code or some other form of intermediate code.
+	 */
+	abstract public void compile();
+
+	/**
+	 * Apply the given parameters to the template and writes the result to the given writer.
 	 * 
 	 * @param params The parameters to be applied.
 	 * @param writer The result of applying this template is written to this writer.
 	 */
-	public void apply( Map< String, ? > params, Writer writer )
+	public void apply( Map< String, Object > params, Writer writer )
 	{
-		Closure template = (Closure)this.template.clone();
-		template.setDelegate( params );
-		template.call( createEncodingWriter( writer ) );
+		apply( params, createEncodingWriter( writer ) );
 	}
 
 	/**
-	 * Applies this template and writes the result to an OutputStream. The character set used is the one configured in
+	 * Apply the given parameters to the template and writes the output to the given output stream. The character set used is the one configured in
 	 * the template. If none is configured the default character encoding of the operating system is used.
 	 * 
 	 * @param params The parameters to be applied.
@@ -87,7 +90,7 @@ public class Template
 	 */
 	// TODO Test this one
 	// TODO Use default per MIME type too, then use the encoding of the source file, then the operating system
-	public void apply( Map< String, ? > params, OutputStream out )
+	public void apply( Map< String, Object > params, OutputStream out )
 	{
 		Writer writer;
 		if( this.charSet != null )
@@ -103,23 +106,29 @@ public class Template
 		}
 		else
 			writer = new OutputStreamWriter( out );
-		Closure template = (Closure)this.template.clone();
-		template.setDelegate( params );
-		template.call( createEncodingWriter( writer ) );
+		apply( params, writer );
 	}
 
 	/**
-	 * Apply this template.
+	 * Apply the given parameters to the template and returns the result as a string.
 	 * 
 	 * @param params The parameters to be applied.
 	 * @return The result of applying this template.
 	 */
-	public String apply( Map< String, ? > params )
+	public String apply( Map< String, Object > params )
 	{
 		StringWriter writer = new StringWriter();
 		apply( params, writer );
 		return writer.toString();
 	}
+
+	/**
+	 * Applies the given parameters to the template and writes the output to the given writer.
+	 * 
+	 * @param params The parameters to apply to the template.
+	 * @param writer The writer to write the result to.
+	 */
+	abstract public void apply( Map< String, Object > params, EncodingWriter writer );
 
 	/**
 	 * Returns the EncodingWriter for the configured MIME type.
@@ -169,23 +178,23 @@ public class Template
 	}
 
 	/**
+	 * Returns the name of the template.
+	 * 
+	 * @return The name of the template.
+	 */
+	public String getName()
+	{
+		return this.name;
+	}
+
+	/**
 	 * Returns the source code for the template.
 	 * 
 	 * @return The source code for the template.
 	 */
-	protected String getSource()
+	public String getSource() // TODO Remove public
 	{
 		return this.source;
-	}
-
-	/**
-	 * Returns the Groovy closure.
-	 * 
-	 * @return The Groovy closure.
-	 */
-	protected Closure getClosure()
-	{
-		return this.template;
 	}
 
 	/**
@@ -233,16 +242,6 @@ public class Template
 	protected void setLastModified( long lastModified )
 	{
 		this.lastModified = lastModified;
-	}
-
-	/**
-	 * Sets the Groovy closure.
-	 * 
-	 * @param closure The Groovy closure.
-	 */
-	protected void setClosure( Closure closure )
-	{
-		this.template = closure;
 	}
 
 	/**

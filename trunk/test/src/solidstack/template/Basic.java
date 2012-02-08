@@ -16,10 +16,7 @@
 
 package solidstack.template;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +31,7 @@ import solidbase.io.ResourceFactory;
 import solidbase.io.StringLineReader;
 import solidstack.template.JSPLikeTemplateParser.EVENT;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
+import solidstack.util.Pars;
 
 
 public class Basic
@@ -44,17 +42,19 @@ public class Basic
 		TemplateManager templates = new TemplateManager();
 		templates.setPackage( "solidstack.template" );
 
-		Map< String, Object > params = new HashMap< String, Object >();
 		Template template = templates.getTemplate( "test.gtext" );
-		String result = template.apply( params );
-//		System.out.println( result );
+		String result = template.apply( new Pars( "names", new String[] { "name1", "name2" } ) );
+		Assert.assertEquals( result, "SELECT *\n" +
+				"FROM SYS.SYSTABLES\n" +
+				"WHERE 1 = 1\n" +
+				"AND TABLENAME IN ([name1, name2])\n" );
 	}
 
 	@Test //(groups="new")
 	public void testTransform() throws Exception
 	{
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/template/test.gtext" );
-		Template template = new TemplateCompiler().translate( "p", "c", new BOMDetectingLineReader( resource ) );
+		Template template = new TemplateCompiler( null ).translate( "p", "c", new BOMDetectingLineReader( resource ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
 		Assert.assertEquals( template.getSource(), "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{out->\n" +
@@ -72,10 +72,10 @@ public class Basic
 				";out.write(\"\"\"AND TABLENAME LIKE '\"\"\");out.write( prefix );out.write(\"\"\"%'\n" +
 				"\"\"\"); } \n" +
 				"; if( name ) { \n" +
-				";out.write(\"\"\"AND TABLENAME = \"\"\");out.writeEncoded(name);out.write(\"\"\"\n" +
+				";out.write(\"\"\"AND TABLENAME = ${name}\n" +
 				"\"\"\"); } \n" +
 				"; if( names ) { \n" +
-				";out.write(\"\"\"AND TABLENAME IN (\"\"\");out.writeEncoded(names);out.write(\"\"\")\n" +
+				";out.write(\"\"\"AND TABLENAME IN (${names})\n" +
 				"\"\"\"); } \n" +
 				";\n" +
 				"}}}"
@@ -89,9 +89,9 @@ public class Basic
 		template = queries.getTemplate( "test.gtext" );
 		String result = template.apply( params );
 
-		Writer out = new OutputStreamWriter( new FileOutputStream( "test2.out" ), "UTF-8" );
-		out.write( result );
-		out.close();
+//		Writer out = new OutputStreamWriter( new FileOutputStream( "test2.out" ), "UTF-8" );
+//		out.write( result );
+//		out.close();
 
 		assert result.equals( "SELECT *\n" +
 				"FROM SYS.SYSTABLES\n" +
@@ -103,15 +103,17 @@ public class Basic
 	public void testNewlinesWithinDirective() throws Exception
 	{
 		LineReader reader = new StringLineReader( "<%@ template\n" +
-				"import=\"uk.co.tntpost.umbrella.common.utils.QueryUtils\"\n" +
-				"import=\"uk.co.tntpost.umbrella.common.enums.*\"\n" +
+				"import=\"common.utils.QueryUtils\"\n" +
+				"import=\"common.enums.*\"\n" +
+				"language=\"groovy\"\n" +
 				"%>\n" +
 				"TEST" );
 
-		Template template = new TemplateCompiler().translate( "p", "c", reader );
+		Template template = new TemplateCompiler( null ).translate( "p", "c", reader );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		Assert.assertEquals( template.getSource(), "package p;import uk.co.tntpost.umbrella.common.utils.QueryUtils;import uk.co.tntpost.umbrella.common.enums.*;class c{Closure getClosure(){return{out->\n" +
+		Assert.assertEquals( template.getSource(), "package p;import common.utils.QueryUtils;import common.enums.*;class c{Closure getClosure(){return{out->\n" +
+				"\n" +
 				"\n" +
 				"\n" +
 				"\n" +
@@ -143,7 +145,7 @@ public class Basic
 				"</html>\n" );
 	}
 
-	@Test(groups="new")
+	@Test
 	public void testHuge() throws IOException
 	{
 		StringBuilder buffer = new StringBuilder();

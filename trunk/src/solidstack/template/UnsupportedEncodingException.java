@@ -18,7 +18,7 @@ package solidstack.template;
 
 
 /**
- * The Character Encoding is not supported.
+ * The character encoding is not supported.
  * 
  * @author René de Bloois
  */

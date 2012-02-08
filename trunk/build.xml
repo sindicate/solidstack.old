@@ -106,8 +106,6 @@
 				</resourcecount>
 			</condition>
 		</fail>
-
-		
 		<jarjar compress="yes" destfile="${dist.home}/solidstack.jar">
 			<zipfileset dir="${build.home}/classes" />
 			<zipfileset dir="." includes="LICENSE.txt,NOTICE.txt,CHANGELOG.TXT" prefix="META-INF" />
@@ -167,7 +165,14 @@
 	</target>
 
 	
-	<target name="dist" depends="checksvnstatus,getsvninfo,clean,build,test" description="Complete build process to create the distribution files">
+	<target name="sources">
+		<jar compress="yes" destfile="${dist.home}/solidstack-sources.jar">
+			<zipfileset dir="src" includes="**/*.java" />
+		</jar>
+	</target>
+
+
+	<target name="dist" depends="checksvnstatus,getsvninfo,clean,test,build,sources" description="Complete build process to create the distribution files">
 		<echo message="Distribution files created in ${dist.home}" />
 	</target>
 
@@ -187,9 +192,10 @@
 	</target>
 
 
-	<target name="maven:deploy" depends="build" description="Deploys to the remote repo">
+	<target name="maven:deploy" depends="dist" description="Deploys to the remote repo">
 		<maven:deploy file="${dist.home}/solidstack.jar">
 			<pom file="deploy-pom.xml" />
+			<attach file="${dist.home}/solidstack-sources.jar" type="jar" classifier="sources"/>
 		</maven:deploy>
 	</target>
 	

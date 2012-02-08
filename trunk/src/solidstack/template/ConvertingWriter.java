@@ -18,33 +18,28 @@ package solidstack.template;
 
 import java.io.IOException;
 
+
 /**
- * An encoding writer. Can encode strings to the target content type.
+ * Accepts writes from the template. Has the responsibility to convert script language specific data types to java types
+ * and pass them on to the {@link EncodingWriter}.
  * 
- * @author René M. de Bloois
+ * @author René de Bloois
  */
-public interface EncodingWriter
+public interface ConvertingWriter
 {
 	/**
-	 * Write the string to the writer unencoded.
+	 * Write the object to the writer.
 	 * 
-	 * @param s The string to write.
+	 * @param o The object to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
-	void write( String s ) throws IOException;
+	void write( Object o ) throws IOException;
 
 	/**
-	 * Write the value to the writer encoded.
+	 * Writes an object from a ${ expression to the writer.
 	 * 
-	 * @param value The value to write.
+	 * @param o The object to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
-	void writeEncoded( Object value ) throws IOException;
-
-	/**
-	 * Indicates that the writes accepts values that are kept separate from the strings.
-	 * 
-	 * @return True when the writer accepts values.
-	 */
-	boolean stringsOnly();
+	void writeEncoded( Object o ) throws IOException;
 }
