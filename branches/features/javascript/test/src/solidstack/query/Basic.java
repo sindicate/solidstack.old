@@ -19,7 +19,6 @@ package solidstack.query;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +32,7 @@ import solidbase.io.LineReader;
 import solidbase.io.Resource;
 import solidbase.io.ResourceFactory;
 import solidbase.io.StringLineReader;
+import solidstack.query.Query.PreparedSQL;
 import solidstack.template.ParseException;
 import solidstack.template.Template;
 import solidstack.template.TemplateCompiler;
@@ -144,10 +144,10 @@ public class Basic
 		params.put( "prefix", "SYST" );
 		params.put( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } );
 		Query query = queries.getQuery( "test" );
-		List< Object > pars = new ArrayList< Object >();
-		String sql = query.getPreparedSQL( params, pars );
+		PreparedSQL sql = query.getPreparedSQL( params );
 
-		assert sql.equals( "SELECT *\n" +
+		// TODO SQL or Sql?
+		assert sql.getSQL().equals( "SELECT *\n" +
 				"FROM SYS.SYSTABLES\n" +
 				"WHERE 1 = 1\n" +
 				"AND TABLENAME LIKE 'SYST%'\n" +
@@ -196,10 +196,9 @@ public class Basic
 		params.put( "name", null );
 		params.put( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } );
 		Query query = queries.getQuery( "testjs" );
-		List< Object > pars = new ArrayList< Object >();
-		String sql = query.getPreparedSQL( params, pars );
+		PreparedSQL sql = query.getPreparedSQL( params );
 
-		assert sql.equals( "SELECT *\n" +
+		assert sql.getSQL().equals( "SELECT *\n" +
 				"FROM SYS.SYSTABLES\n" +
 				"WHERE 1 = 1\n" +
 				"AND TABLENAME LIKE 'SYST%'\n" +
@@ -224,10 +223,9 @@ public class Basic
 				"SYSTABLES", "SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS", "SYSTABLES",
 				"SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS" } ) );
 		Query query = queries.getQuery( "bigin" );
-		List< Object > pars = new ArrayList< Object >();
-		String sql = query.getPreparedSQL( params, pars );
+		PreparedSQL sql = query.getPreparedSQL( params );
 
-		assert sql.equals( "SELECT *\n" +
+		assert sql.getSQL().equals( "SELECT *\n" +
 				"FROM SYS.SYSTABLES\n" +
 				"WHERE TABLENAME IN ( ?,?,?,?,? )\n" +
 				"OR TABLENAME IN ( ?,?,?,?,? )\n" +
@@ -367,7 +365,7 @@ public class Basic
 		translateError( "X${\"text\ntext\"}X" );
 		translateError( "X${\"${\"text\ntext\"}\"}X" );
 		translateTest( "X${\"\"\"te\"xt\ntext\\\"\"\"\"}X", "out.write(\"\"\"X${\"\"\"te\"xt\ntext\\\"\"\"\"}X\"\"\");", "Xte\"xt\ntext\"X" );
-		// TODO An if in an expression? Can we do that for the other kind of expression to?
+		// TODO An if in an expression? Can we do that for the other kind of expression too?
 		translateTest( "${if(var){\"true\"}else{\"false\"}}", "out.write(\"\"\"${if(var){\"true\"}else{\"false\"}}\"\"\");", "true" );
 		translateError( "X${\"Y${\n}Y\"}X" );
 		translateTest( "X${\"\"\"Y${\nvar\n}Y\"\"\"}X", "out.write(\"\"\"X${\"\"\"Y${\nvar\n}Y\"\"\"}X\"\"\");", "XYvalueYX" );

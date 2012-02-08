@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack.template;
+package solidstack.template.javascript;
 
 import java.util.Map;
 
@@ -23,6 +23,8 @@ import org.mozilla.javascript.ImporterTopLevel;
 import org.mozilla.javascript.Script;
 import org.mozilla.javascript.TopLevel;
 
+import solidstack.template.EncodingWriter;
+import solidstack.template.Template;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 
 /**

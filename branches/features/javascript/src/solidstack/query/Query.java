@@ -35,6 +35,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import solidstack.Assert;
+import solidstack.query.hibernate.HibernateQueryAdapter;
+import solidstack.query.jpa.JPAQueryAdapter;
 import solidstack.template.Template;
 
 
@@ -46,6 +48,7 @@ import solidstack.template.Template;
  */
 public class Query
 {
+	// TODO We need well defined logger channels like hibernate
 	static  private Logger log = LoggerFactory.getLogger( Query.class );
 
 	private Template template;
@@ -255,30 +258,27 @@ public class Query
 	 */
 	public PreparedStatement getPreparedStatement( Connection connection, Map< String, Object > args )
 	{
-		List< Object > pars = new ArrayList< Object >();
-		String preparedSql = getPreparedSQL( args, pars );
+		PreparedSQL preparedSql = getPreparedSQL( args );
+		List< Object > pars = preparedSql.getParameters(); // TODO Parameters or Args?;
 
-		// TODO DEBUG: Only print query name and parameters
-		// TODO TRACE: Also print SQL
 		if( log.isDebugEnabled() )
 		{
 			StringBuilder debug = new StringBuilder();
-			debug.append( "Prepare statement:\n" );
-			debug.append( preparedSql );
-			debug.append( "\nParameters:" );
+			debug.append( "Prepare statement: " ).append( this.template.getName() ).append( '\n' );
+			if( log.isTraceEnabled() )
+				debug.append( preparedSql.getSQL() ).append( '\n' );
+			debug.append( "Parameters:" );
+			if( pars.size() == 0 )
+				debug.append( "\n\t(none)" );
 			int i = 1;
 			for( Object par : pars )
 			{
-				debug.append( '\n' );
-				debug.append( i++ );
-				debug.append( ":\t" );
+				debug.append( '\n' ).append( i++ ).append( ":\t" );
 				if( par == null )
 					debug.append( "(null)" );
 				else
 				{
-					debug.append( '(' );
-					debug.append( par.getClass().getName() );
-					debug.append( ')' );
+					debug.append( '(' ).append( par.getClass().getName() ).append( ')' );
 					if( !par.getClass().isArray() )
 						debug.append( par.toString() );
 					else
@@ -295,12 +295,15 @@ public class Query
 					}
 				}
 			}
-			log.debug( debug.toString() );
+			if( log.isTraceEnabled() )
+				log.trace( debug.toString() );
+			else
+				log.debug( debug.toString() );
 		}
 
 		try
 		{
-			PreparedStatement statement = connection.prepareStatement( preparedSql );
+			PreparedStatement statement = connection.prepareStatement( preparedSql.getSQL() );
 			int i = 0;
 			for( Object par : pars )
 			{
@@ -348,26 +351,25 @@ public class Query
 			pars.add( object );
 	}
 
-	String getPreparedSQL( Map< String, Object > args, List< Object > pars )
+	public PreparedSQL getPreparedSQL( Map< String, Object > args )
 	{
-		GStringWriter gsql = new GStringWriter();
+		QueryEncodingWriter gsql = new QueryEncodingWriter();
 		this.template.apply( args, gsql );
 
-		Assert.notNull( pars );
-		Assert.isTrue( pars.isEmpty() );
-
+		List< Object > pars = new ArrayList< Object >();
 		StringBuilder result = new StringBuilder();
+
 		List< Object > values = gsql.getValues();
 		BitSet isValue = gsql.getIsValue();
 		int len = values.size();
+
 		for( int i = 0; i < len; i++ )
-		{
 			if( isValue.get( i ) )
 				appendParameter( values.get( i ), "unknown", result, pars );
 			else
 				result.append( (String)values.get( i ) );
-		}
-		return result.toString();
+
+		return new PreparedSQL( result.toString(), pars );
 	}
 
 	static private void appendExtraQuestionMarks( StringBuilder s, int count )
@@ -376,6 +378,28 @@ public class Query
 		{
 			s.append( ",?" );
 			count--;
+		}
+	}
+
+	static public class PreparedSQL
+	{
+		private String sql;
+		private List< Object > pars;
+
+		protected PreparedSQL( String sql, List< Object > pars )
+		{
+			this.sql = sql;
+			this.pars = pars;
+		}
+
+		public String getSQL()
+		{
+			return this.sql;
+		}
+
+		public List< Object > getParameters()
+		{
+			return this.pars;
 		}
 	}
 }

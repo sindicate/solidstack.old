@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack.template;
+package solidstack.template.groovy;
 
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
@@ -27,7 +27,11 @@ import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.tools.GroovyClass;
 
 import solidstack.Assert;
+import solidstack.template.DefiningClassLoader;
+import solidstack.template.EncodingWriter;
 import solidstack.template.JSPLikeTemplateParser.Directive;
+import solidstack.template.Template;
+import solidstack.template.Util;
 
 /**
  * A compiled Groovy template.

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack.template;
+package solidstack.template.groovy;
 
 import groovy.lang.Closure;
 import groovy.lang.GString;
@@ -22,6 +22,10 @@ import groovy.lang.GString;
 import java.io.IOException;
 
 import org.codehaus.groovy.runtime.InvokerHelper;
+
+import solidstack.template.ConvertingWriter;
+import solidstack.template.EncodingWriter;
+import solidstack.template.TemplateException;
 
 
 /**

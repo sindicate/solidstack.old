@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import solidbase.io.Resource;
 import solidbase.io.ResourceFactory;
 import solidstack.Assert;
-import solidstack.query.QueryManager;
 
 
 /**
@@ -66,6 +65,7 @@ public class TemplateManager
 	 * @param mimeType The MIME type to register the writer for.
 	 * @param factory The factory for the writer.
 	 */
+	// TODO Ability to set these with a Spring context
 	public void registerEncodingWriter( String mimeType, EncodingWriterFactory factory )
 	{
 		synchronized( this.mimeTypeMap )
@@ -80,6 +80,7 @@ public class TemplateManager
 	 * @param mimeType The MIME type that should be mapped to the other MIME type.
 	 * @param encodeAsMimeType The MIME type to map to.
 	 */
+	// TODO Ability to set these with a Spring context
 	public void registerMimeTypeMapping( String mimeType, String encodeAsMimeType )
 	{
 		synchronized( this.mimeTypeMap )
@@ -173,7 +174,7 @@ public class TemplateManager
 				if( !resource.exists() )
 					throw new TemplateNotFoundException( resource.toString() + " not found" );
 
-				template = getCompiler().compile( resource, this.packageSlashed + path );
+				template = new TemplateCompiler( this ).compile( resource, this.packageSlashed + path );
 				template.setLastModified( resource.getLastModified() );
 				template.setManager( this );
 				this.templates.put( path, template );
@@ -205,17 +206,6 @@ public class TemplateManager
 		}
 
 		return null;
-	}
-
-	/**
-	 * Ability to override which compiler is used to compile the template.
-	 * 
-	 * @return The compiler to compile the template with.
-	 * @see QueryManager
-	 */
-	protected TemplateCompiler getCompiler()
-	{
-		return new TemplateCompiler( this );
 	}
 
 	/**

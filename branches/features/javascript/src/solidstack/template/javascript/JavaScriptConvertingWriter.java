@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-package solidstack.template;
+package solidstack.template.javascript;
 
 import java.io.IOException;
+
+import solidstack.template.ConvertingWriter;
+import solidstack.template.EncodingWriter;
 
 
 /**

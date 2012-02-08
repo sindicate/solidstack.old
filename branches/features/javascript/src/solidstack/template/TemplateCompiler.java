@@ -32,6 +32,8 @@ import solidstack.Assert;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.EVENT;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
+import solidstack.template.groovy.GroovyTemplate;
+import solidstack.template.javascript.JavaScriptTemplate;
 
 /**
  * Template compiler.

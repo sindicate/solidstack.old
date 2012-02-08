@@ -37,7 +37,7 @@ public class Closures
 		String result = template.apply( params );
 		System.out.println( result );
 		// TODO Compiling the template to a GString has a unfortunate side effect. But if we do it differently then ${if()...else...} does not work anymore.
-		Assert.assertEquals( result, "te<stte&lt;st\n" +
+		Assert.assertEquals( result, "te<stte&lt;st\n" + // out.write gets written first
 				"te<st\n" +
 				"\n" +
 				"te<st\n" +

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack.query;
+package solidstack.query.hibernate;
 
 import java.sql.ResultSet;
 import java.util.List;
@@ -22,6 +22,8 @@ import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
+
+import solidstack.query.Query;
 
 
 /**
