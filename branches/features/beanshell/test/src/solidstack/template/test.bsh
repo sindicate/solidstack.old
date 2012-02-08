@@ -1,0 +1,26 @@
+import solidstack.template.JavascriptTest;
+// Test if the import at the bottom works, and this comment too of course
+out.write("""SELECT *
+""");
+out.write("""FROM SYS.SYSTABLES
+""");
+
+
+
+out.write("""WHERE 1 = 1
+"""); if( prefix != null ) { 
+;out.write("""AND TABLENAME LIKE '""");out.write( prefix );out.write("""%'
+"""); } 
+; if( name != null ) { 
+;out.write("""AND TABLENAME = """);out.writeEncoded(name);out.write("""
+"""); } 
+; if( names != null ) { 
+;out.write("""AND TABLENAME IN (""");out.writeEncoded(names);out.write(""")
+"""); } 
+;
+
+out.write( new java.util.Date().toString() );
+out.write( """\n""" );
+
+out.write( JavascriptTest.CONSTANT );
+out.write( """\n""" );
