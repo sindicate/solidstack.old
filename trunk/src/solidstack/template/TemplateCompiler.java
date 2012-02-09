@@ -118,30 +118,6 @@ public class TemplateCompiler
 	}
 
 	/**
-	 * Writes a string with escaping of sensitive characters ", \ and $.
-	 * 
-	 * @param buffer The buffer to write to.
-	 * @param s The string to write.
-	 */
-	// TODO This is not correct for javascript
-	static protected void writeString( StringBuilder buffer, String s )
-	{
-		char[] chars = s.toCharArray();
-		int len = chars.length;
-		char c;
-		for( int i = 0; i < len; i++ )
-			switch( c = chars[ i ] )
-			{
-				case '"':
-				case '\\':
-				case '$':
-					buffer.append( '\\' ); //$FALL-THROUGH$
-				default:
-					buffer.append( c );
-			}
-	}
-
-	/**
 	 * Translates the template text to source code of the desired programming language.
 	 * 
 	 * @param pkg The package for naming the class.
@@ -204,6 +180,24 @@ public class TemplateCompiler
 		throw new TemplateException( "Unsupported scripting language: " + lang );
 	}
 
+	// TODO Any other characters?
+	static private void writeGroovyString( StringBuilder buffer, String s )
+	{
+		char[] chars = s.toCharArray();
+		int len = chars.length;
+		char c;
+		for( int i = 0; i < len; i++ )
+			switch( c = chars[ i ] )
+			{
+				case '"':
+				case '\\':
+				case '$':
+					buffer.append( '\\' ); //$FALL-THROUGH$
+				default:
+					buffer.append( c );
+			}
+	}
+
 	static private GroovyTemplate toGroovy( String pkg, String cls, List< ParseEvent > events, List< Directive > directives, List< String > imports )
 	{
 		StringBuilder buffer = new StringBuilder( 1024 );
@@ -224,7 +218,7 @@ public class TemplateCompiler
 					if( !text )
 						buffer.append( "out.write(\"\"\"" );
 					text = true;
-					writeString( buffer, event.getData() );
+					writeGroovyString( buffer, event.getData() );
 					break;
 
 				case SCRIPT:
@@ -272,6 +266,23 @@ public class TemplateCompiler
 		return template;
 	}
 
+	// TODO Any other characters?
+	static private void writeJavaScriptString( StringBuilder buffer, String s )
+	{
+		char[] chars = s.toCharArray();
+		int len = chars.length;
+		char c;
+		for( int i = 0; i < len; i++ )
+			switch( c = chars[ i ] )
+			{
+				case '"':
+				case '\\':
+					buffer.append( '\\' ); //$FALL-THROUGH$
+				default:
+					buffer.append( c );
+			}
+	}
+
 	static private JavaScriptTemplate toJavaScript( String name, List< ParseEvent > events, List< Directive > directives, List< String > imports )
 	{
 		StringBuilder buffer = new StringBuilder( 1024 );
@@ -293,7 +304,7 @@ public class TemplateCompiler
 					if( !text )
 						buffer.append( "out.write(\"" );
 					text = true;
-					writeString( buffer, event.getData() );
+					writeJavaScriptString( buffer, event.getData() );
 					break;
 
 				case NEWLINE:
