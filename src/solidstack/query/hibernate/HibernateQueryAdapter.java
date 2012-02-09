@@ -16,17 +16,19 @@
 
 package solidstack.query.hibernate;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.HibernateException;
+import org.hibernate.JDBCException;
 import org.hibernate.Session;
 
 import solidstack.query.Query;
 
 
 /**
+ * Adapts the given Query to Hibernate.
  * 
  * @author René M. de Bloois
  */
@@ -52,8 +54,10 @@ public class HibernateQueryAdapter
 	 * Retrieves a {@link ResultSet} from the given Hibernate {@link Session}.
 	 * 
 	 * @param session The Hibernate {@link Session} to use.
+	 * @param args The arguments to the query.
 	 * @return a {@link ResultSet}.
-	 * @see Query#resultSet()
+	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
+	 * @see Query#resultSet(Connection, Map)
 	 */
 	public ResultSet resultSet( Session session, Map< String, Object > args )
 	{
@@ -64,7 +68,10 @@ public class HibernateQueryAdapter
 	 * Retrieves a {@link List} of {@link Object} arrays from the given Hibernate {@link Session}.
 	 * 
 	 * @param session The Hibernate {@link Session} to use.
+	 * @param args The arguments to the query.
 	 * @return a {@link List} of {@link Object} arrays.
+	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
+	 * @see Query#listOfArrays(Connection, Map)
 	 */
 	public List< Object[] > listOfArrays( final Session session, Map< String, Object > args )
 	{
@@ -75,7 +82,10 @@ public class HibernateQueryAdapter
 	 * Retrieves a {@link List} of {@link Map}s from the given Hibernate {@link Session}.
 	 * 
 	 * @param session The Hibernate {@link Session} to use.
+	 * @param args The arguments to the query.
 	 * @return A {@link List} of {@link Map}s.
+	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
+	 * @see Query#listOfMaps(Connection, Map)
 	 */
 	public List< Map< String, Object > > listOfMaps( final Session session, Map< String, Object > args )
 	{
@@ -86,8 +96,10 @@ public class HibernateQueryAdapter
 	 * Executes an update (DML) or a DDL query through the given Hibernate {@link Session}.
 	 * 
 	 * @param session The Hibernate {@link Session} to use.
+	 * @param args The arguments to the query.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
-	 * @throws HibernateException SQLExceptions are translated to HibernateExceptions by Hibernate.
+	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
+	 * @see Query#updateChecked(Connection, Map)
 	 */
 	public int update( Session session, Map< String, Object > args )
 	{

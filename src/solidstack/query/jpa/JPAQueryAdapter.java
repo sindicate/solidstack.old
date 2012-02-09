@@ -25,6 +25,7 @@ import solidstack.query.Query;
 
 
 /**
+ * Adapts the given Query to JPA.
  * 
  * @author René M. de Bloois
  */
@@ -51,7 +52,9 @@ public class JPAQueryAdapter
 	 * 
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param entityClass The class to map the results to.
+	 * @param args The arguments to the query.
 	 * @return A {@link List} of entities.
+	 * @see javax.persistence.Query#getResultList()
 	 */
 	public <T> List< T > getResultList( EntityManager entityManager, Class< T > entityClass, Map< String, Object > args )
 	{
@@ -63,7 +66,9 @@ public class JPAQueryAdapter
 	 * 
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param entityClass The class to map the results to.
+	 * @param args The arguments to the query.
 	 * @return An entity.
+	 * @see javax.persistence.Query#getSingleResult()
 	 */
 	public <T> T getSingleResult( EntityManager entityManager, Class< T > entityClass, Map< String, Object > args )
 	{
@@ -75,7 +80,9 @@ public class JPAQueryAdapter
 	 * 
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param entityClass The class to map the results to.
+	 * @param args The arguments to the query.
 	 * @return The JPA query.
+	 * @see EntityManager#createNativeQuery(String, Class)
 	 */
 	public javax.persistence.Query createQuery( EntityManager entityManager, Class< ? > entityClass, Map< String, Object > args )
 	{

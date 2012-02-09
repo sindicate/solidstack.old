@@ -18,18 +18,21 @@ package solidstack.query.hibernate;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.HibernateException;
+import org.hibernate.JDBCException;
 import org.hibernate.Session;
 import org.hibernate.jdbc.Work;
 
 import solidstack.query.Query;
+import solidstack.query.QueryException;
 import solidstack.query.ResultHolder;
 
 
 /**
+ * Adds support for Hibernate. Hibernate dependencies must be kept separate from the rest.
  * 
  * @author René M. de Bloois
  */
@@ -40,8 +43,10 @@ public class HibernateSupport
 	 * 
 	 * @param query The query.
 	 * @param session The Hibernate {@link Session} to use.
+	 * @param args The arguments to the query.
 	 * @return a {@link ResultSet}.
-	 * @see Query#resultSet()
+	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
+	 * @see Query#resultSet(Connection, Map)
 	 */
 	static public ResultSet resultSet( final Query query, Session session, final Map< String, Object > args )
 	{
@@ -49,9 +54,16 @@ public class HibernateSupport
 
 		session.doWork( new Work()
 		{
-			public void execute( Connection connection )
+			public void execute( Connection connection ) throws SQLException
 			{
-				result.set( query.resultSet( connection, args ) );
+				try
+				{
+					result.set( query.resultSet( connection, args ) );
+				}
+				catch( QueryException e )
+				{
+					throw e.getSQLException();
+				}
 			}
 		});
 
@@ -63,7 +75,10 @@ public class HibernateSupport
 	 * 
 	 * @param query The query.
 	 * @param session The Hibernate {@link Session} to use.
+	 * @param args The arguments to the query.
 	 * @return a {@link List} of {@link Object} arrays.
+	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
+	 * @see Query#listOfArrays(Connection, Map)
 	 */
 	static public List< Object[] > listOfArrays( final Query query, final Session session, final Map< String, Object > args )
 	{
@@ -71,9 +86,16 @@ public class HibernateSupport
 
 		session.doWork( new Work()
 		{
-			public void execute( Connection connection )
+			public void execute( Connection connection ) throws SQLException
 			{
-				result.set( query.listOfArrays( connection, args ) );
+				try
+				{
+					result.set( query.listOfArrays( connection, args ) );
+				}
+				catch( QueryException e )
+				{
+					throw e.getSQLException();
+				}
 			}
 		});
 
@@ -85,7 +107,10 @@ public class HibernateSupport
 	 * 
 	 * @param query The query.
 	 * @param session The Hibernate {@link Session} to use.
+	 * @param args The arguments to the query.
 	 * @return A {@link List} of {@link Map}s.
+	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
+	 * @see Query#listOfMaps(Connection, Map)
 	 */
 	static public List< Map< String, Object > > listOfMaps( final Query query, final Session session, final Map< String, Object > args )
 	{
@@ -93,9 +118,16 @@ public class HibernateSupport
 
 		session.doWork( new Work()
 		{
-			public void execute( Connection connection )
+			public void execute( Connection connection ) throws SQLException
 			{
-				result.set( query.listOfMaps( connection, args ) );
+				try
+				{
+					result.set( query.listOfMaps( connection, args ) );
+				}
+				catch( QueryException e )
+				{
+					throw e.getSQLException();
+				}
 			}
 		});
 
@@ -107,8 +139,10 @@ public class HibernateSupport
 	 * 
 	 * @param query The query.
 	 * @param session The Hibernate {@link Session} to use.
+	 * @param args The arguments to the query.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
-	 * @throws HibernateException SQLExceptions are translated to HibernateExceptions by Hibernate.
+	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
+	 * @see Query#updateChecked(Connection, Map)
 	 */
 	static public int update( final Query query, Session session, final Map< String, Object > args )
 	{
@@ -116,9 +150,9 @@ public class HibernateSupport
 
 		session.doWork( new Work()
 		{
-			public void execute( Connection connection )
+			public void execute( Connection connection ) throws SQLException
 			{
-				result.set( query.update( connection, args ) );
+				result.set( query.updateChecked( connection, args ) );
 			}
 		});
 

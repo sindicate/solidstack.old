@@ -34,13 +34,15 @@ import solidstack.Assert;
  * 
  * @author René M. de Bloois
  */
+// TODO TemplateManager hierarchy, so that they can inherit MIME type mappings? And fallback like ClassLoaders do?
+// TODO Or a separate MIME type registry?
 public class TemplateManager
 {
 	static private Logger log = LoggerFactory.getLogger( TemplateManager.class );
 
 	static private final Pattern XML_MIME_TYPE_PATTERN = Pattern.compile( "^[a-z]+/.+\\+xml" ); // TODO http://www.iana.org/assignments/media-types/index.html
 
-	private String packageSlashed = ""; // when setPackage is not called
+	private String packageSlashed = "";
 	private boolean reloading;
 	private String defaultLanguage;
 
@@ -54,7 +56,7 @@ public class TemplateManager
 	public TemplateManager()
 	{
 		this.mimeTypeMap.put( "text/xml", XMLEncodingWriter.FACTORY );
-		// TODO Put this in a properties file
+		// TODO Put this in a properties file, or not?
 		this.mimeTypeMap.put( "application/xml", "text/xml" );
 		this.mimeTypeMap.put( "text/html", "text/xml" );
 	}
@@ -112,7 +114,7 @@ public class TemplateManager
 	 */
 	public void setReloading( boolean reloading )
 	{
-		log.info( "Reloading = [{}]", reloading );
+		log.info( "reloading = [{}]", reloading );
 		this.reloading = reloading;
 	}
 
@@ -123,6 +125,7 @@ public class TemplateManager
 	 */
 	public void setDefaultLanguage( String language )
 	{
+		log.info( "defaultLanguage = [{}]", language );
 		this.defaultLanguage = language;
 	}
 
@@ -144,6 +147,7 @@ public class TemplateManager
 	 * @param path The path of the template.
 	 * @return The {@link Template}.
 	 */
+	// TODO Also cache that a template is not found?
 	public Template getTemplate( String path )
 	{
 		log.debug( "getTemplate [{}]", path );

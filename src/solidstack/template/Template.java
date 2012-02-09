@@ -123,7 +123,7 @@ abstract public class Template
 	}
 
 	/**
-	 * Applies the given parameters to the template and writes the output to the given writer.
+	 * Applies the given parameters to the template and writes the output to the given encoding writer.
 	 * 
 	 * @param params The parameters to apply to the template.
 	 * @param writer The writer to write the result to.

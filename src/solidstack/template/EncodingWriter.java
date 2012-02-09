@@ -42,9 +42,9 @@ public interface EncodingWriter
 	void writeEncoded( Object value ) throws IOException;
 
 	/**
-	 * Indicates that the writes accepts values that are kept separate from the strings.
+	 * Indicates that {@link #writeEncoded(Object)} only accepts Strings, not Objects.
 	 * 
-	 * @return True when the writer accepts values.
+	 * @return True when {@link #writeEncoded(Object)} only accepts Strings, not Objects.
 	 */
 	boolean stringsOnly();
 }

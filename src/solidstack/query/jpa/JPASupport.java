@@ -28,6 +28,7 @@ import solidstack.query.Query.PreparedSQL;
 
 
 /**
+ * Adds support for JPA. JPA dependencies must be kept separate from the rest.
  * 
  * @author René M. de Bloois
  */
@@ -39,7 +40,9 @@ public class JPASupport
 	 * @param query The query.
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param entityClass The class to map the results to.
+	 * @param args The arguments to the query.
 	 * @return A {@link List} of entities.
+	 * @see javax.persistence.Query#getResultList()
 	 */
 	@SuppressWarnings( "unchecked" )
 	static public <T> List< T > getResultList( Query query, EntityManager entityManager, Class< T > entityClass, Map< String, Object > args )
@@ -54,7 +57,9 @@ public class JPASupport
 	 * @param query The query.
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param entityClass The class to map the results to.
+	 * @param args The arguments to the query.
 	 * @return An entity.
+	 * @see javax.persistence.Query#getSingleResult()
 	 */
 	@SuppressWarnings( "unchecked" )
 	static public <T> T getSingleResult( Query query, EntityManager entityManager, Class< T > entityClass, Map< String, Object > args )
@@ -69,7 +74,9 @@ public class JPASupport
 	 * @param query The query.
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param entityClass The class to map the results to.
+	 * @param args The arguments to the query.
 	 * @return The JPA query.
+	 * @see EntityManager#createNativeQuery(String, Class)
 	 */
 	static public javax.persistence.Query createQuery( Query query, EntityManager entityManager, Class< ? > entityClass, Map< String, Object > args )
 	{
