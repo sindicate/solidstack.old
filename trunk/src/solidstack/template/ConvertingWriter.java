@@ -25,6 +25,7 @@ import java.io.IOException;
  * 
  * @author René de Bloois
  */
+// Can't implement Writer. DefaultGroovyMethods.write(Writer self, Writable writable) will be called when value is null, which results in NPE.
 public interface ConvertingWriter
 {
 	/**

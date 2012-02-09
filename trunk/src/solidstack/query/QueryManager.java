@@ -16,36 +16,11 @@
 
 package solidstack.query;
 
-import java.util.Map;
-
 import solidstack.template.TemplateManager;
 
 
 /**
  * Reads, compiles and caches the queries.
- * 
- * Usage:
- * 
- * <pre>
- *    Map&lt; String, Object &gt; args = new HashMap&lt; String, Object &gt;();
- *    args.put( &quot;arg1&quot;, arg1 );
- *    args.put( &quot;arg2&quot;, arg2 );
- *    Query query = queryManager.bind( &quot;path/filename&quot;, args );
- *    List&lt; Map&lt; String, Object &gt;&gt; result = query.listOfMaps( connection );</pre>
- * 
- * <p>
- * The {@link #apply(String, Map)} call looks in the classpath for a file 'path/filename.gsql' in the package configured
- * with {@link #setPackage(String)}.
- * </p>
- * 
- * <p>
- * The arguments in the map given to the bind call can be any type as long as the template produces something that the
- * JDBC driver understands.
- * </p>
- * 
- * <p>
- * See {@link Query} for a description of what you can do with the query returned by the bind call.
- * </p>
  * 
  * @author René M. de Bloois
  */
@@ -75,7 +50,7 @@ public class QueryManager
 	}
 
 	/**
-	 * Configures the package which acts the root of the template files.
+	 * Configures the package which acts as the root of the template files.
 	 *
 	 * @param pkg The package.
 	 */
@@ -90,6 +65,7 @@ public class QueryManager
 	 *
 	 * @param reloading When true, the file is reloaded when updated.
 	 */
+	// TODO Need reload delay to prevent to much file checking
 	public void setReloading( boolean reloading )
 	{
 		checkLock();
@@ -110,7 +86,7 @@ public class QueryManager
 	/**
 	 * Returns a {@link Query}.
 	 *
-	 * @param path The path of the query.
+	 * @param path The path of the query relative to the configured root package.
 	 * @return The {@link Query}.
 	 */
 	public Query getQuery( String path )
@@ -121,6 +97,6 @@ public class QueryManager
 	private void checkLock()
 	{
 		if( this.locked )
-			throw new IllegalStateException( "Can't configure the TemplateManager indirectly." );
+			throw new IllegalStateException( "The TemplateManager must be configured directly." );
 	}
 }

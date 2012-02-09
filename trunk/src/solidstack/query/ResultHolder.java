@@ -18,7 +18,7 @@ package solidstack.query;
 
 
 /**
- * Needed to store results from an anonymous inner class method.
+ * Needed to store results from an anonymous inner class method that has no return value.
  * 
  * @param <T> The type of the result.
  */

@@ -70,6 +70,7 @@ public class GroovyTemplate extends Template
 
 		// Use class loader to define the classes
 		// TODO Configurable class loader
+		// TODO See BeanShell 2 for resolving the parent classloader
 		DefiningClassLoader classLoader = new DefiningClassLoader( GroovyTemplate.class.getClassLoader() );
 		Class< ? > first = null;
 		for( GroovyClass cls : classes )

@@ -21,7 +21,7 @@ import java.util.Map;
 
 
 /**
- * Wraps a iterator from the list of arrays and gives Map instances instead of arrays.
+ * Wraps a iterator from the list of arrays and returns Map instances instead of arrays.
  * 
  * @author René M. de Bloois
  */

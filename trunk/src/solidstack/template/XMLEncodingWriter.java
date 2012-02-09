@@ -50,7 +50,7 @@ public class XMLEncodingWriter extends NoEncodingWriter
 	}
 
 	/**
-	 * Write the specified value to the writer XML encoded.
+	 * Write the specified value to the writer XML encoded. &, <, >, " and ' are encoded to &amp;, &lt;, &gt;, &#034; and &#039; respectively.
 	 * 
 	 * @param value The value to write.
 	 * @throws IOException Whenever an IOException occurs.

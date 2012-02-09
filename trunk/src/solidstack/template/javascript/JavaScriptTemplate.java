@@ -55,7 +55,7 @@ public class JavaScriptTemplate extends Template
 		Context cx = Context.enter();
 		try
 		{
-			cx.setOptimizationLevel( -1 );
+			cx.setOptimizationLevel( -1 ); // Generate only an AST, not bytecode
 			this.script = cx.compileString( getSource(), getName(), 1, null ); // TODO Name
 		}
 		finally
