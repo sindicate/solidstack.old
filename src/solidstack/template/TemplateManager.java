@@ -175,6 +175,7 @@ public class TemplateManager
 					throw new TemplateNotFoundException( resource.toString() + " not found" );
 
 				template = new TemplateCompiler( this ).compile( resource, this.packageSlashed + path );
+				template.setName( path ); // Overwrite the name
 				template.setLastModified( resource.getLastModified() );
 				template.setManager( this );
 				this.templates.put( path, template );

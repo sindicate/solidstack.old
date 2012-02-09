@@ -259,7 +259,7 @@ public class Query
 	public PreparedStatement getPreparedStatement( Connection connection, Map< String, Object > args )
 	{
 		PreparedSQL preparedSql = getPreparedSQL( args );
-		List< Object > pars = preparedSql.getParameters(); // TODO Parameters or Args?;
+		List< Object > pars = preparedSql.getParameters();
 
 		if( log.isDebugEnabled() )
 		{

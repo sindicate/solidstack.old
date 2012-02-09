@@ -194,7 +194,7 @@ public class TemplateCompiler
 		}
 
 		if( lang.equals( "javascript" ) )
-			return toJavaScript( cls, events, directives, imports ); // TODO cls is not right
+			return toJavaScript( pkg + "." + cls, events, directives, imports ); // TODO cls is not right
 
 		if( lang.equals( "groovy" ) )
 			return toGroovy( pkg, cls, events, directives, imports );
@@ -265,12 +265,12 @@ public class TemplateCompiler
 			buffer.append( "\"\"\");" );
 		buffer.append( "}}}" );
 
-		GroovyTemplate template = new GroovyTemplate( cls, buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
+		GroovyTemplate template = new GroovyTemplate( pkg + "." + cls, buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
 		log.trace( "Generated Groovy:\n{}", template.getSource() );
 		return template;
 	}
 
-	static private JavaScriptTemplate toJavaScript( String cls, List< ParseEvent > events, List< Directive > directives, List< String > imports )
+	static private JavaScriptTemplate toJavaScript( String name, List< ParseEvent > events, List< Directive > directives, List< String > imports )
 	{
 		StringBuilder buffer = new StringBuilder( 1024 );
 
@@ -339,7 +339,7 @@ public class TemplateCompiler
 		if( text )
 			buffer.append( "\");" );
 
-		JavaScriptTemplate template = new JavaScriptTemplate( cls, buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
+		JavaScriptTemplate template = new JavaScriptTemplate( name, buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
 		log.trace( "Generated JavaScript:\n{}", template.getSource() );
 		return template;
 	}
