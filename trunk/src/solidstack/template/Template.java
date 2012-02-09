@@ -214,6 +214,11 @@ abstract public class Template
 		return null;
 	}
 
+	public void setName( String name )
+	{
+		this.name = name;
+	}
+
 	/**
 	 * Sets the content type of the template.
 	 * 
