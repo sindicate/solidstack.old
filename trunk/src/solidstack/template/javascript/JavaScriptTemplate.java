@@ -47,11 +47,7 @@ public class JavaScriptTemplate extends Template
 	public JavaScriptTemplate( String name, String source, Directive[] directives )
 	{
 		super( name, source, directives );
-	}
 
-	@Override
-	public void compile()
-	{
 		Context cx = Context.enter();
 		try
 		{

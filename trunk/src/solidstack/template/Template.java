@@ -66,11 +66,6 @@ abstract public class Template
 	}
 
 	/**
-	 * Compiles the template to byte code or some other form of intermediate code.
-	 */
-	abstract public void compile();
-
-	/**
 	 * Apply the given parameters to the template and writes the result to the given writer.
 	 * 
 	 * @param params The parameters to be applied.
