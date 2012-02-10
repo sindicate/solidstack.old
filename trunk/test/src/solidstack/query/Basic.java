@@ -28,7 +28,6 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import solidbase.io.BOMDetectingLineReader;
-import solidbase.io.LineReader;
 import solidbase.io.Resource;
 import solidbase.io.ResourceFactory;
 import solidbase.io.StringLineReader;
@@ -37,6 +36,7 @@ import solidstack.template.ParseException;
 import solidstack.template.Template;
 import solidstack.template.TemplateCompiler;
 import solidstack.template.TemplateManager;
+import solidstack.template.TestSupport;
 import solidstack.util.Pars;
 
 
@@ -109,7 +109,7 @@ public class Basic
 	public void testTransform() throws Exception
 	{
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/test.gsql" );
-		Template template = new TemplateCompiler( null ).translate( "p", "c", new BOMDetectingLineReader( resource ) );
+		Template template = TestSupport.translate( new TemplateCompiler( null ), "p", "c", new BOMDetectingLineReader( resource ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
 		Assert.assertEquals( template.getSource(), "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{out->\n" +
@@ -166,7 +166,7 @@ public class Basic
 		manager.setDefaultLanguage( "javascript" );
 
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/testjs.gsql" );
-		Template template = new TemplateCompiler( manager ).translate( "p", "c", new BOMDetectingLineReader( resource ) );
+		Template template = TestSupport.translate( new TemplateCompiler( null ), "p", "c", new BOMDetectingLineReader( resource ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 
 		Assert.assertEquals( template.getSource(), "importClass(Packages.java.sql.Timestamp); // Test if the import at the bottom works, and this comment too of course\n" +
@@ -241,28 +241,6 @@ public class Basic
 	}
 
 	@Test
-	public void testNewlinesWithinDirective() throws Exception
-	{
-		LineReader reader = new StringLineReader( "<%@ template\n" +
-				"import=\"common.utils.QueryUtils\"\n" +
-				"import=\"common.enums.*\"\n" +
-				"language=\"groovy\"\n" +
-				"%>\n" +
-				"TEST" );
-
-		Template template = new TemplateCompiler( null ).translate( "p", "c", reader );
-//		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
-//		System.out.println( groovy );
-		Assert.assertEquals( template.getSource(), "package p;import common.utils.QueryUtils;import common.enums.*;class c{Closure getClosure(){return{out->\n" +
-				"\n" +
-				"\n" +
-				"\n" +
-				"\n" +
-				"out.write(\"\"\"TEST\"\"\");}}}"
-				);
-	}
-
-	@Test
 	public void testInJar() throws SQLException, ClassNotFoundException
 	{
 		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
@@ -293,7 +271,9 @@ public class Basic
 	// For testing purposes
 	static Template translate( String text )
 	{
-		return new TemplateCompiler( null ).translate( "p", "c", new StringLineReader( text ) );
+		TemplateCompiler compiler = new TemplateCompiler( null );
+		TestSupport.keepSource( compiler );
+		return TestSupport.translate( compiler, "p", "c", new StringLineReader( text ) );
 	}
 
 	private void translateTest( String input, String groovy, String output )
@@ -306,7 +286,7 @@ public class Basic
 //		System.out.println( g );
 		Assert.assertEquals( g, this.start + groovy + this.end );
 
-		template = new TemplateCompiler( null ).compile( new StringLineReader( input ), "p.c" );
+//		template = new TemplateCompiler( null ).compile( new StringLineReader( input ), "p.c" );
 		String result = execute( template, this.parameters );
 //		System.out.println( result );
 		Assert.assertEquals( result, output );

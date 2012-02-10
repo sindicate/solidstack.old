@@ -93,6 +93,13 @@ public class TemplateCompiler
 		return compile( reader, path );
 	}
 
+	/**
+	 * Compiles a template into a {@link Template}.
+	 * 
+	 * @param reader The {@link LineReader} that contains the template.
+	 * @param path The path of the template, needed to generate a name for the class in memory.
+	 * @return A {@link Template}.
+	 */
 	public Template compile( LineReader reader, String path )
 	{
 		log.info( "Compiling [{}] from [{}]", path, reader.getResource() );
@@ -130,7 +137,7 @@ public class TemplateCompiler
 	 * @param reader The reader to read the template text.
 	 * @return The translated template.
 	 */
-	public Template translate( String pkg, String cls, LineReader reader ) // TODO Remove public
+	protected Template translate( String pkg, String cls, LineReader reader ) // TODO Remove public
 	{
 		// Parse and collect directives
 		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( reader );

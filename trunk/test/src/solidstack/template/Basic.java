@@ -103,8 +103,8 @@ public class Basic
 	public void testNewlinesWithinDirective() throws Exception
 	{
 		LineReader reader = new StringLineReader( "<%@ template\n" +
-				"import=\"common.utils.QueryUtils\"\n" +
-				"import=\"common.enums.*\"\n" +
+				"import=\"java.util.ArrayList\"\n" +
+				"import=\"java.io.*\"\n" +
 				"language=\"groovy\"\n" +
 				"%>\n" +
 				"TEST" );
@@ -112,7 +112,7 @@ public class Basic
 		Template template = new TemplateCompiler( null ).translate( "p", "c", reader );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		Assert.assertEquals( template.getSource(), "package p;import common.utils.QueryUtils;import common.enums.*;class c{Closure getClosure(){return{out->\n" +
+		Assert.assertEquals( template.getSource(), "package p;import java.util.ArrayList;import java.io.*;class c{Closure getClosure(){return{out->\n" +
 				"\n" +
 				"\n" +
 				"\n" +

@@ -88,6 +88,7 @@ public class Query
 	 * 
 	 * @param flyWeight If set to true, duplicate results from a query will only be stored once in memory.
 	 */
+	// TODO Configure default value in the QueryManager
 	public void setFlyWeight( boolean flyWeight )
 	{
 		this.flyWeight = flyWeight;
