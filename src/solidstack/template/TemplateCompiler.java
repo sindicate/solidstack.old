@@ -32,8 +32,8 @@ import solidstack.Assert;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.EVENT;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
-import solidstack.template.groovy.GroovyTemplate;
-import solidstack.template.javascript.JavaScriptTemplate;
+import solidstack.template.groovy.GroovyTemplateCompiler;
+import solidstack.template.javascript.JavaScriptTemplateCompiler;
 
 /**
  * Template compiler.
@@ -76,11 +76,10 @@ public class TemplateCompiler
 	 * @param path The path of the template, needed to generate a name for the class in memory.
 	 * @return A {@link Template}.
 	 */
-	// CRLF (Windows) and CR (Macintosh) are always translated to LF, what if the result should have CRLF or CR?
+	// TODO CRLF (Windows) and CR (Macintosh) are always translated to LF, what if the result should have CRLF or CR?
+	// TODO Test empty package
 	public Template compile( Resource resource, String path )
 	{
-		log.info( "Compiling {}", resource );
-
 		LineReader reader;
 		try
 		{
@@ -91,7 +90,13 @@ public class TemplateCompiler
 			throw new TemplateNotFoundException( resource.toString() + " not found" );
 		}
 
-		log.info( "compile [{}]", path );
+		return compile( reader, path );
+	}
+
+	public Template compile( LineReader reader, String path )
+	{
+		log.info( "Compiling [{}] from [{}]", path, reader.getResource() );
+
 		Matcher matcher = PATH_PATTERN.matcher( path );
 		Assert.isTrue( matcher.matches() );
 		path = matcher.group( 1 );
@@ -102,7 +107,6 @@ public class TemplateCompiler
 			pkg += "." + path.replaceAll( "/", "." );
 
 		Template template = translate( pkg, name, reader );
-		template.compile();
 		if( !keepSource )
 			template.clearSource();
 
@@ -173,188 +177,11 @@ public class TemplateCompiler
 		}
 
 		if( lang.equals( "javascript" ) )
-			return toJavaScript( pkg + "." + cls, events, directives, imports ); // TODO cls is not right
+			return new JavaScriptTemplateCompiler().compile( pkg + "." + cls, events, directives, imports );
 
 		if( lang.equals( "groovy" ) )
-			return toGroovy( pkg, cls, events, directives, imports );
+			return new GroovyTemplateCompiler().compile( pkg, cls, events, directives, imports );
 
 		throw new TemplateException( "Unsupported scripting language: " + lang );
-	}
-
-	// TODO Any other characters?
-	static private void writeGroovyString( StringBuilder buffer, String s )
-	{
-		char[] chars = s.toCharArray();
-		int len = chars.length;
-		char c;
-		for( int i = 0; i < len; i++ )
-			switch( c = chars[ i ] )
-			{
-				case '"':
-				case '\\':
-				case '$':
-					buffer.append( '\\' ); //$FALL-THROUGH$
-				default:
-					buffer.append( c );
-			}
-	}
-
-	static private GroovyTemplate toGroovy( String pkg, String cls, List< ParseEvent > events, List< Directive > directives, List< String > imports )
-	{
-		StringBuilder buffer = new StringBuilder( 1024 );
-		buffer.append( "package " ).append( pkg ).append( ";" );
-		if( imports != null )
-			for( String imprt : imports )
-				buffer.append( "import " ).append( imprt ).append( ';' );
-		buffer.append( "class " ).append( cls );
-		buffer.append( "{Closure getClosure(){return{out->" );
-
-		boolean text = false;
-		for( ParseEvent event : events )
-			switch( event.getEvent() )
-			{
-				case TEXT:
-				case NEWLINE:
-				case WHITESPACE:
-					if( !text )
-						buffer.append( "out.write(\"\"\"" );
-					text = true;
-					writeGroovyString( buffer, event.getData() );
-					break;
-
-				case SCRIPT:
-					if( text )
-						buffer.append( "\"\"\");" );
-					text = false;
-					buffer.append( event.getData() ).append( ';' );
-					break;
-
-				case EXPRESSION:
-					if( text )
-						buffer.append( "\"\"\");" );
-					text = false;
-					buffer.append( "out.write(" ).append( event.getData() ).append( ");" );
-					break;
-
-				case EXPRESSION2:
-					if( !text )
-						buffer.append( "out.write(\"\"\"" );
-					text = true;
-					buffer.append( "${" ).append( event.getData() ).append( '}' );
-					break;
-
-				case DIRECTIVE:
-				case COMMENT:
-					if( event.getData().length() == 0 )
-						break;
-					if( text )
-						buffer.append( "\"\"\");" );
-					text = false;
-					buffer.append( event.getData() );
-					break;
-
-				case EOF:
-				default:
-					Assert.fail( "Unexpected event " + event.getEvent() );
-			}
-
-		if( text )
-			buffer.append( "\"\"\");" );
-		buffer.append( "}}}" );
-
-		GroovyTemplate template = new GroovyTemplate( pkg + "." + cls, buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
-		log.trace( "Generated Groovy:\n{}", template.getSource() );
-		return template;
-	}
-
-	// TODO Any other characters?
-	static private void writeJavaScriptString( StringBuilder buffer, String s )
-	{
-		char[] chars = s.toCharArray();
-		int len = chars.length;
-		char c;
-		for( int i = 0; i < len; i++ )
-			switch( c = chars[ i ] )
-			{
-				case '"':
-				case '\\':
-					buffer.append( '\\' ); //$FALL-THROUGH$
-				default:
-					buffer.append( c );
-			}
-	}
-
-	static private JavaScriptTemplate toJavaScript( String name, List< ParseEvent > events, List< Directive > directives, List< String > imports )
-	{
-		StringBuilder buffer = new StringBuilder( 1024 );
-
-		// TODO Should imports be trimmed?
-		if( imports != null )
-			for( String imprt : imports )
-				if( imprt.endsWith( ".*" ) )
-					buffer.append( "importPackage(Packages." ).append( imprt.substring( 0, imprt.length() - 2 ) ).append( ");" );
-				else
-					buffer.append( "importClass(Packages." ).append( imprt ).append( ");" );
-
-		boolean text = false;
-		for( ParseEvent event : events )
-			switch( event.getEvent() )
-			{
-				case TEXT:
-				case WHITESPACE:
-					if( !text )
-						buffer.append( "out.write(\"" );
-					text = true;
-					writeJavaScriptString( buffer, event.getData() );
-					break;
-
-				case NEWLINE:
-					if( !text )
-						buffer.append( "out.write(\"" );
-					text = true;
-					buffer.append( "\\n\\\n" );
-					break;
-
-				case SCRIPT:
-					if( text )
-						buffer.append( "\");" );
-					text = false;
-					buffer.append( event.getData() ).append( ';' );
-					break;
-
-				case EXPRESSION:
-					if( text )
-						buffer.append( "\");" );
-					text = false;
-					buffer.append( "out.write(" ).append( event.getData() ).append( ");" );
-					break;
-
-				case EXPRESSION2:
-					if( text )
-						buffer.append( "\");" );
-					text = false;
-					buffer.append( "out.writeEncoded(" ).append( event.getData() ).append( ");" );
-					break;
-
-				case DIRECTIVE:
-				case COMMENT:
-					if( event.getData().length() == 0 )
-						break;
-					if( text )
-						buffer.append( "\");" );
-					text = false;
-					buffer.append( event.getData() );
-					break;
-
-				default:
-					Assert.fail( "Unexpected event " + event.getEvent() );
-			}
-
-		if( text )
-			buffer.append( "\");" );
-
-		JavaScriptTemplate template = new JavaScriptTemplate( name, buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
-		log.trace( "Generated JavaScript:\n{}", template.getSource() );
-		return template;
 	}
 }

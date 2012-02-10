@@ -53,12 +53,7 @@ public class GroovyTemplate extends Template
 	public GroovyTemplate( String name, String source, Directive[] directives )
 	{
 		super( name, source, directives );
-	}
 
-	@SuppressWarnings( "unchecked" )
-	@Override
-	public void compile()
-	{
 		// Compile to bytes
 		CompilationUnit unit = new CompilationUnit();
 		unit.addSource( getName(), getSource() );

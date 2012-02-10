@@ -298,12 +298,15 @@ public class Basic
 
 	private void translateTest( String input, String groovy, String output )
 	{
-		Template template = translate( "<%@template language=\"groovy\"%>" + input );
+		input = "<%@template language=\"groovy\"%>" + input;
+
+		// TODO Compile once and use keepSource = true
+		Template template = translate( input );
 		String g = template.getSource();
 //		System.out.println( g );
 		Assert.assertEquals( g, this.start + groovy + this.end );
 
-		template.compile();
+		template = new TemplateCompiler( null ).compile( new StringLineReader( input ), "p.c" );
 		String result = execute( template, this.parameters );
 //		System.out.println( result );
 		Assert.assertEquals( result, output );
