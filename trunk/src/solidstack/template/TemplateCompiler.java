@@ -76,6 +76,7 @@ public class TemplateCompiler
 	 * @param path The path of the template, needed to generate a name for the class in memory.
 	 * @return A {@link Template}.
 	 */
+	// CRLF (Windows) and CR (Macintosh) are always translated to LF, what if the result should have CRLF or CR?
 	public Template compile( Resource resource, String path )
 	{
 		log.info( "Compiling {}", resource );

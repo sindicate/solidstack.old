@@ -41,8 +41,7 @@ import solidstack.template.Template;
 
 
 /**
- * A query object will normally be constructed by a call to {@link QueryManager#apply(String, Map)}.
- * The query object can be used to retrieve data from the database or to execute DML or DDL statements.
+ * A query object.
  * 
  * @author René M. de Bloois
  */
@@ -85,9 +84,9 @@ public class Query
 	}
 
 	/**
-	 * If set to true, which is the default, duplicate values from a query will only be stored once in memory.
+	 * If set to true, which is the default, duplicate results from a query will only be stored once in memory.
 	 * 
-	 * @param flyWeight If set to true, duplicate values from a query will only be stored once in memory.
+	 * @param flyWeight If set to true, duplicate results from a query will only be stored once in memory.
 	 */
 	public void setFlyWeight( boolean flyWeight )
 	{
@@ -98,8 +97,9 @@ public class Query
 	 * Retrieves a {@link ResultSet} from the given {@link Connection}.
 	 * 
 	 * @param connection The {@link Connection} to use.
+	 * @param args The arguments to the query.
 	 * @return a {@link ResultSet}.
-	 * @see #resultSet()
+	 * @see #resultSet(Connection, Map)
 	 */
 	// TODO Test the args map with groovy script.
 	public ResultSet resultSet( Connection connection, Map< String, Object > args )
@@ -119,6 +119,7 @@ public class Query
 	 * Retrieves a {@link List} of {@link Object} arrays from the given {@link Connection}.
 	 * 
 	 * @param connection The {@link Connection} to use.
+	 * @param args The arguments to the query.
 	 * @return A {@link List} of {@link Object} arrays from the given {@link Connection}.
 	 */
 	public List< Object[] > listOfArrays( Connection connection, Map< String, Object > args )
@@ -195,6 +196,7 @@ public class Query
 	 * Retrieve a {@link List} of {@link Map}s from the given {@link Connection}. The maps contain the column names from the query as keys and the column values as the map's values.
 	 * 
 	 * @param connection The {@link Connection} to use.
+	 * @param args The arguments to the query.
 	 * @return A {@link List} of {@link Map}s.
 	 */
 	public List< Map< String, Object > > listOfMaps( Connection connection, Map< String, Object > args )
@@ -224,6 +226,7 @@ public class Query
 	 * Executes an update (DML) or a DDL query.
 	 * 
 	 * @param connection The {@link Connection} to use.
+	 * @param args The arguments to the query.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 * @throws SQLException Whenever the query caused an {@link SQLException}.
 	 */
@@ -236,6 +239,7 @@ public class Query
 	 * Executes an update (DML) or a DDL query. {@link SQLException}s are wrapped in a {@link QueryException}.
 	 * 
 	 * @param connection The {@link Connection} to use.
+	 * @param args The arguments to the query.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 */
 	public int update( Connection connection, Map< String, Object > args )
@@ -254,6 +258,7 @@ public class Query
 	 * Returns a {@link PreparedStatement} for the query.
 	 * 
 	 * @param connection The {@link Connection} to use.
+	 * @param args The arguments to the query.
 	 * @return a {@link PreparedStatement} for the query.
 	 */
 	public PreparedStatement getPreparedStatement( Connection connection, Map< String, Object > args )
@@ -351,6 +356,12 @@ public class Query
 			pars.add( object );
 	}
 
+	/**
+	 * Returns a prepared SQL string together with a parameters array.
+	 * 
+	 * @param args The arguments to the query.
+	 * @return A prepared SQL string together with a parameters array.
+	 */
 	public PreparedSQL getPreparedSQL( Map< String, Object > args )
 	{
 		QueryEncodingWriter gsql = new QueryEncodingWriter();
@@ -381,22 +392,43 @@ public class Query
 		}
 	}
 
+	/**
+	 * Prepared SQL combined with a parameter list.
+	 * 
+	 * @author René de Bloois
+	 */
 	static public class PreparedSQL
 	{
 		private String sql;
 		private List< Object > pars;
 
+		/**
+		 * Constructor.
+		 * 
+		 * @param sql The prepared SQL string.
+		 * @param pars The parameter list.
+		 */
 		protected PreparedSQL( String sql, List< Object > pars )
 		{
 			this.sql = sql;
 			this.pars = pars;
 		}
 
+		/**
+		 * Returns the prepared SQL string.
+		 * 
+		 * @return The prepared SQL string.
+		 */
 		public String getSQL()
 		{
 			return this.sql;
 		}
 
+		/**
+		 * Returns the parameter list.
+		 * 
+		 * @return The parameter list.
+		 */
 		public List< Object > getParameters()
 		{
 			return this.pars;

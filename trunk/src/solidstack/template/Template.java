@@ -214,6 +214,11 @@ abstract public class Template
 		return null;
 	}
 
+	/**
+	 * Sets the name of this template.
+	 * 
+	 * @param name The name of this template.
+	 */
 	public void setName( String name )
 	{
 		this.name = name;
