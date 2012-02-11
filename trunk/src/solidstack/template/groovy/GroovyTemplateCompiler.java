@@ -9,10 +9,27 @@ import solidstack.Assert;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
 
+
+/**
+ * Compiles the given parser events, directives and imports to a {@link GroovyTemplate}.
+ * 
+ * @author René de Bloois
+ */
 public class GroovyTemplateCompiler
 {
 	static private Logger log = LoggerFactory.getLogger( GroovyTemplateCompiler.class );
 
+
+	/**
+	 * Compiles the given parser events, directives and imports to a {@link GroovyTemplate}.
+	 * 
+	 * @param pkg The package for the resulting Groovy class.
+	 * @param cls The class name for the resulting Groovy class.
+	 * @param events The parser events.
+	 * @param directives The directives found in the template.
+	 * @param imports The imports found in the template.
+	 * @return A template.
+	 */
 	public GroovyTemplate compile( String pkg, String cls, List< ParseEvent > events, List< Directive > directives, List< String > imports )
 	{
 		StringBuilder buffer = new StringBuilder( 1024 );

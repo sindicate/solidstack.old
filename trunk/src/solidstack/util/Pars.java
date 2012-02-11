@@ -28,10 +28,13 @@ import java.util.Map;
  */
 public class Pars extends HashMap< String, Object >
 {
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * An empty map.
 	 */
 	static public final Map< String, Object > EMPTY = Collections.emptyMap();
+
 
 	/**
 	 * Constructor.
