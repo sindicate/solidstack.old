@@ -19,13 +19,13 @@
 <project basedir="." name="solidstack" default="dist" xmlns:maven="antlib:org.apache.maven.artifact.ant">
 
 	<!-- Maven Ant Task -->
-	
+
 	<path id="maven.classpath">
 		<fileset dir="tools/maven" includes="*.jar" />
 	</path>
 
 	<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="antlib:org.apache.maven.artifact.ant" classpathref="maven.classpath" />
-	
+
 	<!-- Properties -->
 	<property file="build.properties" />
 	<property name="target-jre" value="1.5" />
@@ -52,6 +52,14 @@
 		<fileset dir="tools/testng" includes="*.jar" />
 	</path>
 
+	<path id="cobertura.classpath">
+		<fileset dir="tools/cobertura" includes="*.jar" />
+	</path>
+
+	<path id="sonar.classpath">
+		<fileset dir="tools/sonar" includes="*.jar" />
+	</path>
+
 	<path id="compile.classpath">
 		<fileset dir="lib" includes="**/*.jar" />
 	</path>
@@ -64,18 +72,22 @@
 
 	<path id="test.classpath">
 		<pathelement location="${build.home}/testclasses" />
+		<pathelement location="${build.home}/instrumentedclasses" />
 		<pathelement location="${build.home}/classes" />
 		<fileset dir="lib" includes="*.jar" />
 		<fileset dir="test/lib" includes="*.jar" />
 		<path refid="testng.classpath" />
+		<path refid="cobertura.classpath" />
 	</path>
 
-	
+
 	<!-- Custom Ant Task Definitions -->
 
 	<taskdef resource="testngtasks" classpathref="testng.classpath" />
 	<taskdef name="groovy" classname="org.codehaus.groovy.ant.Groovy" classpathref="groovy.classpath" />
 	<taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="jarjar.classpath" />
+	<taskdef resource="tasks.properties" classpathref="cobertura.classpath" />
+	<taskdef uri="antlib:org.sonar.ant" resource="org/sonar/ant/antlib.xml" classpathref="sonar.classpath" />
 
 
 	<!-- Targets -->
@@ -131,6 +143,10 @@
 		<javac source="${target-jre}" target="${target-jre}" srcdir="test/src" destdir="${build.home}/testclasses" debug="true" deprecation="true" optimize="true">
 			<classpath refid="compiletest.classpath" />
 		</javac>
+	</target>
+
+
+	<target name="buildtest" depends="compiletest">
 		<sync todir="${build.home}/testclasses">
 			<fileset dir="test/src" excludes="**/*.java" />
 			<preserveInTarget includes="**/*.class" />
@@ -138,17 +154,47 @@
 	</target>
 
 
-	<target name="test" depends="compiletest" description="Run the tests">
-		<testng classpathref="test.classpath" outputDir="${build.home}/testreports" haltOnFailure="true" verbose="3">
+	<target name="instrument" depends="compile">
+		<cobertura-instrument todir="${build.home}/instrumentedclasses">
+			<fileset dir="${build.home}/classes" includes="**/*.class" />
+		</cobertura-instrument>
+	</target>
+
+
+	<target name="test" depends="buildtest,instrument" description="Run the tests">
+		<testng classpathref="test.classpath" outputDir="${build.home}/testreports" haltOnFailure="true" verbose="3"
+			usedefaultlisteners="false" listeners="org.testng.reporters.JUnitReportReporter">
 			<classfileset dir="${build.home}/testclasses" />
 		</testng>
 	</target>
 
-	
-	<target name="testnew" depends="compiletest" description="Run new tests">
-		<testng classpathref="test.classpath" outputDir="${build.home}/testreports" haltOnFailure="true" verbose="3" groups="new">
+
+	<target name="testnew" depends="buildtest" description="Run new tests">
+		<testng classpathref="test.classpath" outputDir="${build.home}/testreports" haltOnFailure="true" verbose="3" groups="new" >
 			<classfileset dir="${build.home}/testclasses" />
 		</testng>
+	</target>
+
+
+	<target name="coberturareport" depends="test">
+		<cobertura-report format="xml" destdir="${build.home}/coberturareport">
+			<fileset dir="src" includes="**/*.java" />
+			<fileset dir="../solidbase/src" includes="**/*.java" />
+		</cobertura-report>
+	</target>
+
+
+	<target name="sonar" depends="coberturareport,build">
+		<property name="sonar.sources" value="src" />
+		<property name="sonar.cobertura.reportPath" location="${build.home}/coberturareport/coverage.xml" />
+		<property name="sonar.surefire.reportsPath" location="${build.home}/testreports/junitreports" />
+		<!-- list of optional Sonar properties
+		<property name="sonar.projectName" value="this value overrides the name defined in Ant root node" />
+		<property name="sonar.binaries" value="list of directories which contain for example the Java bytecode" />
+		<property name="sonar.tests" value="list of test source directories separated by a comma" />
+		<property name="sonar.libraries" value="list of paths to libraries separated by a comma (These libraries are for example used by the Sonar Findbugs plugin)" />
+ 		-->
+		<sonar:sonar key="solidstack:solidstack" version="1.9.1-beta" xmlns:sonar="antlib:org.sonar.ant" />
 	</target>
 
 
@@ -159,12 +205,12 @@
 	<target name="checksvnstatus">
 	</target>
 
-	
+
 	<target name="getsvninfo">
 		<groovy src="scripts/getsvninfo.groovy" />
 	</target>
 
-	
+
 	<target name="sources">
 		<jar compress="yes" destfile="${dist.home}/solidstack-sources.jar">
 			<zipfileset dir="src" includes="**/*.java" />
@@ -196,6 +242,6 @@
 			<attach file="${dist.home}/solidstack-javadoc.jar" type="jar" classifier="javadoc"/>
 		</maven:deploy>
 	</target>
-	
-	
+
+
 </project>
