@@ -24,6 +24,8 @@ package solidstack.template;
  */
 public class UnsupportedEncodingException extends RuntimeException
 {
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Constructor.
 	 * 

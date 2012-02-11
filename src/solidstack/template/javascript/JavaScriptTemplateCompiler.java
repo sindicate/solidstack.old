@@ -9,10 +9,26 @@ import solidstack.Assert;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
 
+
+/**
+ * Compiles the given parser events, directives and imports to a {@link JavaScriptTemplate}.
+ * 
+ * @author René de Bloois
+ */
 public class JavaScriptTemplateCompiler
 {
 	static private Logger log = LoggerFactory.getLogger( JavaScriptTemplateCompiler.class );
 
+
+	/**
+	 * Compiles the given parser events, directives and imports to a {@link JavaScriptTemplate}.
+	 * 
+	 * @param name The name for the template.
+	 * @param events The parser events.
+	 * @param directives The directives found in the template.
+	 * @param imports The imports found in the template.
+	 * @return A template.
+	 */
 	public JavaScriptTemplate compile( String name, List< ParseEvent > events, List< Directive > directives, List< String > imports )
 	{
 		StringBuilder buffer = new StringBuilder( 1024 );

@@ -60,6 +60,7 @@ public class GroovyTemplate extends Template
 		unit.compile( Phases.CLASS_GENERATION );
 
 		// Results
+		@SuppressWarnings( "unchecked" )
 		List< GroovyClass > classes = unit.getClasses();
 		Assert.isTrue( classes.size() > 0, "Expecting 1 or more classes" );
 
@@ -72,13 +73,14 @@ public class GroovyTemplate extends Template
 		{
 			Class< ? > clas = classLoader.defineClass( cls.getName(), cls.getBytes() );
 			if( first == null )
-				first = clas;
+				first = clas; // TODO Are we sure that the first one is always the right one?
 		}
 
 		// Instantiate the first
 		GroovyObject object = (GroovyObject)Util.newInstance( first );
 		this.closure = (Closure)object.invokeMethod( "getClosure", null );
 
+		// The old way:
 //		Class< GroovyObject > groovyClass = new GroovyClassLoader().parseClass( new GroovyCodeSource( getSource(), getName(), "x" ) );
 //		GroovyObject object = Util.newInstance( groovyClass );
 //		this.closure = (Closure)object.invokeMethod( "getClosure", null );
