@@ -185,7 +185,8 @@
 
 
 	<target name="sonar" depends="coberturareport,build">
-		<property name="sonar.sources" value="src" />
+		<property name="sonar.sources" location="src" />
+		<property name="sonar.binaries" location="${build.home}/classes" />
 		<property name="sonar.cobertura.reportPath" location="${build.home}/coberturareport/coverage.xml" />
 		<property name="sonar.surefire.reportsPath" location="${build.home}/testreports/junitreports" />
 		<!-- list of optional Sonar properties
