@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import solidstack.Assert;
+import solidstack.SystemException;
 import solidstack.query.hibernate.HibernateQueryAdapter;
 import solidstack.query.jpa.JPAQueryAdapter;
 import solidstack.template.Template;
@@ -126,7 +127,26 @@ public class Query
 	public List< Object[] > listOfArrays( Connection connection, Map< String, Object > args )
 	{
 		ResultSet resultSet = resultSet( connection, args );
-		return listOfArrays( resultSet, this.flyWeight );
+		try
+		{
+			return listOfArrays( resultSet, this.flyWeight );
+		}
+		finally
+		{
+			close( resultSet );
+		}
+	}
+
+	static private void close( ResultSet resultSet )
+	{
+		try
+		{
+			resultSet.close();
+		}
+		catch( SQLException e )
+		{
+			throw new SystemException( e );
+		}
 	}
 
 	/**
@@ -205,17 +225,23 @@ public class Query
 		try
 		{
 			ResultSet resultSet = resultSet( connection, args );
+			try
+			{
+				ResultSetMetaData metaData = resultSet.getMetaData();
+				int columnCount = metaData.getColumnCount();
 
-			ResultSetMetaData metaData = resultSet.getMetaData();
-			int columnCount = metaData.getColumnCount();
+				// DETERMINE THE LOWERCASE NAMES IN ADVANCE!!! Otherwise the names will not be shared in memory.
+				Map< String, Integer > names = new HashMap< String, Integer >();
+				for( int col = 0; col < columnCount; col++ )
+					names.put( metaData.getColumnLabel( col + 1 ).toLowerCase( Locale.ENGLISH ), col );
 
-			// DETERMINE THE LOWERCASE NAMES IN ADVANCE!!! Otherwise the names will not be shared in memory.
-			Map< String, Integer > names = new HashMap< String, Integer >();
-			for( int col = 0; col < columnCount; col++ )
-				names.put( metaData.getColumnLabel( col + 1 ).toLowerCase( Locale.ENGLISH ), col );
-
-			List< Object[] > result = listOfArrays( resultSet, this.flyWeight );
-			return new ResultList( result, names );
+				List< Object[] > result = listOfArrays( resultSet, this.flyWeight );
+				return new ResultList( result, names );
+			}
+			finally
+			{
+				close( resultSet );
+			}
 		}
 		catch( SQLException e )
 		{

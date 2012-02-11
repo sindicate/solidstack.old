@@ -200,7 +200,7 @@ public class TemplateManager
 		synchronized( this.mimeTypeMap )
 		{
 			Object object = this.mimeTypeMap.get( mimeType );
-			while( object != null && object instanceof String )
+			while( object instanceof String )
 				object = this.mimeTypeMap.get( object );
 
 			if( object != null )

@@ -81,12 +81,12 @@ public class JSPLikeTemplateParser
 	/**
 	 * The EOF parse event.
 	 */
-	static public ParseEvent EOF = new ParseEvent( EVENT.EOF, null );
+	static public final ParseEvent EOF = new ParseEvent( EVENT.EOF, null );
 
 	/**
 	 * The newline parse event.
 	 */
-	static public ParseEvent NEWLINE = new ParseEvent( EVENT.NEWLINE, "\n" );
+	static public final ParseEvent NEWLINE = new ParseEvent( EVENT.NEWLINE, "\n" );
 
 	/**
 	 * The reader from which the source of the template is read.
@@ -204,8 +204,7 @@ public class JSPLikeTemplateParser
 					{
 						reader.push( c );
 						reader.push( '<' );
-						ParseEvent result = new ParseEvent( textFound ? EVENT.TEXT : EVENT.WHITESPACE, popBuffer() );
-						return result;
+						return new ParseEvent( textFound ? EVENT.TEXT : EVENT.WHITESPACE, popBuffer() );
 					}
 					return readMarkup();
 
@@ -213,8 +212,7 @@ public class JSPLikeTemplateParser
 					if( buffer.length() > 0 )
 					{
 						reader.push( c );
-						ParseEvent result = new ParseEvent( textFound ? EVENT.TEXT : EVENT.WHITESPACE, popBuffer() );
-						return result;
+						return new ParseEvent( textFound ? EVENT.TEXT : EVENT.WHITESPACE, popBuffer() );
 					}
 					return readDollar();
 
