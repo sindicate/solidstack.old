@@ -166,7 +166,7 @@ public class Basic
 		manager.setDefaultLanguage( "javascript" );
 
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/testjs.gsql" );
-		Template template = TestSupport.translate( new TemplateCompiler( null ), "p", "c", new BOMDetectingLineReader( resource ) );
+		Template template = TestSupport.translate( new TemplateCompiler( manager ), "p", "c", new BOMDetectingLineReader( resource ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 
 		Assert.assertEquals( template.getSource(), "importClass(Packages.java.sql.Timestamp); // Test if the import at the bottom works, and this comment too of course\n" +
