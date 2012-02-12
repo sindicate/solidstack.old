@@ -1,13 +1,21 @@
 package solidstack.template.groovy;
 
-import java.util.List;
+import groovy.lang.Closure;
+import groovy.lang.GroovyObject;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.codehaus.groovy.control.CompilationUnit;
+import org.codehaus.groovy.control.Phases;
+import org.codehaus.groovy.tools.GroovyClass;
 
 import solidstack.Assert;
-import solidstack.template.JSPLikeTemplateParser.Directive;
+import solidstack.template.DefiningClassLoader;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
+import solidstack.template.TemplateCompilerContext;
+import solidstack.template.Util;
 
 
 /**
@@ -17,31 +25,30 @@ import solidstack.template.JSPLikeTemplateParser.ParseEvent;
  */
 public class GroovyTemplateCompiler
 {
-	static private Logger log = LoggerFactory.getLogger( GroovyTemplateCompiler.class );
+	private static final String TEMPLATE_PKG = "solidstack.template.tmp";
+	static private final Pattern PATH_PATTERN = Pattern.compile( "/*(?:(.+?)/+)?([^\\/]+)" ); // TODO Is this correct?
 
 
-	/**
-	 * Compiles the given parser events, directives and imports to a {@link GroovyTemplate}.
-	 * 
-	 * @param pkg The package for the resulting Groovy class.
-	 * @param cls The class name for the resulting Groovy class.
-	 * @param events The parser events.
-	 * @param directives The directives found in the template.
-	 * @param imports The imports found in the template.
-	 * @return A template.
-	 */
-	public GroovyTemplate compile( String pkg, String cls, List< ParseEvent > events, List< Directive > directives, List< String > imports )
+	public void generateScript( TemplateCompilerContext context )
 	{
+		// TODO This may give conflicts when more than on TemplateManager is used. This must be the complete path.
+		Matcher matcher = PATH_PATTERN.matcher( context.getPath() );
+		Assert.isTrue( matcher.matches() );
+		String path = matcher.group( 1 );
+		String name = matcher.group( 2 );
+
+		String pkg = TEMPLATE_PKG + "." + path.replaceAll( "/", "." );
+
 		StringBuilder buffer = new StringBuilder( 1024 );
 		buffer.append( "package " ).append( pkg ).append( ";" );
-		if( imports != null )
-			for( String imprt : imports )
+		if( context.getImports() != null )
+			for( String imprt : context.getImports() )
 				buffer.append( "import " ).append( imprt ).append( ';' );
-		buffer.append( "class " ).append( cls );
+		buffer.append( "class " ).append( name.replaceAll( "[\\.-]", "_" ) );
 		buffer.append( "{Closure getClosure(){return{out->" );
 
 		boolean text = false;
-		for( ParseEvent event : events )
+		for( ParseEvent event : context.getEvents() )
 			switch( event.getEvent() )
 			{
 				case TEXT:
@@ -93,9 +100,41 @@ public class GroovyTemplateCompiler
 			buffer.append( "\"\"\");" );
 		buffer.append( "}}}" );
 
-		GroovyTemplate template = new GroovyTemplate( pkg + "." + cls, buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
-		log.trace( "Generated Groovy:\n{}", template.getSource() );
-		return template;
+		context.setScript( buffer );
+	}
+
+	public void compileScript( TemplateCompilerContext context )
+	{
+		// Compile to bytes
+		CompilationUnit unit = new CompilationUnit();
+		unit.addSource( context.getName(), context.getScript().toString() );
+		unit.compile( Phases.CLASS_GENERATION );
+
+		// Results
+		@SuppressWarnings( "unchecked" )
+		List< GroovyClass > classes = unit.getClasses();
+		Assert.isTrue( classes.size() > 0, "Expecting 1 or more classes" );
+
+		// Use class loader to define the classes
+		// TODO Configurable class loader
+		// TODO See BeanShell 2 for resolving the parent classloader
+		DefiningClassLoader classLoader = new DefiningClassLoader( GroovyTemplate.class.getClassLoader() );
+		Class< ? > first = null;
+		for( GroovyClass cls : classes )
+		{
+			Class< ? > clas = classLoader.defineClass( cls.getName(), cls.getBytes() );
+			if( first == null )
+				first = clas; // TODO Are we sure that the first one is always the right one?
+		}
+
+		// Instantiate the first
+		GroovyObject object = (GroovyObject)Util.newInstance( first );
+		Closure closure = (Closure)object.invokeMethod( "getClosure", null );
+
+		// The old way:
+//		Class< GroovyObject > groovyClass = new GroovyClassLoader().parseClass( new GroovyCodeSource( getSource(), getName(), "x" ) );
+
+		context.setTemplate( new GroovyTemplate( closure ) );
 	}
 
 	// TODO Any other characters?

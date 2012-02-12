@@ -1,13 +1,11 @@
 package solidstack.template.javascript;
 
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Script;
 
 import solidstack.Assert;
-import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
+import solidstack.template.TemplateCompilerContext;
 
 
 /**
@@ -17,32 +15,20 @@ import solidstack.template.JSPLikeTemplateParser.ParseEvent;
  */
 public class JavaScriptTemplateCompiler
 {
-	static private Logger log = LoggerFactory.getLogger( JavaScriptTemplateCompiler.class );
-
-
-	/**
-	 * Compiles the given parser events, directives and imports to a {@link JavaScriptTemplate}.
-	 * 
-	 * @param name The name for the template.
-	 * @param events The parser events.
-	 * @param directives The directives found in the template.
-	 * @param imports The imports found in the template.
-	 * @return A template.
-	 */
-	public JavaScriptTemplate compile( String name, List< ParseEvent > events, List< Directive > directives, List< String > imports )
+	public void generateScript( TemplateCompilerContext context )
 	{
 		StringBuilder buffer = new StringBuilder( 1024 );
 
 		// TODO Should imports be trimmed?
-		if( imports != null )
-			for( String imprt : imports )
+		if( context.getImports() != null )
+			for( String imprt : context.getImports() )
 				if( imprt.endsWith( ".*" ) )
 					buffer.append( "importPackage(Packages." ).append( imprt.substring( 0, imprt.length() - 2 ) ).append( ");" );
 				else
 					buffer.append( "importClass(Packages." ).append( imprt ).append( ");" );
 
 		boolean text = false;
-		for( ParseEvent event : events )
+		for( ParseEvent event : context.getEvents() )
 			switch( event.getEvent() )
 			{
 				case TEXT:
@@ -98,9 +84,22 @@ public class JavaScriptTemplateCompiler
 		if( text )
 			buffer.append( "\");" );
 
-		JavaScriptTemplate template = new JavaScriptTemplate( name, buffer.toString(), directives == null ? null : directives.toArray( new Directive[ directives.size() ] ) );
-		log.trace( "Generated JavaScript:\n{}", template.getSource() );
-		return template;
+		context.setScript( buffer );
+	}
+
+	public void compileScript( TemplateCompilerContext context )
+	{
+		Context cx = Context.enter();
+		try
+		{
+			cx.setOptimizationLevel( -1 ); // Generate only an AST, not bytecode
+			Script script = cx.compileString( context.getScript().toString(), context.getName(), 1, null );
+			context.setTemplate( new JavaScriptTemplate( script ) );
+		}
+		finally
+		{
+			Context.exit();
+		}
 	}
 
 	// TODO Any other characters?

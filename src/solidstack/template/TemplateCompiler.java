@@ -44,7 +44,6 @@ import solidstack.template.javascript.JavaScriptTemplateCompiler;
 // TODO SQL array parameter in queries
 // TODO Include during runtime or compiletime
 // TODO Scriptonly: (whole template is just <% fjlkj%>) check no newlines?
-// TODO Put the Groovy compiler in the groovy package, and the javascript compiler in the javascript package
 public class TemplateCompiler
 {
 	static private Logger log = LoggerFactory.getLogger( TemplateCompiler.class );
@@ -80,17 +79,15 @@ public class TemplateCompiler
 	// TODO Test empty package
 	public Template compile( Resource resource, String path )
 	{
-		LineReader reader;
-		try
-		{
-			reader = new BOMDetectingLineReader( resource, ENCODING_PATTERN );
-		}
-		catch( FileNotFoundException e )
-		{
-			throw new TemplateNotFoundException( resource.toString() + " not found" );
-		}
+		log.info( "Compiling [{}] from [{}]", path, resource );
 
-		return compile( reader, path );
+		TemplateCompilerContext context = new TemplateCompilerContext();
+		context.setPath( path );
+		context.setResource( resource );
+
+		compile( context );
+
+		return context.getTemplate();
 	}
 
 	/**
@@ -104,75 +101,27 @@ public class TemplateCompiler
 	{
 		log.info( "Compiling [{}] from [{}]", path, reader.getResource() );
 
-		Matcher matcher = PATH_PATTERN.matcher( path );
-		Assert.isTrue( matcher.matches() );
-		path = matcher.group( 1 );
-		String name = matcher.group( 2 ).replaceAll( "[\\.-]", "_" );
+		TemplateCompilerContext context = new TemplateCompilerContext();
+		context.setPath( path );
+		context.setReader( reader );
 
-		String pkg = "solidstack.template.tmp";
-		if( path != null )
-			pkg += "." + path.replaceAll( "/", "." );
+		compile( context );
 
-		Template template = translate( pkg, name, reader );
-		if( !keepSource )
-			template.clearSource();
-
-		Directive d = template.getDirective( "template", "contentType" );
-		if( d != null )
-		{
-			matcher = CONTENT_TYPE_PATTERN.matcher( d.getValue() );
-			Assert.isTrue( matcher.matches(), "Couldn't interpret contentType " + d.getValue() );
-			template.setContentType( matcher.group( 1 ) );
-			template.setCharSet( matcher.group( 2 ) );
-		}
-
-		return template;
+		return context.getTemplate();
 	}
 
 	/**
-	 * Translates the template text to source code of the desired programming language.
-	 * 
-	 * @param pkg The package for naming the class.
-	 * @param cls The class name.
-	 * @param reader The reader to read the template text.
-	 * @return The translated template.
+	 * Compiles a template into a {@link Template}.
 	 */
-	protected Template translate( String pkg, String cls, LineReader reader ) // TODO Remove public
+	public void compile( TemplateCompilerContext context )
 	{
-		// Parse and collect directives
-		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( reader );
-		List< ParseEvent > events = new ArrayList< ParseEvent >();
-		List< Directive > directives = null;
-		ParseEvent event = parser.next();
-		while( event.getEvent() != EVENT.EOF )
-		{
-			events.add( event );
-			if( event.getEvent() == EVENT.DIRECTIVE )
-			{
-				if( directives == null )
-					directives = new ArrayList< Directive >();
-				directives.addAll( event.getDirectives() );
-			}
-			event = parser.next();
-		}
+		createReader( context );
+		parse( context );
+		collectDirectives( context );
+		processDirectives( context );
 
-		// Collect imports & language
-		List< String > imports = null;
-		String lang = null;
-		if( directives != null )
-			for( Directive directive : directives )
-				if( directive.getName().equals( "template" ) )
-					if( directive.getAttribute().equals( "import" ) )
-					{
-						if( imports == null )
-							imports = new ArrayList< String >();
-						imports.add( directive.getValue() );
-					}
-					else if( directive.getAttribute().equals( "language" ) )
-						lang = directive.getValue();
-
+		String lang = context.getLanguage();
 		if( lang == null )
-		{
 			if( this.manager != null )
 			{
 				lang = this.manager.getDefaultLanguage();
@@ -181,14 +130,95 @@ public class TemplateCompiler
 			}
 			else
 				throw new TemplateException( "Template has no \"language\" directive" );
-		}
 
 		if( lang.equals( "javascript" ) )
-			return new JavaScriptTemplateCompiler().compile( pkg + "." + cls, events, directives, imports );
+		{
+			JavaScriptTemplateCompiler compiler = new JavaScriptTemplateCompiler();
+			compiler.generateScript( context );
+			log.trace( "Generated JavaScript:\n{}", context.getScript() );
+			compiler.compileScript( context );
+		}
+		else if( lang.equals( "groovy" ) )
+		{
+			GroovyTemplateCompiler compiler = new GroovyTemplateCompiler();
+			compiler.generateScript( context );
+			log.trace( "Generated Groovy:\n{}", context.getScript() );
+			compiler.compileScript( context );
+		}
+		else
+			throw new TemplateException( "Unsupported scripting language: " + lang );
 
-		if( lang.equals( "groovy" ) )
-			return new GroovyTemplateCompiler().compile( pkg, cls, events, directives, imports );
+		configureTemplate( context );
+	}
 
-		throw new TemplateException( "Unsupported scripting language: " + lang );
+	public void createReader( TemplateCompilerContext context )
+	{
+		if( context.getReader() != null )
+			return;
+		try
+		{
+			context.setReader( new BOMDetectingLineReader( context.getResource(), ENCODING_PATTERN ) );
+		}
+		catch( FileNotFoundException e )
+		{
+			throw new TemplateNotFoundException( context.getResource().toString() + " not found" );
+		}
+	}
+
+	public void parse( TemplateCompilerContext context )
+	{
+		// Parse and collect directives
+		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( context.getReader() );
+		List< ParseEvent > events = new ArrayList< ParseEvent >();
+		ParseEvent event = parser.next();
+		while( event.getEvent() != EVENT.EOF )
+		{
+			events.add( event );
+			event = parser.next();
+		}
+		context.setEvents( events );
+	}
+
+	public void collectDirectives( TemplateCompilerContext context )
+	{
+		List<Directive> directives = new ArrayList<Directive>();
+		for( ParseEvent event : context.getEvents() )
+			if( event.getEvent() == EVENT.DIRECTIVE )
+				directives.addAll( event.getDirectives() );
+		context.setDirectives( directives );
+	}
+
+	public void processDirectives( TemplateCompilerContext context )
+	{
+		List< String > imports = new ArrayList< String >();
+		String lang = null;
+		String contentType = null;
+		if( context.getDirectives() != null )
+			for( Directive directive : context.getDirectives() )
+				if( directive.getName().equals( "template" ) )
+					if( directive.getAttribute().equals( "import" ) )
+						imports.add( directive.getValue() );
+					else if( directive.getAttribute().equals( "language" ) )
+						lang = directive.getValue();
+					else if( directive.getAttribute().equals( "contentType" ) )
+						contentType = directive.getValue();
+		context.setImports( imports );
+		context.setLanguage( lang );
+		if( contentType != null )
+		{
+			Matcher matcher = CONTENT_TYPE_PATTERN.matcher( contentType );
+			Assert.isTrue( matcher.matches(), "Couldn't interpret contentType " + contentType );
+			context.setContentType( matcher.group( 1 ) );
+			context.setCharSet( matcher.group( 2 ) );
+		}
+	}
+
+	public void configureTemplate( TemplateCompilerContext context )
+	{
+		Template template = context.getTemplate();
+		template.setName( context.getName() );
+		template.setDirectives( context.getDirectivesArray() );
+		template.setContentType( context.getContentType() );
+		template.setCharSet( context.getCharSet() );
 	}
 }

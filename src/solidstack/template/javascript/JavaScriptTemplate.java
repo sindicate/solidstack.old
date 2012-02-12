@@ -25,7 +25,6 @@ import org.mozilla.javascript.TopLevel;
 
 import solidstack.template.EncodingWriter;
 import solidstack.template.Template;
-import solidstack.template.JSPLikeTemplateParser.Directive;
 
 /**
  * A compiled JavaScript template.
@@ -37,27 +36,9 @@ public class JavaScriptTemplate extends Template
 	private Script script;
 
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param name The name of the template.
-	 * @param source The source code of the template. This is the template translated to JavaScript.
-	 * @param directives The directives found in the template text.
-	 */
-	public JavaScriptTemplate( String name, String source, Directive[] directives )
+	public JavaScriptTemplate( Script script )
 	{
-		super( name, source, directives );
-
-		Context cx = Context.enter();
-		try
-		{
-			cx.setOptimizationLevel( -1 ); // Generate only an AST, not bytecode
-			this.script = cx.compileString( getSource(), getName(), 1, null ); // TODO Name
-		}
-		finally
-		{
-			Context.exit();
-		}
+		this.script = script;
 	}
 
 	@Override

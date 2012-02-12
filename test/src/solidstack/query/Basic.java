@@ -27,7 +27,6 @@ import java.util.Map;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import solidbase.io.BOMDetectingLineReader;
 import solidbase.io.Resource;
 import solidbase.io.ResourceFactory;
 import solidbase.io.StringLineReader;
@@ -35,8 +34,8 @@ import solidstack.query.Query.PreparedSQL;
 import solidstack.template.ParseException;
 import solidstack.template.Template;
 import solidstack.template.TemplateCompiler;
+import solidstack.template.TemplateCompilerContext;
 import solidstack.template.TemplateManager;
-import solidstack.template.TestSupport;
 import solidstack.util.Pars;
 
 
@@ -109,10 +108,13 @@ public class Basic
 	public void testTransform() throws Exception
 	{
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/test.gsql" );
-		Template template = TestSupport.translate( new TemplateCompiler( null ), "p", "c", new BOMDetectingLineReader( resource ) );
+		TemplateCompilerContext context = new TemplateCompilerContext();
+		context.setResource( resource );
+		context.setPath( "p/c" );
+		new TemplateCompiler( null ).compile( context );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		Assert.assertEquals( template.getSource(), "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{out->\n" +
+		Assert.assertEquals( context.getScript().toString(), "package solidstack.template.tmp.p;import java.sql.Timestamp;class c{Closure getClosure(){return{out->\n" +
 				" // Test if the import at the bottom works, and this comment too of course\n" +
 				"new Timestamp( new Date().time ) \n" +
 				";out.write(\"\"\"SELECT *\n" +
@@ -166,10 +168,14 @@ public class Basic
 		manager.setDefaultLanguage( "javascript" );
 
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/testjs.gsql" );
-		Template template = TestSupport.translate( new TemplateCompiler( manager ), "p", "c", new BOMDetectingLineReader( resource ) );
+		TemplateCompilerContext context = new TemplateCompilerContext();
+		context.setResource( resource );
+		context.setPath( "p/c" );
+		new TemplateCompiler( manager ).compile( context );
+
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 
-		Assert.assertEquals( template.getSource(), "importClass(Packages.java.sql.Timestamp); // Test if the import at the bottom works, and this comment too of course\n" +
+		Assert.assertEquals( context.getScript().toString(), "importClass(Packages.java.sql.Timestamp); // Test if the import at the bottom works, and this comment too of course\n" +
 				"new Timestamp( new java.util.Date().time ) \n" +
 				";out.write(\"SELECT *\\n\\\n" +
 				"FROM SYS.SYSTABLES\\n\\\n" +
@@ -255,7 +261,7 @@ public class Basic
 		assert result.size() == 22;
 	}
 
-	private String start = "package p;class c{Closure getClosure(){return{out->";
+	private String start = "package solidstack.template.tmp.p;class c{Closure getClosure(){return{out->";
 	private String end = "}}}";
 	private Map parameters;
 	{
@@ -269,11 +275,13 @@ public class Basic
 	}
 
 	// For testing purposes
-	static Template translate( String text )
+	static TemplateCompilerContext translate( String text )
 	{
-		TemplateCompiler compiler = new TemplateCompiler( null );
-		TestSupport.keepSource( compiler );
-		return TestSupport.translate( compiler, "p", "c", new StringLineReader( text ) );
+		TemplateCompilerContext context = new TemplateCompilerContext();
+		context.setReader( new StringLineReader( text ) );
+		context.setPath( "p/c" );
+		new TemplateCompiler( null ).compile( context );
+		return context;
 	}
 
 	private void translateTest( String input, String groovy, String output )
@@ -281,13 +289,13 @@ public class Basic
 		input = "<%@template language=\"groovy\"%>" + input;
 
 		// TODO Compile once and use keepSource = true
-		Template template = translate( input );
-		String g = template.getSource();
+		TemplateCompilerContext context = translate( input );
+		String g = context.getScript().toString();
 //		System.out.println( g );
 		Assert.assertEquals( g, this.start + groovy + this.end );
 
 //		template = new TemplateCompiler( null ).compile( new StringLineReader( input ), "p.c" );
-		String result = execute( template, this.parameters );
+		String result = execute( context.getTemplate(), this.parameters );
 //		System.out.println( result );
 		Assert.assertEquals( result, output );
 	}
@@ -296,8 +304,8 @@ public class Basic
 	{
 		try
 		{
-			Template template = translate( "X${\"te\"xt\"}X" );
-			System.out.println( template.getSource() );
+			TemplateCompilerContext context = translate( "X${\"te\"xt\"}X" );
+//			System.out.println( template.getSource() );
 			assert false;
 		}
 		catch( ParseException e )
