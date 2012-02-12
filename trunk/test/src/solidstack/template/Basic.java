@@ -55,11 +55,11 @@ public class Basic
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/template/test.gtext" );
 		TemplateCompilerContext context = new TemplateCompilerContext();
 		context.setResource( resource );
-		context.setPath( "p/c" );
+		context.setPath( "a/b/c" );
 		new TemplateCompiler( null ).compile( context );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		Assert.assertEquals( context.getScript().toString(), "package solidstack.template.tmp.p;import java.sql.Timestamp;class c{Closure getClosure(){return{out->\n" +
+		Assert.assertEquals( context.getScript().toString(), "package solidstack.template.tmp.a.b;import java.sql.Timestamp;class c{Closure getClosure(){return{out->\n" +
 				" // Test if the import at the bottom works, and this comment too of course\n" +
 				"new Timestamp( new Date().time ) \n" +
 				";out.write(\"\"\"SELECT *\n" +

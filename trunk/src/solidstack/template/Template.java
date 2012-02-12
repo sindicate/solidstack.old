@@ -189,7 +189,7 @@ abstract public class Template
 	 * 
 	 * @param name The name of this template.
 	 */
-	public void setName( String name )
+	protected void setName( String name )
 	{
 		this.name = name;
 	}
@@ -224,7 +224,12 @@ abstract public class Template
 		this.lastModified = lastModified;
 	}
 
-	public void setDirectives( Directive[] directives )
+	/**
+	 * Sets the directives found in this template.
+	 * 
+	 * @param directives The directives found in this template.
+	 */
+	protected void setDirectives( Directive[] directives )
 	{
 		this.directives = directives;
 	}
