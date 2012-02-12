@@ -26,18 +26,18 @@ import solidstack.template.Util;
 public class GroovyTemplateCompiler
 {
 	private static final String TEMPLATE_PKG = "solidstack.template.tmp";
-	static private final Pattern PATH_PATTERN = Pattern.compile( "/*(?:(.+?)/+)?([^\\/]+)" ); // TODO Is this correct?
+	static private final Pattern PATH_PATTERN = Pattern.compile( "/*(?:(.+?)/+)?([^/]+)" );
 
 
 	public void generateScript( TemplateCompilerContext context )
 	{
-		// TODO This may give conflicts when more than on TemplateManager is used. This must be the complete path.
+		// TODO This may give conflicts when more than one TemplateManager is used. This must be the complete path.
 		Matcher matcher = PATH_PATTERN.matcher( context.getPath() );
 		Assert.isTrue( matcher.matches() );
 		String path = matcher.group( 1 );
 		String name = matcher.group( 2 );
 
-		String pkg = TEMPLATE_PKG + "." + path.replaceAll( "/", "." );
+		String pkg = TEMPLATE_PKG + "." + path.replaceAll( "/+", "." );
 
 		StringBuilder buffer = new StringBuilder( 1024 );
 		buffer.append( "package " ).append( pkg ).append( ";" );
