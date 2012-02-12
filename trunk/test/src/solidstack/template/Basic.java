@@ -24,7 +24,6 @@ import java.util.Map;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import solidbase.io.BOMDetectingLineReader;
 import solidbase.io.LineReader;
 import solidbase.io.Resource;
 import solidbase.io.ResourceFactory;
@@ -54,10 +53,13 @@ public class Basic
 	public void testTransform() throws Exception
 	{
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/template/test.gtext" );
-		Template template = new TemplateCompiler( null ).translate( "p", "c", new BOMDetectingLineReader( resource ) );
+		TemplateCompilerContext context = new TemplateCompilerContext();
+		context.setResource( resource );
+		context.setPath( "p/c" );
+		new TemplateCompiler( null ).compile( context );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		Assert.assertEquals( template.getSource(), "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{out->\n" +
+		Assert.assertEquals( context.getScript().toString(), "package solidstack.template.tmp.p;import java.sql.Timestamp;class c{Closure getClosure(){return{out->\n" +
 				" // Test if the import at the bottom works, and this comment too of course\n" +
 				"new Timestamp( new Date().time ) \n" +
 				";out.write(\"\"\"SELECT *\n" +
@@ -86,7 +88,7 @@ public class Basic
 
 		Map< String, Object > params = new HashMap< String, Object >();
 		params.put( "prefix", "SYST" );
-		template = queries.getTemplate( "test.gtext" );
+		Template template = queries.getTemplate( "test.gtext" );
 		String result = template.apply( params );
 
 //		Writer out = new OutputStreamWriter( new FileOutputStream( "test2.out" ), "UTF-8" );
@@ -109,10 +111,14 @@ public class Basic
 				"%>\n" +
 				"TEST" );
 
-		Template template = new TemplateCompiler( null ).translate( "p", "c", reader );
+		TemplateCompilerContext context = new TemplateCompilerContext();
+		context.setReader( reader );
+		context.setPath( "p/c" );
+		new TemplateCompiler( null ).compile( context );
+
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		Assert.assertEquals( template.getSource(), "package p;import java.util.ArrayList;import java.io.*;class c{Closure getClosure(){return{out->\n" +
+		Assert.assertEquals( context.getScript().toString(), "package solidstack.template.tmp.p;import java.util.ArrayList;import java.io.*;class c{Closure getClosure(){return{out->\n" +
 				"\n" +
 				"\n" +
 				"\n" +
@@ -129,7 +135,7 @@ public class Basic
 		templates.setPackage( "solidstack.template" );
 
 		Template template = templates.getTemplate( "test2.gxml" );
-		System.out.println( template.getSource() );
+//		System.out.println( template.getSource() );
 		Map< String, Object > pars = new HashMap< String, Object >();
 		String result = template.apply( pars );
 		Assert.assertEquals( result, "<!DOCTYPE html>\n" +

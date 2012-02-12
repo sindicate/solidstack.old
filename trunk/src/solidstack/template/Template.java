@@ -32,7 +32,6 @@ import solidstack.template.JSPLikeTemplateParser.Directive;
 abstract public class Template
 {
 	private String name;
-	private String source;
 	private Directive[] directives;
 
 	private String contentType;
@@ -40,20 +39,6 @@ abstract public class Template
 	private long lastModified;
 	private TemplateManager manager;
 
-
-	/**
-	 * Constructor.
-	 * 
-	 * @param name The name of the template.
-	 * @param source The source code of the template. This is the template translated to the source code of the desired language.
-	 * @param directives The directives found in the template text.
-	 */
-	public Template( String name, String source, Directive[] directives )
-	{
-		this.name = name;
-		this.source = source;
-		this.directives = directives;
-	}
 
 	/**
 	 * Sets the manager of the template. The template needs this to access the MIME type registry.
@@ -183,16 +168,6 @@ abstract public class Template
 	}
 
 	/**
-	 * Returns the source code for the template.
-	 * 
-	 * @return The source code for the template.
-	 */
-	public String getSource() // TODO Remove public
-	{
-		return this.source;
-	}
-
-	/**
 	 * Returns the directive attribute with the given directive name and attribute name.
 	 * 
 	 * @param name The name of the directive.
@@ -249,11 +224,8 @@ abstract public class Template
 		this.lastModified = lastModified;
 	}
 
-	/**
-	 * Removes the templates source from memory.
-	 */
-	protected void clearSource()
+	public void setDirectives( Directive[] directives )
 	{
-		this.source = null;
+		this.directives = directives;
 	}
 }

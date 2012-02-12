@@ -17,21 +17,11 @@
 package solidstack.template.groovy;
 
 import groovy.lang.Closure;
-import groovy.lang.GroovyObject;
 
-import java.util.List;
 import java.util.Map;
 
-import org.codehaus.groovy.control.CompilationUnit;
-import org.codehaus.groovy.control.Phases;
-import org.codehaus.groovy.tools.GroovyClass;
-
-import solidstack.Assert;
-import solidstack.template.DefiningClassLoader;
 import solidstack.template.EncodingWriter;
-import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.Template;
-import solidstack.template.Util;
 
 /**
  * A compiled Groovy template.
@@ -43,47 +33,9 @@ public class GroovyTemplate extends Template
 	private Closure closure;
 
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param name The name of the template.
-	 * @param source The source code of the template. This is the template translated to Groovy.
-	 * @param directives The directives found in the template text.
-	 */
-	public GroovyTemplate( String name, String source, Directive[] directives )
+	public GroovyTemplate( Closure closure )
 	{
-		super( name, source, directives );
-
-		// Compile to bytes
-		CompilationUnit unit = new CompilationUnit();
-		unit.addSource( getName(), getSource() );
-		unit.compile( Phases.CLASS_GENERATION );
-
-		// Results
-		@SuppressWarnings( "unchecked" )
-		List< GroovyClass > classes = unit.getClasses();
-		Assert.isTrue( classes.size() > 0, "Expecting 1 or more classes" );
-
-		// Use class loader to define the classes
-		// TODO Configurable class loader
-		// TODO See BeanShell 2 for resolving the parent classloader
-		DefiningClassLoader classLoader = new DefiningClassLoader( GroovyTemplate.class.getClassLoader() );
-		Class< ? > first = null;
-		for( GroovyClass cls : classes )
-		{
-			Class< ? > clas = classLoader.defineClass( cls.getName(), cls.getBytes() );
-			if( first == null )
-				first = clas; // TODO Are we sure that the first one is always the right one?
-		}
-
-		// Instantiate the first
-		GroovyObject object = (GroovyObject)Util.newInstance( first );
-		this.closure = (Closure)object.invokeMethod( "getClosure", null );
-
-		// The old way:
-//		Class< GroovyObject > groovyClass = new GroovyClassLoader().parseClass( new GroovyCodeSource( getSource(), getName(), "x" ) );
-//		GroovyObject object = Util.newInstance( groovyClass );
-//		this.closure = (Closure)object.invokeMethod( "getClosure", null );
+		this.closure = closure;
 	}
 
 	@Override

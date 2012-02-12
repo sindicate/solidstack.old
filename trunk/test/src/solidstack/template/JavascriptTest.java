@@ -21,7 +21,6 @@ import org.mozilla.javascript.TopLevel;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import solidbase.io.BOMDetectingLineReader;
 import solidbase.io.Resource;
 import solidbase.io.ResourceFactory;
 
@@ -66,7 +65,7 @@ public class JavascriptTest
 				scope.defineFunctionProperties( new String[] { "f" }, JavascriptTest.class, ScriptableObject.DONTENUM );
 //				Object result = cx.evaluateString(scope, "f(\"x\");\"test\"", "<cmd>", 1, null);
 				Object result = cx.executeScriptWithContinuations( script, scope );
-				System.out.println( cx.toString( result ) );
+				System.out.println( Context.toString( result ) );
 			}
 
 			{
@@ -96,9 +95,12 @@ public class JavascriptTest
 	public void testTransform() throws Exception
 	{
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/template/testjs.gtext" );
-		Template template = new TemplateCompiler( null ).translate( "p", "c", new BOMDetectingLineReader( resource ) );
-		System.out.println( template.getSource().replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
-		Assert.assertEquals( template.getSource(), "importClass(Packages.java.sql.Timestamp);importPackage(Packages.java.util);\n" +
+		TemplateCompilerContext context = new TemplateCompilerContext();
+		context.setResource( resource );
+		context.setPath( "p/c" );
+		new TemplateCompiler( null ).compile( context );
+//		System.out.println( template.getSource().replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
+		Assert.assertEquals( context.getScript().toString(), "importClass(Packages.java.sql.Timestamp);importPackage(Packages.java.util);\n" +
 				" // Test if the import at the bottom works, and this comment too of course\n" +
 				"new Timestamp( new java.util.Date().time ) \n" +
 				";out.write(\"SELECT *\\n\\\n" +
@@ -127,7 +129,7 @@ public class JavascriptTest
 		params.put( "prefix", "SYST" );
 		params.put( "name", null );
 		params.put( "names", null );
-		template = queries.getTemplate( "testjs.gtext" );
+		Template template = queries.getTemplate( "testjs.gtext" );
 		String result = template.apply( params );
 
 //		Writer out = new OutputStreamWriter( new FileOutputStream( "test2.out" ), "UTF-8" );
