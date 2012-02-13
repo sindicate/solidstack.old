@@ -48,6 +48,32 @@ public class JPAQueryAdapter
 	}
 
 	/**
+	 * Executes an update (DML) or a DDL query through the given {@link EntityManager}.
+	 * 
+	 * @param entityManager The {@link EntityManager} to use.
+	 * @param args The arguments to the query.
+	 * @return The number of entities updated or deleted.
+	 * @see javax.persistence.Query#executeUpdate()
+	 */
+	public int executeUpdate( EntityManager entityManager, Map< String, Object > args )
+	{
+		return JPASupport.executeUpdate( this.query, entityManager, args );
+	}
+
+	/**
+	 * Retrieves a {@link List} of JPA Entities from the given {@link EntityManager}.
+	 * 
+	 * @param entityManager The {@link EntityManager} to use.
+	 * @param args The arguments to the query.
+	 * @return A {@link List} of entities.
+	 * @see javax.persistence.Query#getResultList()
+	 */
+	public <T> List<T> getResultList( EntityManager entityManager, Map<String, Object> args )
+	{
+		return JPASupport.getResultList( this.query, entityManager, args );
+	}
+
+	/**
 	 * Retrieves a {@link List} of JPA Entities from the given {@link EntityManager}.
 	 * 
 	 * @param entityManager The {@link EntityManager} to use.
@@ -56,9 +82,22 @@ public class JPAQueryAdapter
 	 * @return A {@link List} of entities.
 	 * @see javax.persistence.Query#getResultList()
 	 */
-	public <T> List< T > getResultList( EntityManager entityManager, Class< T > entityClass, Map< String, Object > args )
+	public <T> List<T> getResultList( EntityManager entityManager, Class<T> entityClass, Map<String, Object> args )
 	{
 		return JPASupport.getResultList( this.query, entityManager, entityClass, args );
+	}
+
+	/**
+	 * Retrieves a single JPA Entity from the given {@link EntityManager}.
+	 * 
+	 * @param entityManager The {@link EntityManager} to use.
+	 * @param args The arguments to the query.
+	 * @return An entity.
+	 * @see javax.persistence.Query#getSingleResult()
+	 */
+	public <T> T getSingleResult( EntityManager entityManager, Map< String, Object > args )
+	{
+		return JPASupport.getSingleResult( this.query, entityManager, args );
 	}
 
 	/**
@@ -70,7 +109,7 @@ public class JPAQueryAdapter
 	 * @return An entity.
 	 * @see javax.persistence.Query#getSingleResult()
 	 */
-	public <T> T getSingleResult( EntityManager entityManager, Class< T > entityClass, Map< String, Object > args )
+	public <T> T getSingleResult( EntityManager entityManager, Class<T> entityClass, Map<String, Object> args )
 	{
 		return JPASupport.getSingleResult( this.query, entityManager, entityClass, args );
 	}
@@ -84,8 +123,21 @@ public class JPAQueryAdapter
 	 * @return The JPA query.
 	 * @see EntityManager#createNativeQuery(String, Class)
 	 */
-	public javax.persistence.Query createQuery( EntityManager entityManager, Class< ? > entityClass, Map< String, Object > args )
+	public javax.persistence.Query createQuery( EntityManager entityManager, Class<?> entityClass, Map<String, Object> args )
 	{
 		return JPASupport.createQuery( this.query, entityManager, entityClass, args );
+	}
+
+	/**
+	 * Creates a JPA query.
+	 * 
+	 * @param entityManager The {@link EntityManager} to use.
+	 * @param args The arguments to the query.
+	 * @return The JPA query.
+	 * @see EntityManager#createNativeQuery(String, Class)
+	 */
+	public javax.persistence.Query createQuery( EntityManager entityManager, Map<String, Object> args )
+	{
+		return JPASupport.createQuery( this.query, entityManager, args );
 	}
 }
