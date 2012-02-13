@@ -29,6 +29,11 @@ public class GroovyTemplateCompiler
 	static private final Pattern PATH_PATTERN = Pattern.compile( "/*(?:(.+?)/+)?([^/]+)" );
 
 
+	/**
+	 * Generates the Groovy script.
+	 * 
+	 * @param context The compilation context.
+	 */
 	public void generateScript( TemplateCompilerContext context )
 	{
 		// TODO This may give conflicts when more than one TemplateManager is used. This must be the complete path.
@@ -103,6 +108,11 @@ public class GroovyTemplateCompiler
 		context.setScript( buffer );
 	}
 
+	/**
+	 * Compiles the Groovy script.
+	 * 
+	 * @param context The compilation context.
+	 */
 	public void compileScript( TemplateCompilerContext context )
 	{
 		// Compile to bytes

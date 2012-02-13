@@ -16,7 +16,6 @@
 
 package solidstack.template;
 
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,10 +23,11 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 
+@SuppressWarnings( "javadoc" )
 public class Closures
 {
 	@Test
-	public void testClosures() throws SQLException, ClassNotFoundException
+	public void testClosures()
 	{
 		TemplateManager templates = new TemplateManager();
 		templates.setPackage( "solidstack.template" );

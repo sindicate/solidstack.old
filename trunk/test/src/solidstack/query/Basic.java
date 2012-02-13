@@ -39,6 +39,7 @@ import solidstack.template.TemplateManager;
 import solidstack.util.Pars;
 
 
+@SuppressWarnings( "javadoc" )
 public class Basic
 {
 	@Test
@@ -263,9 +264,9 @@ public class Basic
 
 	private String start = "package solidstack.template.tmp.p;class c{Closure getClosure(){return{out->";
 	private String end = "}}}";
-	private Map parameters;
+	private Map<String, Object> parameters;
 	{
-		this.parameters = new HashMap();
+		this.parameters = new HashMap<String, Object>();
 		this.parameters.put( "var", "value" );
 	}
 
@@ -300,11 +301,11 @@ public class Basic
 		Assert.assertEquals( result, output );
 	}
 
-	private void translateError( String input )
+	static private void translateError( String input )
 	{
 		try
 		{
-			TemplateCompilerContext context = translate( "X${\"te\"xt\"}X" );
+			translate( input );
 //			System.out.println( template.getSource() );
 			assert false;
 		}
@@ -315,7 +316,7 @@ public class Basic
 	}
 
 	@Test
-	public void testGroovy() throws SQLException, ClassNotFoundException
+	public void testGroovy()
 	{
 		// Escaping in the text
 

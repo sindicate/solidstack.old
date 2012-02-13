@@ -15,6 +15,11 @@ import solidstack.template.TemplateCompilerContext;
  */
 public class JavaScriptTemplateCompiler
 {
+	/**
+	 * Generates the JavaScript.
+	 * 
+	 * @param context The compilation context.
+	 */
 	public void generateScript( TemplateCompilerContext context )
 	{
 		StringBuilder buffer = new StringBuilder( 1024 );
@@ -87,6 +92,11 @@ public class JavaScriptTemplateCompiler
 		context.setScript( buffer );
 	}
 
+	/**
+	 * Compiles the JavaScript.
+	 * 
+	 * @param context The compilation context.
+	 */
 	public void compileScript( TemplateCompilerContext context )
 	{
 		Context cx = Context.enter();

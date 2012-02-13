@@ -110,6 +110,8 @@ public class TemplateCompiler
 
 	/**
 	 * Compiles a template into a {@link Template}.
+	 * 
+	 * @param context The compilation context.
 	 */
 	public void compile( TemplateCompilerContext context )
 	{
@@ -149,7 +151,12 @@ public class TemplateCompiler
 		configureTemplate( context );
 	}
 
-	public void createReader( TemplateCompilerContext context )
+	/**
+	 * Creates a reader.
+	 * 
+	 * @param context The compilation context.
+	 */
+	protected void createReader( TemplateCompilerContext context )
 	{
 		if( context.getReader() != null )
 			return;
@@ -163,7 +170,12 @@ public class TemplateCompiler
 		}
 	}
 
-	public void parse( TemplateCompilerContext context )
+	/**
+	 * Parses the source.
+	 * 
+	 * @param context The compilation context.
+	 */
+	protected void parse( TemplateCompilerContext context )
 	{
 		// Parse and collect directives
 		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( context.getReader() );
@@ -177,7 +189,12 @@ public class TemplateCompiler
 		context.setEvents( events );
 	}
 
-	public void collectDirectives( TemplateCompilerContext context )
+	/**
+	 * Collects the directives.
+	 * 
+	 * @param context The compilation context.
+	 */
+	protected void collectDirectives( TemplateCompilerContext context )
 	{
 		List<Directive> directives = new ArrayList<Directive>();
 		for( ParseEvent event : context.getEvents() )
@@ -186,7 +203,12 @@ public class TemplateCompiler
 		context.setDirectives( directives );
 	}
 
-	public void processDirectives( TemplateCompilerContext context )
+	/**
+	 * Processes the directives.
+	 * 
+	 * @param context The compilation context.
+	 */
+	protected void processDirectives( TemplateCompilerContext context )
 	{
 		List< String > imports = new ArrayList< String >();
 		String lang = null;
@@ -211,7 +233,12 @@ public class TemplateCompiler
 		}
 	}
 
-	public void configureTemplate( TemplateCompilerContext context )
+	/**
+	 * Configures the template.
+	 * 
+	 * @param context The compilation context.
+	 */
+	protected void configureTemplate( TemplateCompilerContext context )
 	{
 		Template template = context.getTemplate();
 		template.setName( context.getName() );

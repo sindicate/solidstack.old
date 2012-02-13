@@ -25,6 +25,7 @@ import solidbase.io.Resource;
 import solidbase.io.ResourceFactory;
 
 
+@SuppressWarnings( "javadoc" )
 public class JavascriptTest
 {
 	static public final String CONSTANT = "CONSTANT";

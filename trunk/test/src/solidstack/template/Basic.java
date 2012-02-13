@@ -16,8 +16,6 @@
 
 package solidstack.template;
 
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,10 +31,11 @@ import solidstack.template.JSPLikeTemplateParser.ParseEvent;
 import solidstack.util.Pars;
 
 
+@SuppressWarnings( "javadoc" )
 public class Basic
 {
 	@Test
-	public void testBasic() throws SQLException, ClassNotFoundException
+	public void testBasic()
 	{
 		TemplateManager templates = new TemplateManager();
 		templates.setPackage( "solidstack.template" );
@@ -128,7 +127,7 @@ public class Basic
 	}
 
 	@Test
-	public void testNulls() throws IOException
+	public void testNulls()
 	{
 		TemplateManager templates = new TemplateManager();
 		TemplateCompiler.keepSource = true;
@@ -152,7 +151,7 @@ public class Basic
 	}
 
 	@Test
-	public void testHuge() throws IOException
+	public void testHuge()
 	{
 		StringBuilder buffer = new StringBuilder();
 		for( int i = 0; i < 1000; i++ )

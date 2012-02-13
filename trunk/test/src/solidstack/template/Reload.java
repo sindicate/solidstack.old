@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
-import java.sql.SQLException;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -33,6 +32,7 @@ import solidbase.io.ResourceFactory;
 import solidbase.io.URLResource;
 
 
+@SuppressWarnings( "javadoc" )
 public class Reload
 {
 	@Test
@@ -76,7 +76,7 @@ public class Reload
 	}
 
 	@Test
-	public void testReloading() throws SQLException, ClassNotFoundException, IOException
+	public void testReloading() throws IOException
 	{
 		TemplateManager templates = new TemplateManager();
 		templates.setPackage( "solidstack.template" );
