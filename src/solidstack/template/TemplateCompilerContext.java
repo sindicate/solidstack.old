@@ -7,6 +7,8 @@ import solidbase.io.Resource;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
 
+
+@SuppressWarnings( "javadoc" )
 public class TemplateCompilerContext
 {
 	private String path;

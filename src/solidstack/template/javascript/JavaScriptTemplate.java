@@ -26,6 +26,7 @@ import org.mozilla.javascript.TopLevel;
 import solidstack.template.EncodingWriter;
 import solidstack.template.Template;
 
+
 /**
  * A compiled JavaScript template.
  * 
@@ -36,6 +37,9 @@ public class JavaScriptTemplate extends Template
 	private Script script;
 
 
+	/**
+	 * @param script The JavaScript script.
+	 */
 	public JavaScriptTemplate( Script script )
 	{
 		this.script = script;

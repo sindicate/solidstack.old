@@ -25,6 +25,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 
+@SuppressWarnings( "javadoc" )
 public class TemplateWriterTests
 {
 	@Test
@@ -41,7 +42,7 @@ public class TemplateWriterTests
 	}
 
 	@Test
-	public void testPlainTemplate() throws IOException
+	public void testPlainTemplate()
 	{
 		TemplateManager templates = new TemplateManager();
 		templates.setPackage( "solidstack.template" );
@@ -56,7 +57,7 @@ public class TemplateWriterTests
 	}
 
 	@Test
-	public void testXMLTemplate() throws IOException
+	public void testXMLTemplate()
 	{
 		TemplateManager templates = new TemplateManager();
 		templates.setPackage( "solidstack.template" );

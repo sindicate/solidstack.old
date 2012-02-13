@@ -33,6 +33,9 @@ public class GroovyTemplate extends Template
 	private Closure closure;
 
 
+	/**
+	 * @param closure The Groovy closure.
+	 */
 	public GroovyTemplate( Closure closure )
 	{
 		this.closure = closure;

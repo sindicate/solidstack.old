@@ -8,6 +8,8 @@ import org.codehaus.groovy.tools.GroovyClass;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+
+@SuppressWarnings( "javadoc" )
 public class GroovyCompilerTests
 {
 	@Test(groups="new")
@@ -16,6 +18,7 @@ public class GroovyCompilerTests
 		CompilationUnit unit = new CompilationUnit();
 		unit.addSource( "test", "println(\"Hello World!\")" );
 		unit.compile( Phases.CLASS_GENERATION );
+		@SuppressWarnings( "unchecked" )
 		List< GroovyClass > classes = unit.getClasses();
 		Assert.assertEquals( classes.size(), 1 );
 		GroovyClass cls = classes.get( 0 );
