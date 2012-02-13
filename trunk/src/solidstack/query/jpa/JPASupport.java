@@ -149,6 +149,7 @@ public class JPASupport
 	 * @return The JPA query.
 	 * @see EntityManager#createNativeQuery(String, Class)
 	 */
+	// TODO What about non native queries? And should we then rename this to createNativeQuery?
 	static private javax.persistence.Query createQuery0( Query query, EntityManager entityManager, Class< ? > entityClass, Map< String, Object > args )
 	{
 		PreparedSQL preparedSql = query.getPreparedSQL( args );

@@ -12,7 +12,7 @@ import org.testng.annotations.Test;
 @SuppressWarnings( "javadoc" )
 public class GroovyCompilerTests
 {
-	@Test(groups="new")
+	@Test
 	public void test1() throws InstantiationException, IllegalAccessException
 	{
 		CompilationUnit unit = new CompilationUnit();
