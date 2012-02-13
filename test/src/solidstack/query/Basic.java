@@ -370,6 +370,10 @@ public class Basic
 		translateError( "X${'text\ntext'}X" );
 		translateTest( "X${'''te\"xt\ntext\\''''}X", "out.write(\"\"\"X${'''te\"xt\ntext\\''''}X\"\"\");", "Xte\"xt\ntext'X" );
 
+		// Miscellaneous
+		translateTest( "X${1}${new Integer(2)}X", "out.write(\"\"\"X${1}${new Integer(2)}X\"\"\");", "X12X" ); // ${} connected with integers
+		translateTest( "X<%=1%><%=new Integer(2)%>X", "out.write(\"\"\"X\"\"\");out.write(1);out.write(new Integer(2));out.write(\"\"\"X\"\"\");", "X12X" ); // <%=%> connected with integers
+
 		// Groovy BUG
 
 		translateTest( "<%if(true){%>X<%}%>Y", "if(true){;out.write(\"\"\"X\"\"\");};out.write(\"\"\"Y\"\"\");", "XY" );
