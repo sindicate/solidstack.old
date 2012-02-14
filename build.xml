@@ -75,7 +75,7 @@
 		<pathelement location="${build.home}/instrumentedclasses" />
 		<pathelement location="${build.home}/classes" />
 		<path refid="compile.classpath" />
-		<fileset dir="test/lib" includes="*.jar" />
+		<fileset dir="test/lib" includes="**/*.jar" />
 		<path refid="testng.classpath" />
 		<path refid="cobertura.classpath" />
 	</path>
