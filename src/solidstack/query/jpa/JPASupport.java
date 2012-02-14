@@ -32,6 +32,10 @@ import solidstack.query.Query.PreparedSQL;
  * 
  * @author René M. de Bloois
  */
+// TODO What about JPQL query templates? Positional parameters are like this ?1, ?2 etc
+// TODO We need a new directive: <%@ query type="SQL|JPQL|HQL" %> or <%@ query lang="native|hibernate|jpa" %>
+// TODO What about the <%@ query resultClass="youNameIt" %>
+// TODO What about using the script language to build the result?
 public class JPASupport
 {
 	/**
@@ -120,6 +124,8 @@ public class JPASupport
 	 * @return The JPA query.
 	 * @see EntityManager#createNativeQuery(String, Class)
 	 */
+	// TODO And what about the one with the resultmapping?
+	// FIXME Rename to getNativeQuery
 	static public javax.persistence.Query createQuery( Query query, EntityManager entityManager, Class< ? > entityClass, Map< String, Object > args )
 	{
 		return createQuery0( query, entityManager, entityClass, args );

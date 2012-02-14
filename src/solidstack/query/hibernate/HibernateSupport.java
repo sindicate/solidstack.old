@@ -36,6 +36,7 @@ import solidstack.query.ResultHolder;
  * 
  * @author René M. de Bloois
  */
+// TODO What about HQL query templates?
 public class HibernateSupport
 {
 	/**
