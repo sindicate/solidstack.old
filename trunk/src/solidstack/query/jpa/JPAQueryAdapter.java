@@ -29,6 +29,12 @@ import solidstack.query.Query;
  * 
  * @author René M. de Bloois
  */
+//TODO What about a ConnectedJPAAdapter?
+/*
+	Query(Connection,Args)
+	Query+Connection(Args)
+ */
+// TODO What about query.jpa(EntityManager).hibernate() which returns a ConnectedHibernateAdapter.
 public class JPAQueryAdapter
 {
 	/**

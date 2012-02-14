@@ -32,6 +32,11 @@ import solidstack.query.Query;
  * 
  * @author René M. de Bloois
  */
+// FIXME What about a ConnectedHibernateAdapter?
+/*
+ 	Query(Connection,Args)
+	Query+Connection(Args)
+ */
 public class HibernateQueryAdapter
 {
 	/**
