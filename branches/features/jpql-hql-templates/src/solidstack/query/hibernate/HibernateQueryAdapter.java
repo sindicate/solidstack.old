@@ -110,4 +110,9 @@ public class HibernateQueryAdapter
 	{
 		return HibernateSupport.update( this.query, session, args );
 	}
+
+	public <T> List< T > list( Session session, Map< String, Object > args )
+	{
+		return HibernateSupport.list( this.query, session, args );
+	}
 }

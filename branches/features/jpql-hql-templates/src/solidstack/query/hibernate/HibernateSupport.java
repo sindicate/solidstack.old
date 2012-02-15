@@ -19,6 +19,7 @@ package solidstack.query.hibernate;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +27,10 @@ import org.hibernate.JDBCException;
 import org.hibernate.Session;
 import org.hibernate.jdbc.Work;
 
+import solidstack.Assert;
 import solidstack.query.Query;
+import solidstack.query.Query.PreparedSQL;
+import solidstack.query.Query.TYPE;
 import solidstack.query.QueryException;
 import solidstack.query.ResultHolder;
 
@@ -158,5 +162,35 @@ public class HibernateSupport
 		});
 
 		return result.get();
+	}
+
+	static public <T> List<T> list( Query query, Session session, Map<String, Object> args )
+	{
+		return createQuery( query, session, args ).list();
+	}
+
+	// TODO Rename my Query to SolidQuery?
+	static public org.hibernate.Query createQuery( Query query, Session session, Map< String, Object > args )
+	{
+		PreparedSQL preparedSql = query.getPreparedSQL( args );
+
+		org.hibernate.Query result;
+		if( query.getType() == TYPE.NATIVE )
+			result = session.createSQLQuery( preparedSql.getSQL() );
+		else
+			result = session.createQuery( preparedSql.getSQL() );
+
+		List< Object > pars = preparedSql.getParameters();
+		int i = 0;
+		for( Object par : pars )
+		{
+			if( par != null )
+			{
+				Assert.isFalse( par instanceof Collection );
+				Assert.isFalse( par.getClass().isArray() );
+			}
+			result.setParameter( i++, par );
+		}
+		return result;
 	}
 }

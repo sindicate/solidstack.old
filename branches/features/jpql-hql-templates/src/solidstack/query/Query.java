@@ -38,6 +38,7 @@ import solidstack.Assert;
 import solidstack.SystemException;
 import solidstack.query.hibernate.HibernateQueryAdapter;
 import solidstack.query.jpa.JPAQueryAdapter;
+import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.Template;
 
 
@@ -51,8 +52,11 @@ public class Query
 	// TODO We need well defined logger channels like hibernate
 	static  private Logger log = LoggerFactory.getLogger( Query.class );
 
+	static public enum TYPE { NATIVE, JPQL }
+
 	private Template template;
 	private boolean flyWeight = true;
+	private TYPE type;
 
 	/**
 	 * Constructor.
@@ -62,6 +66,26 @@ public class Query
 	public Query( Template template )
 	{
 		this.template = template;
+
+		Directive typeDirective = template.getDirective( "query", "type" );
+		if( typeDirective != null )
+		{
+			String type = typeDirective.getValue();
+			if( type.equals( "native" ) )
+				this.type = TYPE.NATIVE;
+			else
+			{
+				Assert.isTrue( type.equals( "jpql" ) ); // TODO
+				this.type = TYPE.JPQL;
+			}
+		}
+		else
+			this.type = TYPE.NATIVE;
+	}
+
+	public TYPE getType()
+	{
+		return this.type;
 	}
 
 	/**
@@ -293,6 +317,7 @@ public class Query
 		PreparedSQL preparedSql = getPreparedSQL( args );
 		List< Object > pars = preparedSql.getParameters();
 
+		// TODO Move this logging to getPreparedSQL()
 		if( log.isDebugEnabled() )
 		{
 			StringBuilder debug = new StringBuilder();

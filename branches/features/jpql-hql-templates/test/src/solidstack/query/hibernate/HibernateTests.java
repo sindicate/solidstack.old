@@ -25,7 +25,7 @@ public class HibernateTests
 		this.factory = new Configuration().configure().buildSessionFactory();
 	}
 
-	@Test(groups="new")
+	@Test
 	public void testCriteria()
 	{
 		Session session = this.factory.openSession();
@@ -37,7 +37,7 @@ public class HibernateTests
 		session.close();
 	}
 
-	@Test(groups="new")
+	@Test
 	public void testListOfMaps()
 	{
 		Session session = this.factory.openSession();
@@ -48,6 +48,35 @@ public class HibernateTests
 		List<Map<String, Object>> tables = query.hibernate().listOfMaps( session, new Pars() );
 		for( Map<String, Object> table : tables )
 			System.out.println( table.get( "TaBlEnAmE" ) );
+
+		session.close();
+	}
+
+
+	@Test(groups="new")
+	public void testHQL()
+	{
+		Session session = this.factory.openSession();
+
+		org.hibernate.Query hibQuery = session.createQuery( "SELECT A FROM DerbyTable A WHERE name = ?" );
+		hibQuery.setParameter( 0, "SYSTABLES" );
+		List<DerbyTable> tables = hibQuery.list();
+		for( DerbyTable table : tables )
+			System.out.println( table.getName() );
+		System.out.println( "-----" );
+
+		QueryManager queries = new QueryManager();
+		queries.setPackage( "solidstack.query.jpa" );
+		Query query = queries.getQuery( "test" );
+
+		tables = query.hibernate().list( session, new Pars() );
+		for( DerbyTable table : tables )
+			System.out.println( table.getName() );
+		System.out.println( "-----" );
+
+		tables = query.hibernate().list( session, new Pars( "name", "SYSTABLES" ) );
+		for( DerbyTable table : tables )
+			System.out.println( table.getName() );
 
 		session.close();
 	}

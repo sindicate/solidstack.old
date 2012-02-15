@@ -25,6 +25,7 @@ import javax.persistence.EntityManager;
 import solidstack.Assert;
 import solidstack.query.Query;
 import solidstack.query.Query.PreparedSQL;
+import solidstack.query.Query.TYPE;
 
 
 /**
@@ -159,13 +160,20 @@ public class JPASupport
 	static private javax.persistence.Query createQuery0( Query query, EntityManager entityManager, Class< ? > entityClass, Map< String, Object > args )
 	{
 		PreparedSQL preparedSql = query.getPreparedSQL( args );
-		List< Object > pars = preparedSql.getParameters();
 
 		javax.persistence.Query result;
-		if( entityClass != null )
-			result = entityManager.createNativeQuery( preparedSql.getSQL(), entityClass );
+		if( query.getType() == TYPE.NATIVE )
+			if( entityClass != null )
+				result = entityManager.createNativeQuery( preparedSql.getSQL(), entityClass );
+			else
+				result = entityManager.createNativeQuery( preparedSql.getSQL() );
 		else
-			result = entityManager.createNativeQuery( preparedSql.getSQL() );
+			if( entityClass != null )
+				result = entityManager.createQuery( preparedSql.getSQL(), entityClass );
+			else
+				result = entityManager.createQuery( preparedSql.getSQL() );
+
+		List< Object > pars = preparedSql.getParameters();
 		int i = 0;
 		for( Object par : pars )
 		{
