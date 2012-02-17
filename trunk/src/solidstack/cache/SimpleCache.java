@@ -146,7 +146,7 @@ public class SimpleCache
 	 * @param value The value that should be stored in the cache.
 	 * @return The cache entry in which the value is stored.
 	 */
-	public CacheEntry store( Object value, Object... key )
+	public CacheEntry put( Object value, Object... key )
 	{
 		long now = getTime();
 
@@ -179,14 +179,14 @@ public class SimpleCache
 	 * @param key The key of the value that should be retrieved.
 	 * @return The value with the specified key, or null if not found or expired.
 	 */
-	public Object retrieve( Object... key )
+	public <T> T get( Object... key )
 	{
-		CacheEntry entry = retrieveEntry( key );
+		CacheEntry entry = getEntry( key );
 		if( entry == null )
 			return null;
 		if( entry.getValue() == null )
 			throw new UnsupportedOperationException( "Null values cannot be retrieved with this method, use retrieveEntry() instead" );
-		return entry.getValue();
+		return (T)entry.getValue();
 	}
 
 	/**
@@ -198,7 +198,7 @@ public class SimpleCache
 	 * @param key The key of the value that should be retrieved.
 	 * @return the cache entry with the specified key, or null if not found or expired.
 	 */
-	public CacheEntry retrieveEntry( Object... key )
+	public CacheEntry getEntry( Object... key )
 	{
 		String keyString = buildKey( key );
 

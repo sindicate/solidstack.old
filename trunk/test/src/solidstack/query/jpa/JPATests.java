@@ -25,7 +25,7 @@ public class JPATests
 		this.factory = Persistence.createEntityManagerFactory( "manager1" );
 	}
 
-	@Test(groups="new")
+	@Test//(groups="new")
 	public void testResultList1()
 	{
 		EntityManager em = this.factory.createEntityManager();
@@ -40,7 +40,7 @@ public class JPATests
 		em.close();
 	}
 
-	@Test(groups="new")
+	@Test//(groups="new")
 	public void testResultList2()
 	{
 		EntityManager em = this.factory.createEntityManager();
