@@ -95,6 +95,8 @@ public class ReadThroughCache
 	 */
 	private long nextPurgeMillis;
 
+	private boolean nonBlocking;
+
 
 	/**
 	 * Gets the default global cache.
@@ -218,6 +220,133 @@ public class ReadThroughCache
 		return System.currentTimeMillis();
 	}
 
+	// ! No logging inside synchronized blocks !
+
+	/**
+	 * Get a value from the cache. If the value is not found or the value is expired, the loader is called to get a new
+	 * value to store in the cache. During load, other threads that are trying to get the same value are blocked until
+	 * loading is finished.
+	 * 
+	 * @param loader The loader to load values.
+	 * @param key The key into the cache.
+	 * @return The value belonging to the key.
+	 */
+	// LOADED -> RELOADING protected by locking this.cache
+	public <T> T get( Loader loader, Object... key )
+	{
+		String keyString = buildKey( key );
+
+		CacheEntry result;
+		boolean load = false;
+
+		synchronized( this.cache )
+		{
+			long now = getTime(); // Get the time after entering the synchronized block
+
+			if( now >= this.nextPurgeMillis ) // A long is not thread safe! So we need to do this in the same synchronized block.
+			{
+				// A CHANCE TO PURGE EVERY SO OFTEN
+				this.nextPurgeMillis = now + this.purgePeriodMillis;
+				purge( now );
+			}
+
+			result = this.cache.get( keyString );
+			if( result == null )
+			{
+				result = new CacheEntry( STATE.LOADING );
+				this.cache.put( keyString, result );
+				load = true;
+			}
+			else if( result.getState() == STATE.LOADED )
+			{
+				if( now > result.getExpirationTime() )
+				{
+					result.reloading();
+					load = true;
+				}
+				else
+				{
+					log.debug( "hit [" + keyString + "]" ); // TODO No logging inside synchronized block
+					return extractValue( result );
+				}
+			}
+		}
+
+		// 1. result now contains a CacheEntry
+		// 2. load indicates that we need to load
+
+		if( load )
+			return load( result, keyString, loader );
+
+		log.debug( "waiting [" + keyString + "]" );
+		synchronized( result )
+		{
+			// Don't wait if loading has finished already, we won't get a signal then
+			if( result.getState() == STATE.LOADING || result.getState() == STATE.RELOADING )
+			{
+				try
+				{
+					wait( result, this.waitTimeoutMillis );
+				}
+				catch( InterruptedException e )
+				{
+					throw new CacheTimeoutException( "Interrupted during waiting for the cache entry to be reloaded [" + keyString + "]" );
+				}
+				if( result.getState() == STATE.LOADING || result.getState() == STATE.RELOADING )
+					throw new CacheTimeoutException( "Timed out waiting for the cache entry to be reloaded [" + keyString + "]" );
+			}
+			return extractValue( result );
+		}
+	}
+
+	// LOADING/RELOADING -> LOADED/FAILED protected by lock on CacheEntry
+	private <T> T load( CacheEntry entry, String key, Loader loader )
+	{
+		T value = null;
+		Throwable throwable = null;
+		try
+		{
+			try
+			{
+				// TODO Needs to be protected
+				if( entry.getState() == STATE.LOADING )
+					log.debug( "miss:loading [" + key + "]" );
+				else
+					log.debug( "expired:reloading [" + key+ "]" );
+
+				value = (T)loader.load();
+			}
+			catch( Throwable t )
+			{
+				throwable = t;
+			}
+		}
+		finally
+		{
+			// First notify all
+			synchronized( entry )
+			{
+				entry.notifyAll();
+				long now = getTime();
+				if( throwable != null )
+					entry.failed( throwable, now, now + this.expirationMillis );
+				else
+					entry.loaded( value, now, now + this.expirationMillis );
+			}
+			if( throwable != null )
+			{
+				log.debug( "failed [" + key + "]" );
+				if( throwable instanceof RuntimeException )
+					throw (RuntimeException)throwable;
+				if( throwable instanceof Error )
+					throw (Error)throwable;
+				throw new SystemException( throwable );
+			}
+			log.debug( "loaded [" + key + "]" );
+		}
+		return value;
+	}
+
 	static private <T> T extractValue( CacheEntry entry )
 	{
 		if( entry.getState() == STATE.FAILED )
@@ -236,98 +365,7 @@ public class ReadThroughCache
 		return (T)entry.getValue();
 	}
 
-	public <T> T get( Loader loader, Object... key )
-	{
-		long now = getTime();
-		String keyString = buildKey( key );
-		CacheEntry result;
-		boolean iLoad = false;
-
-		synchronized( this.cache )
-		{
-			if( now >= this.nextPurgeMillis ) // A long is not thread safe! So we need to do this in the same synchronized block.
-			{
-				// A CHANCE TO PURGE EVERY SO OFTEN
-				this.nextPurgeMillis = now + this.purgePeriodMillis;
-				purge( now );
-			}
-
-			result = this.cache.get( keyString );
-//				if( result != null )
-//					log.debug( Long.toString( result.getExpirationTime() / 1000 ) + "-" + Long.toString( now / 1000 ) );
-			if( result != null && result.getState() == STATE.LOADED && now < result.getExpirationTime() )
-			{
-				log.debug( "hit [" + keyString + "]" );
-				return extractValue( result );
-			}
-			if( result == null )
-			{
-				this.cache.put( keyString, result = new CacheEntry( STATE.LOADING ) );
-				iLoad = true;
-			}
-			else if( result.getState() == STATE.LOADED )
-			{
-				result.setReloading();
-				iLoad = true;
-			}
-		}
-
-		if( iLoad )
-		{
-			boolean loaded = false;
-			try
-			{
-				if( result.getState() == STATE.LOADING )
-					log.debug( "miss:loading [" + keyString + "]" );
-				else
-					log.debug( "expired:reloading [" + keyString + "]" );
-				T value = (T)loader.load();
-				result.loaded( value, now, now + this.expirationMillis );
-				loaded = true;
-				return value;
-			}
-			catch( RuntimeException e )
-			{
-				result.failed( e, now, now + this.expirationMillis );
-				throw e;
-			}
-			catch( Error e )
-			{
-				result.failed( e, now, now + this.expirationMillis );
-				throw e;
-			}
-			finally
-			{
-				// First notify all
-				synchronized( result )
-				{
-					result.notifyAll();
-				}
-				if( loaded )
-					log.debug( "loaded [" + keyString + "]" );
-				else
-					log.debug( "failed [" + keyString + "]" );
-			}
-		}
-
-		// Place holder found
-		log.debug( "waiting [" + keyString + "]" );
-		synchronized( result )
-		{
-			try
-			{
-				wait( result, this.waitTimeoutMillis );
-			}
-			catch( InterruptedException e )
-			{
-				throw new CacheTimeoutException( "Interrupted during waiting for the cache entry [" + keyString + "] to be reloaded" );
-			}
-			if( result.getState() == STATE.LOADING )
-				throw new CacheTimeoutException( "Timed out waiting for the cache entry [" + keyString + "] to be reloaded" );
-			return extractValue( result );
-		}
-	}
-
+	// Pure technical wait implementation
 	private void wait( CacheEntry entry, int timeout ) throws InterruptedException
 	{
 		if( timeout <= 0 )
@@ -362,17 +400,14 @@ public class ReadThroughCache
 		boolean debug = log.isDebugEnabled();
 		List<String> keys = new ArrayList<String>();
 
-		synchronized( this.cache )
+		for( Iterator<Map.Entry<String, CacheEntry>> iter = this.cache.entrySet().iterator(); iter.hasNext(); )
 		{
-			for( Iterator<Map.Entry<String, CacheEntry>> iter = this.cache.entrySet().iterator(); iter.hasNext(); )
+			Entry<String, CacheEntry> entry = iter.next();
+			if( entry.getValue().getExpirationTime() < then )
 			{
-				Entry<String, CacheEntry> entry = iter.next();
-				if( entry.getValue().getExpirationTime() < then )
-				{
-					iter.remove();
-					if( debug )
-						keys.add( entry.getKey() );
-				}
+				iter.remove();
+				if( debug )
+					keys.add( entry.getKey() );
 			}
 		}
 
@@ -417,7 +452,7 @@ public class ReadThroughCache
 			this.state = state;
 		}
 
-		public void setReloading()
+		public void reloading()
 		{
 			this.state = STATE.RELOADING;
 		}
