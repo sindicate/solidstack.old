@@ -27,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import solidbase.core.SystemException;
-import solidstack.cache.ReadThroughCache.CacheEntry.STATE;
 
 
 /**
@@ -44,6 +43,11 @@ public class ReadThroughCache
 	 * Default cache expiration 10 minutes.
 	 */
 	static public final int DEFAULT_EXPIRATION_MILLIS = 600000;
+
+	/**
+	 * Default loading cache expiration 10 minutes.
+	 */
+	static public final int DEFAULT_LOADING_EXPIRATION_MILLIS = 600000;
 
 	/**
 	 * Default wait timeout 1 minute.
@@ -95,7 +99,9 @@ public class ReadThroughCache
 	 */
 	private long nextPurgeMillis;
 
-	private boolean nonBlocking = true;
+	// TODO Non blocking threshold, when too old which should block and discard. Or we could use the purge for that.
+	// TODO Ability to overrule blocking/nonblocking
+	private boolean nonBlocking = false;
 
 
 	/**
@@ -254,40 +260,53 @@ public class ReadThroughCache
 			result = this.cache.get( keyString );
 			if( result == null )
 			{
-				result = new CacheEntry( STATE.LOADING, null, now, now + this.expirationMillis );
+				result = new LoadingCacheEntry( now, now + DEFAULT_LOADING_EXPIRATION_MILLIS );
 				this.cache.put( keyString, result );
 				load = true;
 			}
 			else
 			{
-				switch( result.getState() )
+				if( now > result.getExpirationTime() )
 				{
-					case LOADED:
-						if( now > result.getExpirationTime() )
-						{
-							result = new CacheEntry( STATE.RELOADING, result.getValue(), now, now + this.expirationMillis );
-							this.cache.put( keyString, result );
-							load = /* reload = */ true;
-						}
-						else
+					if( result instanceof LoadedCacheEntry )
+					{
+						result = new ReloadingCacheEntry( ( (LoadedCacheEntry)result ).getValue(), now, now + DEFAULT_LOADING_EXPIRATION_MILLIS );
+						this.cache.put( keyString, result );
+						load = true;
+					}
+					else if( result instanceof FailedCacheEntry )
+					{
+						result = new LoadingCacheEntry( now, now + DEFAULT_LOADING_EXPIRATION_MILLIS );
+						this.cache.put( keyString, result );
+						load = true;
+					}
+					else
+					{
+						Throwable t = new IllegalStateException( "LoadingCacheEntry expired in cache" );
+						result = new FailedCacheEntry( t, now, now + this.expirationMillis );
+						this.cache.put( keyString, result );
+						return extractValue( result );
+					}
+				}
+				else
+				{
+					if( result instanceof LoadedCacheEntry )
+					{
+						log.debug( "hit [" + keyString + "]" ); // TODO No logging inside synchronized block
+						return extractValue( result );
+					}
+					else if( result instanceof ReloadingCacheEntry )
+					{
+						if( this.nonBlocking )
 						{
 							log.debug( "hit [" + keyString + "]" ); // TODO No logging inside synchronized block
 							return extractValue( result );
 						}
-						break;
-
-					case RELOADING:
-						// TODO Expiration
-						if( this.nonBlocking )
-							return extractValue( result );
-						break;
-
-					case FAILED:
-						// TODO Expiration
+					}
+					else if( result instanceof FailedCacheEntry )
+					{
 						return extractValue( result );
-
-					case LOADING:
-						// TODO Expiration
+					}
 				}
 			}
 		}
@@ -297,9 +316,9 @@ public class ReadThroughCache
 
 		if( load )
 		{
-			if( this.nonBlocking && result.getState() == STATE.RELOADING )
+			if( this.nonBlocking && result instanceof ReloadingCacheEntry )
 			{
-				final CacheEntry _result = result;
+				final LoadingCacheEntry _result = (LoadingCacheEntry)result;
 				new Thread()
 				{
 					@Override
@@ -310,32 +329,33 @@ public class ReadThroughCache
 				}.start();
 				return extractValue( result );
 			}
-			return load( result, keyString, loader );
+			return load( (LoadingCacheEntry)result, keyString, loader );
 		}
 
 		log.debug( "waiting [" + keyString + "]" );
 		synchronized( result )
 		{
+			LoadingCacheEntry loading = (LoadingCacheEntry)result;
 			// Don't wait if loading has finished already, we won't get a signal then
-			if( result.getState() == STATE.LOADING || result.getState() == STATE.RELOADING )
+			if( loading.getResult() == null )
 			{
 				try
 				{
-					wait( result, this.waitTimeoutMillis );
+					wait( loading, this.waitTimeoutMillis );
 				}
 				catch( InterruptedException e )
 				{
 					throw new CacheTimeoutException( "Interrupted during waiting for the cache entry to be reloaded [" + keyString + "]" );
 				}
-				if( result.getState() == STATE.LOADING || result.getState() == STATE.RELOADING )
+				if( loading.getResult() == null )
 					throw new CacheTimeoutException( "Timed out waiting for the cache entry to be reloaded [" + keyString + "]" );
 			}
-			return extractValue( result );
+			return extractValue( loading.getResult() );
 		}
 	}
 
 	// LOADING/RELOADING -> LOADED/FAILED protected by lock on CacheEntry
-	<T> T load( CacheEntry entry, String key, Loader loader )
+	<T> T load( LoadingCacheEntry entry, String key, Loader loader )
 	{
 		T value = null;
 		Throwable throwable = null;
@@ -344,10 +364,10 @@ public class ReadThroughCache
 			try
 			{
 				// TODO Needs to be protected
-				if( entry.getState() == STATE.LOADING )
-					log.debug( "miss:loading [" + key + "]" );
-				else
+				if( entry instanceof ReloadingCacheEntry )
 					log.debug( "expired:reloading [" + key+ "]" );
+				else
+					log.debug( "miss:loading [" + key + "]" );
 
 				value = (T)loader.load();
 			}
@@ -364,29 +384,40 @@ public class ReadThroughCache
 				entry.notifyAll();
 				long now = getTime();
 				if( throwable != null )
-					entry.failed( throwable, now, now + this.expirationMillis );
+				{
+					FailedCacheEntry result = new FailedCacheEntry( throwable, now, now + this.expirationMillis );
+					synchronized( this.cache )
+					{
+						this.cache.put( key, result );
+					}
+					entry.setResult( result );
+				}
 				else
-					entry.loaded( value, now, now + this.expirationMillis );
+				{
+					LoadedCacheEntry result = new LoadedCacheEntry( value, now, now + this.expirationMillis );
+					synchronized( this.cache )
+					{
+						this.cache.put( key, result );
+					}
+					entry.setResult( result );
+				}
 			}
 			if( throwable != null )
-			{
 				log.debug( "failed [" + key + "]" );
-				if( throwable instanceof RuntimeException )
-					throw (RuntimeException)throwable;
-				if( throwable instanceof Error )
-					throw (Error)throwable;
-				throw new SystemException( throwable );
-			}
-			log.debug( "loaded [" + key + "]" );
+			else
+				log.debug( "loaded [" + key + "]" );
 		}
 		return value;
 	}
 
 	static private <T> T extractValue( CacheEntry entry )
 	{
-		if( entry.getState() == STATE.FAILED )
+		if( entry == null )
+			throw new IllegalArgumentException( "entry = null" );
+
+		if( entry instanceof FailedCacheEntry )
 		{
-			Throwable t = (Throwable)entry.getValue();
+			Throwable t = ( (FailedCacheEntry)entry ).getThrowable();
 			if( t instanceof RuntimeException )
 				throw (RuntimeException)t;
 			if( t instanceof Error )
@@ -394,20 +425,23 @@ public class ReadThroughCache
 			throw new SystemException( t );
 		}
 
-		if( entry.getState() == STATE.LOADING )
-			throw new IllegalStateException( "CacheEntry is still loading" );
+		if( entry instanceof LoadedCacheEntry )
+			return (T)( (LoadedCacheEntry)entry ).getValue();
 
-		return (T)entry.getValue();
+		if( entry instanceof ReloadingCacheEntry )
+			return (T)( (ReloadingCacheEntry)entry ).getValue();
+
+		throw new IllegalArgumentException( "Unexpected cache entry: " + entry.getClass().getName() );
 	}
 
 	// Pure technical wait implementation
-	private void wait( CacheEntry entry, int timeout ) throws InterruptedException
+	private void wait( LoadingCacheEntry entry, int timeout ) throws InterruptedException
 	{
 		if( timeout <= 0 )
 		{
 			do
 				entry.wait();
-			while( entry.getState() == STATE.LOADING );
+			while( entry.getResult() == null );
 		}
 		else
 		{
@@ -418,7 +452,7 @@ public class ReadThroughCache
 				entry.wait( stop - now );
 				now = getTime();
 			}
-			while( entry.getState() == STATE.LOADING && now < stop );
+			while( entry.getResult() == null && now < stop );
 		}
 	}
 
@@ -476,61 +510,63 @@ public class ReadThroughCache
 	 */
 	static public class CacheEntry
 	{
-		static enum STATE { LOADING, RELOADING, LOADED, FAILED }
-
 		private long stored, expire;
-		private Object value;
-		private STATE state;
 
-		protected CacheEntry( STATE state, Object value, long stored, long expiration )
+		protected CacheEntry( long stored, long expiration )
 		{
-			this.state = state;
-			this.value = value;
 			this.stored = stored;
 			this.expire = expiration;
 		}
 
-//		public void reloading()
-//		{
-//			this.state = STATE.RELOADING;
-//		}
-
-//		/**
-//		 * Constructor.
-//		 *
-//		 * @param value The value.
-//		 * @param stored When was the cache entry stored.
-//		 * @param expire When does the cache entry expire.
-//		 */
-//		protected CacheEntry( Object value, long stored, long expire )
-//		{
-//			loaded( value, stored, expire );
-//		}
-
-//		void setExpirationTime( long expire )
-//		{
-//			this.expire = expire;
-//		}
-
-		public STATE getState()
+		/**
+		 * Returns the time when the value was stored in the cache.
+		 *
+		 * @return The time when the value was stored in the cache.
+		 */
+		public long getStoredTime()
 		{
-			return this.state;
+			return this.stored;
 		}
 
-		public void loaded( Object value, long stored, long expire )
+		/**
+		 * Returns the time when the value will expire.
+		 * 
+		 * @return The time when the value will expire.
+		 */
+		public long getExpirationTime()
 		{
-			this.stored = stored;
-			this.expire = expire;
+			return this.expire;
+		}
+	}
+
+	private class LoadingCacheEntry extends CacheEntry
+	{
+		private CacheEntry result;
+
+		LoadingCacheEntry( long stored, long expiration )
+		{
+			super( stored, expiration );
+		}
+
+		public CacheEntry getResult()
+		{
+			return this.result;
+		}
+
+		public void setResult( CacheEntry result )
+		{
+			this.result = result;
+		}
+	}
+
+	private class ReloadingCacheEntry extends LoadingCacheEntry
+	{
+		private Object value;
+
+		ReloadingCacheEntry( Object value, long stored, long expiration )
+		{
+			super( stored, expiration );
 			this.value = value;
-			this.state = STATE.LOADED;
-		}
-
-		public void failed( Throwable throwable, long stored, long expire )
-		{
-			this.stored = stored;
-			this.expire = expire;
-			this.value = throwable;
-			this.state = STATE.FAILED;
 		}
 
 		/**
@@ -542,25 +578,42 @@ public class ReadThroughCache
 		{
 			return this.value;
 		}
+	}
 
-//		/**
-//		 * Returns the time when the value was stored in the cache.
-//		 *
-//		 * @return The time when the value was stored in the cache.
-//		 */
-//		public long getStoredTime()
-//		{
-//			return this.stored;
-//		}
+	private class LoadedCacheEntry extends CacheEntry
+	{
+		private Object value;
+
+		LoadedCacheEntry( Object value, long stored, long expiration )
+		{
+			super( stored, expiration );
+			this.value = value;
+		}
 
 		/**
-		 * Returns the time when the value will expire.
+		 * Returns the value stored in this cache entry. The value can be null.
 		 * 
-		 * @return The time when the value will expire.
+		 * @return The value stored in this cache entry.
 		 */
-		public long getExpirationTime()
+		public Object getValue()
 		{
-			return this.expire;
+			return this.value;
+		}
+	}
+
+	private class FailedCacheEntry extends CacheEntry
+	{
+		private Throwable throwable;
+
+		FailedCacheEntry( Throwable throwable, long stored, long expiration )
+		{
+			super( stored, expiration );
+			this.throwable = throwable;
+		}
+
+		public Throwable getThrowable()
+		{
+			return this.throwable;
 		}
 	}
 

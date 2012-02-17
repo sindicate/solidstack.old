@@ -40,7 +40,7 @@ public class CacheTests
 			{
 				try
 				{
-					Thread.sleep( 500 + random.nextInt( 10 ) * 100  );
+					Thread.sleep( 500 + random.nextInt( 10 ) * 500  );
 				}
 				catch( InterruptedException e )
 				{
