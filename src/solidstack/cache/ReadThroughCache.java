@@ -238,7 +238,7 @@ public class ReadThroughCache
 
 		CacheEntry result;
 		boolean load = false;
-		boolean reload = false;
+//		boolean reload = false;
 
 		synchronized( this.cache )
 		{
@@ -254,7 +254,7 @@ public class ReadThroughCache
 			result = this.cache.get( keyString );
 			if( result == null )
 			{
-				result = new CacheEntry( STATE.LOADING );
+				result = new CacheEntry( STATE.LOADING, null, now, now + this.expirationMillis );
 				this.cache.put( keyString, result );
 				load = true;
 			}
@@ -265,8 +265,9 @@ public class ReadThroughCache
 					case LOADED:
 						if( now > result.getExpirationTime() )
 						{
-							result.reloading();
-							load = reload = true;
+							result = new CacheEntry( STATE.RELOADING, result.getValue(), now, now + this.expirationMillis );
+							this.cache.put( keyString, result );
+							load = /* reload = */ true;
 						}
 						else
 						{
@@ -276,14 +277,17 @@ public class ReadThroughCache
 						break;
 
 					case RELOADING:
+						// TODO Expiration
 						if( this.nonBlocking )
 							return extractValue( result );
 						break;
 
 					case FAILED:
+						// TODO Expiration
 						return extractValue( result );
 
 					case LOADING:
+						// TODO Expiration
 				}
 			}
 		}
@@ -293,7 +297,7 @@ public class ReadThroughCache
 
 		if( load )
 		{
-			if( this.nonBlocking && reload )
+			if( this.nonBlocking && result.getState() == STATE.RELOADING )
 			{
 				final CacheEntry _result = result;
 				new Thread()
@@ -478,15 +482,18 @@ public class ReadThroughCache
 		private Object value;
 		private STATE state;
 
-		protected CacheEntry( STATE state )
+		protected CacheEntry( STATE state, Object value, long stored, long expiration )
 		{
 			this.state = state;
+			this.value = value;
+			this.stored = stored;
+			this.expire = expiration;
 		}
 
-		public void reloading()
-		{
-			this.state = STATE.RELOADING;
-		}
+//		public void reloading()
+//		{
+//			this.state = STATE.RELOADING;
+//		}
 
 //		/**
 //		 * Constructor.
@@ -500,10 +507,10 @@ public class ReadThroughCache
 //			loaded( value, stored, expire );
 //		}
 
-		void setExpirationTime( long expire )
-		{
-			this.expire = expire;
-		}
+//		void setExpirationTime( long expire )
+//		{
+//			this.expire = expire;
+//		}
 
 		public STATE getState()
 		{
