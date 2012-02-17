@@ -25,7 +25,7 @@ public class HibernateTests
 		this.factory = new Configuration().configure().buildSessionFactory();
 	}
 
-	@Test(groups="new")
+	@Test//(groups="new")
 	public void testCriteria()
 	{
 		Session session = this.factory.openSession();
@@ -37,7 +37,7 @@ public class HibernateTests
 		session.close();
 	}
 
-	@Test(groups="new")
+	@Test//(groups="new")
 	public void testListOfMaps()
 	{
 		Session session = this.factory.openSession();
