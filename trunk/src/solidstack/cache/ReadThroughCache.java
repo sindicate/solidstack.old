@@ -95,7 +95,7 @@ public class ReadThroughCache
 	 */
 	private long nextPurgeMillis;
 
-	private boolean nonBlocking;
+	private boolean nonBlocking = true;
 
 
 	/**
@@ -232,12 +232,13 @@ public class ReadThroughCache
 	 * @return The value belonging to the key.
 	 */
 	// LOADED -> RELOADING protected by locking this.cache
-	public <T> T get( Loader loader, Object... key )
+	public <T> T get( final Loader loader, Object... key )
 	{
-		String keyString = buildKey( key );
+		final String keyString = buildKey( key );
 
 		CacheEntry result;
 		boolean load = false;
+		boolean reload = false;
 
 		synchronized( this.cache )
 		{
@@ -257,17 +258,32 @@ public class ReadThroughCache
 				this.cache.put( keyString, result );
 				load = true;
 			}
-			else if( result.getState() == STATE.LOADED )
+			else
 			{
-				if( now > result.getExpirationTime() )
+				switch( result.getState() )
 				{
-					result.reloading();
-					load = true;
-				}
-				else
-				{
-					log.debug( "hit [" + keyString + "]" ); // TODO No logging inside synchronized block
-					return extractValue( result );
+					case LOADED:
+						if( now > result.getExpirationTime() )
+						{
+							result.reloading();
+							load = reload = true;
+						}
+						else
+						{
+							log.debug( "hit [" + keyString + "]" ); // TODO No logging inside synchronized block
+							return extractValue( result );
+						}
+						break;
+
+					case RELOADING:
+						if( this.nonBlocking )
+							return extractValue( result );
+						break;
+
+					case FAILED:
+						return extractValue( result );
+
+					case LOADING:
 				}
 			}
 		}
@@ -276,7 +292,22 @@ public class ReadThroughCache
 		// 2. load indicates that we need to load
 
 		if( load )
+		{
+			if( this.nonBlocking && reload )
+			{
+				final CacheEntry _result = result;
+				new Thread()
+				{
+					@Override
+					public void run()
+					{
+						load( _result, keyString, loader );
+					}
+				}.start();
+				return extractValue( result );
+			}
 			return load( result, keyString, loader );
+		}
 
 		log.debug( "waiting [" + keyString + "]" );
 		synchronized( result )
@@ -300,7 +331,7 @@ public class ReadThroughCache
 	}
 
 	// LOADING/RELOADING -> LOADED/FAILED protected by lock on CacheEntry
-	private <T> T load( CacheEntry entry, String key, Loader loader )
+	<T> T load( CacheEntry entry, String key, Loader loader )
 	{
 		T value = null;
 		Throwable throwable = null;
@@ -359,8 +390,8 @@ public class ReadThroughCache
 			throw new SystemException( t );
 		}
 
-		if( entry.getState() != STATE.LOADED )
-			throw new IllegalStateException( "CacheEntry should be LOADED, but is " + entry.getState() );
+		if( entry.getState() == STATE.LOADING )
+			throw new IllegalStateException( "CacheEntry is still loading" );
 
 		return (T)entry.getValue();
 	}
