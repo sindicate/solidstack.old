@@ -354,8 +354,8 @@ public class ReadThroughCache
 				}
 				else
 				{
-					Throwable t = new IllegalStateException( "LoadingCacheEntry expired in cache" );
-					CacheEntry failed = new Failed( t, now, now + this.expirationMillis );
+					Exception e = new IllegalStateException( "LoadingCacheEntry expired in cache" );
+					CacheEntry failed = new Failed( e, now, now + this.expirationMillis );
 					this.cache.put( keyString, failed );
 					( (Loading)result ).setResult( failed );
 					result = failed;
@@ -388,7 +388,7 @@ public class ReadThroughCache
 						}
 						catch( Throwable t )
 						{
-							log.error( "", t );
+							log.error( "", t ); // TODO Should we not log ThreadDeath? Of should we implement an UncaughtExceptionHandler?
 						}
 					}
 				}.start();
@@ -429,12 +429,10 @@ public class ReadThroughCache
 			return (T)( (Loaded)result ).getValue();
 		}
 
-		Throwable t = ( (Failed)result ).getThrowable();
-		if( t instanceof RuntimeException )
-			throw (RuntimeException)t;
-		if( t instanceof Error )
-			throw (Error)t;
-		throw new SystemException( t );
+		Exception e = ( (Failed)result ).getException();
+		if( e instanceof RuntimeException )
+			throw (RuntimeException)e;
+		throw new SystemException( e );
 	}
 
 	/**
@@ -448,36 +446,33 @@ public class ReadThroughCache
 	<T> T load( Loading entry, String keyString, Loader<T> loader )
 	{
 		T value = null;
-		Throwable throwable = null;
+		Exception exception = null;
+
 		try
 		{
-			try
-			{
-				value = loader.load();
-				log.debug( "load success [" + keyString + "]" );
-			}
-			catch( Exception t )
-			{
-				throwable = t;
-				log.debug( "load failed [" + keyString + "]" );
-			}
+			value = loader.load();
+			log.debug( "load success [" + keyString + "]" );
 		}
-		finally
+		catch( Exception t )
 		{
-			long now = System.currentTimeMillis();
-			CacheEntry result;
-			if( throwable != null )
-				result = new Failed( throwable, now, now + this.expirationMillis );
-			else
-				result = new Loaded( value, now, now + this.expirationMillis );
-
-			synchronized( this.cache )
-			{
-				this.cache.put( keyString, result );
-			}
-
-			entry.setResult( result ); // Notifies all waiting threads
+			exception = t;
+			log.debug( "load failed [" + keyString + "]" );
 		}
+
+		long now = System.currentTimeMillis();
+		CacheEntry result;
+		if( exception != null )
+			result = new Failed( exception, now, now + this.expirationMillis );
+		else
+			result = new Loaded( value, now, now + this.expirationMillis );
+
+		synchronized( this.cache )
+		{
+			this.cache.put( keyString, result );
+		}
+
+		entry.setResult( result ); // Notifies all waiting threads
+
 		return value;
 	}
 
@@ -506,8 +501,8 @@ public class ReadThroughCache
 					iter.remove();
 					if( e instanceof Loading )
 					{
-						Throwable t = new IllegalStateException( "LoadingCacheEntry purged from cache [" + entry.getKey() + "]" );
-						CacheEntry failed = new Failed( t, now, now + this.expirationMillis );
+						Exception ex = new IllegalStateException( "LoadingCacheEntry purged from cache [" + entry.getKey() + "]" );
+						CacheEntry failed = new Failed( ex, now, now + this.expirationMillis );
 						( (Loading)e ).setResult( failed );
 
 						if( warn )
@@ -682,17 +677,17 @@ public class ReadThroughCache
 
 	static private class Failed extends CacheEntry
 	{
-		private Throwable throwable;
+		private Exception exception;
 
-		Failed( Throwable throwable, long stored, long expiration )
+		Failed( Exception exception, long stored, long expiration )
 		{
 			super( stored, expiration );
-			this.throwable = throwable;
+			this.exception = exception;
 		}
 
-		public Throwable getThrowable()
+		public Exception getException()
 		{
-			return this.throwable;
+			return this.exception;
 		}
 	}
 
