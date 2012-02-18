@@ -11,7 +11,7 @@ import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.tools.GroovyClass;
 
-import solidstack.Assert;
+import solidstack.lang.Assert;
 import solidstack.template.DefiningClassLoader;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
 import solidstack.template.TemplateCompilerContext;

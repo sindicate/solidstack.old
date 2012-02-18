@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 import solidbase.io.BOMDetectingLineReader;
 import solidbase.io.LineReader;
 import solidbase.io.Resource;
-import solidstack.Assert;
+import solidstack.lang.Assert;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.EVENT;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;

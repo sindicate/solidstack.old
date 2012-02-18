@@ -16,7 +16,7 @@
 
 package solidstack.template;
 
-import solidstack.SystemException;
+import solidstack.lang.SystemException;
 
 /**
  * Generic utilities.

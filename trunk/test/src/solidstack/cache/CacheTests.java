@@ -1,19 +1,26 @@
 package solidstack.cache;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import solidstack.SystemException;
+import solidstack.cache.ReadThroughCache.BlockingMode;
 import solidstack.cache.ReadThroughCache.Loader;
+import solidstack.lang.SystemException;
+import solidstack.lang.ThreadInterrupted;
 
 
 @SuppressWarnings( "javadoc" )
 public class CacheTests
 {
+	static final Logger log = LoggerFactory.getLogger( CacheTests.class );
+
 	@Test( groups = "new" )
 	public void test1()
 	{
@@ -30,7 +37,14 @@ public class CacheTests
 	{
 		final ReadThroughCache cache = new ReadThroughCache();
 		cache.setExpirationMillis( 2000 );
+		cache.setGracePeriodMillis( 1000 );
+
+		cache.setBlockingMode( BlockingMode.NONE );
 		cache.setWaitTimeoutMillis( 10000 );
+
+		cache.setLoadTimeoutMillis( 5000 );
+		cache.setPurgeIntervalMillis( 10000 );
+		cache.setPurgeAgeMillis( 0 );
 
 		final Random random = new Random();
 
@@ -41,14 +55,17 @@ public class CacheTests
 				try
 				{
 					Thread.sleep( 500 + random.nextInt( 10 ) * 500 );
+					int event = random.nextInt( 20 );
+					if( event == 0 )
+						throw new RuntimeException( "load failed" );
+					if( event == 1 )
+						Thread.sleep( 5000 );
+					return null;
 				}
 				catch( InterruptedException e )
 				{
-					Thread.currentThread().interrupt();
+					throw new ThreadInterrupted( e );
 				}
-				if( random.nextInt( 20 ) == 0 )
-					throw new RuntimeException( "load failed" );
-				return null;
 			}
 		};
 
@@ -67,7 +84,7 @@ public class CacheTests
 				{
 					try
 					{
-						while( !Thread.interrupted() )
+						while( true )
 						{
 							this.myLifeSign.set( System.currentTimeMillis() );
 
@@ -78,18 +95,22 @@ public class CacheTests
 							}
 							catch( Exception e )
 							{
-								System.out.println( e.toString() );
+								log.error( "", e );
 							}
 							sleep( random.nextInt( 10 ) * 10 );
 						}
 					}
 					catch( InterruptedException e )
 					{
-						System.out.println( "Thread interrupted" );
+						log.debug( "thread ended" );
+					}
+					catch( ThreadInterrupted e )
+					{
+						log.debug( "thread ended" );
 					}
 					catch( ThreadDeath e )
 					{
-						System.out.println( "Thread died" );
+						log.debug( "thread died" );
 					}
 				}
 			};
@@ -109,14 +130,45 @@ public class CacheTests
 					if( atomicLong.get() >= now - 10000 )
 						count++;
 				}
-				System.out.println( "Threads alive: " + count );
+				log.debug( "Threads alive: {}", count );
 			}
-			System.out.println( "Killing threads" );
+
+			log.info( "Interrupting threads..." );
 			for( Thread thread : threads )
+			{
+				final StackTraceElement[] stackTrace = thread.getStackTrace();
 				thread.interrupt();
-			System.out.println( "Waiting for threads" );
-			for( Thread thread : threads )
-				thread.join();
+				Throwable t = new Throwable( "Stacktrace dump" )
+				{
+					@Override
+					public synchronized Throwable fillInStackTrace()
+					{
+						setStackTrace( stackTrace );
+						return this;
+					}
+				};
+				log.debug( "interrupting [{}]", thread, t );
+			}
+
+			log.info( "Waiting for threads..." );
+			long now = System.currentTimeMillis();
+			long stop = now + 20000;
+			for( Iterator<Thread> i = threads.iterator(); i.hasNext(); )
+			{
+				Thread thread = i.next();
+				thread.join( stop - now );
+				if( thread.isAlive() )
+					break;
+				i.remove();
+				now = System.currentTimeMillis();
+			}
+
+			if( !threads.isEmpty() )
+			{
+				log.info( "Stopping remaining threads..." );
+				for( Thread thread : threads )
+					thread.stop();
+			}
 		}
 		catch( InterruptedException e )
 		{

@@ -3,7 +3,7 @@ package solidstack.template.javascript;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Script;
 
-import solidstack.Assert;
+import solidstack.lang.Assert;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
 import solidstack.template.TemplateCompilerContext;
 
