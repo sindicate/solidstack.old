@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import solidbase.io.Resource;
 import solidbase.io.ResourceFactory;
-import solidstack.Assert;
+import solidstack.lang.Assert;
 
 
 /**

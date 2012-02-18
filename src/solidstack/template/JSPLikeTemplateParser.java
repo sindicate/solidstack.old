@@ -23,7 +23,7 @@ import java.util.List;
 
 import solidbase.io.LineReader;
 import solidbase.io.PushbackReader;
-import solidstack.Assert;
+import solidstack.lang.Assert;
 
 
 /**

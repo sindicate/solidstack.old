@@ -22,7 +22,7 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 
-import solidstack.Assert;
+import solidstack.lang.Assert;
 import solidstack.query.Query;
 import solidstack.query.Query.PreparedSQL;
 

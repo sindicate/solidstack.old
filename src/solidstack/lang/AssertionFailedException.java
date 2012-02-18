@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack;
+package solidstack.lang;
 
 /**
  * Thrown when an assertion failed.

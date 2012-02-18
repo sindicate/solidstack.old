@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack;
+package solidstack.lang;
 
 import java.util.Collection;
 

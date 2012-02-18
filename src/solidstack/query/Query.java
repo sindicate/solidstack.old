@@ -34,8 +34,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import solidstack.Assert;
-import solidstack.SystemException;
+import solidstack.lang.Assert;
+import solidstack.lang.SystemException;
 import solidstack.query.hibernate.HibernateQueryAdapter;
 import solidstack.query.jpa.JPAQueryAdapter;
 import solidstack.template.Template;
