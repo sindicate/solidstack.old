@@ -532,15 +532,35 @@ public class ReadThroughCache
 	 */
 	static public String buildKey( Object... objects )
 	{
-		StringBuilder result = new StringBuilder();
+		StringBuilder result = new StringBuilder( 32 );
 		for( Object object : objects )
 		{
 			if( result.length() > 0 )
 				result.append( ';' );
 			if( object == null )
-				result.append( "<null>" );
+				result.append( "*" );
 			else
-				result.append( object ); // TODO Escape ; character
+			{
+				char[] chars = object.toString().toCharArray();
+				int len = chars.length;
+				for( int i = 0; i < len; )
+				{
+					char c = chars[ i++ ];
+					switch( c )
+					{
+						case '*':
+							if( len == 1 )
+								result.append( '\\' );
+							result.append( c );
+							break;
+						case '\\':
+						case ';':
+							result.append( '\\' ); //$FALL-THROUGH$
+						default:
+							result.append( c );
+					}
+				}
+			}
 		}
 		return result.toString();
 	}
