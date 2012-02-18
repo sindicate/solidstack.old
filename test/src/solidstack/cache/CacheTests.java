@@ -34,18 +34,20 @@ public class CacheTests
 
 		final Random random = new Random();
 
-		final Loader loader = new Loader()
+		final Loader<String> loader = new Loader<String>()
 		{
-			public Object load()
+			public String load()
 			{
 				try
 				{
-					Thread.sleep( 500 + random.nextInt( 10 ) * 500  );
+					Thread.sleep( 500 + random.nextInt( 10 ) * 500 );
 				}
 				catch( InterruptedException e )
 				{
 					Thread.currentThread().interrupt();
 				}
+				if( random.nextInt( 20 ) == 0 )
+					throw new RuntimeException( "load failed" );
 				return null;
 			}
 		};
@@ -70,15 +72,24 @@ public class CacheTests
 							this.myLifeSign.set( System.currentTimeMillis() );
 
 							int val = random.nextInt( 10 );
-//							System.out.println( "Trying " + val );
-							cache.get( loader, val );
-//							System.out.println( "Thread: " + getName() );
+							try
+							{
+								cache.get( loader, val );
+							}
+							catch( Exception e )
+							{
+								System.out.println( e.toString() );
+							}
 							sleep( random.nextInt( 10 ) * 10 );
 						}
 					}
 					catch( InterruptedException e )
 					{
-						// Exit
+						System.out.println( "Thread interrupted" );
+					}
+					catch( ThreadDeath e )
+					{
+						System.out.println( "Thread died" );
 					}
 				}
 			};
@@ -100,8 +111,10 @@ public class CacheTests
 				}
 				System.out.println( "Threads alive: " + count );
 			}
+			System.out.println( "Killing threads" );
 			for( Thread thread : threads )
 				thread.interrupt();
+			System.out.println( "Waiting for threads" );
 			for( Thread thread : threads )
 				thread.join();
 		}
