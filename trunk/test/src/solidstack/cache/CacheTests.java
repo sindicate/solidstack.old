@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import solidstack.cache.ReadThroughCache.BlockingMode;
@@ -21,7 +22,7 @@ public class CacheTests
 {
 	static final Logger log = LoggerFactory.getLogger( CacheTests.class );
 
-	@Test( groups = "new" )
+	@Test//( groups = "new" )
 	public void test1()
 	{
 		SimpleCache cache = new SimpleCache();
@@ -32,18 +33,19 @@ public class CacheTests
 		System.out.println( i );
 	}
 
-	@Test( groups = "new" )
+	@Test//( groups = "new" )
 	public void test2()
 	{
 		final ReadThroughCache cache = new ReadThroughCache();
+
 		cache.setExpirationMillis( 2000 );
 		cache.setGracePeriodMillis( 1000 );
 
-		cache.setBlockingMode( BlockingMode.NONE );
+		cache.setBlockingMode( BlockingMode.ALL );
 		cache.setWaitTimeoutMillis( 10000 );
 
-		cache.setLoadTimeoutMillis( 5000 );
-		cache.setPurgeIntervalMillis( 10000 );
+		cache.setLoadTimeoutMillis( 15000 );
+		cache.setPurgeIntervalMillis( 1000000 );
 		cache.setPurgeAgeMillis( 0 );
 
 		final Random random = new Random();
@@ -57,7 +59,7 @@ public class CacheTests
 					Thread.sleep( 500 + random.nextInt( 10 ) * 500 );
 					int event = random.nextInt( 20 );
 					if( event == 0 )
-						throw new RuntimeException( "load failed" );
+						throw new RuntimeException( "simulated failure" );
 					if( event == 1 )
 						Thread.sleep( 5000 );
 					return null;
@@ -174,5 +176,19 @@ public class CacheTests
 		{
 			throw new SystemException( e );
 		}
+	}
+
+	@Test( groups = "new" )
+	public void testKey()
+	{
+		Assert.assertEquals( ReadThroughCache.buildKey( "test", "test" ), "test;test" );
+		Assert.assertEquals( ReadThroughCache.buildKey( "test;test" ), "test\\;test" ); // test\;test
+		Assert.assertEquals( ReadThroughCache.buildKey( "test\\;test" ), "test\\\\\\;test" ); // test\\\;test
+		Assert.assertEquals( ReadThroughCache.buildKey( "test\\", "test" ), "test\\\\;test" ); // test\\;test
+		Assert.assertEquals( ReadThroughCache.buildKey( (Object)null ), "*" ); // *
+		Assert.assertEquals( ReadThroughCache.buildKey( "*" ), "\\*" ); // \*
+		Assert.assertEquals( ReadThroughCache.buildKey( "\\*" ), "\\\\*" ); // \\*
+		Assert.assertEquals( ReadThroughCache.buildKey( ";*;" ), "\\;*\\;" ); // \;*\;
+		Assert.assertEquals( ReadThroughCache.buildKey( "**" ), "**" );
 	}
 }
