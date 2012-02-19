@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
  * all values that are not refreshed within the last hour will be purged.</li>
  * <li>No extra threads are used. Everything is done in the calling thread.</li>
  * </ul>
- * 
+ *
  * @author René de Bloois
  * @since 2005
  */
@@ -119,7 +119,7 @@ public class SimpleCache
 
 	/**
 	 * Gets the default global cache.
-	 * 
+	 *
 	 * @return The default global cache.
 	 */
 	static public SimpleCache getCache()
@@ -129,7 +129,7 @@ public class SimpleCache
 
 	/**
 	 * Returns the current time in milliseconds. This method could be overridden in a subclass to simulate time in a unit test.
-	 * 
+	 *
 	 * @return The current time in milliseconds.
 	 */
 	protected long getTime()
@@ -139,9 +139,9 @@ public class SimpleCache
 
 	/**
 	 * Store a value with the specified key. The value gets the default expiration interval. Nulls can also be stored in the
-	 * cache, but in that case care must be taken to always use {@link #retrieveEntry} to detect if the null value
+	 * cache, but in that case care must be taken to always use {@link #getEntry(Object...)} to detect if the null value
 	 * exists in the cache or has been expired.
-	 * 
+	 *
 	 * @param key The key used to store the value in the cache.
 	 * @param value The value that should be stored in the cache.
 	 * @return The cache entry in which the value is stored.
@@ -175,10 +175,11 @@ public class SimpleCache
 	 * null. In case the value is expired its expiration time will be extended to give the current thread a chance to
 	 * refresh the value. This method can not be used to retrieve null values from the cache because you wouldn't be
 	 * able to distinguish between null and expired.
-	 * 
+	 *
 	 * @param key The key of the value that should be retrieved.
 	 * @return The value with the specified key, or null if not found or expired.
 	 */
+	@SuppressWarnings( "unchecked" )
 	public <T> T get( Object... key )
 	{
 		CacheEntry entry = getEntry( key );
@@ -194,7 +195,7 @@ public class SimpleCache
 	 * If the entry does not exist in the cache or is expired this method returns null.
 	 * In case the value is expired its expiration time will be extended to give the current thread a chance to
 	 * refresh the value. This method should be used whenever null values need to be stored in the cache.
-	 * 
+	 *
 	 * @param key The key of the value that should be retrieved.
 	 * @return the cache entry with the specified key, or null if not found or expired.
 	 */
@@ -235,7 +236,7 @@ public class SimpleCache
 
 	/**
 	 * Purges entries from the cache which are expired.
-	 * 
+	 *
 	 * @param now The now.
 	 */
 	private void purge( long now )
@@ -266,7 +267,7 @@ public class SimpleCache
 
 	/**
 	 * Returns the number of milliseconds before a cache entry expires.
-	 * 
+	 *
 	 * @return the number of milliseconds before a cache entry expires.
 	 */
 	public int getExpirationMillis()
@@ -276,7 +277,7 @@ public class SimpleCache
 
 	/**
 	 * Sets the number of milliseconds before a cache entry expires.
-	 * 
+	 *
 	 * @param expirationMillis the number of milliseconds before a cache entry expires.
 	 */
 	public void setExpirationMillis( int expirationMillis )
@@ -289,7 +290,7 @@ public class SimpleCache
 	/**
 	 * Returns the number of milliseconds the expiration of a cache entry will be extended after the first cache miss for this entry.
 	 * This gives the thread that got the cache miss a chance to refresh the data in the cache.
-	 * 
+	 *
 	 * @return The number of milliseconds the expiration of a cache entry will be extended after the first cache miss for this entry.
 	 */
 	public int getExtendMillis()
@@ -300,7 +301,7 @@ public class SimpleCache
 	/**
 	 * Sets the number of milliseconds that the expiration of a cache entry will be extended after the first cache miss.
 	 * This gives the thread that got the cache miss a chance to refresh the data in the cache.
-	 * 
+	 *
 	 * @param extendMillis The number of milliseconds the expiration of a cache entry will be extended after the first cache miss for this entry.
 	 */
 	public void setExtendMillis( int extendMillis )
@@ -312,7 +313,7 @@ public class SimpleCache
 
 	/**
 	 * Returns the age of expired cache entries before they will be purged.
-	 * 
+	 *
 	 * @return The age of expired cache entries before they will be purged.
 	 */
 	public int getPurgeAge()
@@ -322,7 +323,7 @@ public class SimpleCache
 
 	/**
 	 * Sets the age of expired cache entries before they will be purged.
-	 * 
+	 *
 	 * @param purgeAge The age of expired cache entries before they will be purged.
 	 */
 	public void setPurgeAge( int purgeAge )
@@ -334,7 +335,7 @@ public class SimpleCache
 
 	/**
 	 * Returns the purge period, which defines the purge frequency.
-	 * 
+	 *
 	 * @return The purge period, which defines the purge frequency.
 	 */
 	public int getPurgePeriod()
@@ -344,7 +345,7 @@ public class SimpleCache
 
 	/**
 	 * Sets the purge period, which defines the purge frequency.
-	 * 
+	 *
 	 * @param purgePeriod The purge period, which defines the purge frequency.
 	 */
 	public void setPurgePeriod( int purgePeriod )
@@ -385,7 +386,7 @@ public class SimpleCache
 
 		/**
 		 * Constructor.
-		 * 
+		 *
 		 * @param value The value.
 		 * @param stored When was the cache entry stored.
 		 * @param expire When does the cache entry expire.
@@ -404,7 +405,7 @@ public class SimpleCache
 
 		/**
 		 * Returns the value stored in this cache entry. The value can be null.
-		 * 
+		 *
 		 * @return The value stored in this cache entry.
 		 */
 		public Object getValue()
@@ -414,7 +415,7 @@ public class SimpleCache
 
 		/**
 		 * Returns the time when the value was stored in the cache.
-		 * 
+		 *
 		 * @return The time when the value was stored in the cache.
 		 */
 		public long getStoredTime()
@@ -424,7 +425,7 @@ public class SimpleCache
 
 		/**
 		 * Returns the time when the value will expire.
-		 * 
+		 *
 		 * @return The time when the value will expire.
 		 */
 		public long getExpirationTime()
