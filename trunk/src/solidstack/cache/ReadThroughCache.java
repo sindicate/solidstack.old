@@ -373,8 +373,8 @@ public class ReadThroughCache
 		final String keyString = buildKey( key );
 
 		CacheEntry result;
-		CacheEntry loading = null;
-		CacheEntry swap = null;
+		Loading loading = null;
+		Failed failed = null;
 
 		long now;
 
@@ -431,17 +431,17 @@ public class ReadThroughCache
 				else
 				{
 					Exception e = new IllegalStateException( "LoadingCacheEntry expired in cache" );
-					swap = new Failed( e, now, now + this.expirationMillis );
-					this.cache.put( keyString, swap );
+					failed = new Failed( e, now, now + this.expirationMillis );
+					this.cache.put( keyString, failed );
 				}
 			}
 		}
 
-		if( swap != null )
+		if( failed != null )
 		{
 			// Want to do this outside the synchronized block
-			( (Loading)result ).setResult( swap ); // Notifies all waiting threads
-			result = swap;
+			( (Loading)result ).setResult( failed ); // Notifies all waiting threads
+			result = failed;
 			__ = "load expired [{}]";
 		}
 
@@ -463,7 +463,7 @@ public class ReadThroughCache
 			}
 
 			___.debug( "blocking load [" + keyString + "]" );
-			return load( (Loading)loading, keyString, loader );
+			return load( loading, keyString, loader );
 		}
 
 		// 1. result contains a CacheEntry
@@ -558,7 +558,8 @@ public class ReadThroughCache
 				}
 				catch( Throwable t )
 				{
-					___.error( "", t ); // TODO Should we not log ThreadDeath? Of should we implement an UncaughtExceptionHandler?
+					// TODO Do not log ThreadDeath and ThreadInterrupted. Actually ThreadInterrupted will not be thrown here.
+					___.error( "", t );
 				}
 			}
 		}.start();
@@ -731,6 +732,7 @@ public class ReadThroughCache
 			}
 			catch( InterruptedException e )
 			{
+				// TODO Problem is, this one may be logged as error, and ThreadDeath possibly not
 				throw new ThreadInterrupted( e );
 			}
 
