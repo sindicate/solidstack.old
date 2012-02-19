@@ -26,7 +26,6 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import solidbase.core.SystemException;
 import solidstack.lang.ThreadInterrupted;
 
 
@@ -71,7 +70,28 @@ public class ReadThroughCache
 	 */
 	static public final int DEFAULT_PURGE_AGE_MILLIS = 3600000;
 
-	static public enum BlockingMode { ALL, SINGLE, NONE }
+	/**
+	 * Blocking mode.
+	 */
+	static public enum BlockingMode
+	{
+		/**
+		 * All threads requesting a specific cache entry will block when that cache entry is being (re)loaded.
+		 */
+		ALL,
+		/**
+		 * During a reload, only the thread that caused the reload will block, the rest gets the old value. During an initial
+		 * load, including an expired cache entry outside the grace period, all threads will block like
+		 * {@link BlockingMode#ALL}.
+		 */
+		SINGLE,
+		/**
+		 * During a reload, no thread will block, all threads will receive the old value. During an initial
+		 * load, including an expired cache entry outside the grace period, all threads will block like
+		 * {@link BlockingMode#ALL}.
+		 */
+		NONE
+	}
 
 	/**
 	 * The default global cache.
@@ -180,6 +200,11 @@ public class ReadThroughCache
 		this.gracePeriodMillis = gracePeriodMillis;
 	}
 
+	/**
+	 * Returns the load timeout.
+	 *
+	 * @return The load timeout.
+	 */
 	public int getLoadTimeoutMillis()
 	{
 		return this.loadTimeoutMillis;
@@ -188,7 +213,7 @@ public class ReadThroughCache
 	/**
 	 * Sets the load timeout.
 	 *
-	 * @param loadTimeoutMillis
+	 * @param loadTimeoutMillis The load timeout.
 	 */
 	public void setLoadTimeoutMillis( int loadTimeoutMillis )
 	{
@@ -262,12 +287,21 @@ public class ReadThroughCache
 		this.purgeAgeMillis = purgeAge;
 	}
 
+	/**
+	 * Returns the blocking mode.
+	 *
+	 * @return The blocking mode.
+	 */
 	public BlockingMode getBlockingMode()
 	{
 		return this.blockingMode;
 	}
 
-
+	/**
+	 * Sets the blocking mode.
+	 *
+	 * @param blockingMode The blocking mode.
+	 */
 	public void setBlockingMode( BlockingMode blockingMode )
 	{
 		this.blockingMode = blockingMode;
@@ -374,26 +408,11 @@ public class ReadThroughCache
 		{
 			if( this.blockingMode == BlockingMode.NONE && loading instanceof Reloading )
 			{
+				Reloading reloading = (Reloading)loading;
 				log.debug( "background load [" + keyString + "]" );
-				final Reloading _loading = (Reloading)loading;
-				// TODO Should this thread be managed?
-				new Thread()
-				{
-					@Override
-					public void run()
-					{
-						try
-						{
-							load( _loading, keyString, loader );
-						}
-						catch( Throwable t )
-						{
-							log.error( "", t ); // TODO Should we not log ThreadDeath? Of should we implement an UncaughtExceptionHandler?
-						}
-					}
-				}.start();
+				backgroundLoad( reloading, keyString, loader );
 				log.debug( "use old [" + keyString + "]" );
-				return (T)_loading.getOldValue();
+				return (T)reloading.getOldValue();
 			}
 
 			log.debug( "blocking load [" + keyString + "]" );
@@ -410,14 +429,7 @@ public class ReadThroughCache
 				return (T)( (Reloading)result ).getOldValue();
 			}
 			log.debug( "waiting [" + keyString + "]" );
-			try
-			{
-				result = ( (Loading)result ).getResult( keyString ); // Blocking
-			}
-			catch( InterruptedException e )
-			{
-				throw new ThreadInterrupted( e ); // TODO The advantage of ThreadDeath is that it does not get printed to System.err
-			}
+			result = ( (Loading)result ).getResult( keyString ); // Blocking
 			log.debug( "ready [" + keyString + "]" );
 		}
 
@@ -429,51 +441,80 @@ public class ReadThroughCache
 			return (T)( (Loaded)result ).getValue();
 		}
 
-		Exception e = ( (Failed)result ).getException();
-		if( e instanceof RuntimeException )
-			throw (RuntimeException)e;
-		throw new SystemException( e );
+		// Wrap because we wouldn't want to rethrow ThreadDeath or ThreadInterrupted, which would cause this thread to kill itself too
+		throw new CacheException( "Previous load failed", ( (Failed)result ).getThrowable() );
+	}
+
+	private void replace( String keyString, CacheEntry original, CacheEntry replacement )
+	{
+		synchronized( this.cache )
+		{
+			CacheEntry e = this.cache.get( keyString );
+			if( e != original )
+				return;
+			this.cache.put( keyString, replacement );
+		}
 	}
 
 	/**
 	 * Call the loader and put the result in the cache.
 	 *
-	 * @param entry The entry to load.
+	 * @param loading The entry to load.
 	 * @param key The key of the entry to load.
 	 * @param loader The loader to use.
 	 * @return The value loaded.
 	 */
-	<T> T load( Loading entry, String keyString, Loader<T> loader )
+	<T> T load( Loading loading, String keyString, Loader<T> loader )
 	{
-		T value = null;
-		Exception exception = null;
+		T value;
 
 		try
 		{
 			value = loader.load();
-			log.debug( "load success [" + keyString + "]" );
 		}
-		catch( Exception t )
+		catch( Throwable throwable )
 		{
-			exception = t;
+			long now = System.currentTimeMillis();
+			CacheEntry result = new Failed( throwable, now, now + this.expirationMillis );
+			replace( keyString, loading, result ); // Put it in the cache first for all to find
+			loading.setResult( result ); // Notifies all waiting threads
+
 			log.debug( "load failed [" + keyString + "]" );
+
+			if( throwable instanceof Error )
+				throw (Error)throwable;
+			if( throwable instanceof RuntimeException )
+				throw (RuntimeException)throwable;
+			throw new CacheException( "Unexpected checked exception", throwable );
 		}
 
 		long now = System.currentTimeMillis();
-		CacheEntry result;
-		if( exception != null )
-			result = new Failed( exception, now, now + this.expirationMillis );
-		else
-			result = new Loaded( value, now, now + this.expirationMillis );
+		CacheEntry result = new Loaded( value, now, now + this.expirationMillis );
+		replace( keyString, loading, result ); // Put it in the cache first for all to find
+		loading.setResult( result ); // Notifies all waiting threads
 
-		synchronized( this.cache )
-		{
-			this.cache.put( keyString, result );
-		}
-
-		entry.setResult( result ); // Notifies all waiting threads
+		log.debug( "load success [" + keyString + "]" );
 
 		return value;
+	}
+
+	private void backgroundLoad( final Loading loading, final String keyString, final Loader<?> loader )
+	{
+		new Thread() // TODO Should this thread be managed?
+		{
+			@Override
+			public void run()
+			{
+				try
+				{
+					load( loading, keyString, loader );
+				}
+				catch( Throwable t )
+				{
+					log.error( "", t ); // TODO Should we not log ThreadDeath? Of should we implement an UncaughtExceptionHandler?
+				}
+			}
+		}.start();
 	}
 
 	/**
@@ -481,6 +522,8 @@ public class ReadThroughCache
 	 *
 	 * @param now The now.
 	 */
+	// TODO What about a collector that runs more frequent to collect load timeouts?
+	// TODO And what about a separate thread for the collector? But we do not want 1000 threads when someone creates 1000 different caches. So we need a cache manager.
 	private void purge( long now )
 	{
 		log.debug( "Purging..." );
@@ -613,28 +656,35 @@ public class ReadThroughCache
 			this.waitTimeoutMillis = waitTimeoutMillis;
 		}
 
-		synchronized public CacheEntry getResult( String key ) throws InterruptedException
+		synchronized public CacheEntry getResult( String key )
 		{
 			// Don't wait if loading has finished already, we won't get a notify then
 			if( this.result != null )
 				return this.result;
 
-			if( this.waitTimeoutMillis <= 0 )
+			try
 			{
-				do
-					wait();
-				while( this.result == null ); // Guard against spurious wake ups
-			}
-			else
-			{
-				long now = System.currentTimeMillis();
-				long stop = now + this.waitTimeoutMillis;
-				do
+				if( this.waitTimeoutMillis <= 0 )
 				{
-					wait( stop - now );
-					now = System.currentTimeMillis();
+					do
+						wait();
+					while( this.result == null ); // Guard against spurious wake ups
 				}
-				while( this.result == null && now + 500 < stop ); // Guard against spurious wake ups + 1/2 second slack for inaccuracy
+				else
+				{
+					long now = System.currentTimeMillis();
+					long stop = now + this.waitTimeoutMillis;
+					do
+					{
+						wait( stop - now );
+						now = System.currentTimeMillis();
+					}
+					while( this.result == null && now + 500 < stop ); // Guard against spurious wake ups + 1/2 second slack for inaccuracy
+				}
+			}
+			catch( InterruptedException e )
+			{
+				throw new ThreadInterrupted( e );
 			}
 
 			if( this.result == null )
@@ -697,22 +747,32 @@ public class ReadThroughCache
 
 	static private class Failed extends CacheEntry
 	{
-		private Exception exception;
+		private Throwable throwable;
 
-		Failed( Exception exception, long stored, long expiration )
+		Failed( Throwable throwable, long stored, long expiration )
 		{
 			super( stored, expiration );
-			this.exception = exception;
+			this.throwable = throwable;
 		}
 
-		public Exception getException()
+		public Throwable getThrowable()
 		{
-			return this.exception;
+			return this.throwable;
 		}
 	}
 
+	/**
+	 * Interface used to load something.
+	 *
+	 * @param <T> The type of that which is going to be loaded.
+	 */
 	static public interface Loader<T>
 	{
+		/**
+		 * Load something.
+		 *
+		 * @return That which has been loaded.
+		 */
 		T load();
 	}
 }

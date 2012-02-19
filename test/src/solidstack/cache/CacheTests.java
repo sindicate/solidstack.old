@@ -23,7 +23,7 @@ public class CacheTests
 	static final Logger log = LoggerFactory.getLogger( CacheTests.class );
 
 	@Test//( groups = "new" )
-	public void test1()
+	static void test1()
 	{
 		SimpleCache cache = new SimpleCache();
 		for( int i = 0; i < 100; i++ )
@@ -33,8 +33,14 @@ public class CacheTests
 		System.out.println( i );
 	}
 
-	@Test//( groups = "new" )
-	public void test2()
+	static public void main( String... args )
+	{
+		test2();
+	}
+
+	@SuppressWarnings( "deprecation" )
+	@Test(enabled=false)
+	static public void test2()
 	{
 		final ReadThroughCache cache = new ReadThroughCache();
 
@@ -44,7 +50,7 @@ public class CacheTests
 		cache.setBlockingMode( BlockingMode.ALL );
 		cache.setWaitTimeoutMillis( 10000 );
 
-		cache.setLoadTimeoutMillis( 15000 );
+		cache.setLoadTimeoutMillis( 1000000 );
 		cache.setPurgeIntervalMillis( 1000000 );
 		cache.setPurgeAgeMillis( 0 );
 
@@ -124,7 +130,7 @@ public class CacheTests
 		{
 			for( int i = 0; i < 10; i++ )
 			{
-				Thread.sleep( 10000 );
+				Thread.sleep( 1000 );
 				long now = System.currentTimeMillis();
 				int count = 0;
 				for( AtomicLong atomicLong : lifeSigns )
@@ -138,18 +144,8 @@ public class CacheTests
 			log.info( "Interrupting threads..." );
 			for( Thread thread : threads )
 			{
-				final StackTraceElement[] stackTrace = thread.getStackTrace();
+				log.debug( "interrupting [{}]", thread, new StackTrace( thread ) );
 				thread.interrupt();
-				Throwable t = new Throwable( "Stacktrace dump" )
-				{
-					@Override
-					public synchronized Throwable fillInStackTrace()
-					{
-						setStackTrace( stackTrace );
-						return this;
-					}
-				};
-				log.debug( "interrupting [{}]", thread, t );
 			}
 
 			log.info( "Waiting for threads..." );
@@ -171,6 +167,8 @@ public class CacheTests
 				for( Thread thread : threads )
 					thread.stop();
 			}
+			else
+				log.info( "All threads ended." );
 		}
 		catch( InterruptedException e )
 		{
@@ -179,7 +177,7 @@ public class CacheTests
 	}
 
 	@Test( groups = "new" )
-	public void testKey()
+	static public void testKey()
 	{
 		Assert.assertEquals( ReadThroughCache.buildKey( "test", "test" ), "test;test" );
 		Assert.assertEquals( ReadThroughCache.buildKey( "test;test" ), "test\\;test" ); // test\;test
