@@ -29,6 +29,36 @@ import org.slf4j.LoggerFactory;
 import solidstack.lang.ThreadInterrupted;
 
 
+/*
+ * Thread safety:
+ * 1. All access to the central map containing the cache is synchronized.
+ * 2. All access to the nextPurgeMillis field is synchronized.
+ * 3. All primitive fields are final or volatile.
+ * 4. The Loaded and Failed cache entries are immutable.
+ * 5. The Loading and Reloading cache entries are immutable except for the result field which gets assigned only once.
+ * 6. Access to the result field of Loading and Reloading is synchronized.
+ * 7. The values stored in the cache are NOT threadsafe!
+ *
+ * Deadlock:
+ * 1. There are no nested synchronized block.
+ * 2. There are no multiple locks needed.
+ *
+ * Starvation:
+ * TODO
+ *
+ * No leakage.
+ * Leakage concern 1: Object or threads that are not used any more but references to them still exist.
+ * 1.1. There are no thread references.
+ * 1.2. The only references to cache entries are:
+ * 1.2.1. From the central map to the cache entries.
+ * 1.2.2. From the Loading and Reloading cache entries to the Loaded or Failed cache entries.
+ * 1.3. A purge routine runs regularly to remove old entries from the cache.
+ * Leakage concern 2: Loading and Reloading cache entries that survive in the cache even though the loading thread died.
+ * 2.1. The loading routine has a catch Throwable clause and is carefully written not to trigger exceptions itself.
+ * Leakage concern 3: Loading threads that survive even though its Loading or Reloading cache entry is removed from the cache.
+ * 3.1. No care is taken concerning this category. The loading thread should finish all by itself.
+ */
+
 /**
  * A read-through cache. This cache does not care about memory, it only cares about time. Entries expire and are
  * reloaded. Old entries will be purged periodically.
@@ -38,7 +68,7 @@ import solidstack.lang.ThreadInterrupted;
  */
 public class ReadThroughCache
 {
-	static final Logger log = LoggerFactory.getLogger( ReadThroughCache.class );
+	static final Logger ___ = LoggerFactory.getLogger( ReadThroughCache.class );
 
 	/**
 	 * Default cache expiration 10 minutes.
@@ -101,45 +131,53 @@ public class ReadThroughCache
 	/**
 	 * The cache.
 	 */
-	private Map<String, CacheEntry> cache = new HashMap<String, CacheEntry>();
+	private final Map<String, CacheEntry> cache = new HashMap<String, CacheEntry>();
 
 	/**
 	 * Current expiration interval.
 	 */
-	private int expirationMillis = DEFAULT_EXPIRATION_MILLIS;
+	private volatile int expirationMillis = DEFAULT_EXPIRATION_MILLIS;
 
 	/**
 	 * Current grace period.
 	 */
-	private int gracePeriodMillis = DEFAULT_GRACE_PERIOD_MILLIS;
+	private volatile int gracePeriodMillis = DEFAULT_GRACE_PERIOD_MILLIS;
 
 	/**
 	 * Current load timeout.
 	 */
-	private int loadTimeoutMillis = DEFAULT_LOAD_TIMEOUT_MILLIS;
+	private volatile int loadTimeoutMillis = DEFAULT_LOAD_TIMEOUT_MILLIS;
 
 	/**
 	 * Current wait timeout.
 	 */
-	private int waitTimeoutMillis = DEFAULT_WAIT_TIMEOUT_MILLIS;
+	private volatile int waitTimeoutMillis = DEFAULT_WAIT_TIMEOUT_MILLIS;
 
 	/**
 	 * Current purge interval.
 	 */
-	private int purgeIntervalMillis = DEFAULT_PURGE_INTERVAL_MILLIS;
+	private volatile int purgeIntervalMillis = DEFAULT_PURGE_INTERVAL_MILLIS;
 
 	/**
 	 * Current purge age.
 	 */
-	private int purgeAgeMillis = DEFAULT_PURGE_AGE_MILLIS;
+	private volatile int purgeAgeMillis = DEFAULT_PURGE_AGE_MILLIS;
 
 	/**
 	 * The next purge moment.
 	 */
-	private long nextPurgeMillis = 0;
+	private volatile long nextPurgeMillis = 0;
 
+	/**
+	 * Lock object.
+	 */
+	private final Object nextPurgeMillisLock = new Object();
+
+	/**
+	 * Blocking mode.
+	 */
 	// TODO Ability to overrule blocking/nonblocking
-	private BlockingMode blockingMode = BlockingMode.ALL;
+	private volatile BlockingMode blockingMode = BlockingMode.ALL;
 
 
 	/**
@@ -262,7 +300,10 @@ public class ReadThroughCache
 		if( purgeInterval < 0 )
 			throw new IllegalArgumentException( "purgeInterval can't be negative" );
 		this.purgeIntervalMillis = purgeInterval;
-		this.nextPurgeMillis = 0;
+		synchronized( this.nextPurgeMillisLock )
+		{
+			this.nextPurgeMillis = 0;
+		}
 	}
 
 	/**
@@ -333,12 +374,13 @@ public class ReadThroughCache
 
 		CacheEntry result;
 		CacheEntry loading = null;
+		CacheEntry swap = null;
 
 		long now;
 
 		// Purge
 		boolean purge = false;
-		synchronized( this )
+		synchronized( this.nextPurgeMillisLock )
 		{
 			now = System.currentTimeMillis(); // Get the time after entering the synchronized block
 			if( now >= this.nextPurgeMillis ) // A long is not thread safe!
@@ -348,10 +390,10 @@ public class ReadThroughCache
 			}
 		}
 		if( purge )
-			purge( now ); // TODO Separate thread? Depends on the speed, should not be needed.
+			purge(); // TODO Separate thread? Depends on the speed, should not be needed.
 
 		// Read the cache, check for expiration and control (re)loading
-		String logmessage = null;
+		String __ = null;
 		synchronized( this.cache )
 		{
 			now = System.currentTimeMillis(); // Get the time after entering the synchronized block
@@ -362,7 +404,7 @@ public class ReadThroughCache
 			{
 				loading = new Loading( now, now + this.loadTimeoutMillis, this.waitTimeoutMillis );
 				this.cache.put( keyString, loading );
-				logmessage = "miss [{}]";
+				__ = "miss [{}]";
 			}
 			else if( now >= result.getExpirationTime() )
 			{
@@ -371,12 +413,12 @@ public class ReadThroughCache
 					if( now < result.getExpirationTime() + this.gracePeriodMillis )
 					{
 						loading = new Reloading( ( (Loaded)result ).getValue(), now, now + this.loadTimeoutMillis, this.waitTimeoutMillis );
-						logmessage = "expired grace [{}]";
+						__ = "expired grace [{}]";
 					}
 					else
 					{
 						loading = new Loading( now, now + this.loadTimeoutMillis, this.waitTimeoutMillis );
-						logmessage = "expired [{}]";
+						__ = "expired [{}]";
 					}
 					this.cache.put( keyString, loading );
 				}
@@ -384,22 +426,27 @@ public class ReadThroughCache
 				{
 					loading = new Loading( now, now + this.loadTimeoutMillis, this.waitTimeoutMillis );
 					this.cache.put( keyString, loading );
-					logmessage = "fail expired [{}]";
+					__ = "fail expired [{}]";
 				}
 				else
 				{
 					Exception e = new IllegalStateException( "LoadingCacheEntry expired in cache" );
-					CacheEntry failed = new Failed( e, now, now + this.expirationMillis );
-					this.cache.put( keyString, failed );
-					( (Loading)result ).setResult( failed );
-					result = failed;
-					logmessage = "load expired [{}]";
+					swap = new Failed( e, now, now + this.expirationMillis );
+					this.cache.put( keyString, swap );
 				}
 			}
 		}
 
-		if( logmessage != null )
-			log.debug( logmessage, keyString );
+		if( swap != null )
+		{
+			// Want to do this outside the synchronized block
+			( (Loading)result ).setResult( swap ); // Notifies all waiting threads
+			result = swap;
+			__ = "load expired [{}]";
+		}
+
+		if( __ != null )
+			___.debug( __, keyString );
 
 		// 1. result contains a CacheEntry or null
 		// 2. loading contains an entry we need to load and overrules result
@@ -409,13 +456,13 @@ public class ReadThroughCache
 			if( this.blockingMode == BlockingMode.NONE && loading instanceof Reloading )
 			{
 				Reloading reloading = (Reloading)loading;
-				log.debug( "background load [" + keyString + "]" );
+				___.debug( "background load [" + keyString + "]" );
 				backgroundLoad( reloading, keyString, loader );
-				log.debug( "use old [" + keyString + "]" );
+				___.debug( "use old [" + keyString + "]" );
 				return (T)reloading.getOldValue();
 			}
 
-			log.debug( "blocking load [" + keyString + "]" );
+			___.debug( "blocking load [" + keyString + "]" );
 			return load( (Loading)loading, keyString, loader );
 		}
 
@@ -425,19 +472,19 @@ public class ReadThroughCache
 		{
 			if( this.blockingMode != BlockingMode.ALL && result instanceof Reloading )
 			{
-				log.debug( "use old [" + keyString + "]" );
+				___.debug( "use old [" + keyString + "]" );
 				return (T)( (Reloading)result ).getOldValue();
 			}
-			log.debug( "waiting [" + keyString + "]" );
+			___.debug( "waiting [" + keyString + "]" );
 			result = ( (Loading)result ).getResult( keyString ); // Blocking
-			log.debug( "ready [" + keyString + "]" );
+			___.debug( "ready [" + keyString + "]" );
 		}
 
 		// 1. result contains a Loaded or a Failed
 
 		if( result instanceof Loaded )
 		{
-			log.debug( "hit [" + keyString + "]" );
+			___.debug( "hit [" + keyString + "]" );
 			return (T)( (Loaded)result ).getValue();
 		}
 
@@ -479,7 +526,7 @@ public class ReadThroughCache
 			replace( keyString, loading, result ); // Put it in the cache first for all to find
 			loading.setResult( result ); // Notifies all waiting threads
 
-			log.debug( "load failed [" + keyString + "]" );
+			___.debug( "load failed [" + keyString + "]" );
 
 			if( throwable instanceof Error )
 				throw (Error)throwable;
@@ -493,7 +540,7 @@ public class ReadThroughCache
 		replace( keyString, loading, result ); // Put it in the cache first for all to find
 		loading.setResult( result ); // Notifies all waiting threads
 
-		log.debug( "load success [" + keyString + "]" );
+		___.debug( "load success [" + keyString + "]" );
 
 		return value;
 	}
@@ -511,7 +558,7 @@ public class ReadThroughCache
 				}
 				catch( Throwable t )
 				{
-					log.error( "", t ); // TODO Should we not log ThreadDeath? Of should we implement an UncaughtExceptionHandler?
+					___.error( "", t ); // TODO Should we not log ThreadDeath? Of should we implement an UncaughtExceptionHandler?
 				}
 			}
 		}.start();
@@ -524,13 +571,12 @@ public class ReadThroughCache
 	 */
 	// TODO What about a collector that runs more frequent to collect load timeouts?
 	// TODO And what about a separate thread for the collector? But we do not want 1000 threads when someone creates 1000 different caches. So we need a cache manager.
-	private void purge( long now )
+	private void purge()
 	{
-		log.debug( "Purging..." );
+		___.debug( "Purging..." );
 
+		long now = System.currentTimeMillis();
 		long then = now - this.purgeAgeMillis;
-		boolean debug = log.isDebugEnabled();
-		boolean warn = log.isWarnEnabled();
 		List<Map.Entry<String, CacheEntry>> purged = new ArrayList<Map.Entry<String, CacheEntry>>();
 
 		synchronized( this.cache )
@@ -542,29 +588,21 @@ public class ReadThroughCache
 				if( e.getStoredTime() < then )
 				{
 					iter.remove();
-					if( e instanceof Loading )
-					{
-						Exception ex = new IllegalStateException( "LoadingCacheEntry purged from cache [" + entry.getKey() + "]" );
-						CacheEntry failed = new Failed( ex, now, now + this.expirationMillis );
-						( (Loading)e ).setResult( failed );
-
-						if( warn )
-							purged.add( entry );
-					}
-					else
-						if( debug )
-							purged.add( entry );
+					purged.add( entry );
 				}
 			}
 		}
 
 		for( Entry<String, CacheEntry> entry : purged )
-		{
 			if( entry.getValue() instanceof Loading )
-				log.warn( "purged loading [" + entry.getKey() + "]" );
+			{
+				___.warn( "purged loading [{}]", entry.getKey() );
+				Exception ex = new IllegalStateException( "LoadingCacheEntry purged from cache [" + entry.getKey() + "]" );
+				CacheEntry failed = new Failed( ex, now, now + this.expirationMillis );
+				( (Loading)entry.getValue() ).setResult( failed );
+			}
 			else
-				log.debug( "purged [" + entry.getKey() + "]" );
-		}
+				___.debug( "purged [{}]", entry.getKey() );
 	}
 
 	/**
@@ -612,7 +650,7 @@ public class ReadThroughCache
 	// ---------- Here are the cache entry types
 
 	/**
-	 * A tuple of a value and an expiration time used to store the value in the cache.
+	 * Cache entry storing the store time and expiration time.
 	 */
 	static abstract private class CacheEntry
 	{
@@ -645,6 +683,9 @@ public class ReadThroughCache
 		}
 	}
 
+	/**
+	 * Cache entry representing a load in progress. Has one mutable field where the result is stored. All access to this field is synchronized.
+	 */
 	static private class Loading extends CacheEntry
 	{
 		private CacheEntry result;
@@ -656,7 +697,13 @@ public class ReadThroughCache
 			this.waitTimeoutMillis = waitTimeoutMillis;
 		}
 
-		synchronized public CacheEntry getResult( String key )
+		/**
+		 * Returns the result. When the result is not available yet, the thread waits until it becomes available.
+		 *
+		 * @param key The key of the entry, only used for logging.
+		 * @return The result of the load. This could be a {@link Loaded} or a {@link Failed} cache entry.
+		 */
+		synchronized public CacheEntry getResult( String key ) // TODO Don't like this parameter
 		{
 			// Don't wait if loading has finished already, we won't get a notify then
 			if( this.result != null )
@@ -695,6 +742,7 @@ public class ReadThroughCache
 
 		synchronized public void setResult( CacheEntry result )
 		{
+			// TODO 2 messages, one if Failed already, and one if not Failed
 			if( this.result != null )
 				throw new IllegalStateException( "result is already filled, the (re)load probably took too long" );
 
@@ -703,6 +751,10 @@ public class ReadThroughCache
 		}
 	}
 
+
+	/**
+	 * Cache entry representing a reload in progress. See {@link Loading}.
+	 */
 	static private class Reloading extends Loading
 	{
 		private Object oldValue;
@@ -714,9 +766,9 @@ public class ReadThroughCache
 		}
 
 		/**
-		 * Returns the value stored in this cache entry. The value can be null.
+		 * Returns the old value stored in this cache entry. The value can be null.
 		 *
-		 * @return The value stored in this cache entry.
+		 * @return The old value stored in this cache entry.
 		 */
 		public Object getOldValue()
 		{
@@ -724,6 +776,9 @@ public class ReadThroughCache
 		}
 	}
 
+	/**
+	 * Represents a loaded cache entry. This is an immutable object.
+	 */
 	static private class Loaded extends CacheEntry
 	{
 		private Object value;
@@ -745,6 +800,9 @@ public class ReadThroughCache
 		}
 	}
 
+	/**
+	 * Represents a cache entry that failed to load. This is an immutable object.
+	 */
 	static private class Failed extends CacheEntry
 	{
 		private Throwable throwable;
