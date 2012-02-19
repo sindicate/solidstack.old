@@ -50,9 +50,9 @@ public class CacheTests
 		cache.setBlockingMode( BlockingMode.ALL );
 		cache.setWaitTimeoutMillis( 10000 );
 
-		cache.setLoadTimeoutMillis( 1000000 );
-		cache.setPurgeIntervalMillis( 1000000 );
-		cache.setPurgeAgeMillis( 0 );
+		cache.setLoadTimeoutMillis( 3600000 );
+		cache.setPurgeIntervalMillis( 3600000 );
+		cache.setPurgeAgeMillis( 3600000 );
 
 		final Random random = new Random();
 
@@ -72,7 +72,9 @@ public class CacheTests
 				}
 				catch( InterruptedException e )
 				{
-					throw new ThreadInterrupted( e );
+					// Normally, the loading routine has no sleeps or waits, which means the thread will get interrupted.
+					Thread.currentThread().interrupt();
+					return null;
 				}
 			}
 		};
@@ -130,7 +132,7 @@ public class CacheTests
 		{
 			for( int i = 0; i < 10; i++ )
 			{
-				Thread.sleep( 1000 );
+				Thread.sleep( 6000 );
 				long now = System.currentTimeMillis();
 				int count = 0;
 				for( AtomicLong atomicLong : lifeSigns )
@@ -144,7 +146,7 @@ public class CacheTests
 			log.info( "Interrupting threads..." );
 			for( Thread thread : threads )
 			{
-				log.debug( "interrupting [{}]", thread, new StackTrace( thread ) );
+				log.debug( "interrupting [{}]", thread /*, new StackTrace( thread ) */ );
 				thread.interrupt();
 			}
 
