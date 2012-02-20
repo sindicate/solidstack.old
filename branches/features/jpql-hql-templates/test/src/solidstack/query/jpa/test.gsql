@@ -1,3 +1,6 @@
 <%@ template language = "groovy" %>
 <%@ query type = "jpql" %>
-SELECT A FROM DerbyTable A<% if( name ) { %> WHERE name = ${name}<% } %>
+SELECT A FROM DerbyTable A
+<% if( name ) { %>
+WHERE name = ${name}
+<% } %>

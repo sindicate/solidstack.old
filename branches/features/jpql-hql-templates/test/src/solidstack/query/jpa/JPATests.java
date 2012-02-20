@@ -55,7 +55,7 @@ public class JPATests
 		em.close();
 	}
 
-	@Test
+	@Test(groups="new")
 	public void testJPQL()
 	{
 		EntityManager em = this.factory.createEntityManager();
@@ -71,6 +71,11 @@ public class JPATests
 		queries.setPackage( "solidstack.query.jpa" );
 		Query query = queries.getQuery( "test" );
 
+		tables = query.jpa( em ).getResultList( new Pars() );
+		for( DerbyTable table : tables )
+			System.out.println( table.getName() );
+		System.out.println( "-----" );
+
 		tables = query.jpa().getResultList( em, new Pars() );
 		for( DerbyTable table : tables )
 			System.out.println( table.getName() );
@@ -79,6 +84,23 @@ public class JPATests
 		tables = query.jpa().getResultList( em, new Pars( "name", "SYSTABLES" ) );
 		for( DerbyTable table : tables )
 			System.out.println( table.getName() );
+
+		em.close();
+	}
+
+	@Test(groups="new")
+	public void testHQL()
+	{
+		EntityManager em = this.factory.createEntityManager();
+
+		QueryManager queries = new QueryManager();
+		queries.setPackage( "solidstack.query.hibernate" );
+		Query query = queries.getQuery( "test" );
+
+		List<DerbyTable> tables = query.jpa( em ).hibernate().list( new Pars() );
+		for( DerbyTable table : tables )
+			System.out.println( table.getName() );
+		System.out.println( "-----" );
 
 		em.close();
 	}

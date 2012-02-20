@@ -31,12 +31,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.persistence.EntityManager;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import solidstack.Assert;
 import solidstack.SystemException;
 import solidstack.query.hibernate.HibernateQueryAdapter;
+import solidstack.query.jpa.JPAConnectedQueryAdapter;
 import solidstack.query.jpa.JPAQueryAdapter;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.Template;
@@ -78,7 +81,7 @@ public class Query
 			else if( type.equals( "hql" ) )
 				this.type = Type.HQL;
 			else
-				throw new QueryException( "Query type'" + type + "' not recognized" );
+				throw new QueryException( "Query type '" + type + "' not recognized" );
 		}
 		else
 			this.type = Type.NATIVE;
@@ -107,6 +110,11 @@ public class Query
 	public JPAQueryAdapter jpa()
 	{
 		return new JPAQueryAdapter( this );
+	}
+
+	public JPAConnectedQueryAdapter jpa( EntityManager entityManager )
+	{
+		return new JPAConnectedQueryAdapter( this, entityManager );
 	}
 
 	/**
