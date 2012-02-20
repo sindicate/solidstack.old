@@ -55,7 +55,24 @@ public class Query
 	// TODO We need well defined logger channels like hibernate
 	static  private Logger log = LoggerFactory.getLogger( Query.class );
 
-	static public enum Type { NATIVE, JPQL, HQL }
+	/**
+	 * The query type.
+	 */
+	static public enum Type
+	{
+		/**
+		 * Native SQL.
+		 */
+		NATIVE,
+		/**
+		 * JPA query.
+		 */
+		JPQL,
+		/**
+		 * Hibernate query.
+		 */
+		HQL
+	}
 
 	private Template template;
 	private boolean flyWeight = true;
@@ -87,6 +104,9 @@ public class Query
 			this.type = Type.NATIVE;
 	}
 
+	/**
+	 * @return The type of the query.
+	 */
 	public Type getType()
 	{
 		return this.type;
@@ -103,15 +123,17 @@ public class Query
 	}
 
 	/**
-	 * Returns an adapter for JPA which enables you to use the query with JPA.
-	 * 
-	 * @return An adapter for JPA.
+	 * @return An adapter for JPA which enables you to use the query with JPA.
 	 */
 	public JPAQueryAdapter jpa()
 	{
 		return new JPAQueryAdapter( this );
 	}
 
+	/**
+	 * @param entityManager A JPA entity manager.
+	 * @return An adapter for JPA which enables you to use the query with JPA.
+	 */
 	public JPAConnectedQueryAdapter jpa( EntityManager entityManager )
 	{
 		return new JPAConnectedQueryAdapter( this, entityManager );

@@ -45,6 +45,9 @@ public class JPAConnectedQueryAdapter
 	 */
 	protected Query query;
 
+	/**
+	 * A JPA entity manager.
+	 */
 	protected EntityManager entityManager;
 
 
@@ -52,6 +55,7 @@ public class JPAConnectedQueryAdapter
 	 * Constructor.
 	 * 
 	 * @param query A query to adapt to JPA.
+	 * @param entityManager A JPA entity manager.
 	 */
 	public JPAConnectedQueryAdapter( Query query, EntityManager entityManager )
 	{
@@ -62,7 +66,6 @@ public class JPAConnectedQueryAdapter
 	/**
 	 * Executes an update (DML) or a DDL query through the given {@link EntityManager}.
 	 * 
-	 * @param entityManager The {@link EntityManager} to use.
 	 * @param args The arguments to the query.
 	 * @return The number of entities updated or deleted.
 	 * @see javax.persistence.Query#executeUpdate()
@@ -75,7 +78,6 @@ public class JPAConnectedQueryAdapter
 	/**
 	 * Retrieves a {@link List} of JPA Entities from the given {@link EntityManager}.
 	 * 
-	 * @param entityManager The {@link EntityManager} to use.
 	 * @param args The arguments to the query.
 	 * @return A {@link List} of entities.
 	 * @see javax.persistence.Query#getResultList()
@@ -88,7 +90,6 @@ public class JPAConnectedQueryAdapter
 	/**
 	 * Retrieves a {@link List} of JPA Entities from the given {@link EntityManager}.
 	 * 
-	 * @param entityManager The {@link EntityManager} to use.
 	 * @param entityClass The class to map the results to.
 	 * @param args The arguments to the query.
 	 * @return A {@link List} of entities.
@@ -102,7 +103,6 @@ public class JPAConnectedQueryAdapter
 	/**
 	 * Retrieves a single JPA Entity from the given {@link EntityManager}.
 	 * 
-	 * @param entityManager The {@link EntityManager} to use.
 	 * @param args The arguments to the query.
 	 * @return An entity.
 	 * @see javax.persistence.Query#getSingleResult()
@@ -115,7 +115,6 @@ public class JPAConnectedQueryAdapter
 	/**
 	 * Retrieves a single JPA Entity from the given {@link EntityManager}.
 	 * 
-	 * @param entityManager The {@link EntityManager} to use.
 	 * @param entityClass The class to map the results to.
 	 * @param args The arguments to the query.
 	 * @return An entity.
@@ -129,7 +128,6 @@ public class JPAConnectedQueryAdapter
 	/**
 	 * Creates a JPA query.
 	 * 
-	 * @param entityManager The {@link EntityManager} to use.
 	 * @param entityClass The class to map the results to.
 	 * @param args The arguments to the query.
 	 * @return The JPA query.
@@ -143,7 +141,6 @@ public class JPAConnectedQueryAdapter
 	/**
 	 * Creates a JPA query.
 	 * 
-	 * @param entityManager The {@link EntityManager} to use.
 	 * @param args The arguments to the query.
 	 * @return The JPA query.
 	 * @see EntityManager#createNativeQuery(String, Class)
@@ -153,6 +150,9 @@ public class JPAConnectedQueryAdapter
 		return JPASupport.createQuery( this.query, this.entityManager, args );
 	}
 
+	/**
+	 * @return An adapter for Hibernate which enables you to use the query with Hibernate.
+	 */
 	public HibernateConnectedQueryAdapter hibernate()
 	{
 		// TODO Better error handling if delegate is not a Hibernate session

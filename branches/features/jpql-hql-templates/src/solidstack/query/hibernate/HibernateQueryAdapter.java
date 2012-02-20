@@ -111,16 +111,37 @@ public class HibernateQueryAdapter
 		return HibernateSupport.update( this.query, session, args );
 	}
 
+	/**
+	 * Executes {@link org.hibernate.Query#list()}.
+	 * 
+	 * @param session The Hibernate {@link Session} to use.
+	 * @param args The arguments to the query.
+	 * @return A list of Hibernate entities.
+	 */
 	public <T> List< T > list( Session session, Map< String, Object > args )
 	{
 		return HibernateSupport.list( this.query, session, args );
 	}
 
+	/**
+	 * Executes {@link org.hibernate.Query#executeUpdate()}.
+	 * 
+	 * @param session The Hibernate {@link Session} to use.
+	 * @param args The arguments to the query.
+	 * @return The number of entities updated or deleted.
+	 */
 	public int executeUpdate( Session session, Map< String, Object > args )
 	{
 		return HibernateSupport.executeUpdate( this.query, session, args );
 	}
 
+	/**
+	 * Executes {@link org.hibernate.Query#uniqueResult()}.
+	 * 
+	 * @param session The Hibernate {@link Session} to use.
+	 * @param args The arguments to the query.
+	 * @return A single Hibernate entity or null.
+	 */
 	public <T> T uniqueResult( Session session, Map< String, Object > args )
 	{
 		return HibernateSupport.uniqueResult( this.query, session, args );

@@ -165,22 +165,56 @@ public class HibernateSupport
 		return result.get();
 	}
 
+	/**
+	 * Executes {@link org.hibernate.Query#list()}.
+	 * 
+	 * @param query The query.
+	 * @param session The Hibernate {@link Session} to use.
+	 * @param args The arguments to the query.
+	 * @return A list of Hibernate entities.
+	 */
+	@SuppressWarnings( "unchecked" )
 	static public <T> List<T> list( Query query, Session session, Map<String, Object> args )
 	{
 		return createQuery( query, session, args ).list();
 	}
 
+	/**
+	 * Executes {@link org.hibernate.Query#executeUpdate()}.
+	 * 
+	 * @param query The query.
+	 * @param session The Hibernate {@link Session} to use.
+	 * @param args The arguments to the query.
+	 * @return The number of entities updated or deleted.
+	 */
 	static public int executeUpdate( Query query, Session session, Map<String, Object> args )
 	{
 		return createQuery( query, session, args ).executeUpdate();
 	}
 
+	/**
+	 * Executes {@link org.hibernate.Query#uniqueResult()}.
+	 * 
+	 * @param query The query.
+	 * @param session The Hibernate {@link Session} to use.
+	 * @param args The arguments to the query.
+	 * @return A single Hibernate entity or null.
+	 */
+	@SuppressWarnings( "unchecked" )
 	static public <T> T uniqueResult( Query query, Session session, Map<String, Object> args )
 	{
 		return (T)createQuery( query, session, args ).uniqueResult();
 	}
 
 	// TODO Rename my Query to SolidQuery?
+	/**
+	 * Creates a Hibernate query.
+	 * 
+	 * @param query The query.
+	 * @param session A Hibernate session.
+	 * @param args The arguments to the query.
+	 * @return The Hibernate query.
+	 */
 	static public org.hibernate.Query createQuery( Query query, Session session, Map< String, Object > args )
 	{
 		PreparedSQL preparedSql = query.getPreparedSQL( args );
