@@ -24,14 +24,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.hibernate.JDBCException;
+import org.hibernate.QueryException;
 import org.hibernate.Session;
 import org.hibernate.jdbc.Work;
 
 import solidstack.Assert;
 import solidstack.query.Query;
 import solidstack.query.Query.PreparedSQL;
-import solidstack.query.Query.TYPE;
-import solidstack.query.QueryException;
+import solidstack.query.Query.Type;
+import solidstack.query.QuerySQLException;
 import solidstack.query.ResultHolder;
 
 
@@ -65,7 +66,7 @@ public class HibernateSupport
 				{
 					result.set( query.resultSet( connection, args ) );
 				}
-				catch( QueryException e )
+				catch( QuerySQLException e )
 				{
 					throw e.getSQLException();
 				}
@@ -97,7 +98,7 @@ public class HibernateSupport
 				{
 					result.set( query.listOfArrays( connection, args ) );
 				}
-				catch( QueryException e )
+				catch( QuerySQLException e )
 				{
 					throw e.getSQLException();
 				}
@@ -129,7 +130,7 @@ public class HibernateSupport
 				{
 					result.set( query.listOfMaps( connection, args ) );
 				}
-				catch( QueryException e )
+				catch( QuerySQLException e )
 				{
 					throw e.getSQLException();
 				}
@@ -169,16 +170,28 @@ public class HibernateSupport
 		return createQuery( query, session, args ).list();
 	}
 
+	static public int executeUpdate( Query query, Session session, Map<String, Object> args )
+	{
+		return createQuery( query, session, args ).executeUpdate();
+	}
+
+	static public <T> T uniqueResult( Query query, Session session, Map<String, Object> args )
+	{
+		return (T)createQuery( query, session, args ).uniqueResult();
+	}
+
 	// TODO Rename my Query to SolidQuery?
 	static public org.hibernate.Query createQuery( Query query, Session session, Map< String, Object > args )
 	{
 		PreparedSQL preparedSql = query.getPreparedSQL( args );
 
 		org.hibernate.Query result;
-		if( query.getType() == TYPE.NATIVE )
+		if( query.getType() == Type.NATIVE )
 			result = session.createSQLQuery( preparedSql.getSQL() );
-		else
+		else if( query.getType() == Type.HQL )
 			result = session.createQuery( preparedSql.getSQL() );
+		else
+			throw new QueryException( "Query type'" + query.getType() + "' not recognized" );
 
 		List< Object > pars = preparedSql.getParameters();
 		int i = 0;

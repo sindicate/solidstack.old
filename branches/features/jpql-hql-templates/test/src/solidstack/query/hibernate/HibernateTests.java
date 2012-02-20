@@ -66,7 +66,7 @@ public class HibernateTests
 		System.out.println( "-----" );
 
 		QueryManager queries = new QueryManager();
-		queries.setPackage( "solidstack.query.jpa" );
+		queries.setPackage( "solidstack.query.hibernate" );
 		Query query = queries.getQuery( "test" );
 
 		tables = query.hibernate().list( session, new Pars() );

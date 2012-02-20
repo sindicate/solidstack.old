@@ -52,11 +52,11 @@ public class Query
 	// TODO We need well defined logger channels like hibernate
 	static  private Logger log = LoggerFactory.getLogger( Query.class );
 
-	static public enum TYPE { NATIVE, JPQL }
+	static public enum Type { NATIVE, JPQL, HQL }
 
 	private Template template;
 	private boolean flyWeight = true;
-	private TYPE type;
+	private Type type;
 
 	/**
 	 * Constructor.
@@ -72,18 +72,19 @@ public class Query
 		{
 			String type = typeDirective.getValue();
 			if( type.equals( "native" ) )
-				this.type = TYPE.NATIVE;
+				this.type = Type.NATIVE;
+			else if( type.equals( "jpql" ) )
+				this.type = Type.JPQL;
+			else if( type.equals( "hql" ) )
+				this.type = Type.HQL;
 			else
-			{
-				Assert.isTrue( type.equals( "jpql" ) ); // TODO
-				this.type = TYPE.JPQL;
-			}
+				throw new QueryException( "Query type'" + type + "' not recognized" );
 		}
 		else
-			this.type = TYPE.NATIVE;
+			this.type = Type.NATIVE;
 	}
 
-	public TYPE getType()
+	public Type getType()
 	{
 		return this.type;
 	}
@@ -137,7 +138,7 @@ public class Query
 		}
 		catch( SQLException e )
 		{
-			throw new QueryException( e );
+			throw new QuerySQLException( e );
 		}
 	}
 
@@ -233,7 +234,7 @@ public class Query
 		}
 		catch( SQLException e )
 		{
-			throw new QueryException( e );
+			throw new QuerySQLException( e );
 		}
 	}
 
@@ -269,7 +270,7 @@ public class Query
 		}
 		catch( SQLException e )
 		{
-			throw new QueryException( e );
+			throw new QuerySQLException( e );
 		}
 	}
 
@@ -301,7 +302,7 @@ public class Query
 		}
 		catch( SQLException e )
 		{
-			throw new QueryException( e );
+			throw new QuerySQLException( e );
 		}
 	}
 
@@ -380,7 +381,7 @@ public class Query
 		}
 		catch( SQLException e )
 		{
-			throw new QueryException( e );
+			throw new QuerySQLException( e );
 		}
 	}
 

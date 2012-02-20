@@ -115,4 +115,14 @@ public class HibernateQueryAdapter
 	{
 		return HibernateSupport.list( this.query, session, args );
 	}
+
+	public int executeUpdate( Session session, Map< String, Object > args )
+	{
+		return HibernateSupport.executeUpdate( this.query, session, args );
+	}
+
+	public <T> T uniqueResult( Session session, Map< String, Object > args )
+	{
+		return HibernateSupport.uniqueResult( this.query, session, args );
+	}
 }

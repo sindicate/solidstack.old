@@ -22,10 +22,12 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 
+import org.hibernate.QueryException;
+
 import solidstack.Assert;
 import solidstack.query.Query;
 import solidstack.query.Query.PreparedSQL;
-import solidstack.query.Query.TYPE;
+import solidstack.query.Query.Type;
 
 
 /**
@@ -162,16 +164,18 @@ public class JPASupport
 		PreparedSQL preparedSql = query.getPreparedSQL( args );
 
 		javax.persistence.Query result;
-		if( query.getType() == TYPE.NATIVE )
+		if( query.getType() == Type.NATIVE )
 			if( entityClass != null )
 				result = entityManager.createNativeQuery( preparedSql.getSQL(), entityClass );
 			else
 				result = entityManager.createNativeQuery( preparedSql.getSQL() );
-		else
+		else if( query.getType() == Type.JPQL )
 			if( entityClass != null )
 				result = entityManager.createQuery( preparedSql.getSQL(), entityClass );
 			else
 				result = entityManager.createQuery( preparedSql.getSQL() );
+		else
+			throw new QueryException( "Query type'" + query.getType() + "' not recognized" );
 
 		List< Object > pars = preparedSql.getParameters();
 		int i = 0;

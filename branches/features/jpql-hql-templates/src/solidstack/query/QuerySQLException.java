@@ -1,5 +1,5 @@
 /*--
- * Copyright 2012 René M. de Bloois
+ * Copyright 2011 René M. de Bloois
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,37 @@
 
 package solidstack.query;
 
+import java.sql.SQLException;
 
 /**
- * Query exception.
+ * This exception wraps a {@link SQLException}.
  * 
  * @author René M. de Bloois
- * @since 2012
+ * @since March 8, 2011
  */
-public class QueryException extends RuntimeException
+public class QuerySQLException extends RuntimeException
 {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * @param message Detail message.
+	 * Constructs a new query exception from the given {@link SQLException}.
+	 * 
+	 * @param cause The cause.
 	 */
-	public QueryException( String message )
+	public QuerySQLException( SQLException cause )
 	{
-		super( message );
+		super( cause );
+		if( cause == null )
+			throw new NullPointerException( "cause cannot be null" );
+	}
+
+	/**
+	 * Returns the {@link SQLException} that caused this exception.
+	 * 
+	 * @return The SQLException.
+	 */
+	public SQLException getSQLException()
+	{
+		return (SQLException)getCause();
 	}
 }
