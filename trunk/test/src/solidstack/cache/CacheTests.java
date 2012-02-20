@@ -29,7 +29,7 @@ public class CacheTests
 		for( int i = 0; i < 100; i++ )
 			cache.put( i, i, i, i );
 
-		int i = cache.get( 1, 1, 1 );
+		int i = cache.<Integer>get( 1, 1, 1 ); // Without <Integer> works in Eclipse, but not in Java 1.6.0_30
 		System.out.println( i );
 	}
 
