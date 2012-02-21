@@ -53,7 +53,7 @@ public class HibernateTests
 	}
 
 
-	@Test(groups="new")
+	@Test
 	public void testHQL()
 	{
 		Session session = this.factory.openSession();

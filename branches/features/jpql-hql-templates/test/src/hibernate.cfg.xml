@@ -30,6 +30,7 @@
 		<property name="hbm2ddl.auto">update</property> -->
 
 		<mapping resource="solidstack/query/hibernate/DerbyTable.hbm.xml" />
+		<mapping resource="solidstack/query/hibernate/Test1.hbm.xml" />
 
 	</session-factory>
 

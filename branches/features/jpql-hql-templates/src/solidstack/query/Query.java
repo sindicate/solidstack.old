@@ -91,7 +91,7 @@ public class Query
 		if( typeDirective != null )
 		{
 			String type = typeDirective.getValue();
-			if( type.equals( "native" ) )
+			if( type.equals( "sql" ) )
 				this.type = Type.NATIVE;
 			else if( type.equals( "jpql" ) )
 				this.type = Type.JPQL;
@@ -348,47 +348,6 @@ public class Query
 		PreparedSQL preparedSql = getPreparedSQL( args );
 		List< Object > pars = preparedSql.getParameters();
 
-		// TODO Move this logging to getPreparedSQL()
-		if( log.isDebugEnabled() )
-		{
-			StringBuilder debug = new StringBuilder();
-			debug.append( "Prepare statement: " ).append( this.template.getName() ).append( '\n' );
-			if( log.isTraceEnabled() )
-				debug.append( preparedSql.getSQL() ).append( '\n' );
-			debug.append( "Parameters:" );
-			if( pars.size() == 0 )
-				debug.append( "\n\t(none)" );
-			int i = 1;
-			for( Object par : pars )
-			{
-				debug.append( '\n' ).append( i++ ).append( ":\t" );
-				if( par == null )
-					debug.append( "(null)" );
-				else
-				{
-					debug.append( '(' ).append( par.getClass().getName() ).append( ')' );
-					if( !par.getClass().isArray() )
-						debug.append( par.toString() );
-					else
-					{
-						debug.append( '[' );
-						int size = Array.getLength( par );
-						for( int j = 0; j < size; j++ )
-						{
-							if( j > 0 )
-								debug.append( ',' );
-							debug.append( Array.get( par, j ) );
-						}
-						debug.append( ',' );
-					}
-				}
-			}
-			if( log.isTraceEnabled() )
-				log.trace( debug.toString() );
-			else
-				log.debug( debug.toString() );
-		}
-
 		try
 		{
 			PreparedStatement statement = connection.prepareStatement( preparedSql.getSQL() );
@@ -462,6 +421,46 @@ public class Query
 				appendParameter( values.get( i ), "unknown", result, pars );
 			else
 				result.append( (String)values.get( i ) );
+
+		if( log.isDebugEnabled() )
+		{
+			StringBuilder debug = new StringBuilder();
+			debug.append( "Prepare statement: " ).append( this.template.getName() ).append( '\n' );
+			if( log.isTraceEnabled() )
+				debug.append( result ).append( '\n' );
+			debug.append( "Parameters:" );
+			if( pars.size() == 0 )
+				debug.append( "\n\t(none)" );
+			int i = 1;
+			for( Object par : pars )
+			{
+				debug.append( '\n' ).append( i++ ).append( ":\t" );
+				if( par == null )
+					debug.append( "(null)" );
+				else
+				{
+					debug.append( '(' ).append( par.getClass().getName() ).append( ')' );
+					if( !par.getClass().isArray() )
+						debug.append( par.toString() );
+					else
+					{
+						debug.append( '[' );
+						int size = Array.getLength( par );
+						for( int j = 0; j < size; j++ )
+						{
+							if( j > 0 )
+								debug.append( ',' );
+							debug.append( Array.get( par, j ) );
+						}
+						debug.append( ',' );
+					}
+				}
+			}
+			if( log.isTraceEnabled() )
+				log.trace( debug.toString() );
+			else
+				log.debug( debug.toString() );
+		}
 
 		return new PreparedSQL( result.toString(), pars );
 	}

@@ -6,9 +6,10 @@
 	<persistence-unit name="manager1" transaction-type="RESOURCE_LOCAL">
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
 		<class>solidstack.query.hibernate.DerbyTable</class>
+		<class>solidstack.query.hibernate.Test1</class>
 		<properties>
 			<property name="hibernate.dialect" value="org.hibernate.dialect.DerbyTenSixDialect" />
-			<property name="hibernate.hbm2ddl.auto" value="update" />
+			<!-- <property name="hibernate.hbm2ddl.auto" value="update" /> -->
 			<property name="javax.persistence.jdbc.driver" value="org.apache.derby.jdbc.EmbeddedDriver" />
 			<property name="javax.persistence.jdbc.url" value="jdbc:derby:memory:test;create=true" />
 			<property name="javax.persistence.jdbc.user" value="app" />
