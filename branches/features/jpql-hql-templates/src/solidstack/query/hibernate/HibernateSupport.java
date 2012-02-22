@@ -34,6 +34,7 @@ import solidstack.query.Query.PreparedSQL;
 import solidstack.query.Query.Type;
 import solidstack.query.QuerySQLException;
 import solidstack.query.ResultHolder;
+import solidstack.query.jpa.JPASupport;
 
 
 /**
@@ -42,6 +43,7 @@ import solidstack.query.ResultHolder;
  * @author René M. de Bloois
  */
 // TODO What about HQL query templates?
+// TODO Rename to Hibernate3Support?
 public class HibernateSupport
 {
 	/**
@@ -176,7 +178,11 @@ public class HibernateSupport
 	@SuppressWarnings( "unchecked" )
 	static public <T> List<T> list( Query query, Session session, Map<String, Object> args )
 	{
-		return createQuery( query, session, args ).list();
+		List<T> result = createQuery( query, session, args ).list();
+		if( query.getType() == Type.SQL && query.isFlyWeight() )
+			if( !result.isEmpty() && result.get( 0 ) instanceof Object[] )
+				JPASupport.reduceWeight( (List<Object[]>)result );
+		return result;
 	}
 
 	/**
@@ -220,7 +226,7 @@ public class HibernateSupport
 		PreparedSQL preparedSql = query.getPreparedSQL( args );
 
 		org.hibernate.Query result;
-		if( query.getType() == Type.NATIVE )
+		if( query.getType() == Type.SQL )
 			result = session.createSQLQuery( preparedSql.getSQL() );
 		else if( query.getType() == Type.HQL )
 			result = session.createQuery( preparedSql.getSQL() );

@@ -50,6 +50,7 @@ import solidstack.template.Template;
  * 
  * @author René M. de Bloois
  */
+// TODO Can't import EntityManager
 public class Query
 {
 	// TODO We need well defined logger channels like hibernate
@@ -58,12 +59,12 @@ public class Query
 	/**
 	 * The query type.
 	 */
-	static public enum Type
+	static public enum Type // TODO Rename to language: SQL and JPQL, where HQL is a dialect of JPQL but also a language?
 	{
 		/**
 		 * Native SQL.
 		 */
-		NATIVE,
+		SQL,
 		/**
 		 * JPA query.
 		 */
@@ -92,7 +93,7 @@ public class Query
 		{
 			String type = typeDirective.getValue();
 			if( type.equals( "sql" ) )
-				this.type = Type.NATIVE;
+				this.type = Type.SQL;
 			else if( type.equals( "jpql" ) )
 				this.type = Type.JPQL;
 			else if( type.equals( "hql" ) )
@@ -101,7 +102,7 @@ public class Query
 				throw new QueryException( "Query type '" + type + "' not recognized" );
 		}
 		else
-			this.type = Type.NATIVE;
+			this.type = Type.SQL;
 	}
 
 	/**
@@ -140,9 +141,15 @@ public class Query
 	}
 
 	/**
-	 * If set to true, which is the default, duplicate results from a query will only be stored once in memory.
-	 * 
-	 * @param flyWeight If set to true, duplicate results from a query will only be stored once in memory.
+	 * @return True if fly weight is enabled, false otherwise.
+	 */
+	public boolean isFlyWeight()
+	{
+		return this.flyWeight;
+	}
+
+	/**
+	 * @param flyWeight If set to true (the default), duplicate values from a query result will only be stored once in memory.
 	 */
 	// TODO Configure default value in the QueryManager
 	public void setFlyWeight( boolean flyWeight )

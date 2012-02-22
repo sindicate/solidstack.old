@@ -21,4 +21,14 @@ INSERT INTO TEST1 VALUES
 	( 5, 'RECORD 5' ),
 	( 6, 'RECORD 6' ),
 	( 7, 'RECORD 7' )
+<% }
+
+
+if( selector == "select" ) {%>
+SELECT ID, NAME FROM TEST1 
+<% }
+
+
+if( selector == "select name" ) {%>
+SELECT NAME FROM TEST1 
 <% } %>

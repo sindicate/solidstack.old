@@ -90,14 +90,14 @@ public class JPAConnectedQueryAdapter
 	/**
 	 * Retrieves a {@link List} of JPA Entities from the given {@link EntityManager}.
 	 * 
-	 * @param entityClass The class to map the results to.
+	 * @param resultClass The class to map the results to.
 	 * @param args The arguments to the query.
 	 * @return A {@link List} of entities.
 	 * @see javax.persistence.Query#getResultList()
 	 */
-	public <T> List<T> getResultList( Class<T> entityClass, Map<String, Object> args )
+	public <T> List<T> getResultList( Class<T> resultClass, Map<String, Object> args )
 	{
-		return JPASupport.getResultList( this.query, this.entityManager, entityClass, args );
+		return JPASupport.getResultList( this.query, this.entityManager, resultClass, args );
 	}
 
 	/**
@@ -115,27 +115,27 @@ public class JPAConnectedQueryAdapter
 	/**
 	 * Retrieves a single JPA Entity from the given {@link EntityManager}.
 	 * 
-	 * @param entityClass The class to map the results to.
+	 * @param resultClass The class to map the results to.
 	 * @param args The arguments to the query.
 	 * @return An entity.
 	 * @see javax.persistence.Query#getSingleResult()
 	 */
-	public <T> T getSingleResult( Class<T> entityClass, Map<String, Object> args )
+	public <T> T getSingleResult( Class<T> resultClass, Map<String, Object> args )
 	{
-		return JPASupport.getSingleResult( this.query, this.entityManager, entityClass, args );
+		return JPASupport.getSingleResult( this.query, this.entityManager, resultClass, args );
 	}
 
 	/**
 	 * Creates a JPA query.
 	 * 
-	 * @param entityClass The class to map the results to.
+	 * @param resultClass The class to map the results to.
 	 * @param args The arguments to the query.
 	 * @return The JPA query.
 	 * @see EntityManager#createNativeQuery(String, Class)
 	 */
-	public javax.persistence.Query createQuery( Class<?> entityClass, Map<String, Object> args )
+	public javax.persistence.Query createQuery( Class<?> resultClass, Map<String, Object> args )
 	{
-		return JPASupport.createQuery( this.query, this.entityManager, entityClass, args );
+		return JPASupport.createQuery( this.query, this.entityManager, resultClass, args );
 	}
 
 	/**

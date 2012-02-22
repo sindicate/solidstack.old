@@ -116,32 +116,56 @@ public class JPATests
 
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query.jpa" );
-		Query query1 = queries.getQuery( "big1" );
-		Query query2 = queries.getQuery( "big2" );
+		Query sqlQuery = queries.getQuery( "big-sql" );
+		Query jpqlQuery = queries.getQuery( "big-jpql" );
 
 		transaction.begin();
-
-		query1.jpa( em ).executeUpdate( new Pars( "selector", "create table" ) );
-
-		transaction.commit();
-
-		transaction.begin();
-
-		query1.jpa( em ).executeUpdate( new Pars( "selector", "insert" ) );
-		List<Test1> result = query2.jpa( em ).getResultList( new Pars( "selector", "select all" ) );
-		for( Test1 test1 : result )
 		{
-			System.out.println( test1.getName() );
-			test1.setName( "NEW NAME" );
+			sqlQuery.jpa( em ).executeUpdate( new Pars( "selector", "create table" ) );
 		}
-
 		transaction.commit();
 
 		transaction.begin();
+		{
+			sqlQuery.jpa( em ).executeUpdate( new Pars( "selector", "insert" ) );
+			List<Test1> result = jpqlQuery.jpa( em ).getResultList( new Pars( "selector", "select all" ) );
+			System.out.println( result.getClass() );
+			for( Test1 test1 : result )
+			{
+				System.out.println( test1.getName() );
+				test1.setName( "NEW NAME" );
+			}
+		}
+		transaction.commit();
 
-		Test1 test1 = query2.jpa( em ).getSingleResult( new Pars( "selector", "select first" ) );
-		System.out.println( test1.getName() );
+		transaction.begin();
+		{
+			Test1 test1 = jpqlQuery.jpa( em ).getSingleResult( new Pars( "selector", "select first" ) );
+			System.out.println( test1.getName() );
 
+			List<Object[]> objects = sqlQuery.jpa( em ).getResultList( new Pars( "selector", "select" ) );
+			for( Object[] object : objects )
+				System.out.println( object[ 0 ] + ", " + System.identityHashCode( object[ 1 ] ) );
+
+			List<Test1> result = sqlQuery.jpa( em ).getResultList( Test1.class, new Pars( "selector", "select" ) );
+			for( Test1 test2 : result )
+			{
+				System.out.println( test2.getName() );
+				test2.setName( "NEW NEW NAME" );
+			}
+		}
+		transaction.commit();
+
+		transaction.begin();
+		{
+			List<String> names = sqlQuery.jpa( em ).getResultList( new Pars( "selector", "select name" ) );
+			for( String name : names )
+				System.out.println( name );
+
+			names = jpqlQuery.jpa( em ).getResultList( String.class, new Pars( "selector", "select name" ) );
+			for( Object name : names )
+				System.out.println( (String)name );
+		}
 		transaction.commit();
 
 		em.close();
