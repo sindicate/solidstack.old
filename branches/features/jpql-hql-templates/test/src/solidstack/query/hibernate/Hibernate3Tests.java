@@ -1,5 +1,7 @@
 package solidstack.query.hibernate;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
@@ -15,20 +17,22 @@ import solidstack.query.QueryManager;
 import solidstack.util.Pars;
 
 
-public class HibernateTests
+public class Hibernate3Tests
 {
 	private SessionFactory factory;
+	private Method openSession;
 
 	@BeforeClass(groups="new")
-	public void init()
+	public void init() throws NoSuchMethodException, SecurityException
 	{
 		this.factory = new Configuration().configure().buildSessionFactory();
+		this.openSession = SessionFactory.class.getMethod( "openSession" );
 	}
 
 	@Test
-	public void testCriteria()
+	public void testCriteria() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{
-		Session session = this.factory.openSession();
+		Session session = (Session)this.openSession.invoke( this.factory );
 
 		List< DerbyTable > tables = session.createCriteria( DerbyTable.class ).list();
 		for( DerbyTable table : tables )
@@ -38,9 +42,9 @@ public class HibernateTests
 	}
 
 	@Test
-	public void testListOfMaps()
+	public void testListOfMaps() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{
-		Session session = this.factory.openSession();
+		Session session = (Session)this.openSession.invoke( this.factory );
 
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query" );
@@ -54,9 +58,9 @@ public class HibernateTests
 
 
 	@Test
-	public void testHQL()
+	public void testHQL() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{
-		Session session = this.factory.openSession();
+		Session session = (Session)this.openSession.invoke( this.factory );
 
 		org.hibernate.Query hibQuery = session.createQuery( "SELECT A FROM DerbyTable A WHERE name = ?" );
 		hibQuery.setParameter( 0, "SYSTABLES" );
