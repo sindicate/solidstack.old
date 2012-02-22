@@ -31,13 +31,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.persistence.EntityManager;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import solidstack.Assert;
 import solidstack.SystemException;
+import solidstack.query.hibernate.HibernateConnectedQueryAdapter;
 import solidstack.query.hibernate.HibernateQueryAdapter;
 import solidstack.query.jpa.JPAConnectedQueryAdapter;
 import solidstack.query.jpa.JPAQueryAdapter;
@@ -124,6 +123,16 @@ public class Query
 	}
 
 	/**
+	 * Returns an adapter for Hibernate which enables you to use the query with Hibernate.
+	 * 
+	 * @return An adapter for Hibernate.
+	 */
+	public HibernateConnectedQueryAdapter hibernate( Object session )
+	{
+		return new HibernateConnectedQueryAdapter( this, session );
+	}
+
+	/**
 	 * @return An adapter for JPA which enables you to use the query with JPA.
 	 */
 	public JPAQueryAdapter jpa()
@@ -132,10 +141,10 @@ public class Query
 	}
 
 	/**
-	 * @param entityManager A JPA entity manager.
+	 * @param entityManager A {@link javax.persistence.EntityManager}.
 	 * @return An adapter for JPA which enables you to use the query with JPA.
 	 */
-	public JPAConnectedQueryAdapter jpa( EntityManager entityManager )
+	public JPAConnectedQueryAdapter jpa( Object entityManager )
 	{
 		return new JPAConnectedQueryAdapter( this, entityManager );
 	}

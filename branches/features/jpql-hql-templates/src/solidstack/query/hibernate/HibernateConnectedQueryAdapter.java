@@ -32,13 +32,23 @@ import solidstack.query.Query;
  * 
  * @author René M. de Bloois
  */
-// FIXME What about a ConnectedHibernateAdapter?
-/*
- 	Query(Connection,Args)
-	Query+Connection(Args)
- */
 public class HibernateConnectedQueryAdapter
 {
+	static private boolean hibernate4;
+
+	static
+	{
+		try
+		{
+			HibernateConnectedQueryAdapter.class.getClassLoader().loadClass( "org.hibernate.StatelessSession" );
+			hibernate4 = true;
+		}
+		catch( ClassNotFoundException e )
+		{
+			// We have Hibernate 3
+		}
+	}
+
 	/**
 	 * The query that is adapted to Hibernate.
 	 */
@@ -51,12 +61,15 @@ public class HibernateConnectedQueryAdapter
 
 	/**
 	 * @param query A query to adapt to Hibernate.
-	 * @param session A Hibernate session.
+	 * @param session A {@link org.hibernate.Session} or a {@link org.hibernate.StatelessSession}.
 	 */
-	public HibernateConnectedQueryAdapter( Query query, Session session )
+	public HibernateConnectedQueryAdapter( Query query, Object session )
 	{
 		this.query = query;
-		this.session = session;
+		if( hibernate4 && session instanceof org.hibernate.StatelessSession )
+			this.session = new StatelessSessionAdapter( (org.hibernate.StatelessSession)session );
+		else
+			this.session = (Session)session;
 	}
 
 	/**

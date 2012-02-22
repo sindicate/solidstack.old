@@ -21,8 +21,6 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 
-import org.hibernate.Session;
-
 import solidstack.query.Query;
 import solidstack.query.hibernate.HibernateConnectedQueryAdapter;
 
@@ -55,12 +53,12 @@ public class JPAConnectedQueryAdapter
 	 * Constructor.
 	 * 
 	 * @param query A query to adapt to JPA.
-	 * @param entityManager A JPA entity manager.
+	 * @param entityManager A {@link javax.persistence.EntityManager}.
 	 */
-	public JPAConnectedQueryAdapter( Query query, EntityManager entityManager )
+	public JPAConnectedQueryAdapter( Query query, Object entityManager )
 	{
 		this.query = query;
-		this.entityManager = entityManager;
+		this.entityManager = (EntityManager)entityManager;
 	}
 
 	/**
@@ -156,6 +154,6 @@ public class JPAConnectedQueryAdapter
 	public HibernateConnectedQueryAdapter hibernate()
 	{
 		// TODO Better error handling if delegate is not a Hibernate session
-		return new HibernateConnectedQueryAdapter( this.query, (Session)this.entityManager.getDelegate() );
+		return new HibernateConnectedQueryAdapter( this.query, this.entityManager.getDelegate() );
 	}
 }
