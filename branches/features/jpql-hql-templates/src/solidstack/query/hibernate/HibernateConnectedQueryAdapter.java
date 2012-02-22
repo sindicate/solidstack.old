@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.hibernate.JDBCException;
 import org.hibernate.Session;
+import org.hibernate.StatelessSession;
 
 import solidstack.query.Query;
 
@@ -34,21 +35,6 @@ import solidstack.query.Query;
  */
 public class HibernateConnectedQueryAdapter
 {
-	static private boolean hibernate4;
-
-	static
-	{
-		try
-		{
-			HibernateConnectedQueryAdapter.class.getClassLoader().loadClass( "org.hibernate.StatelessSession" );
-			hibernate4 = true;
-		}
-		catch( ClassNotFoundException e )
-		{
-			// We have Hibernate 3
-		}
-	}
-
 	/**
 	 * The query that is adapted to Hibernate.
 	 */
@@ -61,13 +47,13 @@ public class HibernateConnectedQueryAdapter
 
 	/**
 	 * @param query A query to adapt to Hibernate.
-	 * @param session A {@link org.hibernate.Session} or a {@link org.hibernate.StatelessSession}.
+	 * @param session A {@link Session} or a {@link StatelessSession}.
 	 */
 	public HibernateConnectedQueryAdapter( Query query, Object session )
 	{
 		this.query = query;
-		if( hibernate4 && session instanceof org.hibernate.StatelessSession )
-			this.session = new StatelessSessionAdapter( (org.hibernate.StatelessSession)session );
+		if( session instanceof StatelessSession )
+			this.session = new StatelessSessionAdapter( (StatelessSession)session );
 		else
 			this.session = (Session)session;
 	}
