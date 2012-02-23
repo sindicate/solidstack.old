@@ -96,6 +96,7 @@ public class TemplateManager
 	 * 
 	 * @param pkg The package.
 	 */
+	// TODO setResource(), setFolder()?
 	public void setPackage( String pkg )
 	{
 		Assert.isTrue( !pkg.startsWith( "." ) && !pkg.endsWith( "." ), "package should not start or end with a ." );
