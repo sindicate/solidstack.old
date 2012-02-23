@@ -154,6 +154,8 @@ public class TemplateManager
 		log.debug( "getTemplate [{}]", path );
 		Assert.isTrue( !path.startsWith( "/" ), "path should not start with a /" );
 
+		path += ".slt"; // TODO Configurable, and maybe another default
+
 		synchronized( this.templates )
 		{
 			Template template = this.templates.get( path );

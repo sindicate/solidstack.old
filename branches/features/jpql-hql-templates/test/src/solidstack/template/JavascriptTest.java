@@ -95,7 +95,7 @@ public class JavascriptTest
 	@Test//(groups="new")
 	public void testTransform() throws Exception
 	{
-		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/template/testjs.gtext" );
+		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/template/testjs.txt.slt" );
 		TemplateCompilerContext context = new TemplateCompilerContext();
 		context.setResource( resource );
 		context.setPath( "p/c" );
@@ -130,7 +130,7 @@ public class JavascriptTest
 		params.put( "prefix", "SYST" );
 		params.put( "name", null );
 		params.put( "names", null );
-		Template template = queries.getTemplate( "testjs.gtext" );
+		Template template = queries.getTemplate( "testjs.txt" );
 		String result = template.apply( params );
 
 //		Writer out = new OutputStreamWriter( new FileOutputStream( "test2.out" ), "UTF-8" );

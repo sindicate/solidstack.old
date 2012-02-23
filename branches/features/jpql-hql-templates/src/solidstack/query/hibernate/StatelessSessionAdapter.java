@@ -28,6 +28,8 @@ import org.hibernate.jdbc.ReturningWork;
 import org.hibernate.jdbc.Work;
 import org.hibernate.stat.SessionStatistics;
 
+
+// TODO Unit test
 public class StatelessSessionAdapter implements Session
 {
 	private StatelessSession session;

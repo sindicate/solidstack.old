@@ -34,7 +34,7 @@ public class JPATests
 
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query" );
-		Query query = queries.getQuery( "test" );
+		Query query = queries.getQuery( "test.sql" );
 		List<DerbyTable> tables = query.jpa().getResultList( em, DerbyTable.class, new Pars() );
 		for( DerbyTable table : tables )
 			System.out.println( table.getName() );
@@ -49,7 +49,7 @@ public class JPATests
 
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query" );
-		Query query = queries.getQuery( "test" );
+		Query query = queries.getQuery( "test.sql" );
 		List<Object[]> tables = query.jpa().getResultList( em, new Pars() );
 		for( Object[] table : tables )
 			System.out.println( table[ 1 ].toString() );
@@ -71,7 +71,7 @@ public class JPATests
 
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query.jpa" );
-		Query query = queries.getQuery( "test" );
+		Query query = queries.getQuery( "test.jpql" );
 
 		tables = query.jpa( em ).getResultList( new Pars() );
 		for( DerbyTable table : tables )
@@ -97,7 +97,7 @@ public class JPATests
 
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query.hibernate" );
-		Query query = queries.getQuery( "test" );
+		Query query = queries.getQuery( "test.hql" );
 
 		List<DerbyTable> tables = query.jpa( em ).hibernate().list( new Pars() );
 		for( DerbyTable table : tables )
@@ -116,8 +116,8 @@ public class JPATests
 
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query.jpa" );
-		Query sqlQuery = queries.getQuery( "big-sql" );
-		Query jpqlQuery = queries.getQuery( "big-jpql" );
+		Query sqlQuery = queries.getQuery( "big.sql" );
+		Query jpqlQuery = queries.getQuery( "big.jpql" );
 
 		transaction.begin();
 		{

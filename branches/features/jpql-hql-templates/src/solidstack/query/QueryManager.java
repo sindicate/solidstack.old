@@ -91,9 +91,7 @@ public class QueryManager
 	 */
 	public Query getQuery( String path )
 	{
-		// TODO Remove this extension.
-		// TODO We need another extension, g from Groovy does not cut it anymore. We need a nice name. xxx.sql.solt?
-		return new Query( this.templateManager.getTemplate( path + ".gsql" ) );
+		return new Query( this.templateManager.getTemplate( path ) );
 	}
 
 	private void checkLock()

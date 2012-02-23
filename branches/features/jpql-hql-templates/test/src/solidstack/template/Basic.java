@@ -40,7 +40,7 @@ public class Basic
 		TemplateManager templates = new TemplateManager();
 		templates.setPackage( "solidstack.template" );
 
-		Template template = templates.getTemplate( "test.gtext" );
+		Template template = templates.getTemplate( "test.txt" );
 		String result = template.apply( new Pars( "names", new String[] { "name1", "name2" } ) );
 		Assert.assertEquals( result, "SELECT *\n" +
 				"FROM SYS.SYSTABLES\n" +
@@ -51,7 +51,7 @@ public class Basic
 	@Test //(groups="new")
 	public void testTransform() throws Exception
 	{
-		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/template/test.gtext" );
+		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/template/test.txt.slt" );
 		TemplateCompilerContext context = new TemplateCompilerContext();
 		context.setResource( resource );
 		context.setPath( "a/b/c" );
@@ -87,7 +87,7 @@ public class Basic
 
 		Map< String, Object > params = new HashMap< String, Object >();
 		params.put( "prefix", "SYST" );
-		Template template = queries.getTemplate( "test.gtext" );
+		Template template = queries.getTemplate( "test.txt" );
 		String result = template.apply( params );
 
 //		Writer out = new OutputStreamWriter( new FileOutputStream( "test2.out" ), "UTF-8" );
@@ -133,7 +133,7 @@ public class Basic
 		TemplateCompiler.keepSource = true;
 		templates.setPackage( "solidstack.template" );
 
-		Template template = templates.getTemplate( "test2.gxml" );
+		Template template = templates.getTemplate( "test2.xml" );
 //		System.out.println( template.getSource() );
 		Map< String, Object > pars = new HashMap< String, Object >();
 		String result = template.apply( pars );

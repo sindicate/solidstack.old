@@ -48,7 +48,7 @@ public class Hibernate3Tests
 
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query" );
-		Query query = queries.getQuery( "test" );
+		Query query = queries.getQuery( "test.sql" );
 		List<Map<String, Object>> tables = query.hibernate().listOfMaps( session, new Pars() );
 		for( Map<String, Object> table : tables )
 			System.out.println( table.get( "TaBlEnAmE" ) );
@@ -71,7 +71,7 @@ public class Hibernate3Tests
 
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query.hibernate" );
-		Query query = queries.getQuery( "test" );
+		Query query = queries.getQuery( "test.hql" );
 
 		tables = query.hibernate().list( session, new Pars() );
 		for( DerbyTable table : tables )
