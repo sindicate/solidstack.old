@@ -74,8 +74,23 @@
 		<pathelement location="${build.home}/testclasses" />
 		<pathelement location="${build.home}/instrumentedclasses" />
 		<pathelement location="${build.home}/classes" />
-		<path refid="compile.classpath" />
-		<fileset dir="test/lib" includes="**/*.jar" />
+		<fileset dir="lib" includes="*.jar" />
+		<fileset dir="lib/hibernate41" includes="*.jar" />
+		<fileset dir="test/lib" includes="*.jar" />
+		<fileset dir="test/lib/hibernate" includes="*.jar" />
+		<fileset dir="test/lib/hibernate41" includes="*.jar" />
+		<path refid="testng.classpath" />
+		<path refid="cobertura.classpath" />
+	</path>
+
+	<path id="test-hibernate3.classpath">
+		<pathelement location="${build.home}/testclasses" />
+		<pathelement location="${build.home}/instrumentedclasses" />
+		<pathelement location="${build.home}/classes" />
+		<fileset dir="lib" includes="*.jar" />
+		<fileset dir="test/lib" includes="*.jar" />
+		<fileset dir="test/lib/hibernate" includes="*.jar" />
+		<fileset dir="test/lib/hibernate33" includes="*.jar" />
 		<path refid="testng.classpath" />
 		<path refid="cobertura.classpath" />
 	</path>
@@ -162,9 +177,14 @@
 
 
 	<target name="test" depends="buildtest,instrument" description="Run the tests">
+		<delete file="cobertura.ser" />
 		<testng classpathref="test.classpath" outputDir="${build.home}/testreports" haltOnFailure="true" verbose="3"
 			usedefaultlisteners="false" listeners="org.testng.reporters.JUnitReportReporter">
 			<classfileset dir="${build.home}/testclasses" />
+		</testng>
+		<testng classpathref="test-hibernate3.classpath" outputDir="${build.home}/testreports-hibernate3" haltOnFailure="true" verbose="3"
+			usedefaultlisteners="false" listeners="org.testng.reporters.JUnitReportReporter">
+			<classfileset dir="${build.home}/testclasses" includes="solidstack/query/hibernate/Hibernate3Tests.class" />
 		</testng>
 	</target>
 

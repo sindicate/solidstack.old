@@ -51,7 +51,7 @@ public class Basic
 		QueryManager queries = new QueryManager();
 		queries.setPackage( "solidstack.query" );
 
-		Query query = queries.getQuery( "test" );
+		Query query = queries.getQuery( "test.sql" );
 		List< Map< String, Object > > result = query.listOfMaps( connection, Pars.EMPTY );
 		for( String name : result.get( 0 ).keySet() )
 			System.out.println( "Column: " + name );
@@ -84,7 +84,7 @@ public class Basic
 
 		Pars pars = new Pars( "prefix", null, "name", null, "names", null );
 
-		Query query = queries.getQuery( "testjs" );
+		Query query = queries.getQuery( "testjs.sql" );
 		List< Map< String, Object > > result = query.listOfMaps( connection, pars );
 		for( String name : result.get( 0 ).keySet() )
 			System.out.println( "Column: " + name );
@@ -108,7 +108,7 @@ public class Basic
 	@Test
 	public void testTransform() throws Exception
 	{
-		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/test.gsql" );
+		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/test.sql.slt" );
 		TemplateCompilerContext context = new TemplateCompilerContext();
 		context.setResource( resource );
 		context.setPath( "p/c" );
@@ -146,7 +146,7 @@ public class Basic
 		Map< String, Object > params = new HashMap< String, Object >();
 		params.put( "prefix", "SYST" );
 		params.put( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } );
-		Query query = queries.getQuery( "test" );
+		Query query = queries.getQuery( "test.sql" );
 		PreparedSQL sql = query.getPreparedSQL( params );
 
 		// TODO SQL or Sql?
@@ -168,7 +168,7 @@ public class Basic
 		manager.setPackage( "solidstack.query" );
 		manager.setDefaultLanguage( "javascript" );
 
-		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/testjs.gsql" );
+		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/testjs.sql.slt" );
 		TemplateCompilerContext context = new TemplateCompilerContext();
 		context.setResource( resource );
 		context.setPath( "p/c" );
@@ -202,7 +202,7 @@ public class Basic
 		params.put( "prefix", "SYST" );
 		params.put( "name", null );
 		params.put( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } );
-		Query query = queries.getQuery( "testjs" );
+		Query query = queries.getQuery( "testjs.sql" );
 		PreparedSQL sql = query.getPreparedSQL( params );
 
 		assert sql.getSQL().equals( "SELECT *\n" +
@@ -229,7 +229,7 @@ public class Basic
 				"SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS",
 				"SYSTABLES", "SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS", "SYSTABLES",
 				"SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS" } ) );
-		Query query = queries.getQuery( "bigin" );
+		Query query = queries.getQuery( "bigin.sql" );
 		PreparedSQL sql = query.getPreparedSQL( params );
 
 		assert sql.getSQL().equals( "SELECT *\n" +
@@ -257,7 +257,7 @@ public class Basic
 		queries.setPackage( "solidstack.query" );
 		queries.setDefaultLanguage( "groovy" );
 
-		Query query = queries.getQuery( "test2" );
+		Query query = queries.getQuery( "test2.sql" );
 		List< Map< String, Object > > result = query.listOfMaps( connection, new Pars( "prefix", null, "name", null, "names", null ) );
 		assert result.size() == 22;
 	}

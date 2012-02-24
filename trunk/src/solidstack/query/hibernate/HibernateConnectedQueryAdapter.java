@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.hibernate.JDBCException;
 import org.hibernate.Session;
+import org.hibernate.StatelessSession;
 
 import solidstack.query.Query;
 
@@ -32,118 +33,113 @@ import solidstack.query.Query;
  * 
  * @author René M. de Bloois
  */
-// FIXME What about a ConnectedHibernateAdapter?
-/*
- 	Query(Connection,Args)
-	Query+Connection(Args)
- */
-public class HibernateQueryAdapter
+public class HibernateConnectedQueryAdapter
 {
 	/**
 	 * The query that is adapted to Hibernate.
 	 */
 	protected Query query;
 
+	/**
+	 * A Hibernate session.
+	 */
+	protected Session session;
 
 	/**
-	 * Constructor.
-	 * 
 	 * @param query A query to adapt to Hibernate.
+	 * @param session A {@link Session} or a {@link StatelessSession}.
 	 */
-	public HibernateQueryAdapter( Query query )
+	public HibernateConnectedQueryAdapter( Query query, Object session )
 	{
 		this.query = query;
+		if( session instanceof StatelessSession )
+			this.session = new StatelessSessionAdapter( (StatelessSession)session );
+		else
+			this.session = (Session)session;
 	}
 
 	/**
 	 * Retrieves a {@link ResultSet} from the given Hibernate {@link Session}.
 	 * 
-	 * @param session The Hibernate {@link Session} to use.
 	 * @param args The arguments to the query.
 	 * @return a {@link ResultSet}.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
 	 * @see Query#resultSet(Connection, Map)
 	 */
-	public ResultSet resultSet( Session session, Map< String, Object > args )
+	public ResultSet resultSet( Map< String, Object > args )
 	{
-		return HibernateSupport.resultSet( this.query, session, args );
+		return HibernateSupport.resultSet( this.query, this.session, args );
 	}
 
 	/**
 	 * Retrieves a {@link List} of {@link Object} arrays from the given Hibernate {@link Session}.
 	 * 
-	 * @param session The Hibernate {@link Session} to use.
 	 * @param args The arguments to the query.
 	 * @return a {@link List} of {@link Object} arrays.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
 	 * @see Query#listOfArrays(Connection, Map)
 	 */
-	public List< Object[] > listOfArrays( final Session session, Map< String, Object > args )
+	public List< Object[] > listOfArrays( Map< String, Object > args )
 	{
-		return HibernateSupport.listOfArrays( this.query, session, args );
+		return HibernateSupport.listOfArrays( this.query, this.session, args );
 	}
 
 	/**
 	 * Retrieves a {@link List} of {@link Map}s from the given Hibernate {@link Session}.
 	 * 
-	 * @param session The Hibernate {@link Session} to use.
 	 * @param args The arguments to the query.
 	 * @return A {@link List} of {@link Map}s.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
 	 * @see Query#listOfMaps(Connection, Map)
 	 */
-	public List< Map< String, Object > > listOfMaps( final Session session, Map< String, Object > args )
+	public List< Map< String, Object > > listOfMaps( Map< String, Object > args )
 	{
-		return HibernateSupport.listOfMaps( this.query, session, args );
+		return HibernateSupport.listOfMaps( this.query, this.session, args );
 	}
 
 	/**
 	 * Executes an update (DML) or a DDL query through the given Hibernate {@link Session}.
 	 * 
-	 * @param session The Hibernate {@link Session} to use.
 	 * @param args The arguments to the query.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
 	 * @see Query#updateChecked(Connection, Map)
 	 */
-	public int update( Session session, Map< String, Object > args )
+	public int update( Map< String, Object > args )
 	{
-		return HibernateSupport.update( this.query, session, args );
+		return HibernateSupport.update( this.query, this.session, args );
 	}
 
 	/**
 	 * Executes {@link org.hibernate.Query#list()}.
 	 * 
-	 * @param session The Hibernate {@link Session} to use.
 	 * @param args The arguments to the query.
 	 * @return A list of Hibernate entities.
 	 */
-	public <T> List< T > list( Session session, Map< String, Object > args )
+	public <T> List< T > list( Map< String, Object > args )
 	{
-		return HibernateSupport.list( this.query, session, args );
+		return HibernateSupport.list( this.query, this.session, args );
 	}
 
 	/**
 	 * Executes {@link org.hibernate.Query#executeUpdate()}.
 	 * 
-	 * @param session The Hibernate {@link Session} to use.
 	 * @param args The arguments to the query.
 	 * @return The number of entities updated or deleted.
 	 */
-	public int executeUpdate( Session session, Map< String, Object > args )
+	public int executeUpdate( Map< String, Object > args )
 	{
-		return HibernateSupport.executeUpdate( this.query, session, args );
+		return HibernateSupport.executeUpdate( this.query, this.session, args );
 	}
 
 	/**
 	 * Executes {@link org.hibernate.Query#uniqueResult()}.
 	 * 
-	 * @param session The Hibernate {@link Session} to use.
 	 * @param args The arguments to the query.
 	 * @return A single Hibernate entity or null.
 	 */
-	public <T> T uniqueResult( Session session, Map< String, Object > args )
+	public <T> T uniqueResult( Map< String, Object > args )
 	{
-		return HibernateSupport.uniqueResult( this.query, session, args );
+		return HibernateSupport.uniqueResult( this.query, this.session, args );
 	}
 }

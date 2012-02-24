@@ -19,29 +19,36 @@ package solidstack.query.hibernate;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import org.hibernate.JDBCException;
+import org.hibernate.QueryException;
 import org.hibernate.Session;
 import org.hibernate.jdbc.Work;
 
+import solidstack.lang.Assert;
 import solidstack.query.Query;
-import solidstack.query.QueryException;
+import solidstack.query.Query.PreparedSQL;
+import solidstack.query.Query.Type;
+import solidstack.query.QuerySQLException;
 import solidstack.query.ResultHolder;
+import solidstack.query.jpa.JPASupport;
 
 
 /**
  * Adds support for Hibernate. Hibernate dependencies must be kept separate from the rest.
- * 
+ *
  * @author René M. de Bloois
  */
 // TODO What about HQL query templates?
+// TODO Rename to Hibernate3Support?
 public class HibernateSupport
 {
 	/**
 	 * Retrieves a {@link ResultSet} from the given Hibernate {@link Session}.
-	 * 
+	 *
 	 * @param query The query.
 	 * @param session The Hibernate {@link Session} to use.
 	 * @param args The arguments to the query.
@@ -61,7 +68,7 @@ public class HibernateSupport
 				{
 					result.set( query.resultSet( connection, args ) );
 				}
-				catch( QueryException e )
+				catch( QuerySQLException e )
 				{
 					throw e.getSQLException();
 				}
@@ -73,7 +80,7 @@ public class HibernateSupport
 
 	/**
 	 * Retrieves a {@link List} of {@link Object} arrays from the given Hibernate {@link Session}.
-	 * 
+	 *
 	 * @param query The query.
 	 * @param session The Hibernate {@link Session} to use.
 	 * @param args The arguments to the query.
@@ -93,7 +100,7 @@ public class HibernateSupport
 				{
 					result.set( query.listOfArrays( connection, args ) );
 				}
-				catch( QueryException e )
+				catch( QuerySQLException e )
 				{
 					throw e.getSQLException();
 				}
@@ -105,7 +112,7 @@ public class HibernateSupport
 
 	/**
 	 * Retrieves a {@link List} of {@link Map}s from the given Hibernate {@link Session}.
-	 * 
+	 *
 	 * @param query The query.
 	 * @param session The Hibernate {@link Session} to use.
 	 * @param args The arguments to the query.
@@ -125,7 +132,7 @@ public class HibernateSupport
 				{
 					result.set( query.listOfMaps( connection, args ) );
 				}
-				catch( QueryException e )
+				catch( QuerySQLException e )
 				{
 					throw e.getSQLException();
 				}
@@ -137,7 +144,7 @@ public class HibernateSupport
 
 	/**
 	 * Executes an update (DML) or a DDL query through the given Hibernate {@link Session}.
-	 * 
+	 *
 	 * @param query The query.
 	 * @param session The Hibernate {@link Session} to use.
 	 * @param args The arguments to the query.
@@ -158,5 +165,85 @@ public class HibernateSupport
 		});
 
 		return result.get();
+	}
+
+	/**
+	 * Executes {@link org.hibernate.Query#list()}.
+	 *
+	 * @param query The query.
+	 * @param session The Hibernate {@link Session} to use.
+	 * @param args The arguments to the query.
+	 * @return A list of Hibernate entities.
+	 */
+	@SuppressWarnings( "unchecked" )
+	static public <T> List<T> list( Query query, Session session, Map<String, Object> args )
+	{
+		List<T> result = createQuery( query, session, args ).list();
+		if( query.getType() == Type.SQL && query.isFlyWeight() )
+			if( !result.isEmpty() && result.get( 0 ) instanceof Object[] )
+				JPASupport.reduceWeight( (List<Object[]>)result );
+		return result;
+	}
+
+	/**
+	 * Executes {@link org.hibernate.Query#executeUpdate()}.
+	 *
+	 * @param query The query.
+	 * @param session The Hibernate {@link Session} to use.
+	 * @param args The arguments to the query.
+	 * @return The number of entities updated or deleted.
+	 */
+	static public int executeUpdate( Query query, Session session, Map<String, Object> args )
+	{
+		return createQuery( query, session, args ).executeUpdate();
+	}
+
+	/**
+	 * Executes {@link org.hibernate.Query#uniqueResult()}.
+	 *
+	 * @param query The query.
+	 * @param session The Hibernate {@link Session} to use.
+	 * @param args The arguments to the query.
+	 * @return A single Hibernate entity or null.
+	 */
+	@SuppressWarnings( "unchecked" )
+	static public <T> T uniqueResult( Query query, Session session, Map<String, Object> args )
+	{
+		return (T)createQuery( query, session, args ).uniqueResult();
+	}
+
+	// TODO Rename my Query to SolidQuery?
+	/**
+	 * Creates a Hibernate query.
+	 *
+	 * @param query The query.
+	 * @param session A Hibernate session.
+	 * @param args The arguments to the query.
+	 * @return The Hibernate query.
+	 */
+	static public org.hibernate.Query createQuery( Query query, Session session, Map< String, Object > args )
+	{
+		PreparedSQL preparedSql = query.getPreparedSQL( args );
+
+		org.hibernate.Query result;
+		if( query.getType() == Type.SQL )
+			result = session.createSQLQuery( preparedSql.getSQL() );
+		else if( query.getType() == Type.HQL )
+			result = session.createQuery( preparedSql.getSQL() );
+		else
+			throw new QueryException( "Query type '" + query.getType() + "' not recognized" );
+
+		List< Object > pars = preparedSql.getParameters();
+		int i = 0;
+		for( Object par : pars )
+		{
+			if( par != null )
+			{
+				Assert.isFalse( par instanceof Collection );
+				Assert.isFalse( par.getClass().isArray() );
+			}
+			result.setParameter( i++, par );
+		}
+		return result;
 	}
 }

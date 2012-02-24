@@ -3,8 +3,9 @@
 
 <hibernate-mapping package="solidstack.query.hibernate">
 
-	<class name="DerbyTable" table="SYS.SYSTABLES">
-		<id name="name" column="TABLENAME" />
+	<class name="Test1" table="TEST1">
+		<id name="id" column="ID" />
+		<property name="name" column="NAME" />
 	</class>
 
 </hibernate-mapping>

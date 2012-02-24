@@ -47,7 +47,7 @@ public class TemplateWriterTests
 		TemplateManager templates = new TemplateManager();
 		templates.setPackage( "solidstack.template" );
 
-		Template template = templates.getTemplate( "test.gxml" );
+		Template template = templates.getTemplate( "test.xml" );
 		template.setContentType( null );
 		Map< String, Object > pars = new HashMap< String, Object >();
 		pars.put( "test", "&<>\"'" );
@@ -62,7 +62,7 @@ public class TemplateWriterTests
 		TemplateManager templates = new TemplateManager();
 		templates.setPackage( "solidstack.template" );
 
-		Template template = templates.getTemplate( "test.gxml" );
+		Template template = templates.getTemplate( "test.xml" );
 		Map< String, Object > pars = new HashMap< String, Object >();
 		pars.put( "test", "&<>\"'" );
 

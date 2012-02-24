@@ -96,6 +96,7 @@ public class TemplateManager
 	 * 
 	 * @param pkg The package.
 	 */
+	// TODO setResource(), setFolder()?
 	public void setPackage( String pkg )
 	{
 		Assert.isTrue( !pkg.startsWith( "." ) && !pkg.endsWith( "." ), "package should not start or end with a ." );
@@ -152,6 +153,8 @@ public class TemplateManager
 	{
 		log.debug( "getTemplate [{}]", path );
 		Assert.isTrue( !path.startsWith( "/" ), "path should not start with a /" );
+
+		path += ".slt"; // TODO Configurable, and maybe another default
 
 		synchronized( this.templates )
 		{
