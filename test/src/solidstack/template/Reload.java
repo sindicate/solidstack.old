@@ -45,7 +45,7 @@ public class Reload
 		Assert.assertTrue( in.read() >= 0 );
 		in.close();
 
-		resource = ResourceFactory.getResource( "classpath:solidstack/template/dummy.tmpl" );
+		resource = ResourceFactory.getResource( "classpath:solidstack/template/dummy.slt" );
 		Assert.assertTrue( resource instanceof FileResource );
 		Assert.assertEquals( resource.getURL().getProtocol(), "file" );
 		in = resource.getInputStream();
@@ -82,19 +82,19 @@ public class Reload
 		templates.setPackage( "solidstack.template" );
 		templates.setDefaultLanguage( "javascript" );
 
-		Template template = templates.getTemplate( "dummy.tmpl" );
+		Template template = templates.getTemplate( "dummy" );
 
-		Resource resource = ResourceFactory.getResource( "classpath:solidstack/template/dummy.tmpl" );
+		Resource resource = ResourceFactory.getResource( "classpath:solidstack/template/dummy.slt" );
 		OutputStream out = resource.getOutputStream();
 		out.write( "test".getBytes() );
 		out.close();
 
-		Template template2 = templates.getTemplate( "dummy.tmpl" );
+		Template template2 = templates.getTemplate( "dummy" );
 		Assert.assertTrue( template == template2 );
 
 		templates.setReloading( true );
 
-		template2 = templates.getTemplate( "dummy.tmpl" );
+		template2 = templates.getTemplate( "dummy" );
 		Assert.assertTrue( template != template2 );
 	}
 }

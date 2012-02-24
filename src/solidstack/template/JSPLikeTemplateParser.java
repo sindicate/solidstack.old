@@ -32,6 +32,8 @@ import solidstack.lang.Assert;
  * @author René M. de Bloois
  */
 // TODO Language-less version, so just with ${name}, <%= name %> and <% if(name) { %>
+// TODO What about i18n, l10n?
+// TODO Optional short form? %dkjhd and $jkhdd or $%dfkh
 public class JSPLikeTemplateParser
 {
 	/**

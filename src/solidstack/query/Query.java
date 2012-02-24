@@ -36,8 +36,11 @@ import org.slf4j.LoggerFactory;
 
 import solidstack.lang.Assert;
 import solidstack.lang.SystemException;
+import solidstack.query.hibernate.HibernateConnectedQueryAdapter;
 import solidstack.query.hibernate.HibernateQueryAdapter;
+import solidstack.query.jpa.JPAConnectedQueryAdapter;
 import solidstack.query.jpa.JPAQueryAdapter;
+import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.Template;
 
 
@@ -46,13 +49,34 @@ import solidstack.template.Template;
  * 
  * @author René M. de Bloois
  */
+// TODO Can't import EntityManager
 public class Query
 {
 	// TODO We need well defined logger channels like hibernate
 	static  private Logger log = LoggerFactory.getLogger( Query.class );
 
+	/**
+	 * The query type.
+	 */
+	static public enum Type // TODO Rename to language: SQL and JPQL, where HQL is a dialect of JPQL but also a language?
+	{
+		/**
+		 * Native SQL.
+		 */
+		SQL,
+		/**
+		 * JPA query.
+		 */
+		JPQL,
+		/**
+		 * Hibernate query.
+		 */
+		HQL
+	}
+
 	private Template template;
 	private boolean flyWeight = true;
+	private Type type;
 
 	/**
 	 * Constructor.
@@ -62,6 +86,30 @@ public class Query
 	public Query( Template template )
 	{
 		this.template = template;
+
+		Directive typeDirective = template.getDirective( "query", "type" );
+		if( typeDirective != null )
+		{
+			String type = typeDirective.getValue();
+			if( type.equals( "sql" ) )
+				this.type = Type.SQL;
+			else if( type.equals( "jpql" ) )
+				this.type = Type.JPQL;
+			else if( type.equals( "hql" ) )
+				this.type = Type.HQL;
+			else
+				throw new QueryException( "Query type '" + type + "' not recognized" );
+		}
+		else
+			this.type = Type.SQL;
+	}
+
+	/**
+	 * @return The type of the query.
+	 */
+	public Type getType()
+	{
+		return this.type;
 	}
 
 	/**
@@ -75,9 +123,17 @@ public class Query
 	}
 
 	/**
-	 * Returns an adapter for JPA which enables you to use the query with JPA.
+	 * Returns an adapter for Hibernate which enables you to use the query with Hibernate.
 	 * 
-	 * @return An adapter for JPA.
+	 * @return An adapter for Hibernate.
+	 */
+	public HibernateConnectedQueryAdapter hibernate( Object session )
+	{
+		return new HibernateConnectedQueryAdapter( this, session );
+	}
+
+	/**
+	 * @return An adapter for JPA which enables you to use the query with JPA.
 	 */
 	public JPAQueryAdapter jpa()
 	{
@@ -85,9 +141,24 @@ public class Query
 	}
 
 	/**
-	 * If set to true, which is the default, duplicate results from a query will only be stored once in memory.
-	 * 
-	 * @param flyWeight If set to true, duplicate results from a query will only be stored once in memory.
+	 * @param entityManager A {@link javax.persistence.EntityManager}.
+	 * @return An adapter for JPA which enables you to use the query with JPA.
+	 */
+	public JPAConnectedQueryAdapter jpa( Object entityManager )
+	{
+		return new JPAConnectedQueryAdapter( this, entityManager );
+	}
+
+	/**
+	 * @return True if fly weight is enabled, false otherwise.
+	 */
+	public boolean isFlyWeight()
+	{
+		return this.flyWeight;
+	}
+
+	/**
+	 * @param flyWeight If set to true (the default), duplicate values from a query result will only be stored once in memory.
 	 */
 	// TODO Configure default value in the QueryManager
 	public void setFlyWeight( boolean flyWeight )
@@ -113,7 +184,7 @@ public class Query
 		}
 		catch( SQLException e )
 		{
-			throw new QueryException( e );
+			throw new QuerySQLException( e );
 		}
 	}
 
@@ -209,7 +280,7 @@ public class Query
 		}
 		catch( SQLException e )
 		{
-			throw new QueryException( e );
+			throw new QuerySQLException( e );
 		}
 	}
 
@@ -245,7 +316,7 @@ public class Query
 		}
 		catch( SQLException e )
 		{
-			throw new QueryException( e );
+			throw new QuerySQLException( e );
 		}
 	}
 
@@ -277,7 +348,7 @@ public class Query
 		}
 		catch( SQLException e )
 		{
-			throw new QueryException( e );
+			throw new QuerySQLException( e );
 		}
 	}
 
@@ -292,46 +363,6 @@ public class Query
 	{
 		PreparedSQL preparedSql = getPreparedSQL( args );
 		List< Object > pars = preparedSql.getParameters();
-
-		if( log.isDebugEnabled() )
-		{
-			StringBuilder debug = new StringBuilder();
-			debug.append( "Prepare statement: " ).append( this.template.getName() ).append( '\n' );
-			if( log.isTraceEnabled() )
-				debug.append( preparedSql.getSQL() ).append( '\n' );
-			debug.append( "Parameters:" );
-			if( pars.size() == 0 )
-				debug.append( "\n\t(none)" );
-			int i = 1;
-			for( Object par : pars )
-			{
-				debug.append( '\n' ).append( i++ ).append( ":\t" );
-				if( par == null )
-					debug.append( "(null)" );
-				else
-				{
-					debug.append( '(' ).append( par.getClass().getName() ).append( ')' );
-					if( !par.getClass().isArray() )
-						debug.append( par.toString() );
-					else
-					{
-						debug.append( '[' );
-						int size = Array.getLength( par );
-						for( int j = 0; j < size; j++ )
-						{
-							if( j > 0 )
-								debug.append( ',' );
-							debug.append( Array.get( par, j ) );
-						}
-						debug.append( ',' );
-					}
-				}
-			}
-			if( log.isTraceEnabled() )
-				log.trace( debug.toString() );
-			else
-				log.debug( debug.toString() );
-		}
 
 		try
 		{
@@ -355,7 +386,7 @@ public class Query
 		}
 		catch( SQLException e )
 		{
-			throw new QueryException( e );
+			throw new QuerySQLException( e );
 		}
 	}
 
@@ -406,6 +437,46 @@ public class Query
 				appendParameter( values.get( i ), "unknown", result, pars );
 			else
 				result.append( (String)values.get( i ) );
+
+		if( log.isDebugEnabled() )
+		{
+			StringBuilder debug = new StringBuilder();
+			debug.append( "Prepare statement: " ).append( this.template.getName() ).append( '\n' );
+			if( log.isTraceEnabled() )
+				debug.append( result ).append( '\n' );
+			debug.append( "Parameters:" );
+			if( pars.size() == 0 )
+				debug.append( "\n\t(none)" );
+			int i = 1;
+			for( Object par : pars )
+			{
+				debug.append( '\n' ).append( i++ ).append( ":\t" );
+				if( par == null )
+					debug.append( "(null)" );
+				else
+				{
+					debug.append( '(' ).append( par.getClass().getName() ).append( ')' );
+					if( !par.getClass().isArray() )
+						debug.append( par.toString() );
+					else
+					{
+						debug.append( '[' );
+						int size = Array.getLength( par );
+						for( int j = 0; j < size; j++ )
+						{
+							if( j > 0 )
+								debug.append( ',' );
+							debug.append( Array.get( par, j ) );
+						}
+						debug.append( ',' );
+					}
+				}
+			}
+			if( log.isTraceEnabled() )
+				log.trace( debug.toString() );
+			else
+				log.debug( debug.toString() );
+		}
 
 		return new PreparedSQL( result.toString(), pars );
 	}

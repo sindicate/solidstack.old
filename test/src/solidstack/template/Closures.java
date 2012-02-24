@@ -33,7 +33,7 @@ public class Closures
 		templates.setPackage( "solidstack.template" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
-		Template template = templates.getTemplate( "closures.gxml" );
+		Template template = templates.getTemplate( "closures.xml" );
 		String result = template.apply( params );
 		System.out.println( result );
 		// TODO Compiling the template to a GString has a unfortunate side effect. But if we do it differently then ${if()...else...} does not work anymore.

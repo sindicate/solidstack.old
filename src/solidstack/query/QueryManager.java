@@ -91,7 +91,7 @@ public class QueryManager
 	 */
 	public Query getQuery( String path )
 	{
-		return new Query( this.templateManager.getTemplate( path + ".gsql" ) );
+		return new Query( this.templateManager.getTemplate( path ) );
 	}
 
 	private void checkLock()

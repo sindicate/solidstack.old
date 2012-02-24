@@ -11,8 +11,8 @@
 	<classpathentry kind="lib" path="lib/rhino-1.7R3.jar"/>
 	<classpathentry kind="lib" path="test/lib/logback-classic-1.0.0.jar"/>
 	<classpathentry kind="lib" path="test/lib/logback-core-1.0.0.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate/hibernate-jpa-2.0-api-1.0.1.Final.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate/hibernate-core-4.1.0.Final.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate41/hibernate-core-4.1.0.Final.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate41/hibernate-jpa-2.0-api-1.0.1.Final.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/solidbase"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
