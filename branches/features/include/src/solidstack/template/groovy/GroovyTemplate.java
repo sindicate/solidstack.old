@@ -22,10 +22,11 @@ import java.util.Map;
 
 import solidstack.template.EncodingWriter;
 import solidstack.template.Template;
+import solidstack.template.TemplateContext;
 
 /**
  * A compiled Groovy template.
- * 
+ *
  * @author René M. de Bloois
  */
 public class GroovyTemplate extends Template
@@ -42,10 +43,22 @@ public class GroovyTemplate extends Template
 	}
 
 	@Override
-	public void apply( Map< String, Object > params, EncodingWriter writer )
+	public void apply( Map< String, Object > args, EncodingWriter writer )
 	{
 		Closure template = (Closure)this.closure.clone();
-		template.setDelegate( params );
+//		template.setResolveStrategy( Closure.DELEGATE_FIRST );
+		GroovyTemplateContext context = new GroovyTemplateContext( this, writer, args );
+		template.setDelegate( context );
 		template.call( new GroovyConvertingWriter( writer ) );
+	}
+
+	@Override
+	public void apply( TemplateContext parent, Map< String, Object > args )
+	{
+		Closure template = (Closure)this.closure.clone();
+//		template.setResolveStrategy( Closure.DELEGATE_FIRST );
+		GroovyTemplateContext context = new GroovyTemplateContext( this, parent, args );
+		template.setDelegate( context );
+		template.call( new GroovyConvertingWriter( context.getWriter() ) );
 	}
 }

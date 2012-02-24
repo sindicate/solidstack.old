@@ -30,6 +30,8 @@ public class TemplateCompilerContext
 
 	public Resource getResource()
 	{
+//		if( this.reader != null )
+//			return this.reader.getResource();
 		return this.resource;
 	}
 

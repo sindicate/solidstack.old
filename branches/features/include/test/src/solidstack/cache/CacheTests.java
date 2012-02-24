@@ -22,7 +22,7 @@ public class CacheTests
 {
 	static final Logger log = LoggerFactory.getLogger( CacheTests.class );
 
-	@Test//( groups = "new" )
+	@Test
 	static void test1()
 	{
 		SimpleCache cache = new SimpleCache();
@@ -178,7 +178,7 @@ public class CacheTests
 		}
 	}
 
-	@Test( groups = "new" )
+	@Test
 	static public void testKey()
 	{
 		Assert.assertEquals( ReadThroughCache.buildKey( "test", "test" ), "test;test" );

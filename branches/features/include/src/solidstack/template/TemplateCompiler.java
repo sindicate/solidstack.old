@@ -37,7 +37,7 @@ import solidstack.template.javascript.JavaScriptTemplateCompiler;
 
 /**
  * Template compiler.
- * 
+ *
  * @author René M. de Bloois
  */
 // TODO Out.write gstring in queries? Act as JDBC bind parameters or not?
@@ -58,7 +58,7 @@ public class TemplateCompiler
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param manager The template manager that created this compiler.
 	 */
 	public TemplateCompiler( TemplateManager manager )
@@ -68,7 +68,7 @@ public class TemplateCompiler
 
 	/**
 	 * Compiles a template into a {@link Template}.
-	 * 
+	 *
 	 * @param resource The {@link Resource} that contains the template.
 	 * @param path The path of the template, needed to generate a name for the class in memory.
 	 * @return A {@link Template}.
@@ -90,7 +90,7 @@ public class TemplateCompiler
 
 	/**
 	 * Compiles a template into a {@link Template}.
-	 * 
+	 *
 	 * @param reader The {@link LineReader} that contains the template.
 	 * @param path The path of the template, needed to generate a name for the class in memory.
 	 * @return A {@link Template}.
@@ -110,7 +110,7 @@ public class TemplateCompiler
 
 	/**
 	 * Compiles a template into a {@link Template}.
-	 * 
+	 *
 	 * @param context The compilation context.
 	 */
 	public void compile( TemplateCompilerContext context )
@@ -153,7 +153,7 @@ public class TemplateCompiler
 
 	/**
 	 * Creates a reader.
-	 * 
+	 *
 	 * @param context The compilation context.
 	 */
 	protected void createReader( TemplateCompilerContext context )
@@ -172,7 +172,7 @@ public class TemplateCompiler
 
 	/**
 	 * Parses the source.
-	 * 
+	 *
 	 * @param context The compilation context.
 	 */
 	protected void parse( TemplateCompilerContext context )
@@ -191,7 +191,7 @@ public class TemplateCompiler
 
 	/**
 	 * Collects the directives.
-	 * 
+	 *
 	 * @param context The compilation context.
 	 */
 	protected void collectDirectives( TemplateCompilerContext context )
@@ -205,7 +205,7 @@ public class TemplateCompiler
 
 	/**
 	 * Processes the directives.
-	 * 
+	 *
 	 * @param context The compilation context.
 	 */
 	protected void processDirectives( TemplateCompilerContext context )
@@ -235,7 +235,7 @@ public class TemplateCompiler
 
 	/**
 	 * Configures the template.
-	 * 
+	 *
 	 * @param context The compilation context.
 	 */
 	protected void configureTemplate( TemplateCompilerContext context )
@@ -245,5 +245,6 @@ public class TemplateCompiler
 		template.setDirectives( context.getDirectivesArray() );
 		template.setContentType( context.getContentType() );
 		template.setCharSet( context.getCharSet() );
+//		template.setResource( context.getResource() );
 	}
 }

@@ -107,7 +107,7 @@ public class JPATests
 		em.close();
 	}
 
-	@Test(groups="new")
+	@Test
 	public void testBig()
 	{
 		EntityManager em = this.factory.createEntityManager();

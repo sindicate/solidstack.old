@@ -23,14 +23,16 @@ import java.io.Writer;
 import java.util.Map;
 
 import solidstack.template.JSPLikeTemplateParser.Directive;
+import solidstack.util.Pars;
 
 /**
  * A compiled template.
- * 
+ *
  * @author René M. de Bloois
  */
 abstract public class Template
 {
+//	private Resource resource;
 	private String name;
 	private Directive[] directives;
 
@@ -42,7 +44,7 @@ abstract public class Template
 
 	/**
 	 * Sets the manager of the template. The template needs this to access the MIME type registry.
-	 * 
+	 *
 	 * @param manager A template manager.
 	 */
 	protected void setManager( TemplateManager manager )
@@ -52,7 +54,7 @@ abstract public class Template
 
 	/**
 	 * Apply the given parameters to the template and writes the result to the given writer.
-	 * 
+	 *
 	 * @param params The parameters to be applied.
 	 * @param writer The result of applying this template is written to this writer.
 	 */
@@ -64,7 +66,7 @@ abstract public class Template
 	/**
 	 * Apply the given parameters to the template and writes the output to the given output stream. The character set used is the one configured in
 	 * the template. If none is configured the default character encoding of the operating system is used.
-	 * 
+	 *
 	 * @param params The parameters to be applied.
 	 * @param out The result of applying this template is written to this OutputStream.
 	 */
@@ -91,7 +93,7 @@ abstract public class Template
 
 	/**
 	 * Apply the given parameters to the template and returns the result as a string.
-	 * 
+	 *
 	 * @param params The parameters to be applied.
 	 * @return The result of applying this template.
 	 */
@@ -102,9 +104,11 @@ abstract public class Template
 		return writer.toString();
 	}
 
+	abstract public void apply( TemplateContext params, Map<String, Object> args );
+
 	/**
 	 * Applies the given parameters to the template and writes the output to the given encoding writer.
-	 * 
+	 *
 	 * @param params The parameters to apply to the template.
 	 * @param writer The writer to write the result to.
 	 */
@@ -112,7 +116,7 @@ abstract public class Template
 
 	/**
 	 * Returns the EncodingWriter for the configured MIME type.
-	 * 
+	 *
 	 * @param writer The writer to write to.
 	 * @return The EncodingWriter.
 	 */
@@ -129,7 +133,7 @@ abstract public class Template
 
 	/**
 	 * Returns the content type of this template.
-	 * 
+	 *
 	 * @return The content type of this template.
 	 */
 	public String getContentType()
@@ -139,7 +143,7 @@ abstract public class Template
 
 	/**
 	 * Returns the output character set of this template.
-	 * 
+	 *
 	 * @return The output character set of this template.
 	 */
 	public String getCharSet()
@@ -149,7 +153,7 @@ abstract public class Template
 
 	/**
 	 * Returns the last modification time stamp for the file that contains the template.
-	 * 
+	 *
 	 * @return The last modification time stamp for the file that contains the template.
 	 */
 	public long getLastModified()
@@ -159,7 +163,7 @@ abstract public class Template
 
 	/**
 	 * Returns the name of the template.
-	 * 
+	 *
 	 * @return The name of the template.
 	 */
 	public String getName()
@@ -169,7 +173,7 @@ abstract public class Template
 
 	/**
 	 * Returns the directive attribute with the given directive name and attribute name.
-	 * 
+	 *
 	 * @param name The name of the directive.
 	 * @param attribute The name of the attribute.
 	 * @return The directive.
@@ -186,7 +190,7 @@ abstract public class Template
 
 	/**
 	 * Sets the name of this template.
-	 * 
+	 *
 	 * @param name The name of this template.
 	 */
 	protected void setName( String name )
@@ -196,7 +200,7 @@ abstract public class Template
 
 	/**
 	 * Sets the content type of the template.
-	 * 
+	 *
 	 * @param contentType The content type.
 	 */
 	public void setContentType( String contentType )
@@ -206,7 +210,7 @@ abstract public class Template
 
 	/**
 	 * Sets the character set of the output of the template.
-	 * 
+	 *
 	 * @param charSet The character set.
 	 */
 	public void setCharSet( String charSet )
@@ -216,7 +220,7 @@ abstract public class Template
 
 	/**
 	 * Sets the last modified timestamp of the template.
-	 * 
+	 *
 	 * @param lastModified The last modified timestamp.
 	 */
 	protected void setLastModified( long lastModified )
@@ -226,11 +230,27 @@ abstract public class Template
 
 	/**
 	 * Sets the directives found in this template.
-	 * 
+	 *
 	 * @param directives The directives found in this template.
 	 */
 	protected void setDirectives( Directive[] directives )
 	{
 		this.directives = directives;
+	}
+
+//	public void setResource( Resource resource )
+//	{
+//		this.resource = resource;
+//	}
+
+	public void include( String path, EncodingWriter writer )
+	{
+		Template template = this.manager.getTemplate( path );
+		template.apply( new Pars(), writer );
+	}
+
+	public TemplateManager getManager() // TODO Rename to getTemplateManager?
+	{
+		return this.manager;
 	}
 }
