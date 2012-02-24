@@ -231,7 +231,7 @@ public class HibernateSupport
 		else if( query.getType() == Type.HQL )
 			result = session.createQuery( preparedSql.getSQL() );
 		else
-			throw new QueryException( "Query type'" + query.getType() + "' not recognized" );
+			throw new QueryException( "Query type '" + query.getType() + "' not recognized" );
 
 		List< Object > pars = preparedSql.getParameters();
 		int i = 0;
