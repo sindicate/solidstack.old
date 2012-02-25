@@ -1,5 +1,5 @@
 <%@ template language = "groovy" %>
-<%@ query type = "sql" %>
+<%@ query language = "SQL" %>
 <%
 
 

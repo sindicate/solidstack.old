@@ -31,9 +31,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import solidstack.lang.Assert;
 import solidstack.lang.SystemException;
 import solidstack.query.hibernate.HibernateConnectedQueryAdapter;
@@ -46,19 +43,15 @@ import solidstack.template.Template;
 
 /**
  * A query object.
- * 
+ *
  * @author René M. de Bloois
  */
-// TODO Can't import EntityManager
 public class Query
 {
-	// TODO We need well defined logger channels like hibernate
-	static  private Logger log = LoggerFactory.getLogger( Query.class );
-
 	/**
-	 * The query type.
+	 * The query language.
 	 */
-	static public enum Type // TODO Rename to language: SQL and JPQL, where HQL is a dialect of JPQL but also a language?
+	static public enum Language
 	{
 		/**
 		 * Native SQL.
@@ -76,45 +69,45 @@ public class Query
 
 	private Template template;
 	private boolean flyWeight = true;
-	private Type type;
+	private Language language;
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param template The template for the query.
 	 */
 	public Query( Template template )
 	{
 		this.template = template;
 
-		Directive typeDirective = template.getDirective( "query", "type" );
-		if( typeDirective != null )
+		Directive languageDirective = template.getDirective( "query", "language" );
+		if( languageDirective != null )
 		{
-			String type = typeDirective.getValue();
-			if( type.equals( "sql" ) )
-				this.type = Type.SQL;
-			else if( type.equals( "jpql" ) )
-				this.type = Type.JPQL;
-			else if( type.equals( "hql" ) )
-				this.type = Type.HQL;
+			String language = languageDirective.getValue();
+			if( language.equals( "SQL" ) )
+				this.language = Language.SQL;
+			else if( language.equals( "JPQL" ) )
+				this.language = Language.JPQL;
+			else if( language.equals( "HQL" ) )
+				this.language = Language.HQL;
 			else
-				throw new QueryException( "Query type '" + type + "' not recognized" );
+				throw new QueryException( "Query language '" + language + "' not recognized" );
 		}
 		else
-			this.type = Type.SQL;
+			this.language = Language.SQL;
 	}
 
 	/**
-	 * @return The type of the query.
+	 * @return The language of the query.
 	 */
-	public Type getType()
+	public Language getLanguage()
 	{
-		return this.type;
+		return this.language;
 	}
 
 	/**
 	 * Returns an adapter for Hibernate which enables you to use the query with Hibernate.
-	 * 
+	 *
 	 * @return An adapter for Hibernate.
 	 */
 	public HibernateQueryAdapter hibernate()
@@ -124,7 +117,7 @@ public class Query
 
 	/**
 	 * Returns an adapter for Hibernate which enables you to use the query with Hibernate.
-	 * 
+	 *
 	 * @return An adapter for Hibernate.
 	 */
 	public HibernateConnectedQueryAdapter hibernate( Object session )
@@ -168,7 +161,7 @@ public class Query
 
 	/**
 	 * Retrieves a {@link ResultSet} from the given {@link Connection}.
-	 * 
+	 *
 	 * @param connection The {@link Connection} to use.
 	 * @param args The arguments to the query.
 	 * @return a {@link ResultSet}.
@@ -190,7 +183,7 @@ public class Query
 
 	/**
 	 * Retrieves a {@link List} of {@link Object} arrays from the given {@link Connection}.
-	 * 
+	 *
 	 * @param connection The {@link Connection} to use.
 	 * @param args The arguments to the query.
 	 * @return A {@link List} of {@link Object} arrays from the given {@link Connection}.
@@ -222,7 +215,7 @@ public class Query
 
 	/**
 	 * Converts a {@link ResultSet} into a {@link List} of {@link Object} arrays.
-	 * 
+	 *
 	 * @param resultSet The {@link ResultSet} to convert.
 	 * @param flyWeight If true, duplicate values are stored in memory only once.
 	 * @return A {@link List} of {@link Object} arrays containing the data from the result set.
@@ -286,7 +279,7 @@ public class Query
 
 	/**
 	 * Retrieve a {@link List} of {@link Map}s from the given {@link Connection}. The maps contain the column names from the query as keys and the column values as the map's values.
-	 * 
+	 *
 	 * @param connection The {@link Connection} to use.
 	 * @param args The arguments to the query.
 	 * @return A {@link List} of {@link Map}s.
@@ -322,7 +315,7 @@ public class Query
 
 	/**
 	 * Executes an update (DML) or a DDL query.
-	 * 
+	 *
 	 * @param connection The {@link Connection} to use.
 	 * @param args The arguments to the query.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
@@ -335,7 +328,7 @@ public class Query
 
 	/**
 	 * Executes an update (DML) or a DDL query. {@link SQLException}s are wrapped in a {@link QueryException}.
-	 * 
+	 *
 	 * @param connection The {@link Connection} to use.
 	 * @param args The arguments to the query.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
@@ -354,7 +347,7 @@ public class Query
 
 	/**
 	 * Returns a {@link PreparedStatement} for the query.
-	 * 
+	 *
 	 * @param connection The {@link Connection} to use.
 	 * @param args The arguments to the query.
 	 * @return a {@link PreparedStatement} for the query.
@@ -416,7 +409,7 @@ public class Query
 
 	/**
 	 * Returns a prepared SQL string together with a parameters array.
-	 * 
+	 *
 	 * @param args The arguments to the query.
 	 * @return A prepared SQL string together with a parameters array.
 	 */
@@ -438,11 +431,11 @@ public class Query
 			else
 				result.append( (String)values.get( i ) );
 
-		if( log.isDebugEnabled() )
+		if( Loggers.execution.isDebugEnabled() )
 		{
 			StringBuilder debug = new StringBuilder();
 			debug.append( "Prepare statement: " ).append( this.template.getName() ).append( '\n' );
-			if( log.isTraceEnabled() )
+			if( Loggers.execution.isTraceEnabled() )
 				debug.append( result ).append( '\n' );
 			debug.append( "Parameters:" );
 			if( pars.size() == 0 )
@@ -472,10 +465,10 @@ public class Query
 					}
 				}
 			}
-			if( log.isTraceEnabled() )
-				log.trace( debug.toString() );
+			if( Loggers.execution.isTraceEnabled() )
+				Loggers.execution.trace( debug.toString() );
 			else
-				log.debug( debug.toString() );
+				Loggers.execution.debug( debug.toString() );
 		}
 
 		return new PreparedSQL( result.toString(), pars );
@@ -492,7 +485,7 @@ public class Query
 
 	/**
 	 * Prepared SQL combined with a parameter list.
-	 * 
+	 *
 	 * @author René de Bloois
 	 */
 	static public class PreparedSQL
@@ -502,7 +495,7 @@ public class Query
 
 		/**
 		 * Constructor.
-		 * 
+		 *
 		 * @param sql The prepared SQL string.
 		 * @param pars The parameter list.
 		 */
@@ -514,7 +507,7 @@ public class Query
 
 		/**
 		 * Returns the prepared SQL string.
-		 * 
+		 *
 		 * @return The prepared SQL string.
 		 */
 		public String getSQL()
@@ -524,7 +517,7 @@ public class Query
 
 		/**
 		 * Returns the parameter list.
-		 * 
+		 *
 		 * @return The parameter list.
 		 */
 		public List< Object > getParameters()

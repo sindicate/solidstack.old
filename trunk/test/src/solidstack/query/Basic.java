@@ -289,13 +289,11 @@ public class Basic
 	{
 		input = "<%@template language=\"groovy\"%>" + input;
 
-		// TODO Compile once and use keepSource = true
 		TemplateCompilerContext context = translate( input );
 		String g = context.getScript().toString();
 //		System.out.println( g );
 		Assert.assertEquals( g, this.start + groovy + this.end );
 
-//		template = new TemplateCompiler( null ).compile( new StringLineReader( input ), "p.c" );
 		String result = execute( context.getTemplate(), this.parameters );
 //		System.out.println( result );
 		Assert.assertEquals( result, output );

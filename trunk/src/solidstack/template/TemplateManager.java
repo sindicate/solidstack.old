@@ -21,9 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import solidbase.io.Resource;
 import solidbase.io.ResourceFactory;
 import solidstack.lang.Assert;
@@ -31,15 +28,13 @@ import solidstack.lang.Assert;
 
 /**
  * Reads, compiles and caches the templates.
- * 
+ *
  * @author René M. de Bloois
  */
-// TODO TemplateManager hierarchy, so that they can inherit MIME type mappings? And fallback like ClassLoaders do?
+// TODO TemplateManager hierarchy, so that they can inherit MIME type mappings? And fallback like ClassLoaders do? Useful for include and templating?
 // TODO Or a separate MIME type registry?
 public class TemplateManager
 {
-	static private Logger log = LoggerFactory.getLogger( TemplateManager.class );
-
 	static private final Pattern XML_MIME_TYPE_PATTERN = Pattern.compile( "^[a-z]+/.+\\+xml" ); // TODO http://www.iana.org/assignments/media-types/index.html
 
 	private String packageSlashed = "";
@@ -63,7 +58,7 @@ public class TemplateManager
 
 	/**
 	 * Registers a factory for an encoding writer for a specific MIME type.
-	 * 
+	 *
 	 * @param mimeType The MIME type to register the writer for.
 	 * @param factory The factory for the writer.
 	 */
@@ -78,7 +73,7 @@ public class TemplateManager
 
 	/**
 	 * Registers a MIME type mapping. The first MIME type will be written with the encoding writer of the second MIME type.
-	 * 
+	 *
 	 * @param mimeType The MIME type that should be mapped to the other MIME type.
 	 * @param encodeAsMimeType The MIME type to map to.
 	 */
@@ -93,10 +88,10 @@ public class TemplateManager
 
 	/**
 	 * Configures the package that will function as the root of the template resources.
-	 * 
+	 *
 	 * @param pkg The package.
 	 */
-	// TODO setResource(), setFolder()?
+	// FIXME setResource(), setFolder()?
 	public void setPackage( String pkg )
 	{
 		Assert.isTrue( !pkg.startsWith( "." ) && !pkg.endsWith( "." ), "package should not start or end with a ." );
@@ -110,29 +105,30 @@ public class TemplateManager
 
 	/**
 	 * Enable or disable reloading. When enabled, the lastModified time stamp of the file is used to check if it needs reloading.
-	 * 
+	 *
 	 * @param reloading When true, the file is reloaded when updated.
 	 */
 	public void setReloading( boolean reloading )
 	{
-		log.info( "reloading = [{}]", reloading );
+		// FIXME Should we add the name of the TemplateManager?
+		Loggers.loader.info( "reloading = [{}]", reloading );
 		this.reloading = reloading;
 	}
 
 	/**
 	 * Sets the default scripting language of the templates. This is used when the "language" directive is missing in the template.
-	 * 
+	 *
 	 * @param language The default scripting language of the templates.
 	 */
 	public void setDefaultLanguage( String language )
 	{
-		log.info( "defaultLanguage = [{}]", language );
+		Loggers.loader.info( "defaultLanguage = [{}]", language );
 		this.defaultLanguage = language;
 	}
 
 	/**
 	 * Returns the default scripting language of the templates.
-	 * 
+	 *
 	 * @return The default scripting language of the templates.
 	 */
 	public String getDefaultLanguage()
@@ -144,14 +140,14 @@ public class TemplateManager
 	 * Returns the compiled {@link Template} with the given path. Compiled templates are cached in memory. When
 	 * {@link #setReloading(boolean)} has been enabled, file change detection will cause the templates to be reloaded
 	 * and recompiled.
-	 * 
+	 *
 	 * @param path The path of the template.
 	 * @return The {@link Template}.
 	 */
 	// TODO Also cache that a template is not found?
 	public Template getTemplate( String path )
 	{
-		log.debug( "getTemplate [{}]", path );
+		Loggers.loader.debug( "getTemplate [{}]", path );
 		Assert.isTrue( !path.startsWith( "/" ), "path should not start with a /" );
 
 		path += ".slt"; // TODO Configurable, and maybe another default
@@ -167,7 +163,7 @@ public class TemplateManager
 				resource = getResource( path );
 				if( resource.exists() && resource.getLastModified() > template.getLastModified() )
 				{
-					log.info( "{} changed, reloading", resource );
+					Loggers.loader.info( "{} changed, reloading", resource );
 					template = null;
 				}
 			}
@@ -194,7 +190,7 @@ public class TemplateManager
 
 	/**
 	 * Returns the encoding writer factory for the given MIME type. This method is called by {@link Template}.
-	 * 
+	 *
 	 * @param mimeType The MIME type to return the writer factory for.
 	 * @return The encoding writer factory for the given MIME type.
 	 */
@@ -218,14 +214,14 @@ public class TemplateManager
 
 	/**
 	 * Returns the {@link Resource} with the given path.
-	 * 
+	 *
 	 * @param path The path of the resource.
 	 * @return The {@link Resource}.
 	 */
 	private Resource getResource( String path )
 	{
 		Resource result = ResourceFactory.getResource( "classpath:" + this.packageSlashed + path );
-		log.debug( "{}, lastModified: {} ({})", new Object[] { result, new Date( result.getLastModified() ), result.getLastModified() } );
+		Loggers.loader.debug( "{}, lastModified: {} ({})", new Object[] { result, new Date( result.getLastModified() ), result.getLastModified() } );
 		return result;
 	}
 }

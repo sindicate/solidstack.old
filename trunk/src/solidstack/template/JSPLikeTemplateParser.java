@@ -28,12 +28,12 @@ import solidstack.lang.Assert;
 
 /**
  * A pull parser for the JSP template syntax.
- * 
+ *
  * @author René M. de Bloois
  */
 // TODO Language-less version, so just with ${name}, <%= name %> and <% if(name) { %>
-// TODO What about i18n, l10n?
-// TODO Optional short form? %dkjhd and $jkhdd or $%dfkh
+// FIXME What about i18n, l10n? Like we already had: $["message"], or was it without the quotes?
+// FIXME Optional short form? $var and %var or $%var or $=var
 public class JSPLikeTemplateParser
 {
 	/**
@@ -109,7 +109,7 @@ public class JSPLikeTemplateParser
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param reader The reader from which to read the source of the template.
 	 */
 	public JSPLikeTemplateParser( LineReader reader )
@@ -119,7 +119,7 @@ public class JSPLikeTemplateParser
 
 	/**
 	 * Retrieves the next event.
-	 * 
+	 *
 	 * @return The next event.
 	 */
 	public ParseEvent next()
@@ -158,7 +158,7 @@ public class JSPLikeTemplateParser
 
 	/**
 	 * Retrieves the next event, but does not consolidate whitespace when scripts, comments or directives are completely contained in separate lines in the template.
-	 * 
+	 *
 	 * @return The next event.
 	 */
 	private ParseEvent next0()
@@ -303,7 +303,7 @@ public class JSPLikeTemplateParser
 
 	/**
 	 * Returns the contents of the buffer, and clears it.
-	 * 
+	 *
 	 * @return The contents of the buffer.
 	 */
 	private String popBuffer()
@@ -315,7 +315,7 @@ public class JSPLikeTemplateParser
 
 	/**
 	 * Reads <% markup. Could be a script, expression, directive or comment.
-	 * 
+	 *
 	 * @return The markup.
 	 */
 	private ParseEvent readMarkup()
@@ -340,10 +340,10 @@ public class JSPLikeTemplateParser
 
 	/**
 	 * Reads a ${ expression.
-	 * 
+	 *
 	 * @return The ${ expression.
 	 */
-	// TODO We should understand $var too? Like in Groovy?
+	// FIXME We should understand $var too? Like in Groovy?
 	private ParseEvent readDollar()
 	{
 		int c = this.reader.read();
@@ -355,7 +355,7 @@ public class JSPLikeTemplateParser
 
 	/**
 	 * Reads a token.
-	 * 
+	 *
 	 * @return A token.
 	 */
 	private String getToken()
@@ -430,7 +430,7 @@ public class JSPLikeTemplateParser
 
 	/**
 	 * Reads a directive.
-	 * 
+	 *
 	 * @return A directive.
 	 */
 	private ParseEvent readDirective()
@@ -702,7 +702,7 @@ public class JSPLikeTemplateParser
 
 		/**
 		 * Constructor.
-		 * 
+		 *
 		 * @param event The type of the event.
 		 */
 		public ParseEvent( EVENT event )
@@ -712,7 +712,7 @@ public class JSPLikeTemplateParser
 
 		/**
 		 * Constructor.
-		 * 
+		 *
 		 * @param event The type of the event.
 		 * @param data The string data belonging to the event.
 		 */
@@ -724,7 +724,7 @@ public class JSPLikeTemplateParser
 
 		/**
 		 * Returns the type of the event.
-		 * 
+		 *
 		 * @return The type of the event.
 		 */
 		public EVENT getEvent()
@@ -734,7 +734,7 @@ public class JSPLikeTemplateParser
 
 		/**
 		 * Returns the string data belonging to the event.
-		 * 
+		 *
 		 * @return The string data belonging to the event.
 		 */
 		public String getData()
@@ -744,7 +744,7 @@ public class JSPLikeTemplateParser
 
 		/**
 		 * Returns the directives belonging to this event.
-		 * 
+		 *
 		 * @return The directives belonging to this event.
 		 */
 		public List< Directive > getDirectives()
@@ -756,7 +756,7 @@ public class JSPLikeTemplateParser
 
 		/**
 		 * Sets the string data belonging to the event.
-		 * 
+		 *
 		 * @param data The string data.
 		 */
 		void setData( String data )
@@ -798,7 +798,7 @@ public class JSPLikeTemplateParser
 
 		/**
 		 * Returns the name of the directive.
-		 * 
+		 *
 		 * @return The name of the directive.
 		 */
 		public String getName()
@@ -808,7 +808,7 @@ public class JSPLikeTemplateParser
 
 		/**
 		 * Returns the attribute name.
-		 * 
+		 *
 		 * @return The attribute name.
 		 */
 		public String getAttribute()
@@ -818,7 +818,7 @@ public class JSPLikeTemplateParser
 
 		/**
 		 * Returns the value of the attribute.
-		 * 
+		 *
 		 * @return The value of the attribute.
 		 */
 		public String getValue()
@@ -828,7 +828,7 @@ public class JSPLikeTemplateParser
 
 		/**
 		 * Returns the line number of the directive in the source file.
-		 * 
+		 *
 		 * @return The line number of the directive in the source file.
 		 */
 		public int getLineNumber()

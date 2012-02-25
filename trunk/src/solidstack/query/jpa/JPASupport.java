@@ -27,24 +27,22 @@ import org.hibernate.QueryException;
 
 import solidstack.lang.Assert;
 import solidstack.query.Query;
+import solidstack.query.Query.Language;
 import solidstack.query.Query.PreparedSQL;
-import solidstack.query.Query.Type;
 
 
 /**
  * Adds support for JPA. JPA dependencies must be kept separate from the rest.
- * 
+ *
  * @author René M. de Bloois
  */
-// TODO What about JPQL query templates? Positional parameters are like this ?1, ?2 etc
-// TODO We need a new directive: <%@ query type="SQL|JPQL|HQL" %> or <%@ query lang="native|hibernate|jpa" %>
 // TODO What about the <%@ query resultClass="youNameIt" %>
 // TODO What about using the script language to build the result?
 public class JPASupport
 {
 	/**
 	 * Executes an update (DML) or a DDL query through the given {@link EntityManager}.
-	 * 
+	 *
 	 * @param query The query.
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param args The arguments to the query.
@@ -58,7 +56,7 @@ public class JPASupport
 
 	/**
 	 * Retrieves a {@link List} of JPA Entities from the given {@link EntityManager}.
-	 * 
+	 *
 	 * @param query The query.
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param args The arguments to the query.
@@ -69,7 +67,7 @@ public class JPASupport
 	static public <T> List< T > getResultList( Query query, EntityManager entityManager, Map< String, Object > args )
 	{
 		List<T> result = createQuery( query, entityManager, args ).getResultList();
-		if( query.getType() == Type.SQL && query.isFlyWeight() )
+		if( query.getLanguage() == Language.SQL && query.isFlyWeight() )
 			if( !result.isEmpty() && result.get( 0 ) instanceof Object[] )
 				reduceWeight( (List<Object[]>)result );
 		return result;
@@ -77,7 +75,7 @@ public class JPASupport
 
 	/**
 	 * Retrieves a {@link List} of JPA Entities from the given {@link EntityManager}.
-	 * 
+	 *
 	 * @param query The query.
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param resultClass The class to map the results to.
@@ -93,7 +91,7 @@ public class JPASupport
 
 	/**
 	 * Retrieves a single JPA Entity from the given {@link EntityManager}.
-	 * 
+	 *
 	 * @param query The query.
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param args The arguments to the query.
@@ -108,7 +106,7 @@ public class JPASupport
 
 	/**
 	 * Retrieves a single JPA Entity from the given {@link EntityManager}.
-	 * 
+	 *
 	 * @param query The query.
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param resultClass The class to map the results to.
@@ -124,7 +122,7 @@ public class JPASupport
 
 	/**
 	 * Creates a JPA query.
-	 * 
+	 *
 	 * @param query The query.
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param resultClass The class to map the results to.
@@ -133,7 +131,6 @@ public class JPASupport
 	 * @see EntityManager#createNativeQuery(String, Class)
 	 */
 	// TODO And what about the one with the resultmapping?
-	// FIXME Rename to getNativeQuery
 	static public javax.persistence.Query createQuery( Query query, EntityManager entityManager, Class< ? > resultClass, Map< String, Object > args )
 	{
 		return createQuery0( query, entityManager, resultClass, args );
@@ -141,7 +138,7 @@ public class JPASupport
 
 	/**
 	 * Creates a JPA query.
-	 * 
+	 *
 	 * @param query The query.
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param args The arguments to the query.
@@ -155,7 +152,7 @@ public class JPASupport
 
 	/**
 	 * Creates a JPA query.
-	 * 
+	 *
 	 * @param query The query.
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param resultClass The class to map the results to.
@@ -163,25 +160,24 @@ public class JPASupport
 	 * @return The JPA query.
 	 * @see EntityManager#createNativeQuery(String, Class)
 	 */
-	// TODO What about non native queries? And should we then rename this to createNativeQuery?
 	static private javax.persistence.Query createQuery0( Query query, EntityManager entityManager, Class< ? > resultClass, Map< String, Object > args )
 	{
 		PreparedSQL preparedSql = query.getPreparedSQL( args );
 
 		// TODO Native query with resultSetMapping
 		javax.persistence.Query result;
-		if( query.getType() == Type.SQL )
+		if( query.getLanguage() == Language.SQL )
 			if( resultClass != null )
 				result = entityManager.createNativeQuery( preparedSql.getSQL(), resultClass );
 		else
 			result = entityManager.createNativeQuery( preparedSql.getSQL() );
-		else if( query.getType() == Type.JPQL )
+		else if( query.getLanguage() == Language.JPQL )
 			if( resultClass != null )
 				result = entityManager.createQuery( preparedSql.getSQL(), resultClass );
 			else
 				result = entityManager.createQuery( preparedSql.getSQL() );
 		else
-			throw new QueryException( "Query type '" + query.getType() + "' not recognized" );
+			throw new QueryException( "Query type '" + query.getLanguage() + "' not recognized" );
 
 		List< Object > pars = preparedSql.getParameters();
 		int i = 0;

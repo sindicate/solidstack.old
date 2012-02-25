@@ -20,7 +20,7 @@ import solidstack.template.Util;
 
 /**
  * Compiles the given parser events, directives and imports to a {@link GroovyTemplate}.
- * 
+ *
  * @author René de Bloois
  */
 public class GroovyTemplateCompiler
@@ -31,7 +31,7 @@ public class GroovyTemplateCompiler
 
 	/**
 	 * Generates the Groovy script.
-	 * 
+	 *
 	 * @param context The compilation context.
 	 */
 	public void generateScript( TemplateCompilerContext context )
@@ -110,7 +110,7 @@ public class GroovyTemplateCompiler
 
 	/**
 	 * Compiles the Groovy script.
-	 * 
+	 *
 	 * @param context The compilation context.
 	 */
 	public void compileScript( TemplateCompilerContext context )
@@ -127,7 +127,7 @@ public class GroovyTemplateCompiler
 
 		// Use class loader to define the classes
 		// TODO Configurable class loader
-		// TODO See BeanShell 2 for resolving the parent classloader
+		// FIXME See BeanShell 2 for resolving the parent classloader
 		DefiningClassLoader classLoader = new DefiningClassLoader( GroovyTemplate.class.getClassLoader() );
 		Class< ? > first = null;
 		for( GroovyClass cls : classes )

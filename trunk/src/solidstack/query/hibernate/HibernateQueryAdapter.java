@@ -29,13 +29,8 @@ import solidstack.query.Query;
 
 /**
  * Adapts the given Query to Hibernate.
- * 
+ *
  * @author René M. de Bloois
- */
-// FIXME What about a ConnectedHibernateAdapter?
-/*
- 	Query(Connection,Args)
-	Query+Connection(Args)
  */
 public class HibernateQueryAdapter
 {
@@ -47,7 +42,7 @@ public class HibernateQueryAdapter
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param query A query to adapt to Hibernate.
 	 */
 	public HibernateQueryAdapter( Query query )
@@ -57,7 +52,7 @@ public class HibernateQueryAdapter
 
 	/**
 	 * Retrieves a {@link ResultSet} from the given Hibernate {@link Session}.
-	 * 
+	 *
 	 * @param session The Hibernate {@link Session} to use.
 	 * @param args The arguments to the query.
 	 * @return a {@link ResultSet}.
@@ -71,7 +66,7 @@ public class HibernateQueryAdapter
 
 	/**
 	 * Retrieves a {@link List} of {@link Object} arrays from the given Hibernate {@link Session}.
-	 * 
+	 *
 	 * @param session The Hibernate {@link Session} to use.
 	 * @param args The arguments to the query.
 	 * @return a {@link List} of {@link Object} arrays.
@@ -85,7 +80,7 @@ public class HibernateQueryAdapter
 
 	/**
 	 * Retrieves a {@link List} of {@link Map}s from the given Hibernate {@link Session}.
-	 * 
+	 *
 	 * @param session The Hibernate {@link Session} to use.
 	 * @param args The arguments to the query.
 	 * @return A {@link List} of {@link Map}s.
@@ -99,7 +94,7 @@ public class HibernateQueryAdapter
 
 	/**
 	 * Executes an update (DML) or a DDL query through the given Hibernate {@link Session}.
-	 * 
+	 *
 	 * @param session The Hibernate {@link Session} to use.
 	 * @param args The arguments to the query.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
@@ -113,7 +108,7 @@ public class HibernateQueryAdapter
 
 	/**
 	 * Executes {@link org.hibernate.Query#list()}.
-	 * 
+	 *
 	 * @param session The Hibernate {@link Session} to use.
 	 * @param args The arguments to the query.
 	 * @return A list of Hibernate entities.
@@ -125,7 +120,7 @@ public class HibernateQueryAdapter
 
 	/**
 	 * Executes {@link org.hibernate.Query#executeUpdate()}.
-	 * 
+	 *
 	 * @param session The Hibernate {@link Session} to use.
 	 * @param args The arguments to the query.
 	 * @return The number of entities updated or deleted.
@@ -137,7 +132,7 @@ public class HibernateQueryAdapter
 
 	/**
 	 * Executes {@link org.hibernate.Query#uniqueResult()}.
-	 * 
+	 *
 	 * @param session The Hibernate {@link Session} to use.
 	 * @param args The arguments to the query.
 	 * @return A single Hibernate entity or null.
