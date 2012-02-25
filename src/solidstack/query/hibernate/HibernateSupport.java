@@ -30,8 +30,8 @@ import org.hibernate.jdbc.Work;
 
 import solidstack.lang.Assert;
 import solidstack.query.Query;
+import solidstack.query.Query.Language;
 import solidstack.query.Query.PreparedSQL;
-import solidstack.query.Query.Type;
 import solidstack.query.QuerySQLException;
 import solidstack.query.ResultHolder;
 import solidstack.query.jpa.JPASupport;
@@ -42,8 +42,6 @@ import solidstack.query.jpa.JPASupport;
  *
  * @author René M. de Bloois
  */
-// TODO What about HQL query templates?
-// TODO Rename to Hibernate3Support?
 public class HibernateSupport
 {
 	/**
@@ -179,7 +177,7 @@ public class HibernateSupport
 	static public <T> List<T> list( Query query, Session session, Map<String, Object> args )
 	{
 		List<T> result = createQuery( query, session, args ).list();
-		if( query.getType() == Type.SQL && query.isFlyWeight() )
+		if( query.getLanguage() == Language.SQL && query.isFlyWeight() )
 			if( !result.isEmpty() && result.get( 0 ) instanceof Object[] )
 				JPASupport.reduceWeight( (List<Object[]>)result );
 		return result;
@@ -212,7 +210,7 @@ public class HibernateSupport
 		return (T)createQuery( query, session, args ).uniqueResult();
 	}
 
-	// TODO Rename my Query to SolidQuery?
+	// FIXME Rename my Query to SolidQuery?
 	/**
 	 * Creates a Hibernate query.
 	 *
@@ -226,12 +224,12 @@ public class HibernateSupport
 		PreparedSQL preparedSql = query.getPreparedSQL( args );
 
 		org.hibernate.Query result;
-		if( query.getType() == Type.SQL )
+		if( query.getLanguage() == Language.SQL )
 			result = session.createSQLQuery( preparedSql.getSQL() );
-		else if( query.getType() == Type.HQL )
+		else if( query.getLanguage() == Language.HQL )
 			result = session.createQuery( preparedSql.getSQL() );
 		else
-			throw new QueryException( "Query type '" + query.getType() + "' not recognized" );
+			throw new QueryException( "Query type '" + query.getLanguage() + "' not recognized" );
 
 		List< Object > pars = preparedSql.getParameters();
 		int i = 0;

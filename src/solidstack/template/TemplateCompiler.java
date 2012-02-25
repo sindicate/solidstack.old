@@ -22,9 +22,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import solidbase.io.BOMDetectingLineReader;
 import solidbase.io.LineReader;
 import solidbase.io.Resource;
@@ -37,7 +34,7 @@ import solidstack.template.javascript.JavaScriptTemplateCompiler;
 
 /**
  * Template compiler.
- * 
+ *
  * @author René M. de Bloois
  */
 // TODO Out.write gstring in queries? Act as JDBC bind parameters or not?
@@ -46,8 +43,6 @@ import solidstack.template.javascript.JavaScriptTemplateCompiler;
 // TODO Scriptonly: (whole template is just <% fjlkj%>) check no newlines?
 public class TemplateCompiler
 {
-	static private Logger log = LoggerFactory.getLogger( TemplateCompiler.class );
-
 	static final private Pattern CONTENT_TYPE_PATTERN = Pattern.compile( "^[ \\t]*(\\S*)[ \\t]*(?:;[ \\t]*charset[ \\t]*=[ \\t]*(\\S*)[ \\t]*)?$" ); // TODO case sensitive & http://www.iana.org/assignments/media-types/index.html
 	static final private Pattern ENCODING_PATTERN = Pattern.compile( "^<%@[ \t]*template[ \t]+encoding[ \t]*=\"([^\"]*)\".*", Pattern.CASE_INSENSITIVE ); // TODO Improve, case sensitive?
 
@@ -58,7 +53,7 @@ public class TemplateCompiler
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param manager The template manager that created this compiler.
 	 */
 	public TemplateCompiler( TemplateManager manager )
@@ -68,7 +63,7 @@ public class TemplateCompiler
 
 	/**
 	 * Compiles a template into a {@link Template}.
-	 * 
+	 *
 	 * @param resource The {@link Resource} that contains the template.
 	 * @param path The path of the template, needed to generate a name for the class in memory.
 	 * @return A {@link Template}.
@@ -77,7 +72,7 @@ public class TemplateCompiler
 	// TODO Test empty package
 	public Template compile( Resource resource, String path )
 	{
-		log.info( "Compiling [{}] from [{}]", path, resource );
+		Loggers.compiler.info( "Compiling [{}] from [{}]", path, resource );
 
 		TemplateCompilerContext context = new TemplateCompilerContext();
 		context.setPath( path );
@@ -90,14 +85,14 @@ public class TemplateCompiler
 
 	/**
 	 * Compiles a template into a {@link Template}.
-	 * 
+	 *
 	 * @param reader The {@link LineReader} that contains the template.
 	 * @param path The path of the template, needed to generate a name for the class in memory.
 	 * @return A {@link Template}.
 	 */
 	public Template compile( LineReader reader, String path )
 	{
-		log.info( "Compiling [{}] from [{}]", path, reader.getResource() );
+		Loggers.compiler.info( "Compiling [{}] from [{}]", path, reader.getResource() );
 
 		TemplateCompilerContext context = new TemplateCompilerContext();
 		context.setPath( path );
@@ -110,7 +105,7 @@ public class TemplateCompiler
 
 	/**
 	 * Compiles a template into a {@link Template}.
-	 * 
+	 *
 	 * @param context The compilation context.
 	 */
 	public void compile( TemplateCompilerContext context )
@@ -135,14 +130,14 @@ public class TemplateCompiler
 		{
 			JavaScriptTemplateCompiler compiler = new JavaScriptTemplateCompiler();
 			compiler.generateScript( context );
-			log.trace( "Generated JavaScript:\n{}", context.getScript() );
+			Loggers.compiler.trace( "Generated JavaScript:\n{}", context.getScript() );
 			compiler.compileScript( context );
 		}
 		else if( lang.equals( "groovy" ) )
 		{
 			GroovyTemplateCompiler compiler = new GroovyTemplateCompiler();
 			compiler.generateScript( context );
-			log.trace( "Generated Groovy:\n{}", context.getScript() );
+			Loggers.compiler.trace( "Generated Groovy:\n{}", context.getScript() );
 			compiler.compileScript( context );
 		}
 		else
@@ -153,7 +148,7 @@ public class TemplateCompiler
 
 	/**
 	 * Creates a reader.
-	 * 
+	 *
 	 * @param context The compilation context.
 	 */
 	protected void createReader( TemplateCompilerContext context )
@@ -172,7 +167,7 @@ public class TemplateCompiler
 
 	/**
 	 * Parses the source.
-	 * 
+	 *
 	 * @param context The compilation context.
 	 */
 	protected void parse( TemplateCompilerContext context )
@@ -191,7 +186,7 @@ public class TemplateCompiler
 
 	/**
 	 * Collects the directives.
-	 * 
+	 *
 	 * @param context The compilation context.
 	 */
 	protected void collectDirectives( TemplateCompilerContext context )
@@ -205,7 +200,7 @@ public class TemplateCompiler
 
 	/**
 	 * Processes the directives.
-	 * 
+	 *
 	 * @param context The compilation context.
 	 */
 	protected void processDirectives( TemplateCompilerContext context )
@@ -235,7 +230,7 @@ public class TemplateCompiler
 
 	/**
 	 * Configures the template.
-	 * 
+	 *
 	 * @param context The compilation context.
 	 */
 	protected void configureTemplate( TemplateCompilerContext context )

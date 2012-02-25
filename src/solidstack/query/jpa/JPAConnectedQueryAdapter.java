@@ -27,15 +27,9 @@ import solidstack.query.hibernate.HibernateConnectedQueryAdapter;
 
 /**
  * Adapts the given Query to JPA.
- * 
+ *
  * @author René M. de Bloois
  */
-//TODO What about a ConnectedJPAAdapter?
-/*
-	Query(Connection,Args)
-	Query+Connection(Args)
- */
-// TODO What about query.jpa(EntityManager).hibernate() which returns a ConnectedHibernateAdapter.
 public class JPAConnectedQueryAdapter
 {
 	/**
@@ -51,7 +45,7 @@ public class JPAConnectedQueryAdapter
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param query A query to adapt to JPA.
 	 * @param entityManager A {@link javax.persistence.EntityManager}.
 	 */
@@ -63,7 +57,7 @@ public class JPAConnectedQueryAdapter
 
 	/**
 	 * Executes an update (DML) or a DDL query through the given {@link EntityManager}.
-	 * 
+	 *
 	 * @param args The arguments to the query.
 	 * @return The number of entities updated or deleted.
 	 * @see javax.persistence.Query#executeUpdate()
@@ -75,7 +69,7 @@ public class JPAConnectedQueryAdapter
 
 	/**
 	 * Retrieves a {@link List} of JPA Entities from the given {@link EntityManager}.
-	 * 
+	 *
 	 * @param args The arguments to the query.
 	 * @return A {@link List} of entities.
 	 * @see javax.persistence.Query#getResultList()
@@ -87,7 +81,7 @@ public class JPAConnectedQueryAdapter
 
 	/**
 	 * Retrieves a {@link List} of JPA Entities from the given {@link EntityManager}.
-	 * 
+	 *
 	 * @param resultClass The class to map the results to.
 	 * @param args The arguments to the query.
 	 * @return A {@link List} of entities.
@@ -100,7 +94,7 @@ public class JPAConnectedQueryAdapter
 
 	/**
 	 * Retrieves a single JPA Entity from the given {@link EntityManager}.
-	 * 
+	 *
 	 * @param args The arguments to the query.
 	 * @return An entity.
 	 * @see javax.persistence.Query#getSingleResult()
@@ -112,7 +106,7 @@ public class JPAConnectedQueryAdapter
 
 	/**
 	 * Retrieves a single JPA Entity from the given {@link EntityManager}.
-	 * 
+	 *
 	 * @param resultClass The class to map the results to.
 	 * @param args The arguments to the query.
 	 * @return An entity.
@@ -125,7 +119,7 @@ public class JPAConnectedQueryAdapter
 
 	/**
 	 * Creates a JPA query.
-	 * 
+	 *
 	 * @param resultClass The class to map the results to.
 	 * @param args The arguments to the query.
 	 * @return The JPA query.
@@ -138,7 +132,7 @@ public class JPAConnectedQueryAdapter
 
 	/**
 	 * Creates a JPA query.
-	 * 
+	 *
 	 * @param args The arguments to the query.
 	 * @return The JPA query.
 	 * @see EntityManager#createNativeQuery(String, Class)
@@ -153,7 +147,7 @@ public class JPAConnectedQueryAdapter
 	 */
 	public HibernateConnectedQueryAdapter hibernate()
 	{
-		// TODO Better error handling if delegate is not a Hibernate session
+		// TODO Better error handling if delegate is not a Hibernate session. But how, can't import hibernate classes here.
 		return new HibernateConnectedQueryAdapter( this.query, this.entityManager.getDelegate() );
 	}
 }

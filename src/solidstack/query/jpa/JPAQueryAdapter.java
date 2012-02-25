@@ -26,15 +26,9 @@ import solidstack.query.Query;
 
 /**
  * Adapts the given Query to JPA.
- * 
+ *
  * @author René M. de Bloois
  */
-//TODO What about a ConnectedJPAAdapter?
-/*
-	Query(Connection,Args)
-	Query+Connection(Args)
- */
-// TODO What about query.jpa(EntityManager).hibernate() which returns a ConnectedHibernateAdapter.
 public class JPAQueryAdapter
 {
 	/**
@@ -45,7 +39,7 @@ public class JPAQueryAdapter
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param query A query to adapt to JPA.
 	 */
 	public JPAQueryAdapter( Query query )
@@ -55,7 +49,7 @@ public class JPAQueryAdapter
 
 	/**
 	 * Executes an update (DML) or a DDL query through the given {@link EntityManager}.
-	 * 
+	 *
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param args The arguments to the query.
 	 * @return The number of entities updated or deleted.
@@ -68,7 +62,7 @@ public class JPAQueryAdapter
 
 	/**
 	 * Retrieves a {@link List} of JPA Entities from the given {@link EntityManager}.
-	 * 
+	 *
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param args The arguments to the query.
 	 * @return A {@link List} of entities.
@@ -81,7 +75,7 @@ public class JPAQueryAdapter
 
 	/**
 	 * Retrieves a {@link List} of JPA Entities from the given {@link EntityManager}.
-	 * 
+	 *
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param resultClass The class to map the results to.
 	 * @param args The arguments to the query.
@@ -95,7 +89,7 @@ public class JPAQueryAdapter
 
 	/**
 	 * Retrieves a single JPA Entity from the given {@link EntityManager}.
-	 * 
+	 *
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param args The arguments to the query.
 	 * @return An entity.
@@ -108,7 +102,7 @@ public class JPAQueryAdapter
 
 	/**
 	 * Retrieves a single JPA Entity from the given {@link EntityManager}.
-	 * 
+	 *
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param resultClass The class to map the results to.
 	 * @param args The arguments to the query.
@@ -122,7 +116,7 @@ public class JPAQueryAdapter
 
 	/**
 	 * Creates a JPA query.
-	 * 
+	 *
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param resultClass The class to map the results to.
 	 * @param args The arguments to the query.
@@ -136,7 +130,7 @@ public class JPAQueryAdapter
 
 	/**
 	 * Creates a JPA query.
-	 * 
+	 *
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param args The arguments to the query.
 	 * @return The JPA query.
