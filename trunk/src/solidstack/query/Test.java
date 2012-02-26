@@ -25,14 +25,14 @@ import solidstack.util.Pars;
 
 /**
  * Main class to test the jar.
- * 
+ *
  * @author René de Bloois
  */
 public class Test
 {
 	/**
 	 * Main method to test the jar.
-	 * 
+	 *
 	 * @param args Arguments.
 	 */
 	public static void main( String[] args )
@@ -51,7 +51,7 @@ public class Test
 			connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
 			QueryManager queries = new QueryManager();
-			queries.setPackage( "solidstack.query" );
+			queries.setTemplatePath( "classpath:solidstack/query" );
 			queries.setDefaultLanguage( "javascript" );
 
 			Query query = queries.getQuery( "jartest" );

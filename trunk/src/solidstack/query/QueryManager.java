@@ -21,7 +21,7 @@ import solidstack.template.TemplateManager;
 
 /**
  * Reads, compiles and caches the queries.
- * 
+ *
  * @author René M. de Bloois
  */
 public class QueryManager
@@ -40,7 +40,7 @@ public class QueryManager
 
 	/**
 	 * Constructor which uses an existing TemplateManager.
-	 * 
+	 *
 	 * @param templateManager The template manager to use.
 	 */
 	public QueryManager( TemplateManager templateManager )
@@ -54,10 +54,9 @@ public class QueryManager
 	 *
 	 * @param pkg The package.
 	 */
-	public void setPackage( String pkg )
+	public void setTemplatePath( String path )
 	{
-		checkLock();
-		this.templateManager.setPackage( pkg );
+		this.templateManager.setTemplatePath( path );
 	}
 
 	/**
@@ -74,7 +73,7 @@ public class QueryManager
 
 	/**
 	 * Sets the default scripting language of the templates. The default scripting language is used when a "language" directive is missing in the template.
-	 * 
+	 *
 	 * @param language The default scripting language of the templates.
 	 */
 	public void setDefaultLanguage( String language )

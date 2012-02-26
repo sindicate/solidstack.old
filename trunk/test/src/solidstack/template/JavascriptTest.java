@@ -124,7 +124,7 @@ public class JavascriptTest
 				";\n" );
 
 		TemplateManager queries = new TemplateManager();
-		queries.setPackage( "solidstack.template" );
+		queries.setTemplatePath( "classpath:solidstack/template" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
 		params.put( "prefix", "SYST" );

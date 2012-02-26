@@ -37,7 +37,7 @@ public class TemplateManager
 {
 	static private final Pattern XML_MIME_TYPE_PATTERN = Pattern.compile( "^[a-z]+/.+\\+xml" ); // TODO http://www.iana.org/assignments/media-types/index.html
 
-	private String packageSlashed = "";
+	private Resource templatePath;
 	private boolean reloading;
 	private String defaultLanguage;
 
@@ -50,6 +50,8 @@ public class TemplateManager
 	 */
 	public TemplateManager()
 	{
+		this.templatePath = ResourceFactory.currentFolder();
+				
 		this.mimeTypeMap.put( "text/xml", XMLEncodingWriter.FACTORY );
 		// TODO Put this in a properties file, or not?
 		this.mimeTypeMap.put( "application/xml", "text/xml" );
@@ -92,15 +94,9 @@ public class TemplateManager
 	 * @param pkg The package.
 	 */
 	// FIXME setResource(), setFolder()?
-	public void setPackage( String pkg )
+	public void setTemplatePath( String path )
 	{
-		Assert.isTrue( !pkg.startsWith( "." ) && !pkg.endsWith( "." ), "package should not start or end with a ." );
-		Assert.isTrue( pkg.indexOf('/') < 0 && pkg.indexOf('\\') < 0 , "package should not contain a \\ or /" );
-
-		if( pkg.length() > 0 )
-			this.packageSlashed = pkg.replaceAll( "\\.", "/" ) + "/";
-		else
-			this.packageSlashed = "";
+		this.templatePath = ResourceFactory.getFolderResource( path );
 	}
 
 	/**
@@ -148,7 +144,7 @@ public class TemplateManager
 	public Template getTemplate( String path )
 	{
 		Loggers.loader.debug( "getTemplate [{}]", path );
-		Assert.isTrue( !path.startsWith( "/" ), "path should not start with a /" );
+		Assert.isTrue( !path.startsWith( "/" ), "path should not start with a /" ); // TODO When doing includes, / should be allowed for absolute paths
 
 		path += ".slt"; // TODO Configurable, and maybe another default
 
@@ -177,7 +173,7 @@ public class TemplateManager
 				if( !resource.exists() )
 					throw new TemplateNotFoundException( resource.toString() + " not found" );
 
-				template = new TemplateCompiler( this ).compile( resource, this.packageSlashed + path );
+				template = new TemplateCompiler( this ).compile( resource, path ); // TODO Is this enough for a class name?
 				template.setName( path ); // Overwrite the name
 				template.setLastModified( resource.getLastModified() );
 				template.setManager( this );
@@ -220,7 +216,7 @@ public class TemplateManager
 	 */
 	private Resource getResource( String path )
 	{
-		Resource result = ResourceFactory.getResource( "classpath:" + this.packageSlashed + path );
+		Resource result = this.templatePath.createRelative( path );
 		Loggers.loader.debug( "{}, lastModified: {} ({})", new Object[] { result, new Date( result.getLastModified() ), result.getLastModified() } );
 		return result;
 	}
