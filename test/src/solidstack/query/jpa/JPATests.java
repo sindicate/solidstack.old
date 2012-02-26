@@ -33,7 +33,7 @@ public class JPATests
 		EntityManager em = this.factory.createEntityManager();
 
 		QueryManager queries = new QueryManager();
-		queries.setPackage( "solidstack.query" );
+		queries.setTemplatePath( "classpath:solidstack/query" );
 		Query query = queries.getQuery( "test.sql" );
 		List<DerbyTable> tables = query.jpa().getResultList( em, DerbyTable.class, new Pars() );
 		for( DerbyTable table : tables )
@@ -48,7 +48,7 @@ public class JPATests
 		EntityManager em = this.factory.createEntityManager();
 
 		QueryManager queries = new QueryManager();
-		queries.setPackage( "solidstack.query" );
+		queries.setTemplatePath( "classpath:solidstack/query" );
 		Query query = queries.getQuery( "test.sql" );
 		List<Object[]> tables = query.jpa().getResultList( em, new Pars() );
 		for( Object[] table : tables )
@@ -70,7 +70,7 @@ public class JPATests
 		System.out.println( "-----" );
 
 		QueryManager queries = new QueryManager();
-		queries.setPackage( "solidstack.query.jpa" );
+		queries.setTemplatePath( "classpath:solidstack/query/jpa" );
 		Query query = queries.getQuery( "test.jpql" );
 
 		tables = query.jpa( em ).getResultList( new Pars() );
@@ -96,7 +96,7 @@ public class JPATests
 		EntityManager em = this.factory.createEntityManager();
 
 		QueryManager queries = new QueryManager();
-		queries.setPackage( "solidstack.query.hibernate" );
+		queries.setTemplatePath( "classpath:solidstack/query/hibernate" );
 		Query query = queries.getQuery( "test.hql" );
 
 		List<DerbyTable> tables = query.jpa( em ).hibernate().list( new Pars() );
@@ -115,7 +115,7 @@ public class JPATests
 		EntityTransaction transaction = em.getTransaction();
 
 		QueryManager queries = new QueryManager();
-		queries.setPackage( "solidstack.query.jpa" );
+		queries.setTemplatePath( "classpath:solidstack/query/jpa" );
 		Query sqlQuery = queries.getQuery( "big.sql" );
 		Query jpqlQuery = queries.getQuery( "big.jpql" );
 

@@ -30,7 +30,7 @@ public class Closures
 	public void testClosures()
 	{
 		TemplateManager templates = new TemplateManager();
-		templates.setPackage( "solidstack.template" );
+		templates.setTemplatePath( "classpath:solidstack/template" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
 		Template template = templates.getTemplate( "closures.xml" );

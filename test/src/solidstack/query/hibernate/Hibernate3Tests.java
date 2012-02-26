@@ -47,7 +47,7 @@ public class Hibernate3Tests
 		Session session = (Session)this.openSession.invoke( this.factory );
 
 		QueryManager queries = new QueryManager();
-		queries.setPackage( "solidstack.query" );
+		queries.setTemplatePath( "classpath:solidstack/query" );
 		Query query = queries.getQuery( "test.sql" );
 		List<Map<String, Object>> tables = query.hibernate().listOfMaps( session, new Pars() );
 		for( Map<String, Object> table : tables )
@@ -70,7 +70,7 @@ public class Hibernate3Tests
 		System.out.println( "-----" );
 
 		QueryManager queries = new QueryManager();
-		queries.setPackage( "solidstack.query.hibernate" );
+		queries.setTemplatePath( "classpath:solidstack/query/hibernate" );
 		Query query = queries.getQuery( "test.hql" );
 
 		tables = query.hibernate().list( session, new Pars() );

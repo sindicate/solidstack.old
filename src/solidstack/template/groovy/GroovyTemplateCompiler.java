@@ -42,7 +42,9 @@ public class GroovyTemplateCompiler
 		String path = matcher.group( 1 );
 		String name = matcher.group( 2 );
 
-		String pkg = TEMPLATE_PKG + "." + path.replaceAll( "/+", "." );
+		String pkg = TEMPLATE_PKG;
+		if( path != null )
+			pkg += "." + path.replaceAll( "/+", "." );
 
 		StringBuilder buffer = new StringBuilder( 1024 );
 		buffer.append( "package " ).append( pkg ).append( ";" );

@@ -45,7 +45,7 @@ public class TemplateWriterTests
 	public void testPlainTemplate()
 	{
 		TemplateManager templates = new TemplateManager();
-		templates.setPackage( "solidstack.template" );
+		templates.setTemplatePath( "classpath:solidstack/template" );
 
 		Template template = templates.getTemplate( "test.xml" );
 		template.setContentType( null );
@@ -60,7 +60,7 @@ public class TemplateWriterTests
 	public void testXMLTemplate()
 	{
 		TemplateManager templates = new TemplateManager();
-		templates.setPackage( "solidstack.template" );
+		templates.setTemplatePath( "classpath:solidstack/template" );
 
 		Template template = templates.getTemplate( "test.xml" );
 		Map< String, Object > pars = new HashMap< String, Object >();
