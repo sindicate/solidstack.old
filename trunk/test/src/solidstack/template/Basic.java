@@ -22,10 +22,10 @@ import java.util.Map;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import solidbase.io.LineReader;
-import solidbase.io.Resource;
-import solidbase.io.ResourceFactory;
-import solidbase.io.StringLineReader;
+import solidstack.io.LineReader;
+import solidstack.io.Resource;
+import solidstack.io.ResourceFactory;
+import solidstack.io.StringLineReader;
 import solidstack.template.JSPLikeTemplateParser.EVENT;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
 import solidstack.util.Pars;

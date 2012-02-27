@@ -24,12 +24,12 @@ import java.net.ConnectException;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import solidbase.io.ClassPathResource;
-import solidbase.io.FatalIOException;
-import solidbase.io.FileResource;
-import solidbase.io.Resource;
-import solidbase.io.ResourceFactory;
-import solidbase.io.URLResource;
+import solidstack.io.ClassPathResource;
+import solidstack.io.FatalIOException;
+import solidstack.io.FileResource;
+import solidstack.io.Resource;
+import solidstack.io.ResourceFactory;
+import solidstack.io.URLResource;
 
 
 @SuppressWarnings( "javadoc" )

@@ -52,7 +52,7 @@
 		<snapshotRepository>
 			<id>solidstack-maven-snapshot-repository</id>
 			<name>SolidStack Maven Snapshot Repository</name>
-			<url>file:../solidbase-snapshot-repository</url>
+			<url>file:../solidstack-snapshot-repository</url>
 		</snapshotRepository>
 	</distributionManagement>
 

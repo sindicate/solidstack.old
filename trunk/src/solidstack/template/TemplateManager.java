@@ -21,8 +21,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import solidbase.io.Resource;
-import solidbase.io.ResourceFactory;
+import solidstack.io.Resource;
+import solidstack.io.ResourceFactory;
 import solidstack.lang.Assert;
 
 
