@@ -21,8 +21,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import solidbase.io.LineReader;
-import solidbase.io.PushbackReader;
+import solidstack.io.LineReader;
+import solidstack.io.PushbackReader;
 import solidstack.lang.Assert;
 
 

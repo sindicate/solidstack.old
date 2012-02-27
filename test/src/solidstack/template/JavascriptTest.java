@@ -21,8 +21,8 @@ import org.mozilla.javascript.TopLevel;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import solidbase.io.Resource;
-import solidbase.io.ResourceFactory;
+import solidstack.io.Resource;
+import solidstack.io.ResourceFactory;
 
 
 @SuppressWarnings( "javadoc" )

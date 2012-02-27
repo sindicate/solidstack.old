@@ -2,8 +2,8 @@ package solidstack.template;
 
 import java.util.List;
 
-import solidbase.io.LineReader;
-import solidbase.io.Resource;
+import solidstack.io.LineReader;
+import solidstack.io.Resource;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
 

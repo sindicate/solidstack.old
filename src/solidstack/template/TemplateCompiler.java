@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import solidbase.io.BOMDetectingLineReader;
-import solidbase.io.LineReader;
-import solidbase.io.Resource;
+import solidstack.io.BOMDetectingLineReader;
+import solidstack.io.LineReader;
+import solidstack.io.Resource;
 import solidstack.lang.Assert;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.EVENT;

@@ -27,9 +27,9 @@ import java.util.Map;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import solidbase.io.Resource;
-import solidbase.io.ResourceFactory;
-import solidbase.io.StringLineReader;
+import solidstack.io.Resource;
+import solidstack.io.ResourceFactory;
+import solidstack.io.StringLineReader;
 import solidstack.query.Query.PreparedSQL;
 import solidstack.template.ParseException;
 import solidstack.template.Template;
