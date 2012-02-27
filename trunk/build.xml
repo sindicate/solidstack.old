@@ -116,7 +116,7 @@
 	<target name="compile">
 		<echo message="java.home=${java.home}" />
 		<mkdir dir="${build.home}/classes" />
-		<javac srcdir="src:../solidbase/src" includes="solidbase/io/*.java,solidstack/**/*.java" destdir="${build.home}/classes" 
+		<javac srcdir="src" destdir="${build.home}/classes"
 			classpathref="compile.classpath" source="${target-jre}" target="${target-jre}" optimize="true" debug="true" deprecation="true" />
 		<sync todir="${build.home}/classes">
 			<fileset dir="src" excludes="**/*.java,**/*.html" />
@@ -136,7 +136,6 @@
 		<jarjar compress="yes" destfile="${dist.home}/solidstack.jar">
 			<zipfileset dir="${build.home}/classes" />
 			<zipfileset dir="." includes="LICENSE.txt,NOTICE.txt,CHANGELOG.TXT" prefix="META-INF" />
-			<rule pattern="solidbase.**" result="solidstack.@0" />
 			<keep pattern="solidstack.**" />
 			<manifest>
 				<attribute name="Implementation-Title" value="SolidStack" />
@@ -199,7 +198,6 @@
 	<target name="coberturareport" depends="test">
 		<cobertura-report format="xml" destdir="${build.home}/coberturareport">
 			<fileset dir="src" includes="**/*.java" />
-			<fileset dir="../solidbase/src" includes="**/*.java" />
 		</cobertura-report>
 	</target>
 
