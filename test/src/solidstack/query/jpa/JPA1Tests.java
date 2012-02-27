@@ -17,14 +17,19 @@ import solidstack.query.hibernate.DerbyTable;
 import solidstack.query.hibernate.Test1;
 import solidstack.util.Pars;
 
-public class JPATests
+public class JPA1Tests
 {
 	private EntityManagerFactory factory;
 
 	@BeforeClass(groups="new")
 	public void init()
 	{
-		this.factory = Persistence.createEntityManagerFactory( "manager1" );
+		// Don't need this with JPA 2, then its in the persistence.xml
+		this.factory = Persistence.createEntityManagerFactory( "manager1", new Pars(
+				"hibernate.connection.driver_class", "org.apache.derby.jdbc.EmbeddedDriver",
+		        "hibernate.connection.url", "jdbc:derby:memory:test;create=true",
+		        "hibernate.connection.username", "app",
+		        "hibernate.connection.password", "" ) );
 	}
 
 	@Test
@@ -162,9 +167,10 @@ public class JPATests
 			for( String name : names )
 				System.out.println( name );
 
-			names = jpqlQuery.jpa( em ).getResultList( String.class, new Pars( "selector", "select name" ) );
-			for( Object name : names )
-				System.out.println( (String)name );
+			// TODO This is JPA 2
+//			names = jpqlQuery.jpa( em ).getResultList( String.class, new Pars( "selector", "select name" ) );
+//			for( Object name : names )
+//				System.out.println( (String)name );
 		}
 		transaction.commit();
 

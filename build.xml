@@ -95,6 +95,11 @@
 		<path refid="cobertura.classpath" />
 	</path>
 
+	<path id="test-jpa1.classpath">
+		<path refid="test-hibernate3.classpath" />
+		<fileset dir="test/lib/jpa10" includes="*.jar" />
+	</path>
+
 
 	<!-- Custom Ant Task Definitions -->
 
@@ -184,6 +189,10 @@
 		<testng classpathref="test-hibernate3.classpath" outputDir="${build.home}/testreports-hibernate3" haltOnFailure="true" verbose="3"
 			usedefaultlisteners="false" listeners="org.testng.reporters.JUnitReportReporter">
 			<classfileset dir="${build.home}/testclasses" includes="solidstack/query/hibernate/Hibernate3Tests.class" />
+		</testng>
+		<testng classpathref="test-jpa1.classpath" outputDir="${build.home}/testreports-jpa1" haltOnFailure="true" verbose="3"
+			usedefaultlisteners="true" listeners="org.testng.reporters.JUnitReportReporter">
+			<classfileset dir="${build.home}/testclasses" includes="solidstack/query/jpa/JPA1Tests.class" />
 		</testng>
 	</target>
 
