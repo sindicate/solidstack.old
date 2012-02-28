@@ -127,10 +127,13 @@ public class GroovyTemplateCompiler
 		List< GroovyClass > classes = unit.getClasses();
 		Assert.isTrue( classes.size() > 0, "Expecting 1 or more classes" );
 
-		// Use class loader to define the classes
+		ClassLoader parent = Thread.currentThread().getContextClassLoader();
+		if( parent == null )
+			parent = GroovyTemplateCompiler.class.getClassLoader();
+
+		// Define the class
 		// TODO Configurable class loader
-		// FIXME See BeanShell 2 for resolving the parent classloader
-		DefiningClassLoader classLoader = new DefiningClassLoader( GroovyTemplate.class.getClassLoader() );
+		DefiningClassLoader classLoader = new DefiningClassLoader( parent );
 		Class< ? > first = null;
 		for( GroovyClass cls : classes )
 		{

@@ -95,13 +95,14 @@ public class MemoryResource extends ResourceAdapter
 		int count;
 		try
 		{
-			// FIXME Also handle the case where count == 0
-			while( ( count = input.read( buffer ) ) > 0 )
-			{
-				byte[] b = new byte[ count ];
-				System.arraycopy( buffer, 0, b, 0, count );
-				this.buffer.add( b );
-			}
+			// TODO What if the input stream returns very small blocks?
+			while( ( count = input.read( buffer ) ) >= 0 )
+				if( count > 0 )
+				{
+					byte[] b = new byte[ count ];
+					System.arraycopy( buffer, 0, b, 0, count );
+					this.buffer.add( b );
+				}
 		}
 		catch( IOException e )
 		{

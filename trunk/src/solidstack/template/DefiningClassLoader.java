@@ -3,7 +3,7 @@ package solidstack.template;
 
 /**
  * Defining class loader for generated classes.
- * 
+ *
  * @author René de Bloois
  */
 public class DefiningClassLoader extends ClassLoader
@@ -12,7 +12,7 @@ public class DefiningClassLoader extends ClassLoader
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param parent The parent classloader.
 	 */
 	public DefiningClassLoader( ClassLoader parent )
@@ -24,7 +24,7 @@ public class DefiningClassLoader extends ClassLoader
 
 	/**
 	 * Defines the given class.
-	 * 
+	 *
 	 * @param name The name of the class.
 	 * @param data The bytes of the class.
 	 * @return The defined class.
@@ -42,7 +42,7 @@ public class DefiningClassLoader extends ClassLoader
 	protected synchronized Class< ? > loadClass( String name, boolean resolve ) throws ClassNotFoundException
 	{
 		if( resolve )
-			throw new IllegalArgumentException( "resolve=true not supported" );
+			throw new IllegalArgumentException( "resolve=true not supported" ); // TODO Resolve
 
 		Class< ? > c = findLoadedClass( name );
 		if( c != null )

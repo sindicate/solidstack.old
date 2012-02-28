@@ -21,7 +21,7 @@ import java.io.Writer;
 
 /**
  * An encoding writer that passes through everything unmodified.
- * 
+ *
  * @author René M. de Bloois
  */
 public class NoEncodingWriter implements EncodingWriter
@@ -33,7 +33,7 @@ public class NoEncodingWriter implements EncodingWriter
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param out The writer to write to.
 	 */
 	public NoEncodingWriter( Writer out )
@@ -41,10 +41,15 @@ public class NoEncodingWriter implements EncodingWriter
 		this.out = out;
 	}
 
+	public void write( char[] cbuf, int off, int len ) throws IOException
+	{
+		this.out.write( cbuf, off, len );
+	}
+
 	public void write( String s ) throws IOException
 	{
 		if( s != null )
-			this.out.write( s );
+			write( s.toCharArray(), 0, s.length() );
 	}
 
 	public void writeEncoded( Object o ) throws IOException

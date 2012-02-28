@@ -28,7 +28,7 @@ import java.io.UnsupportedEncodingException;
  *
  * @author René M. de Bloois
  */
-public class URLRandomAccessLineReader extends ReaderLineReader implements RandomAccessLineReader
+public class RandomAccessBOMDetectingLineReader extends ReaderLineReader implements RandomAccessLineReader
 {
 	/**
 	 * Constant for the ISO-8859-1 character set.
@@ -71,8 +71,8 @@ public class URLRandomAccessLineReader extends ReaderLineReader implements Rando
 	 * @param resource The resource to read from.
 	 * @throws FileNotFoundException
 	 */
-	// FIXME Why is URL still in the name?
-	public URLRandomAccessLineReader( Resource resource ) throws FileNotFoundException
+	// TODO Extend from or use BOMDetectingLineReader
+	public RandomAccessBOMDetectingLineReader( Resource resource ) throws FileNotFoundException
 	{
 		this.resource = resource;
 		open();
