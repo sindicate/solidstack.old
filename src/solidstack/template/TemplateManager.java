@@ -51,7 +51,7 @@ public class TemplateManager
 	public TemplateManager()
 	{
 		this.templatePath = ResourceFactory.currentFolder();
-				
+
 		this.mimeTypeMap.put( "text/xml", XMLEncodingWriter.FACTORY );
 		// TODO Put this in a properties file, or not?
 		this.mimeTypeMap.put( "application/xml", "text/xml" );
@@ -93,10 +93,16 @@ public class TemplateManager
 	 *
 	 * @param pkg The package.
 	 */
-	// FIXME setResource(), setFolder()?
 	public void setTemplatePath( String path )
 	{
 		this.templatePath = ResourceFactory.getFolderResource( path );
+	}
+
+	// TODO Does this not give conflicts with Spring or some other DI framework?
+	public void setTemplatePath( Resource resource )
+	{
+		Assert.isTrue( resource.isFolder(), "Resource should be a folder" );
+		this.templatePath = resource;
 	}
 
 	/**

@@ -165,4 +165,10 @@ public class Basic
 			event = parser.next();
 		}
 	}
+
+	@Test(groups="new")
+	public void testContextClassLoaderNull()
+	{
+		Assert.assertNotNull( Thread.currentThread().getContextClassLoader(), "ContextClassLoader should not be null" );
+	}
 }
