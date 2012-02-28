@@ -70,29 +70,28 @@
 		<path refid="testng.classpath" />
 	</path>
 
-	<path id="test.classpath">
+	<path id="test_.classpath">
 		<pathelement location="${build.home}/testclasses" />
 		<pathelement location="${build.home}/instrumentedclasses" />
 		<pathelement location="${build.home}/classes" />
 		<fileset dir="lib" includes="*.jar" />
-		<fileset dir="lib/hibernate41" includes="*.jar" />
 		<fileset dir="test/lib" includes="*.jar" />
 		<fileset dir="test/lib/hibernate" includes="*.jar" />
-		<fileset dir="test/lib/hibernate41" includes="*.jar" />
 		<path refid="testng.classpath" />
 		<path refid="cobertura.classpath" />
 	</path>
 
+	<path id="test.classpath">
+		<path refid="test_.classpath" />
+		<fileset dir="lib/hibernate41" includes="*.jar" />
+		<fileset dir="lib/spring31" includes="*.jar" />
+		<fileset dir="test/lib/hibernate41" includes="*.jar" />
+		<fileset dir="test/lib/spring31" includes="*.jar" />
+	</path>
+
 	<path id="test-hibernate3.classpath">
-		<pathelement location="${build.home}/testclasses" />
-		<pathelement location="${build.home}/instrumentedclasses" />
-		<pathelement location="${build.home}/classes" />
-		<fileset dir="lib" includes="*.jar" />
-		<fileset dir="test/lib" includes="*.jar" />
-		<fileset dir="test/lib/hibernate" includes="*.jar" />
+		<path refid="test_.classpath" />
 		<fileset dir="test/lib/hibernate33" includes="*.jar" />
-		<path refid="testng.classpath" />
-		<path refid="cobertura.classpath" />
 	</path>
 
 	<path id="test-jpa1.classpath">
