@@ -98,12 +98,12 @@ public class TemplateManager
 		this.templatePath = ResourceFactory.getFolderResource( path );
 	}
 
-	// TODO Does this not give conflicts with Spring or some other DI framework?
-	public void setTemplatePath( Resource resource )
-	{
-		Assert.isTrue( resource.isFolder(), "Resource should be a folder" );
-		this.templatePath = resource;
-	}
+	// TODO Come up with an alternative, this does not work with Spring
+//	public void setTemplatePath( Resource resource )
+//	{
+//		Assert.isTrue( resource.isFolder(), "Resource should be a folder" );
+//		this.templatePath = resource;
+//	}
 
 	/**
 	 * Enable or disable reloading. When enabled, the lastModified time stamp of the file is used to check if it needs reloading.
