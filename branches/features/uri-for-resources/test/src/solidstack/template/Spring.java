@@ -7,7 +7,7 @@ import org.testng.annotations.Test;
 
 public class Spring
 {
-	@Test(groups="new")
+	@Test
 	public void testSpring() throws IOException
 	{
 		GenericXmlApplicationContext context = new GenericXmlApplicationContext();

@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
  * @author René M. de Bloois
  */
 // TODO Maybe we should use URIResource. That one has no problems with the classpath scheme.
-public class URLResource extends ResourceAdapter
+public class URLResource extends Resource
 {
 	/**
 	 * The URL.
@@ -61,6 +61,14 @@ public class URLResource extends ResourceAdapter
 	public URLResource( String url, boolean folder ) throws MalformedURLException
 	{
 		super( folder );
+		if( folder )
+		{
+			if( !url.endsWith( "/" ) )
+				url += "/";
+		}
+		else
+			if( url.endsWith( "/" ) )
+				throw new IllegalArgumentException( "non-folder url cannot end with a /" );
 		this.url = new URL( url );
 	}
 
@@ -96,7 +104,10 @@ public class URLResource extends ResourceAdapter
 		{
 			// TODO Unit test with folder url
 			// TODO The resource factory has more logic then this
-			return new URLResource( new URL( this.url, path ) );
+			URL parent = this.url;
+			if( isFolder() )
+				parent = new URL( parent, parent.getFile() + "/" );
+			return new URLResource( new URL( parent, path ) );
 		}
 		catch( MalformedURLException e )
 		{
@@ -132,5 +143,11 @@ public class URLResource extends ResourceAdapter
 	{
 		// TODO This should be implemented I think
 		return 0;
+	}
+
+	@Override
+	public String getNormalized()
+	{
+		return this.url.toExternalForm();
 	}
 }

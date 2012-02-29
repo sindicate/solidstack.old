@@ -112,7 +112,7 @@ public class JPA1Tests
 		em.close();
 	}
 
-	@Test(groups="new")
+	@Test
 	public void testBig()
 	{
 		EntityManager em = this.factory.createEntityManager();

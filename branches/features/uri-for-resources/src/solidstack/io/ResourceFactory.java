@@ -103,52 +103,61 @@ public final class ResourceFactory
 		}
 	}
 
+//	static public Resource getFolderResource( String path )
+//	{
+//		return getFolderResource( null, path );
+//	}
+
 	static public Resource getFolderResource( String path )
 	{
-		return getFolderResource( null, path );
-	}
-
-	/**
-	 * Creates a resource for the given path. If the path starts with classpath:, a {@link ClassPathResource}, {@link URLResource} or {@link FileResource} will be
-	 * returned. If the path is a URL, a {@link URLResource} will be returned. Otherwise a {@link FileResource} is
-	 * returned. The parent argument is only used when the path is not a URL (including the classpath protocol).
-	 *
-	 * @param parent The parent folder of the resource.
-	 * @param path The path for the resource.
-	 * @return The resource.
-	 */
-	static public Resource getFolderResource( File parent, String path )
-	{
-		if( path.equals( "-" ) )
-			throw new FatalIOException( "'-' not supported for folder resources" );
-
-		if( path.startsWith( "classpath:" ) )
-			return new ClassPathResource( path, true );
-
-		try
-		{
-			Resource resource = new URLResource( path, true );
-			URL url;
-			try
-			{
-				url = resource.getURL();
-				if( url.getProtocol().equals( "file" ) )
-					return new FileResource( url.getFile() ); // TODO Check that the file is indeed a folder
-			}
-			catch( FileNotFoundException e )
-			{
-				// Ignore
-			}
-			return resource;
-		}
-		catch( MalformedURLException e )
-		{
-			return new FileResource( parent, path ); // TODO Check that the file is indeed a folder
-		}
+		if( !path.endsWith( "/" ) )
+			path += "/";
+		return getResource( path );
 	}
 
 	static public Resource currentFolder()
 	{
-		return getFolderResource( "" );
+		return getResource( "." ); // TODO Unit test
 	}
+
+//	public static Resource getResource( URI uri )
+//	{
+//		if( "classpath".equals( uri.getScheme() ) )
+//		{
+//			Resource result = new ClassPathResource( uri );
+//			try
+//			{
+//				URL url = result.getURL();
+//				if( url.getProtocol().equals( "jar" ) )
+//					return result;
+//				path = url.toString();
+//			}
+//			catch( FileNotFoundException e )
+//			{
+//				return result;
+//			}
+//		}
+//
+//		try
+//		{
+//
+//			Resource resource = new URLResource( path );
+//			URL url;
+//			try
+//			{
+//				url = resource.getURL();
+//				if( url.getProtocol().equals( "file" ) )
+//					return new FileResource( url.getFile() ); // TODO Check that the file is not a folder
+//			}
+//			catch( FileNotFoundException e )
+//			{
+//				// Ignore
+//			}
+//			return resource;
+//		}
+//		catch( MalformedURLException e )
+//		{
+//			return new FileResource( parent, path ); // TODO Check that the file is not a folder
+//		}
+//	}
 }

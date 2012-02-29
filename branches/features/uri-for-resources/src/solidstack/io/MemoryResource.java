@@ -28,7 +28,7 @@ import java.util.List;
  *
  * @author René M. de Bloois
  */
-public class MemoryResource extends ResourceAdapter
+public class MemoryResource extends Resource
 {
 	/**
 	 * The buffer containing the resource's bytes.

@@ -16,9 +16,10 @@
 
 package solidstack.io;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 
@@ -27,30 +28,46 @@ import java.net.URL;
  *
  * @author René M. de Bloois
  */
-public class ClassPathResource extends ResourceAdapter
+public class ClassPathResource extends Resource
 {
 	/**
 	 * The path of the resource.
 	 */
-	protected String path;
+	protected URI uri;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param path The path of the resource.
 	 */
+	// TODO Need a classloader too
 	public ClassPathResource( String path )
 	{
-		this( path, false );
+		this( toURI( path ) );
 	}
 
-	public ClassPathResource( String path, boolean folder )
+	public ClassPathResource( URI uri )
 	{
-		super( folder );
-		if( path.startsWith( "classpath:" ) )
-			this.path = path.substring( 10 );
-		else
-			this.path = path;
+		String path = uri.getPath();
+		if( path == null )
+			throw new IllegalArgumentException( "path must start with /" );
+		if( !"classpath".equals( uri.getScheme() ) )
+			throw new IllegalArgumentException( "uri scheme must be 'classpath'" );
+		this.uri = uri.normalize();
+	}
+
+	static private URI toURI( String path )
+	{
+		try
+		{
+			if( path.startsWith( "classpath:" ) )
+				return new URI( path );
+			return new URI( "classpath:" + path );
+		}
+		catch( URISyntaxException e )
+		{
+			throw new FatalIOException( e );
+		}
 	}
 
 	/**
@@ -64,29 +81,29 @@ public class ClassPathResource extends ResourceAdapter
 
 	/**
 	 * Returns the URL for this resource.
-	 * 
+	 *
 	 * @throws FileNotFoundException When a file is not found.
 	 */
 	@Override
 	public URL getURL() throws FileNotFoundException
 	{
-		URL result = ClassPathResource.class.getClassLoader().getResource( this.path );
+		URL result = ClassPathResource.class.getClassLoader().getResource( this.uri.getPath() );
 		if( result == null )
-			throw new FileNotFoundException( "File " + toString() + " not found in classpath" );
+			throw new FileNotFoundException( "File " + toString() + " not found" );
 		return result;
 	}
 
 	/**
 	 * Returns an InputStream for this resource.
-	 * 
+	 *
 	 * @throws FileNotFoundException When a file is not found.
 	 */
 	@Override
 	public InputStream getInputStream() throws FileNotFoundException
 	{
-		InputStream result = ClassPathResource.class.getClassLoader().getResourceAsStream( this.path );
+		InputStream result = ClassPathResource.class.getClassLoader().getResourceAsStream( this.uri.getPath() );
 		if( result == null )
-			throw new FileNotFoundException( "File " + toString() + " not found in classpath" );
+			throw new FileNotFoundException( "File " + toString() + " not found" );
 		return result;
 	}
 
@@ -94,35 +111,30 @@ public class ClassPathResource extends ResourceAdapter
 	@Override
 	public Resource createRelative( String path )
 	{
-		String scheme = URLResource.getScheme( path );
-		if( scheme == null || scheme.equals( "classpath" ) )
-		{
-			if( scheme != null )
-				path = path.substring( 10 );
-			File parent = new File( this.path );
-			if( !isFolder() )
-				parent = parent.getParentFile();
-			path = new File( parent, path ).getPath().replace( '\\', '/' ); // ClassLoader does not understand backslashes
-			return ResourceFactory.getResource( "classpath:" + path );
-		}
-		return ResourceFactory.getResource( path );
+		return ResourceFactory.getResource( this.uri.resolve( path ).toString() ); // TODO Test \
 	}
 
 	@Override
 	public String toString()
 	{
-		return this.path;
+		return this.uri.toString();
 	}
 
 	@Override
 	public boolean exists()
 	{
-		return ClassPathResource.class.getClassLoader().getResource( this.path ) != null;
+		return ClassPathResource.class.getClassLoader().getResource( this.uri.getPath() ) != null;
 	}
 
 	@Override
 	public long getLastModified()
 	{
 		return 0;
+	}
+
+	@Override
+	public String getNormalized()
+	{
+		return this.uri.normalize().toString();
 	}
 }

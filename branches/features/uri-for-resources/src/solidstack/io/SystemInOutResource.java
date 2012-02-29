@@ -24,7 +24,7 @@ import java.io.OutputStream;
  *
  * @author René M. de Bloois
  */
-public class SystemInOutResource extends ResourceAdapter
+public class SystemInOutResource extends Resource
 {
 	/**
 	 * The {@link System#in}. Registered at the time of creation of this resource.

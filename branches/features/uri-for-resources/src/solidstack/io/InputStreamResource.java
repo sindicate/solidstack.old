@@ -23,7 +23,7 @@ import java.io.InputStream;
  *
  * @author René M. de Bloois
  */
-public class InputStreamResource extends ResourceAdapter
+public class InputStreamResource extends Resource
 {
 	/**
 	 * The input stream.

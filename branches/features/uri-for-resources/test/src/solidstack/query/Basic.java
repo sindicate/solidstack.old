@@ -72,7 +72,7 @@ public class Basic
 		assert result.size() == 2;
 	}
 
-	@Test//(groups="new")
+	@Test
 	public void testBasicJS() throws SQLException, ClassNotFoundException
 	{
 		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
@@ -161,7 +161,7 @@ public class Basic
 //		out.close();
 	}
 
-	@Test//(groups="new")
+	@Test
 	public void testTransformJS() throws Exception
 	{
 		TemplateManager manager = new TemplateManager();

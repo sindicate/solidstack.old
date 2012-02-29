@@ -48,7 +48,7 @@ public class Basic
 				"AND TABLENAME IN ([name1, name2])\n" );
 	}
 
-	@Test //(groups="new")
+	@Test
 	public void testTransform() throws Exception
 	{
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/template/test.txt.slt" );

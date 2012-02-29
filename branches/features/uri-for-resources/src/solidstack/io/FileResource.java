@@ -32,7 +32,7 @@ import java.net.URL;
  *
  * @author René M. de Bloois
  */
-public class FileResource extends ResourceAdapter
+public class FileResource extends Resource
 {
 	/**
 	 * The file.
@@ -194,5 +194,18 @@ public class FileResource extends ResourceAdapter
 	public long getLastModified()
 	{
 		return this.file.lastModified();
+	}
+
+	@Override
+	public String getNormalized()
+	{
+		try
+		{
+			return this.file.getCanonicalPath();
+		}
+		catch( IOException e )
+		{
+			throw new FatalIOException( e );
+		}
 	}
 }
