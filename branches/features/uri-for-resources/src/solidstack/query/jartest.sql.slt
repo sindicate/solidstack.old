@@ -1,0 +1,4 @@
+<%@ template language = "javascript" %>
+SELECT *
+FROM SYS.SYSTABLES
+WHERE 1 = 1
