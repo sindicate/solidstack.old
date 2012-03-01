@@ -19,7 +19,7 @@ package solidstack.template;
 
 /**
  * Something has gone wrong during template parsing.
- * 
+ *
  * @author René M. de Bloois
  */
 public class ParseException extends RuntimeException
@@ -30,10 +30,11 @@ public class ParseException extends RuntimeException
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param message The message.
 	 * @param lineNumber The line number where the problem occurred.
 	 */
+	// FIXME Use location instead of only line number
 	public ParseException( String message, int lineNumber )
 	{
 		super( message );

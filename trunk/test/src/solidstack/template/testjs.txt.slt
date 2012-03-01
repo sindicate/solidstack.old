@@ -1,4 +1,4 @@
-<%@ template encoding="UTF-8" language="javascript" %>
+<%@ template version="1.0" encoding="UTF-8" language="javascript" %>
 <% // Test if the import at the bottom works, and this comment too of course
 new Timestamp( new java.util.Date().time ) %>
 SELECT *

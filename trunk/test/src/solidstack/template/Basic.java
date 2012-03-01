@@ -106,6 +106,8 @@ public class Basic
 		LineReader reader = new StringLineReader( "<%@ template\n" +
 				"import=\"java.util.ArrayList\"\n" +
 				"import=\"java.io.*\"\n" +
+				"version=\n" +
+				"\"1.0\"\n" +
 				"language=\"groovy\"\n" +
 				"%>\n" +
 				"TEST" );
@@ -118,6 +120,8 @@ public class Basic
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
 		Assert.assertEquals( context.getScript().toString(), "package solidstack.template.tmp.p;import java.util.ArrayList;import java.io.*;class c{Closure getClosure(){return{out->\n" +
+				"\n" +
+				"\n" +
 				"\n" +
 				"\n" +
 				"\n" +
@@ -155,7 +159,7 @@ public class Basic
 	{
 		StringBuilder buffer = new StringBuilder();
 		for( int i = 0; i < 1000; i++ )
-			buffer.append( "abcdefghijklmnopqrstuvwxyz" );
+			buffer.append( "<%@template version=\"1.0\"%>abcdefghijklmnopqrstuvwxyz" );
 
 		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( new StringLineReader( buffer.toString() ) );
 		ParseEvent event = parser.next();

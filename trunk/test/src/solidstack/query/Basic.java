@@ -176,7 +176,8 @@ public class Basic
 
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 
-		Assert.assertEquals( context.getScript().toString(), "importClass(Packages.java.sql.Timestamp); // Test if the import at the bottom works, and this comment too of course\n" +
+		Assert.assertEquals( context.getScript().toString(), "importClass(Packages.java.sql.Timestamp);\n" +
+				" // Test if the import at the bottom works, and this comment too of course\n" +
 				"new Timestamp( new java.util.Date().time ) \n" +
 				";out.write(\"SELECT *\\n\\\n" +
 				"FROM SYS.SYSTABLES\\n\\\n" +
@@ -278,6 +279,8 @@ public class Basic
 	// For testing purposes
 	static TemplateCompilerContext translate( String text )
 	{
+		text = "<%@template version=\"1.0\"%>" + text;
+
 		TemplateCompilerContext context = new TemplateCompilerContext();
 		context.setReader( new StringLineReader( text ) );
 		context.setPath( "p/c" );
@@ -287,7 +290,7 @@ public class Basic
 
 	private void translateTest( String input, String groovy, String output )
 	{
-		input = "<%@template language=\"groovy\"%>" + input;
+		input = "<%@template version=\"1.0\" language=\"groovy\"%>" + input;
 
 		TemplateCompilerContext context = translate( input );
 		String g = context.getScript().toString();
@@ -309,7 +312,7 @@ public class Basic
 		}
 		catch( ParseException e )
 		{
-			assert e.getMessage().contains( "Unexpected end of " );
+			Assert.assertTrue( e.getMessage().contains( "Unexpected end of " ), e.toString() );
 		}
 	}
 
