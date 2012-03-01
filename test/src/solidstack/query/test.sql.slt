@@ -1,4 +1,4 @@
-<%@ template language = "groovy" %>
+<%@ template version="1.0" language = "groovy" %>
 <% // Test if the import at the bottom works, and this comment too of course
 new Timestamp( new Date().time ) %>
 SELECT *

@@ -107,6 +107,8 @@ public class JSPLikeTemplateParser
 	 */
 	private List< ParseEvent > queue = new ArrayList< ParseEvent >();
 
+	private boolean firstRead;
+
 	/**
 	 * Constructor.
 	 *
@@ -128,6 +130,28 @@ public class JSPLikeTemplateParser
 			return this.queue.remove( 0 );
 
 		ParseEvent event;
+
+		if( !this.firstRead )
+		{
+			// Get first event which must be a <%@ template version="1.0" %>
+
+			event = next0();
+			if( event.getEvent() != EVENT.DIRECTIVE )
+				throw new ParseException( "Template must start with a 'template' directive on the first character of the first line", this.reader.getLineNumber() );
+
+			Directive version = Template.getDirective( event.getDirectives(), "template", "version" );
+			if( version == null )
+				throw new ParseException( "Template must start with a 'template' directive that has a 'version' attribute", this.reader.getLineNumber() );
+
+			String versionString = version.getValue();
+			if( !versionString.equals( "1.0" ) )
+				throw new ParseException( "Version '" + versionString + "' is not supported", this.reader.getLineNumber() );
+
+			this.queue.add( event ); // Need to wait for the rest
+
+			this.firstRead = true;
+		}
+
 		while( true )
 			switch( ( event = next0() ).getEvent() )
 			{
