@@ -15,8 +15,10 @@ public class ResourceTests
 	public void test()
 	{
 		Resource r1 = ResourceFactory.getResource( "classpath:/solidstack/" );
-		Assert.assertTrue( r1 instanceof ClassPathResource );
+		Assert.assertTrue( r1 instanceof ClassPathResource, r1.getClass().getName() );
 		Resource r2 = r1.createRelative( "io" );
+		Assert.assertTrue( r2 instanceof ClassPathResource, r2.getClass().getName() );
+		Assert.assertTrue( r2.unwrap() instanceof FileResource, r2.getClass().getName() );
 		Assert.assertTrue( r2.toString().endsWith( "io" ) );
 	}
 
@@ -40,14 +42,20 @@ public class ResourceTests
 	{
 		URL url = ResourceTests.class.getClassLoader().getResource( "solidstack/template/test.js" );
 		Assert.assertNotNull( url );
+
 		Resource resource = new ClassPathResource( "classpath:/solidstack/../solidstack/template/test.js" );
 		Assert.assertTrue( resource.exists() );
+
+		resource = new ClassPathResource( "classpath:/solidstack/" );
+		Assert.assertTrue( resource.exists() );
+		resource = resource.createRelative( "template/test.js" );
+		System.out.println( resource );
 	}
 
 	@Test(groups="new")
 	public void testURI() throws URISyntaxException, MalformedURLException
 	{
-		URI uri = new URI( "classpath:solidstack/io" );
+		URI uri = new URI( "classpath:/solidstack/io" );
 		System.out.println( uri );
 		System.out.println( uri.getPath() );
 		uri = new URI( "classpath:/solidstack/io" );

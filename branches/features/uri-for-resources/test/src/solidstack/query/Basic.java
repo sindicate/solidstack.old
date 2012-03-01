@@ -49,7 +49,7 @@ public class Basic
 		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
 		QueryManager queries = new QueryManager();
-		queries.setTemplatePath( "classpath:solidstack/query" );
+		queries.setTemplatePath( "classpath:/solidstack/query" );
 
 		Query query = queries.getQuery( "test.sql" );
 		List< Map< String, Object > > result = query.listOfMaps( connection, Pars.EMPTY );
@@ -79,7 +79,7 @@ public class Basic
 		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
 		QueryManager queries = new QueryManager();
-		queries.setTemplatePath( "classpath:solidstack/query" );
+		queries.setTemplatePath( "classpath:/solidstack/query" );
 		queries.setDefaultLanguage( "javascript" );
 
 		Pars pars = new Pars( "prefix", null, "name", null, "names", null );
@@ -141,7 +141,7 @@ public class Basic
 				);
 
 		QueryManager queries = new QueryManager();
-		queries.setTemplatePath( "classpath:solidstack/query" );
+		queries.setTemplatePath( "classpath:/solidstack/query" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
 		params.put( "prefix", "SYST" );
@@ -165,7 +165,7 @@ public class Basic
 	public void testTransformJS() throws Exception
 	{
 		TemplateManager manager = new TemplateManager();
-		manager.setTemplatePath( "classpath:solidstack/query" );
+		manager.setTemplatePath( "classpath:/solidstack/query" );
 		manager.setDefaultLanguage( "javascript" );
 
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/testjs.sql.slt" );
@@ -222,7 +222,7 @@ public class Basic
 		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
 		QueryManager queries = new QueryManager();
-		queries.setTemplatePath( "classpath:solidstack/query" );
+		queries.setTemplatePath( "classpath:/solidstack/query" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
 		params.put( "names", Arrays.asList( new String[] { "SYSTABLES", "SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS", "SYSTABLES",
@@ -254,7 +254,7 @@ public class Basic
 		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
 		QueryManager queries = new QueryManager();
-		queries.setTemplatePath( "classpath:solidstack/query" );
+		queries.setTemplatePath( "classpath:/solidstack/query" );
 		queries.setDefaultLanguage( "groovy" );
 
 		Query query = queries.getQuery( "test2.sql" );

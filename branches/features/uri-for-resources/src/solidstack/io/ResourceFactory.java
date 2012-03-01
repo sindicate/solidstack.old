@@ -17,9 +17,7 @@
 package solidstack.io;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
-import java.net.URL;
 
 
 /**
@@ -51,9 +49,6 @@ public final class ResourceFactory
 	}
 
 	/**
-	 * Creates a resource for the given path. If the path starts with classpath:, a {@link ClassPathResource}, {@link URLResource} or {@link FileResource} will be
-	 * returned. If the path is a URL, a {@link URLResource} will be returned. Otherwise a {@link FileResource} is
-	 * returned. The parent argument is only used when the path is not a URL (including the classpath protocol).
 	 *
 	 * @param parent The parent folder of the resource.
 	 * @param path The path for the resource.
@@ -65,37 +60,14 @@ public final class ResourceFactory
 			return new SystemInOutResource();
 
 		if( path.startsWith( "classpath:" ) )
-		{
-			Resource result = new ClassPathResource( path );
-			try
-			{
-				URL url = result.getURL();
-				if( url.getProtocol().equals( "jar" ) )
-					return result;
-				path = url.toString();
-			}
-			catch( FileNotFoundException e )
-			{
-				return result;
-			}
-		}
+			return new ClassPathResource( path );
+
+		if( path.startsWith( "file:" ) )
+			return new FileResource( path );
 
 		try
 		{
-
-			Resource resource = new URLResource( path );
-			URL url;
-			try
-			{
-				url = resource.getURL();
-				if( url.getProtocol().equals( "file" ) )
-					return new FileResource( url.getFile() ); // TODO Check that the file is not a folder
-			}
-			catch( FileNotFoundException e )
-			{
-				// Ignore
-			}
-			return resource;
+			return new URLResource( path );
 		}
 		catch( MalformedURLException e )
 		{

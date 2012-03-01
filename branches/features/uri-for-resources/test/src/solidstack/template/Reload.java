@@ -38,14 +38,14 @@ public class Reload
 	@Test
 	public void testResourceFactory() throws IOException
 	{
-		Resource resource = ResourceFactory.getResource( "classpath:java/lang/String.class" );
+		Resource resource = ResourceFactory.getResource( "classpath:/java/lang/String.class" );
 		Assert.assertTrue( resource instanceof ClassPathResource );
 		Assert.assertEquals( resource.getURL().getProtocol(), "jar" );
 		InputStream in = resource.getInputStream();
 		Assert.assertTrue( in.read() >= 0 );
 		in.close();
 
-		resource = ResourceFactory.getResource( "classpath:solidstack/template/dummy.slt" );
+		resource = ResourceFactory.getResource( "classpath:/solidstack/template/dummy.slt" );
 		Assert.assertTrue( resource instanceof FileResource );
 		Assert.assertEquals( resource.getURL().getProtocol(), "file" );
 		in = resource.getInputStream();
@@ -79,12 +79,12 @@ public class Reload
 	public void testReloading() throws IOException
 	{
 		TemplateManager templates = new TemplateManager();
-		templates.setTemplatePath( "classpath:solidstack/template" );
+		templates.setTemplatePath( "classpath:/solidstack/template" );
 		templates.setDefaultLanguage( "javascript" );
 
 		Template template = templates.getTemplate( "dummy" );
 
-		Resource resource = ResourceFactory.getResource( "classpath:solidstack/template/dummy.slt" );
+		Resource resource = ResourceFactory.getResource( "classpath:/solidstack/template/dummy.slt" );
 		OutputStream out = resource.getOutputStream();
 		out.write( "test".getBytes() );
 		out.close();

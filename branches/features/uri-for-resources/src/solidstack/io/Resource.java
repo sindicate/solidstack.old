@@ -67,4 +67,9 @@ public class Resource
 	{
 		throw new UnsupportedOperationException();
 	}
+
+	public Resource unwrap()
+	{
+		return this;
+	}
 }

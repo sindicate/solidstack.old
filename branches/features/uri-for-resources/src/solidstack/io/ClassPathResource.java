@@ -16,6 +16,7 @@
 
 package solidstack.io;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URI;
@@ -49,7 +50,7 @@ public class ClassPathResource extends Resource
 	public ClassPathResource( URI uri )
 	{
 		String path = uri.getPath();
-		if( path == null )
+		if( path == null ) // If path does not start with / then getPath() returns null
 			throw new IllegalArgumentException( "path must start with /" );
 		if( !"classpath".equals( uri.getScheme() ) )
 			throw new IllegalArgumentException( "uri scheme must be 'classpath'" );
@@ -87,7 +88,7 @@ public class ClassPathResource extends Resource
 	@Override
 	public URL getURL() throws FileNotFoundException
 	{
-		URL result = ClassPathResource.class.getClassLoader().getResource( this.uri.getPath() );
+		URL result = ClassPathResource.class.getClassLoader().getResource( getPath() );
 		if( result == null )
 			throw new FileNotFoundException( "File " + toString() + " not found" );
 		return result;
@@ -101,7 +102,7 @@ public class ClassPathResource extends Resource
 	@Override
 	public InputStream getInputStream() throws FileNotFoundException
 	{
-		InputStream result = ClassPathResource.class.getClassLoader().getResourceAsStream( this.uri.getPath() );
+		InputStream result = ClassPathResource.class.getClassLoader().getResourceAsStream( getPath() );
 		if( result == null )
 			throw new FileNotFoundException( "File " + toString() + " not found" );
 		return result;
@@ -123,7 +124,13 @@ public class ClassPathResource extends Resource
 	@Override
 	public boolean exists()
 	{
-		return ClassPathResource.class.getClassLoader().getResource( this.uri.getPath() ) != null;
+		return ClassPathResource.class.getClassLoader().getResource( getPath() ) != null;
+	}
+
+	private String getPath()
+	{
+		String result = this.uri.getPath().substring( 1 );
+		return result;
 	}
 
 	@Override
@@ -136,5 +143,23 @@ public class ClassPathResource extends Resource
 	public String getNormalized()
 	{
 		return this.uri.normalize().toString();
+	}
+
+	@Override
+	public Resource unwrap()
+	{
+		URL url = ClassPathResource.class.getClassLoader().getResource( getPath() );
+		if( url.getProtocol().equals( "jar" ) )
+			return this;
+		if( url.getProtocol().equals( "file" ) )
+			try
+			{
+				return new FileResource( new File( url.toURI() ) );
+			}
+			catch( URISyntaxException e )
+			{
+				throw new FatalIOException( e );
+			}
+		return new URLResource( url );
 	}
 }
