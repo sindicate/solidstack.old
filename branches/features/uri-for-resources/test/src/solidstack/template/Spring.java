@@ -11,7 +11,7 @@ public class Spring
 	public void testSpring() throws IOException
 	{
 		GenericXmlApplicationContext context = new GenericXmlApplicationContext();
-		context.load( "classpath:solidstack/template/context.xml" );
+		context.load( "classpath:/solidstack/template/context.xml" );
 		context.refresh();
 	}
 }

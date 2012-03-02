@@ -53,6 +53,27 @@ public class ResourceTests
 	}
 
 	@Test(groups="new")
+	public void testFileResource() throws MalformedURLException
+	{
+		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/test.sql.slt" );
+		Assert.assertTrue( resource.exists() );
+
+		String url = resource.toString();
+		System.out.println( url );
+		resource = ResourceFactory.getResource( url );
+		System.out.println( resource.toString() );
+		Assert.assertTrue( resource.exists() );
+
+		resource = new URLResource( url );
+		System.out.println( resource.toString() );
+//		Assert.assertTrue( resource.exists() );
+
+		resource = resource.unwrap();
+		System.out.println( resource.toString() );
+		Assert.assertTrue( resource.exists() );
+	}
+
+	@Test(groups="new")
 	public void testURI() throws URISyntaxException, MalformedURLException
 	{
 		URI uri = new URI( "classpath:/solidstack/io" );

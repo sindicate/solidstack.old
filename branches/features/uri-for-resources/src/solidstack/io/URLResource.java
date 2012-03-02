@@ -16,9 +16,11 @@
 
 package solidstack.io;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -149,5 +151,21 @@ public class URLResource extends Resource
 	public String getNormalized()
 	{
 		return this.url.toExternalForm();
+	}
+
+	@Override
+	public Resource unwrap()
+	{
+		URL url = getURL();
+		if( url.getProtocol().equals( "file" ) )
+			try
+			{
+				return new FileResource( new File( url.toURI() ) );
+			}
+			catch( URISyntaxException e )
+			{
+				throw new FatalIOException( e );
+			}
+		return new URLResource( url );
 	}
 }

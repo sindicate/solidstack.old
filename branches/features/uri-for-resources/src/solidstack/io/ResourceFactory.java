@@ -36,25 +36,12 @@ public final class ResourceFactory
 	}
 
 	/**
-	 * Creates a resource for the given path. If the path starts with classpath:, a {@link ClassPathResource} will be
-	 * returned. If the path is a URL, a {@link URLResource} will be returned. Otherwise a {@link FileResource} is
-	 * returned.
-	 *
-	 * @param path The path for the resource.
-	 * @return The resource.
-	 */
-	static public Resource getResource( String path )
-	{
-		return getResource( null, path );
-	}
-
-	/**
 	 *
 	 * @param parent The parent folder of the resource.
 	 * @param path The path for the resource.
 	 * @return The resource.
 	 */
-	static public Resource getResource( File parent, String path )
+	static public Resource getResource( String path )
 	{
 		if( path.equals( "-" ) )
 			return new SystemInOutResource();
@@ -71,20 +58,13 @@ public final class ResourceFactory
 		}
 		catch( MalformedURLException e )
 		{
-			return new FileResource( parent, path ); // TODO Check that the file is not a folder
+			return getFileResource( null, path );
 		}
 	}
 
-//	static public Resource getFolderResource( String path )
-//	{
-//		return getFolderResource( null, path );
-//	}
-
-	static public Resource getFolderResource( String path )
+	static public Resource getFileResource( File parent, String path )
 	{
-		if( !path.endsWith( "/" ) )
-			path += "/";
-		return getResource( path );
+		return new FileResource( parent, path );
 	}
 
 	static public Resource currentFolder()
@@ -92,44 +72,10 @@ public final class ResourceFactory
 		return getResource( "." ); // TODO Unit test
 	}
 
-//	public static Resource getResource( URI uri )
-//	{
-//		if( "classpath".equals( uri.getScheme() ) )
-//		{
-//			Resource result = new ClassPathResource( uri );
-//			try
-//			{
-//				URL url = result.getURL();
-//				if( url.getProtocol().equals( "jar" ) )
-//					return result;
-//				path = url.toString();
-//			}
-//			catch( FileNotFoundException e )
-//			{
-//				return result;
-//			}
-//		}
-//
-//		try
-//		{
-//
-//			Resource resource = new URLResource( path );
-//			URL url;
-//			try
-//			{
-//				url = resource.getURL();
-//				if( url.getProtocol().equals( "file" ) )
-//					return new FileResource( url.getFile() ); // TODO Check that the file is not a folder
-//			}
-//			catch( FileNotFoundException e )
-//			{
-//				// Ignore
-//			}
-//			return resource;
-//		}
-//		catch( MalformedURLException e )
-//		{
-//			return new FileResource( parent, path ); // TODO Check that the file is not a folder
-//		}
-//	}
+	static public String folderize( String path )
+	{
+		if( path.endsWith( "/" ) || path.endsWith( "\\" ) )
+			return path;
+		return path + "/";
+	}
 }

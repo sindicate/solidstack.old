@@ -46,7 +46,7 @@ public class InputStreamResource extends Resource
 	public InputStream getInputStream()
 	{
 		if( this.inputStream == null )
-			throw new IllegalStateException( "inputStream has been accessed earlier" );
+			throw new IllegalStateException( "inputStream has been accessed already" );
 		InputStream result = this.inputStream;
 		this.inputStream = null;
 		return result;

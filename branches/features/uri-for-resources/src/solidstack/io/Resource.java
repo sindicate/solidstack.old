@@ -7,17 +7,6 @@ import java.net.URL;
 
 public class Resource
 {
-	protected boolean folder;
-
-	public Resource()
-	{
-	}
-
-	public Resource( boolean folder )
-	{
-		this.folder = folder;
-	}
-
 	public boolean supportsURL()
 	{
 		return false;
@@ -31,11 +20,6 @@ public class Resource
 	public long getLastModified()
 	{
 		return 0;
-	}
-
-	public boolean isFolder()
-	{
-		return this.folder;
 	}
 
 	public URL getURL() throws FileNotFoundException

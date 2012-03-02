@@ -46,7 +46,6 @@ public class FileResource extends Resource
 	 */
 	public FileResource( File file )
 	{
-		super( file.isDirectory() );
 		this.file = file;
 	}
 
@@ -57,7 +56,14 @@ public class FileResource extends Resource
 	 */
 	public FileResource( String path )
 	{
-		this( new File( path ) );
+		this( new File( stripScheme( path ) ) );
+	}
+
+	static private String stripScheme( String path )
+	{
+		if( path.startsWith( "file:" ) )
+			return path.substring( 5 );
+		return path;
 	}
 
 	/**
@@ -121,8 +127,8 @@ public class FileResource extends Resource
 		if( scheme == null || scheme.length() == 1 ) // No scheme or a drive letter
 		{
 			File parent = this.file;
-			if( !isFolder() )
-				parent = parent.getParentFile();
+//			if( !isFolder() ) TODO
+//				parent = parent.getParentFile();
 			return new FileResource( parent, path );
 		}
 		if( scheme.equals( "file" ) )
@@ -181,7 +187,10 @@ public class FileResource extends Resource
 	@Override
 	public String toString()
 	{
-		return this.file.getAbsolutePath();
+		String result = this.file.getAbsolutePath().replace( '\\', '/' );
+		if( result.startsWith( "/" ) )
+			return "file:" + result;
+		return "file:/" + result;
 	}
 
 	@Override

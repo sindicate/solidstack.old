@@ -46,7 +46,7 @@ public class Reload
 		in.close();
 
 		resource = ResourceFactory.getResource( "classpath:/solidstack/template/dummy.slt" );
-		Assert.assertTrue( resource instanceof FileResource );
+		Assert.assertTrue( resource instanceof ClassPathResource );
 		Assert.assertEquals( resource.getURL().getProtocol(), "file" );
 		in = resource.getInputStream();
 		Assert.assertTrue( in.read() >= 0 );
@@ -85,7 +85,7 @@ public class Reload
 		Template template = templates.getTemplate( "dummy" );
 
 		Resource resource = ResourceFactory.getResource( "classpath:/solidstack/template/dummy.slt" );
-		OutputStream out = resource.getOutputStream();
+		OutputStream out = resource.unwrap().getOutputStream();
 		out.write( "test".getBytes() );
 		out.close();
 
