@@ -109,7 +109,7 @@ public class FileResource extends Resource
 
 	// TODO Need test for this
 	@Override
-	public Resource createRelative( String path )
+	public Resource resolve( String path )
 	{
 //		System.out.println( "Create relative [" + this.file + "] [" + path + "]" );
 		String scheme = URLResource.getScheme( path );
@@ -121,7 +121,7 @@ public class FileResource extends Resource
 			return new FileResource( new File( parent, path ) );
 		}
 		if( scheme.equals( "file" ) )
-			return new URLResource( getURL() ).createRelative( path );
+			return new URLResource( getURL() ).resolve( path );
 		return ResourceFactory.getResource( path );
 	}
 

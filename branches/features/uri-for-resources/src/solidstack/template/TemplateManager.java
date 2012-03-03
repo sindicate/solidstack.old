@@ -222,7 +222,7 @@ public class TemplateManager
 	 */
 	private Resource getResource( String path )
 	{
-		Resource result = this.templatePath.createRelative( path ).unwrap();
+		Resource result = this.templatePath.resolve( path ).unwrap();
 		Loggers.loader.debug( "{}, lastModified: {} ({})", new Object[] { result, new Date( result.getLastModified() ), result.getLastModified() } );
 		return result;
 	}

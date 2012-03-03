@@ -77,7 +77,7 @@ public class MemoryResource extends Resource
 	}
 
 	@Override
-	public Resource createRelative( String path )
+	public Resource resolve( String path )
 	{
 		// TODO Should we keep a reference to the original resource so that this can work?
 		// TODO Should we rename this resource to BufferedResource then?

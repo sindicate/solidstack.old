@@ -94,7 +94,7 @@ public class URIResource extends Resource
 	}
 
 	@Override
-	public Resource createRelative( String path )
+	public Resource resolve( String path )
 	{
 		// TODO Unit test with folder url
 		// TODO The resource factory has more logic then this

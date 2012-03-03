@@ -37,7 +37,7 @@ public class Resource
 		throw new UnsupportedOperationException();
 	}
 
-	public Resource createRelative( String path )
+	public Resource resolve( String path )
 	{
 		throw new UnsupportedOperationException();
 	}

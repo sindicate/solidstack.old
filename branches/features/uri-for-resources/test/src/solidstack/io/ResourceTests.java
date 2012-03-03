@@ -16,7 +16,7 @@ public class ResourceTests
 	{
 		Resource r1 = ResourceFactory.getResource( "classpath:/solidstack/" );
 		Assert.assertTrue( r1 instanceof ClassPathResource, r1.getClass().getName() );
-		Resource r2 = r1.createRelative( "io" );
+		Resource r2 = r1.resolve( "io" );
 		Assert.assertTrue( r2 instanceof ClassPathResource, r2.getClass().getName() );
 		Assert.assertTrue( r2.unwrap() instanceof FileResource, r2.getClass().getName() );
 		Assert.assertTrue( r2.toString().endsWith( "io" ) );
@@ -29,11 +29,11 @@ public class ResourceTests
 		System.out.println( resource.toString() );
 
 		resource = ResourceFactory.getResource( "http://test.com/test" );
-		resource = resource.createRelative( "test2" );
+		resource = resource.resolve( "test2" );
 		System.out.println( resource.getNormalized() );
 
 		resource = ResourceFactory.getResource( "http://test.com/test/" );
-		resource = resource.createRelative( "test2" );
+		resource = resource.resolve( "test2" );
 		System.out.println( resource.getNormalized() );
 	}
 
@@ -48,7 +48,7 @@ public class ResourceTests
 
 		resource = new ClassPathResource( "classpath:/solidstack/" );
 		Assert.assertTrue( resource.exists() );
-		resource = resource.createRelative( "template/test.js" );
+		resource = resource.resolve( "template/test.js" );
 		System.out.println( resource );
 	}
 

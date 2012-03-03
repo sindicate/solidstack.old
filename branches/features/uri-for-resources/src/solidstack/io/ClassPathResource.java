@@ -110,7 +110,7 @@ public class ClassPathResource extends Resource
 
 	// TODO Need test for this
 	@Override
-	public Resource createRelative( String path )
+	public Resource resolve( String path )
 	{
 		return ResourceFactory.getResource( this.uri.resolve( path ).toString() ); // TODO Test \
 	}
@@ -127,10 +127,10 @@ public class ClassPathResource extends Resource
 		return ClassPathResource.class.getClassLoader().getResource( getPath() ) != null;
 	}
 
+	// A resource in the class path cannot start with a /
 	private String getPath()
 	{
-		String result = this.uri.getPath().substring( 1 );
-		return result;
+		return this.uri.getPath().substring( 1 );
 	}
 
 	@Override
@@ -149,6 +149,8 @@ public class ClassPathResource extends Resource
 	public Resource unwrap()
 	{
 		URL url = ClassPathResource.class.getClassLoader().getResource( getPath() );
+		if( url == null )
+			return this; // TODO Or file not found?
 		if( url.getProtocol().equals( "jar" ) )
 			return this;
 		if( url.getProtocol().equals( "file" ) )

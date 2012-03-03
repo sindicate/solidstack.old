@@ -86,7 +86,7 @@ public class URLResource extends Resource
 	}
 
 	@Override
-	public Resource createRelative( String path )
+	public Resource resolve( String path )
 	{
 		try
 		{
