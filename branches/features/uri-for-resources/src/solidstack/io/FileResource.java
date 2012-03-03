@@ -66,17 +66,6 @@ public class FileResource extends Resource
 		return path;
 	}
 
-	/**
-	 * Constructor for a relative file resource.
-	 *
-	 * @param parent The parent folder.
-	 * @param path The path of the resource.
-	 */
-	public FileResource( File parent, String path )
-	{
-		this( new File( parent, path ) );
-	}
-
 	@Override
 	public boolean supportsURL()
 	{
@@ -129,7 +118,7 @@ public class FileResource extends Resource
 			File parent = this.file;
 //			if( !isFolder() ) TODO
 //				parent = parent.getParentFile();
-			return new FileResource( parent, path );
+			return new FileResource( new File( parent, path ) );
 		}
 		if( scheme.equals( "file" ) )
 			return new URLResource( getURL() ).createRelative( path );

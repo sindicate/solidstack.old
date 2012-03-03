@@ -16,7 +16,6 @@
 
 package solidstack.io;
 
-import java.io.File;
 import java.net.MalformedURLException;
 
 
@@ -58,13 +57,8 @@ public final class ResourceFactory
 		}
 		catch( MalformedURLException e )
 		{
-			return getFileResource( null, path );
+			return new FileResource( path );
 		}
-	}
-
-	static public Resource getFileResource( File parent, String path )
-	{
-		return new FileResource( parent, path );
 	}
 
 	static public Resource currentFolder()
