@@ -25,20 +25,18 @@ import java.net.URL;
 
 
 /**
- * A resource that is located in the classpath.
+ * A resource that is located on the classpath.
  *
  * @author René M. de Bloois
  */
 public class ClassPathResource extends Resource
 {
 	/**
-	 * The path of the resource.
+	 * The URI of the resource.
 	 */
 	protected URI uri;
 
 	/**
-	 * Constructor.
-	 *
 	 * @param path The path of the resource.
 	 */
 	// TODO Need a classloader too
@@ -47,6 +45,9 @@ public class ClassPathResource extends Resource
 		this( toURI( path ) );
 	}
 
+	/**
+	 * @param uri The URI of the resource.
+	 */
 	public ClassPathResource( URI uri )
 	{
 		String path = uri.getPath();
@@ -72,7 +73,7 @@ public class ClassPathResource extends Resource
 	}
 
 	/**
-	 * Always returns true.
+	 * Always returns true for a ClassPathResource.
 	 */
 	@Override
 	public boolean supportsURL()
@@ -80,11 +81,6 @@ public class ClassPathResource extends Resource
 		return true;
 	}
 
-	/**
-	 * Returns the URL for this resource.
-	 *
-	 * @throws FileNotFoundException When a file is not found.
-	 */
 	@Override
 	public URL getURL() throws FileNotFoundException
 	{
@@ -107,11 +103,6 @@ public class ClassPathResource extends Resource
 		}
 	}
 
-	/**
-	 * Returns an InputStream for this resource.
-	 *
-	 * @throws FileNotFoundException When a file is not found.
-	 */
 	@Override
 	public InputStream getInputStream() throws FileNotFoundException
 	{
@@ -158,6 +149,12 @@ public class ClassPathResource extends Resource
 		return this.uri.normalize().toString();
 	}
 
+	/**
+	 * If the resource exists in the file system a {@link FileResource} is returned. If the resource is not found in a
+	 * jar, a {@link URIResource} is returned. Otherwise the resource itself is returned.
+	 *
+	 * @return A {@link FileResource}, {@link URIResource} or a {@link ClassPathResource}.
+	 */
 	@Override
 	public Resource unwrap()
 	{
