@@ -18,6 +18,7 @@ package solidstack.io;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URI;
 
 
 /**
@@ -73,9 +74,21 @@ public final class ResourceFactory
 		return new FileResource( file );
 	}
 
+	/**
+	 *
+	 * @param parent The parent folder of the resource.
+	 * @param path The path for the resource.
+	 * @return The resource.
+	 */
+	static public Resource getResource( URI uri )
+	{
+		// TODO Do it the other way around
+		return getResource( uri.toString() );
+	}
+
 	static public Resource currentFolder()
 	{
-		return getResource( "." ); // TODO Unit test
+		return getResource( "" ); // TODO Unit test
 	}
 
 	static public String folderize( String path )

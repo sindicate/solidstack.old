@@ -111,18 +111,7 @@ public class FileResource extends Resource
 	@Override
 	public Resource resolve( String path )
 	{
-//		System.out.println( "Create relative [" + this.file + "] [" + path + "]" );
-		String scheme = URLResource.getScheme( path );
-		if( scheme == null || scheme.length() == 1 ) // No scheme or a drive letter
-		{
-			File parent = this.file;
-//			if( !isFolder() ) TODO
-//				parent = parent.getParentFile();
-			return new FileResource( new File( parent, path ) );
-		}
-		if( scheme.equals( "file" ) )
-			return new URLResource( getURL() ).resolve( path );
-		return ResourceFactory.getResource( path );
+		return ResourceFactory.getResource( this.file.toURI().resolve( path ) );
 	}
 
 	// TODO Need test for this
@@ -173,13 +162,11 @@ public class FileResource extends Resource
 		return result.toString();
 	}
 
+	// TODO Use normalized for printing resources, so not here but there were the message is printed
 	@Override
 	public String toString()
 	{
-		String result = this.file.getAbsolutePath().replace( '\\', '/' );
-		if( result.startsWith( "/" ) )
-			return "file:" + result;
-		return "file:/" + result;
+		return this.file.getAbsolutePath().replace( '\\', '/' );
 	}
 
 	@Override

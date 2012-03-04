@@ -22,6 +22,7 @@ public class Resource
 		return 0;
 	}
 
+	// TODO Don't throw FileNotFoundException
 	public URL getURL() throws FileNotFoundException
 	{
 		throw new UnsupportedOperationException();

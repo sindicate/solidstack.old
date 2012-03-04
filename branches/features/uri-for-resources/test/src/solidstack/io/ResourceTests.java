@@ -1,6 +1,7 @@
 package solidstack.io;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -53,7 +54,7 @@ public class ResourceTests
 	}
 
 	@Test(groups="new")
-	public void testFileResource() throws MalformedURLException
+	public void testFileResource() throws MalformedURLException, FileNotFoundException
 	{
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/test.sql.slt" );
 		Assert.assertTrue( resource.exists() );
@@ -71,6 +72,15 @@ public class ResourceTests
 		resource = resource.unwrap();
 		System.out.println( resource.toString() );
 		Assert.assertTrue( resource.exists() );
+
+		resource = ResourceFactory.currentFolder();
+		System.out.println( resource.getURL() );
+		resource = resource.resolve( "build.xml" );
+		System.out.println( resource.getURL() );
+		resource = resource.resolve( ".project" );
+		System.out.println( resource.getURL() );
+
+		System.out.println( new File( "" ).toURI().toString() );
 	}
 
 	@Test(groups="new")
