@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 
 
@@ -59,6 +60,11 @@ public class FileResource extends Resource
 		this( new File( stripScheme( path ) ) );
 	}
 
+	public FileResource( URI uri )
+	{
+		this( new File( uri ) );
+	}
+
 	static private String stripScheme( String path )
 	{
 		if( path.startsWith( "file:" ) )
@@ -77,12 +83,18 @@ public class FileResource extends Resource
 	{
 		try
 		{
-			return this.file.toURI().toURL();
+			return getURI().toURL();
 		}
 		catch( MalformedURLException e )
 		{
 			throw new FatalIOException( e ); // Not expected
 		}
+	}
+
+	@Override
+	public URI getURI()
+	{
+		return this.file.toURI();
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package solidstack.io;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.net.URL;
 
 public class Resource
@@ -24,6 +25,12 @@ public class Resource
 
 	// TODO Don't throw FileNotFoundException
 	public URL getURL() throws FileNotFoundException
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	// TODO Don't throw FileNotFoundException
+	public URI getURI() throws FileNotFoundException
 	{
 		throw new UnsupportedOperationException();
 	}

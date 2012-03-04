@@ -17,8 +17,8 @@
 package solidstack.io;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 
 /**
@@ -47,20 +47,23 @@ public final class ResourceFactory
 		if( path.equals( "-" ) )
 			return new SystemInOutResource();
 
-		if( path.startsWith( "classpath:" ) )
-			return new ClassPathResource( path );
-
-		if( path.startsWith( "file:" ) )
-			return new FileResource( path );
-
+		URI uri;
 		try
 		{
-			return new URLResource( path );
+			uri = new URI( path );
 		}
-		catch( MalformedURLException e )
+		catch( URISyntaxException e )
 		{
-			return new FileResource( path );
+			throw new FatalURISyntaxException( e );
 		}
+
+		if( uri.getScheme() == null || uri.getScheme().length() == 1 || "file".equals( uri.getScheme() ) )
+			return new FileResource( path );
+
+		if( "classpath".equals( uri.getScheme() ) )
+				return new ClassPathResource( path );
+
+		return new URIResource( path );
 	}
 
 	/**

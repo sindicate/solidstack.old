@@ -51,7 +51,7 @@ public class Basic
 	@Test
 	public void testTransform() throws Exception
 	{
-		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/template/test.txt.slt" );
+		Resource resource = ResourceFactory.getResource( "test/src/solidstack/template/test.txt.slt" );
 		TemplateCompilerContext context = new TemplateCompilerContext();
 		context.setResource( resource );
 		context.setPath( "a/b/c" );

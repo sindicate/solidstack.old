@@ -54,18 +54,18 @@ public class ResourceTests
 	}
 
 	@Test(groups="new")
-	public void testFileResource() throws MalformedURLException, FileNotFoundException
+	public void testFileResource() throws MalformedURLException, FileNotFoundException, URISyntaxException
 	{
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/test.sql.slt" );
 		Assert.assertTrue( resource.exists() );
 
-		String url = resource.toString();
-		System.out.println( url );
-		resource = ResourceFactory.getResource( url );
+		String file = resource.toString();
+		System.out.println( file );
+		resource = ResourceFactory.getResource( file );
 		System.out.println( resource.toString() );
 		Assert.assertTrue( resource.exists() );
 
-		resource = new URLResource( url );
+		resource = new URIResource( resource.getURI() );
 		System.out.println( resource.toString() );
 //		Assert.assertTrue( resource.exists() );
 

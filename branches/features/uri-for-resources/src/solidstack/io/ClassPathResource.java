@@ -67,7 +67,7 @@ public class ClassPathResource extends Resource
 		}
 		catch( URISyntaxException e )
 		{
-			throw new FatalIOException( e );
+			throw new FatalURISyntaxException( e );
 		}
 	}
 
@@ -92,6 +92,19 @@ public class ClassPathResource extends Resource
 		if( result == null )
 			throw new FileNotFoundException( "File " + toString() + " not found" );
 		return result;
+	}
+
+	@Override
+	public URI getURI() throws FileNotFoundException
+	{
+		try
+		{
+			return getURL().toURI();
+		}
+		catch( URISyntaxException e )
+		{
+			throw new FatalURISyntaxException( e );
+		}
 	}
 
 	/**
@@ -153,15 +166,15 @@ public class ClassPathResource extends Resource
 			return this; // TODO Or file not found?
 		if( url.getProtocol().equals( "jar" ) )
 			return this;
-		if( url.getProtocol().equals( "file" ) )
-			try
-			{
+		try
+		{
+			if( url.getProtocol().equals( "file" ) )
 				return new FileResource( new File( url.toURI() ) );
-			}
-			catch( URISyntaxException e )
-			{
-				throw new FatalIOException( e );
-			}
-		return new URLResource( url );
+			return new URIResource( url );
+		}
+		catch( URISyntaxException e )
+		{
+			throw new FatalURISyntaxException( e );
+		}
 	}
 }

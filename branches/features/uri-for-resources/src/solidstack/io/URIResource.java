@@ -17,6 +17,7 @@
 package solidstack.io;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -56,9 +57,38 @@ public class URIResource extends Resource
 	 * @param url The URL.
 	 * @throws URISyntaxException
 	 */
-	public URIResource( String url ) throws URISyntaxException
+	public URIResource( String uri )
 	{
-		this( new URI( url ) );
+		this( toURI( uri ) );
+	}
+
+	public URIResource( URL url )
+	{
+		this( toURI( url ) );
+	}
+
+	static private URI toURI( String uri )
+	{
+		try
+		{
+			return new URI( uri );
+		}
+		catch( URISyntaxException e )
+		{
+			throw new FatalURISyntaxException( e );
+		}
+	}
+
+	static private URI toURI( URL url )
+	{
+		try
+		{
+			return url.toURI();
+		}
+		catch( URISyntaxException e )
+		{
+			throw new FatalURISyntaxException( e );
+		}
 	}
 
 	@Override
@@ -78,6 +108,12 @@ public class URIResource extends Resource
 		{
 			throw new FatalIOException( e );
 		}
+	}
+
+	@Override
+	public URI getURI() throws FileNotFoundException
+	{
+		return this.uri;
 	}
 
 	@Override
@@ -148,7 +184,7 @@ public class URIResource extends Resource
 			}
 			catch( URISyntaxException e )
 			{
-				throw new FatalIOException( e );
+				throw new FatalURISyntaxException( e );
 			}
 		return this;
 	}

@@ -29,7 +29,7 @@ import solidstack.io.FatalIOException;
 import solidstack.io.FileResource;
 import solidstack.io.Resource;
 import solidstack.io.ResourceFactory;
-import solidstack.io.URLResource;
+import solidstack.io.URIResource;
 
 
 @SuppressWarnings( "javadoc" )
@@ -60,7 +60,7 @@ public class Reload
 		in.close();
 
 		resource = ResourceFactory.getResource( "http://nu.nl" );
-		Assert.assertTrue( resource instanceof URLResource );
+		Assert.assertTrue( resource instanceof URIResource );
 		Assert.assertEquals( resource.getURL().getProtocol(), "http" );
 		try
 		{
