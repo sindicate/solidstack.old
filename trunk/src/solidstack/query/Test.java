@@ -51,7 +51,7 @@ public class Test
 			connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
 			QueryManager queries = new QueryManager();
-			queries.setTemplatePath( "classpath:solidstack/query" );
+			queries.setTemplatePath( "classpath:/solidstack/query" );
 			queries.setDefaultLanguage( "javascript" );
 
 			Query query = queries.getQuery( "jartest" );

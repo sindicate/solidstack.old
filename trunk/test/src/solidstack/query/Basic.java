@@ -49,7 +49,7 @@ public class Basic
 		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
 		QueryManager queries = new QueryManager();
-		queries.setTemplatePath( "classpath:solidstack/query" );
+		queries.setTemplatePath( "classpath:/solidstack/query" );
 
 		Query query = queries.getQuery( "test.sql" );
 		List< Map< String, Object > > result = query.listOfMaps( connection, Pars.EMPTY );
@@ -72,14 +72,14 @@ public class Basic
 		assert result.size() == 2;
 	}
 
-	@Test//(groups="new")
+	@Test
 	public void testBasicJS() throws SQLException, ClassNotFoundException
 	{
 		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
 		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
 		QueryManager queries = new QueryManager();
-		queries.setTemplatePath( "classpath:solidstack/query" );
+		queries.setTemplatePath( "classpath:/solidstack/query" );
 		queries.setDefaultLanguage( "javascript" );
 
 		Pars pars = new Pars( "prefix", null, "name", null, "names", null );
@@ -108,7 +108,7 @@ public class Basic
 	@Test
 	public void testTransform() throws Exception
 	{
-		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/test.sql.slt" );
+		Resource resource = ResourceFactory.getResource( "test/src/solidstack/query/test.sql.slt" );
 		TemplateCompilerContext context = new TemplateCompilerContext();
 		context.setResource( resource );
 		context.setPath( "p/c" );
@@ -141,7 +141,7 @@ public class Basic
 				);
 
 		QueryManager queries = new QueryManager();
-		queries.setTemplatePath( "classpath:solidstack/query" );
+		queries.setTemplatePath( "classpath:/solidstack/query" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
 		params.put( "prefix", "SYST" );
@@ -161,14 +161,14 @@ public class Basic
 //		out.close();
 	}
 
-	@Test//(groups="new")
+	@Test
 	public void testTransformJS() throws Exception
 	{
 		TemplateManager manager = new TemplateManager();
-		manager.setTemplatePath( "classpath:solidstack/query" );
+		manager.setTemplatePath( "classpath:/solidstack/query" );
 		manager.setDefaultLanguage( "javascript" );
 
-		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/testjs.sql.slt" );
+		Resource resource = ResourceFactory.getResource( "test/src/solidstack/query/testjs.sql.slt" );
 		TemplateCompilerContext context = new TemplateCompilerContext();
 		context.setResource( resource );
 		context.setPath( "p/c" );
@@ -223,7 +223,7 @@ public class Basic
 		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
 		QueryManager queries = new QueryManager();
-		queries.setTemplatePath( "classpath:solidstack/query" );
+		queries.setTemplatePath( "classpath:/solidstack/query" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
 		params.put( "names", Arrays.asList( new String[] { "SYSTABLES", "SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS", "SYSTABLES",
@@ -255,7 +255,7 @@ public class Basic
 		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
 		QueryManager queries = new QueryManager();
-		queries.setTemplatePath( "classpath:solidstack/query" );
+		queries.setTemplatePath( "classpath:/solidstack/query" );
 		queries.setDefaultLanguage( "groovy" );
 
 		Query query = queries.getQuery( "test2.sql" );

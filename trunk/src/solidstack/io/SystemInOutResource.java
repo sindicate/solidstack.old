@@ -24,7 +24,7 @@ import java.io.OutputStream;
  *
  * @author René M. de Bloois
  */
-public class SystemInOutResource extends ResourceAdapter
+public class SystemInOutResource extends Resource
 {
 	/**
 	 * The {@link System#in}. Registered at the time of creation of this resource.
@@ -41,7 +41,7 @@ public class SystemInOutResource extends ResourceAdapter
 	public InputStream getInputStream()
 	{
 		if( this.in == null )
-			throw new IllegalStateException( "inputStream has been accessed earlier" );
+			throw new IllegalStateException( "inputStream has been accessed already" );
 		InputStream result = new NonClosingInputStream( this.in );
 		this.in = null;
 		return result;
@@ -50,10 +50,6 @@ public class SystemInOutResource extends ResourceAdapter
 	@Override
 	public OutputStream getOutputStream()
 	{
-		if( this.out == null )
-			throw new IllegalStateException( "outputStream has been accessed earlier" );
-		OutputStream result = new NonClosingOutputStream( this.out );
-		this.out = null;
-		return result;
+		return new NonClosingOutputStream( this.out );
 	}
 }

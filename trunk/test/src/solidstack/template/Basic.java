@@ -38,7 +38,7 @@ public class Basic
 	public void testBasic()
 	{
 		TemplateManager templates = new TemplateManager();
-		templates.setTemplatePath( "classpath:solidstack/template" );
+		templates.setTemplatePath( "classpath:/solidstack/template" );
 
 		Template template = templates.getTemplate( "test.txt" );
 		String result = template.apply( new Pars( "names", new String[] { "name1", "name2" } ) );
@@ -48,10 +48,10 @@ public class Basic
 				"AND TABLENAME IN ([name1, name2])\n" );
 	}
 
-	@Test //(groups="new")
+	@Test
 	public void testTransform() throws Exception
 	{
-		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/template/test.txt.slt" );
+		Resource resource = ResourceFactory.getResource( "test/src/solidstack/template/test.txt.slt" );
 		TemplateCompilerContext context = new TemplateCompilerContext();
 		context.setResource( resource );
 		context.setPath( "a/b/c" );
@@ -83,7 +83,7 @@ public class Basic
 				);
 
 		TemplateManager queries = new TemplateManager();
-		queries.setTemplatePath( "classpath:solidstack/template" );
+		queries.setTemplatePath( "classpath:/solidstack/template" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
 		params.put( "prefix", "SYST" );
@@ -135,7 +135,7 @@ public class Basic
 	{
 		TemplateManager templates = new TemplateManager();
 		TemplateCompiler.keepSource = true;
-		templates.setTemplatePath( "classpath:solidstack/template" );
+		templates.setTemplatePath( "classpath:/solidstack/template" );
 
 		Template template = templates.getTemplate( "test2.xml" );
 //		System.out.println( template.getSource() );

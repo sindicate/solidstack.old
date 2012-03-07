@@ -28,7 +28,7 @@ import java.util.List;
  *
  * @author René M. de Bloois
  */
-public class MemoryResource extends ResourceAdapter
+public class MemoryResource extends Resource
 {
 	/**
 	 * The buffer containing the resource's bytes.
@@ -77,7 +77,7 @@ public class MemoryResource extends ResourceAdapter
 	}
 
 	@Override
-	public Resource createRelative( String path )
+	public Resource resolve( String path )
 	{
 		// TODO Should we keep a reference to the original resource so that this can work?
 		// TODO Should we rename this resource to BufferedResource then?
