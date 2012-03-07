@@ -95,7 +95,7 @@ public class TemplateManager
 	 */
 	public void setTemplatePath( String path )
 	{
-		this.templatePath = ResourceFactory.getFolderResource( path );
+		this.templatePath = ResourceFactory.getResource( ResourceFactory.folderize( path ) );
 	}
 
 	// TODO Come up with an alternative, this does not work with Spring
@@ -222,7 +222,7 @@ public class TemplateManager
 	 */
 	private Resource getResource( String path )
 	{
-		Resource result = this.templatePath.createRelative( path );
+		Resource result = this.templatePath.resolve( path ).unwrap();
 		Loggers.loader.debug( "{}, lastModified: {} ({})", new Object[] { result, new Date( result.getLastModified() ), result.getLastModified() } );
 		return result;
 	}

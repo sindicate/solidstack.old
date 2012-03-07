@@ -16,9 +16,13 @@
 
 package solidstack.io;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,38 +34,61 @@ import java.util.regex.Pattern;
  * @author René M. de Bloois
  */
 // TODO Maybe we should use URIResource. That one has no problems with the classpath scheme.
-public class URLResource extends ResourceAdapter
+public class URIResource extends Resource
 {
 	/**
 	 * The URL.
 	 */
-	protected URL url;
+	protected URI uri;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param url The URL.
 	 */
-	public URLResource( URL url )
+	public URIResource( URI url )
 	{
-		this.url = url;
+		this.uri = url;
 	}
 
 	/**
 	 * Constructor.
 	 *
 	 * @param url The URL.
-	 * @throws MalformedURLException If the string specifies an unknown protocol.
+	 * @throws URISyntaxException
 	 */
-	public URLResource( String url ) throws MalformedURLException
+	public URIResource( String uri )
 	{
-		this( new URL( url ) );
+		this( toURI( uri ) );
 	}
 
-	public URLResource( String url, boolean folder ) throws MalformedURLException
+	public URIResource( URL url )
 	{
-		super( folder );
-		this.url = new URL( url );
+		this( toURI( url ) );
+	}
+
+	static private URI toURI( String uri )
+	{
+		try
+		{
+			return new URI( uri );
+		}
+		catch( URISyntaxException e )
+		{
+			throw new FatalURISyntaxException( e );
+		}
+	}
+
+	static private URI toURI( URL url )
+	{
+		try
+		{
+			return url.toURI();
+		}
+		catch( URISyntaxException e )
+		{
+			throw new FatalURISyntaxException( e );
+		}
 	}
 
 	@Override
@@ -73,7 +100,20 @@ public class URLResource extends ResourceAdapter
 	@Override
 	public URL getURL()
 	{
-		return this.url;
+		try
+		{
+			return this.uri.toURL();
+		}
+		catch( MalformedURLException e )
+		{
+			throw new FatalIOException( e );
+		}
+	}
+
+	@Override
+	public URI getURI() throws FileNotFoundException
+	{
+		return this.uri;
 	}
 
 	@Override
@@ -81,7 +121,7 @@ public class URLResource extends ResourceAdapter
 	{
 		try
 		{
-			return this.url.openStream();
+			return this.uri.toURL().openStream();
 		}
 		catch( IOException e )
 		{
@@ -90,18 +130,11 @@ public class URLResource extends ResourceAdapter
 	}
 
 	@Override
-	public Resource createRelative( String path )
+	public Resource resolve( String path )
 	{
-		try
-		{
-			// TODO Unit test with folder url
-			// TODO The resource factory has more logic then this
-			return new URLResource( new URL( this.url, path ) );
-		}
-		catch( MalformedURLException e )
-		{
-			throw new FatalIOException( e );
-		}
+		// TODO Unit test with folder url
+		// TODO The resource factory has more logic then this
+		return new URIResource( this.uri.resolve( path ) );
 	}
 
 	static String getScheme( String path )
@@ -117,7 +150,7 @@ public class URLResource extends ResourceAdapter
 	@Override
 	public String toString()
 	{
-		return this.url.toString();
+		return this.uri.toString();
 	}
 
 	@Override
@@ -132,5 +165,27 @@ public class URLResource extends ResourceAdapter
 	{
 		// TODO This should be implemented I think
 		return 0;
+	}
+
+	@Override
+	public String getNormalized()
+	{
+		return this.uri.normalize().toString();
+	}
+
+	@Override
+	public Resource unwrap()
+	{
+		URL url = getURL();
+		if( url.getProtocol().equals( "file" ) )
+			try
+			{
+				return new FileResource( new File( url.toURI() ) );
+			}
+			catch( URISyntaxException e )
+			{
+				throw new FatalURISyntaxException( e );
+			}
+		return this;
 	}
 }

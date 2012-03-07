@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 
 
@@ -32,7 +33,7 @@ import java.net.URL;
  *
  * @author René M. de Bloois
  */
-public class FileResource extends ResourceAdapter
+public class FileResource extends Resource
 {
 	/**
 	 * The file.
@@ -46,7 +47,6 @@ public class FileResource extends ResourceAdapter
 	 */
 	public FileResource( File file )
 	{
-		super( file.isDirectory() );
 		this.file = file;
 	}
 
@@ -57,18 +57,19 @@ public class FileResource extends ResourceAdapter
 	 */
 	public FileResource( String path )
 	{
-		this( new File( path ) );
+		this( new File( stripScheme( path ) ) );
 	}
 
-	/**
-	 * Constructor for a relative file resource.
-	 *
-	 * @param parent The parent folder.
-	 * @param path The path of the resource.
-	 */
-	public FileResource( File parent, String path )
+	public FileResource( URI uri )
 	{
-		this( new File( parent, path ) );
+		this( new File( uri ) );
+	}
+
+	static private String stripScheme( String path )
+	{
+		if( path.startsWith( "file:" ) )
+			return path.substring( 5 );
+		return path;
 	}
 
 	@Override
@@ -82,12 +83,18 @@ public class FileResource extends ResourceAdapter
 	{
 		try
 		{
-			return this.file.toURI().toURL();
+			return getURI().toURL();
 		}
 		catch( MalformedURLException e )
 		{
 			throw new FatalIOException( e ); // Not expected
 		}
+	}
+
+	@Override
+	public URI getURI()
+	{
+		return this.file.toURI();
 	}
 
 	@Override
@@ -114,20 +121,9 @@ public class FileResource extends ResourceAdapter
 
 	// TODO Need test for this
 	@Override
-	public Resource createRelative( String path )
+	public Resource resolve( String path )
 	{
-//		System.out.println( "Create relative [" + this.file + "] [" + path + "]" );
-		String scheme = URLResource.getScheme( path );
-		if( scheme == null || scheme.length() == 1 ) // No scheme or a drive letter
-		{
-			File parent = this.file;
-			if( !isFolder() )
-				parent = parent.getParentFile();
-			return new FileResource( parent, path );
-		}
-		if( scheme.equals( "file" ) )
-			return new URLResource( getURL() ).createRelative( path );
-		return ResourceFactory.getResource( path );
+		return ResourceFactory.getResource( this.file.toURI().resolve( path ) );
 	}
 
 	// TODO Need test for this
@@ -178,10 +174,11 @@ public class FileResource extends ResourceAdapter
 		return result.toString();
 	}
 
+	// TODO Use normalized for printing resources, so not here but there were the message is printed
 	@Override
 	public String toString()
 	{
-		return this.file.getAbsolutePath();
+		return this.file.getAbsolutePath().replace( '\\', '/' );
 	}
 
 	@Override
@@ -194,5 +191,18 @@ public class FileResource extends ResourceAdapter
 	public long getLastModified()
 	{
 		return this.file.lastModified();
+	}
+
+	@Override
+	public String getNormalized()
+	{
+		try
+		{
+			return this.file.getCanonicalPath();
+		}
+		catch( IOException e )
+		{
+			throw new FatalIOException( e );
+		}
 	}
 }

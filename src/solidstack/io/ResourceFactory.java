@@ -17,9 +17,8 @@
 package solidstack.io;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 
 /**
@@ -38,117 +37,67 @@ public final class ResourceFactory
 	}
 
 	/**
-	 * Creates a resource for the given path. If the path starts with classpath:, a {@link ClassPathResource} will be
-	 * returned. If the path is a URL, a {@link URLResource} will be returned. Otherwise a {@link FileResource} is
-	 * returned.
 	 *
+	 * @param parent The parent folder of the resource.
 	 * @param path The path for the resource.
 	 * @return The resource.
 	 */
 	static public Resource getResource( String path )
 	{
-		return getResource( null, path );
-	}
-
-	/**
-	 * Creates a resource for the given path. If the path starts with classpath:, a {@link ClassPathResource}, {@link URLResource} or {@link FileResource} will be
-	 * returned. If the path is a URL, a {@link URLResource} will be returned. Otherwise a {@link FileResource} is
-	 * returned. The parent argument is only used when the path is not a URL (including the classpath protocol).
-	 *
-	 * @param parent The parent folder of the resource.
-	 * @param path The path for the resource.
-	 * @return The resource.
-	 */
-	static public Resource getResource( File parent, String path )
-	{
 		if( path.equals( "-" ) )
 			return new SystemInOutResource();
 
-		if( path.startsWith( "classpath:" ) )
-		{
-			Resource result = new ClassPathResource( path );
-			try
-			{
-				URL url = result.getURL();
-				if( url.getProtocol().equals( "jar" ) )
-					return result;
-				path = url.toString();
-			}
-			catch( FileNotFoundException e )
-			{
-				return result;
-			}
-		}
-
+		URI uri;
 		try
 		{
-
-			Resource resource = new URLResource( path );
-			URL url;
-			try
-			{
-				url = resource.getURL();
-				if( url.getProtocol().equals( "file" ) )
-					return new FileResource( url.getFile() ); // TODO Check that the file is not a folder
-			}
-			catch( FileNotFoundException e )
-			{
-				// Ignore
-			}
-			return resource;
+			uri = new URI( path );
 		}
-		catch( MalformedURLException e )
+		catch( URISyntaxException e )
 		{
-			return new FileResource( parent, path ); // TODO Check that the file is not a folder
+			throw new FatalURISyntaxException( e );
 		}
-	}
 
-	static public Resource getFolderResource( String path )
-	{
-		return getFolderResource( null, path );
+		if( uri.getScheme() == null || uri.getScheme().length() == 1 || "file".equals( uri.getScheme() ) )
+			return new FileResource( path );
+
+		if( "classpath".equals( uri.getScheme() ) )
+				return new ClassPathResource( path );
+
+		return new URIResource( path );
 	}
 
 	/**
-	 * Creates a resource for the given path. If the path starts with classpath:, a {@link ClassPathResource}, {@link URLResource} or {@link FileResource} will be
-	 * returned. If the path is a URL, a {@link URLResource} will be returned. Otherwise a {@link FileResource} is
-	 * returned. The parent argument is only used when the path is not a URL (including the classpath protocol).
 	 *
 	 * @param parent The parent folder of the resource.
 	 * @param path The path for the resource.
 	 * @return The resource.
 	 */
-	static public Resource getFolderResource( File parent, String path )
+	static public Resource getResource( File file )
 	{
-		if( path.equals( "-" ) )
-			throw new FatalIOException( "'-' not supported for folder resources" );
+		return new FileResource( file );
+	}
 
-		if( path.startsWith( "classpath:" ) )
-			return new ClassPathResource( path, true );
-
-		try
-		{
-			Resource resource = new URLResource( path, true );
-			URL url;
-			try
-			{
-				url = resource.getURL();
-				if( url.getProtocol().equals( "file" ) )
-					return new FileResource( url.getFile() ); // TODO Check that the file is indeed a folder
-			}
-			catch( FileNotFoundException e )
-			{
-				// Ignore
-			}
-			return resource;
-		}
-		catch( MalformedURLException e )
-		{
-			return new FileResource( parent, path ); // TODO Check that the file is indeed a folder
-		}
+	/**
+	 *
+	 * @param parent The parent folder of the resource.
+	 * @param path The path for the resource.
+	 * @return The resource.
+	 */
+	static public Resource getResource( URI uri )
+	{
+		// TODO Do it the other way around
+		return getResource( uri.toString() );
 	}
 
 	static public Resource currentFolder()
 	{
-		return getFolderResource( "" );
+		return getResource( "" ); // TODO Unit test
+	}
+
+	static public String folderize( String path )
+	{
+		if( path.endsWith( "/" ) || path.endsWith( "\\" ) )
+			return path;
+		return path + "/";
 	}
 }

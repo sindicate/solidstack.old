@@ -29,7 +29,7 @@ import solidstack.io.FatalIOException;
 import solidstack.io.FileResource;
 import solidstack.io.Resource;
 import solidstack.io.ResourceFactory;
-import solidstack.io.URLResource;
+import solidstack.io.URIResource;
 
 
 @SuppressWarnings( "javadoc" )
@@ -38,15 +38,15 @@ public class Reload
 	@Test
 	public void testResourceFactory() throws IOException
 	{
-		Resource resource = ResourceFactory.getResource( "classpath:java/lang/String.class" );
+		Resource resource = ResourceFactory.getResource( "classpath:/java/lang/String.class" );
 		Assert.assertTrue( resource instanceof ClassPathResource );
 		Assert.assertEquals( resource.getURL().getProtocol(), "jar" );
 		InputStream in = resource.getInputStream();
 		Assert.assertTrue( in.read() >= 0 );
 		in.close();
 
-		resource = ResourceFactory.getResource( "classpath:solidstack/template/dummy.slt" );
-		Assert.assertTrue( resource instanceof FileResource );
+		resource = ResourceFactory.getResource( "classpath:/solidstack/template/dummy.slt" );
+		Assert.assertTrue( resource instanceof ClassPathResource );
 		Assert.assertEquals( resource.getURL().getProtocol(), "file" );
 		in = resource.getInputStream();
 		Assert.assertTrue( in.read() >= 0 );
@@ -60,7 +60,7 @@ public class Reload
 		in.close();
 
 		resource = ResourceFactory.getResource( "http://nu.nl" );
-		Assert.assertTrue( resource instanceof URLResource );
+		Assert.assertTrue( resource instanceof URIResource );
 		Assert.assertEquals( resource.getURL().getProtocol(), "http" );
 		try
 		{
@@ -79,13 +79,13 @@ public class Reload
 	public void testReloading() throws IOException
 	{
 		TemplateManager templates = new TemplateManager();
-		templates.setTemplatePath( "classpath:solidstack/template" );
+		templates.setTemplatePath( "classpath:/solidstack/template" );
 		templates.setDefaultLanguage( "javascript" );
 
 		Template template = templates.getTemplate( "dummy" );
 
-		Resource resource = ResourceFactory.getResource( "classpath:solidstack/template/dummy.slt" );
-		OutputStream out = resource.getOutputStream();
+		Resource resource = ResourceFactory.getResource( "classpath:/solidstack/template/dummy.slt" );
+		OutputStream out = resource.unwrap().getOutputStream();
 		out.write( "<%@template version=\"1.0\"%>test".getBytes() );
 		out.close();
 

@@ -23,7 +23,7 @@ import java.io.InputStream;
  *
  * @author René M. de Bloois
  */
-public class InputStreamResource extends ResourceAdapter
+public class InputStreamResource extends Resource
 {
 	/**
 	 * The input stream.
@@ -46,7 +46,7 @@ public class InputStreamResource extends ResourceAdapter
 	public InputStream getInputStream()
 	{
 		if( this.inputStream == null )
-			throw new IllegalStateException( "inputStream has been accessed earlier" );
+			throw new IllegalStateException( "inputStream has been accessed already" );
 		InputStream result = this.inputStream;
 		this.inputStream = null;
 		return result;

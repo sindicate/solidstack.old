@@ -1,77 +1,118 @@
-/*--
- * Copyright 2011 René M. de Bloois
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package solidstack.io;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.net.URL;
 
+
 /**
- * An abstraction of a resource. For example, a file, a URL, a resource in the classpath, or bytes in memory.
+ * Represents a resource.
  *
- * @author René M. de Bloois
+ * @author René de Bloois
  */
-public interface Resource
+public class Resource
 {
 	/**
-	 * Returns true if {@link #getURL()} is supported. False otherwise.
-	 *
-	 * @return True if and only if {@link #getURL()} is supported.
+	 * @return True if this resource has a URL and URI, false otherwise.
 	 */
-	boolean supportsURL();
+	public boolean supportsURL()
+	{
+		return false;
+	}
 
 	/**
-	 * Returns the URL of the resource. Some resources throw an {@link UnsupportedOperationException}. Use
-	 * {@link #supportsURL()} to determine if this call is supported or not.
-	 *
-	 * @return The URL of the resource.
-	 * @throws FileNotFoundException
+	 * @return True if the resource exists, false otherwise.
 	 */
-	URL getURL() throws FileNotFoundException;
+	public boolean exists()
+	{
+		return true;
+	}
 
 	/**
-	 * Returns the input stream for this resource. Some resources allow only a single input stream to be retrieved.
-	 *
-	 * @return The input stream for this resource.
-	 * @throws FileNotFoundException
+	 * @return The last modified time in milliseconds.
 	 */
-	InputStream getInputStream() throws FileNotFoundException;
+	public long getLastModified()
+	{
+		return 0;
+	}
 
 	/**
-	 * Returns the output stream for this resource. Some resources allow only a single output stream to be retrieved.
+	 * @return The URL of this resource.
 	 *
-	 * @return The output stream for this resource.
+	 * @throws FileNotFoundException If the resource is not found.
 	 */
-	OutputStream getOutputStream();
+	// TODO Don't throw FileNotFoundException
+	public URL getURL() throws FileNotFoundException
+	{
+		throw new UnsupportedOperationException();
+	}
 
 	/**
-	 * Creates a resource with the given path relative to this resource.
+	 * @return The URI of this resource.
 	 *
-	 * @param path The path of the resource.
-	 * @return The new resource.
+	 * @throws FileNotFoundException If the resource is not found.
 	 */
-	Resource createRelative( String path );
+	// TODO Don't throw FileNotFoundException
+	public URI getURI() throws FileNotFoundException
+	{
+		throw new UnsupportedOperationException();
+	}
 
-	String getPathFrom( Resource other );
+	/**
+	 * @return An InputStream to read from the resource.
+	 *
+	 * @throws FileNotFoundException If the resource is not found.
+	 */
+	public InputStream getInputStream() throws FileNotFoundException
+	{
+		throw new UnsupportedOperationException();
+	}
 
-	boolean exists();
+	/**
+	 * @return An OutputStream to write to the resource.
+	 */
+	public OutputStream getOutputStream()
+	{
+		throw new UnsupportedOperationException();
+	}
 
-	long getLastModified();
+    /**
+     * Constructs a new resource by resolving the given path against this resource.
+     *
+     * @param path The path to resolve against this resource.
+     * @return The resulting resource.
+     */
+ 	public Resource resolve( @SuppressWarnings( "unused" ) String path )
+	{
+		throw new UnsupportedOperationException();
+	}
 
-	boolean isFolder();
+ 	/**
+ 	 * Calculates a relative path from the given resource to this resource.
+ 	 *
+ 	 * @param other The resource to calculate the relative path from.
+ 	 * @return The relative path from the given resource to this resource.
+ 	 */
+	public String getPathFrom( @SuppressWarnings( "unused" ) Resource other )
+	{
+		throw new UnsupportedOperationException();
+	}
+
+    /**
+     * @return A normalized path to this resource.
+     */
+	public String getNormalized()
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * @return A resource that better implements the capabilities of the actual resource.
+	 */
+	public Resource unwrap()
+	{
+		return this;
+	}
 }
