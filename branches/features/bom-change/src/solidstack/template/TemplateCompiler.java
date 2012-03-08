@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import solidstack.io.BOMDetectingLineReader;
+import solidstack.io.CharsetDetectingLineReader;
 import solidstack.io.LineReader;
 import solidstack.io.Resource;
 import solidstack.lang.Assert;
@@ -157,7 +157,7 @@ public class TemplateCompiler
 			return;
 		try
 		{
-			context.setReader( new BOMDetectingLineReader( context.getResource(), ENCODING_PATTERN ) );
+			context.setReader( new CharsetDetectingLineReader( context.getResource(), ENCODING_PATTERN ) );
 		}
 		catch( FileNotFoundException e )
 		{

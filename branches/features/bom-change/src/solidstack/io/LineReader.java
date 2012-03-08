@@ -82,5 +82,6 @@ public interface LineReader
 	 *
 	 * @return The BOM of the source where the bytes are read from.
 	 */
+	// TODO Remove?
 	byte[] getBOM();
 }

@@ -76,6 +76,7 @@ public class Query
 	 *
 	 * @param template The template for the query.
 	 */
+	// TODO Directive to enable JDBC escaping <%@ query jdbc-escapes="true" %>
 	public Query( Template template )
 	{
 		this.template = template;
