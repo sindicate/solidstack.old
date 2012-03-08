@@ -1,0 +1,21 @@
+<%@ template version="1.0" encoding="UTF-8" language="javascript" %>
+<% // Test if the import at the bottom works, and this comment too of course
+new Timestamp( new java.util.Date().time ) %>
+SELECT *
+<%@ template contentType="text/html; charset=ISO-8859-1" %>
+FROM SYS.SYSTABLES<%= null %>
+	<%--
+	This comment should not 
+	interfere with the linenumbers
+	--%>
+WHERE 1 = 1
+		<% if( prefix ) { %>
+AND TABLENAME LIKE '<%= prefix %>%'
+		<% } %>
+		<% if( name ) { %>
+AND TABLENAME = ${name}
+		<% } %>
+		<% if( names ) { %>
+AND TABLENAME IN (${names})
+		<% } %>
+<%@ template import = "java.sql.Timestamp" import = "java.util.*" %>

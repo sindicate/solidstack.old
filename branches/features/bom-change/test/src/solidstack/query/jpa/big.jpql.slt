@@ -1,0 +1,18 @@
+<%@ template version="1.0" language = "groovy" %>
+<%@ query language = "JPQL" %>
+<%
+
+
+if( selector == "select all" ) {%>
+SELECT t FROM Test1 t
+<% }
+
+
+if( selector == "select first" ) {%>
+SELECT t FROM Test1 t WHERE id = 1
+<% }
+
+
+if( selector == "select name" ) {%>
+SELECT t.name FROM Test1 t
+<% } %>
