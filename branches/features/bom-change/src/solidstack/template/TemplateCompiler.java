@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import solidstack.io.CharsetDetectingLineReader;
 import solidstack.io.LineReader;
 import solidstack.io.Resource;
+import solidstack.io.ResourceLineReader;
 import solidstack.lang.Assert;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.EVENT;
@@ -44,7 +44,6 @@ import solidstack.template.javascript.JavaScriptTemplateCompiler;
 public class TemplateCompiler
 {
 	static final private Pattern CONTENT_TYPE_PATTERN = Pattern.compile( "^[ \\t]*(\\S*)[ \\t]*(?:;[ \\t]*charset[ \\t]*=[ \\t]*(\\S*)[ \\t]*)?$" ); // TODO case sensitive & http://www.iana.org/assignments/media-types/index.html
-	static final private Pattern ENCODING_PATTERN = Pattern.compile( "^<%@[ \t]*template[ \t]+encoding[ \t]*=\"([^\"]*)\".*", Pattern.CASE_INSENSITIVE ); // TODO Improve, case sensitive?
 
 	static boolean keepSource = false;
 
@@ -155,9 +154,10 @@ public class TemplateCompiler
 	{
 		if( context.getReader() != null )
 			return;
+
 		try
 		{
-			context.setReader( new CharsetDetectingLineReader( context.getResource(), ENCODING_PATTERN ) );
+			context.setReader( new ResourceLineReader( context.getResource(), EncodingDetector.INSTANCE ) );
 		}
 		catch( FileNotFoundException e )
 		{

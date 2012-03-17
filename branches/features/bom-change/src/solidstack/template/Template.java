@@ -37,7 +37,7 @@ abstract public class Template
 	private Directive[] directives;
 
 	private String contentType;
-	private String charSet;
+	private String charSet; // FIXME Rename to characterencoding, including the contenttype directive?
 	private long lastModified;
 	private TemplateManager manager;
 

@@ -1,5 +1,5 @@
 /*--
- * Copyright 2011 René M. de Bloois
+ * Copyright 2005 René M. de Bloois
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,101 @@
 
 package solidstack.io;
 
+import java.io.FileNotFoundException;
+
+
+
 /**
- * A reader that reads lines or characters and has the ability to reposition itself on any give line number.
+ * A line reader that automatically detects character encoding through the BOM and is able to reposition itself on a line.
  *
  * @author René M. de Bloois
  */
-public interface RandomAccessLineReader extends LineReader
+public class RandomAccessLineReader implements LineReader
 {
-	/**
-	 * Repositions the reader so that the given line number is the one that is to be read next.
-	 *
-	 * @param lineNumber The number of the line that needs to be read next.
-	 */
-	void gotoLine( int lineNumber );
+	private Resource resource;
+	private LineReader reader;
+	private String encodingOverride;
+	private EncodingDetector detector;
+
+	public RandomAccessLineReader( Resource resource ) throws FileNotFoundException
+	{
+		// TODO Check that the resource is reopenable
+		this.resource = resource;
+		this.reader = new ResourceLineReader( resource );
+	}
+
+	public RandomAccessLineReader( Resource resource, EncodingDetector detector ) throws FileNotFoundException
+	{
+		// TODO Check that the resource is reopenable
+		this.resource = resource;
+		this.detector = detector;
+		this.reader = new ResourceLineReader( resource, detector );
+	}
+
+	public int read()
+	{
+		return this.reader.read();
+	}
+
+	public String readLine()
+	{
+		return this.reader.readLine();
+	}
+
+	public Resource getResource()
+	{
+		return this.reader.getResource();
+	}
+
+	public FileLocation getLocation()
+	{
+		return this.reader.getLocation();
+	}
+
+	public int getLineNumber()
+	{
+		return this.reader.getLineNumber();
+	}
+
+	public String getEncoding()
+	{
+		return this.reader.getEncoding();
+	}
+
+	public void gotoLine( int lineNumber )
+	{
+		if( this.reader == null )
+			throw new IllegalStateException( "Stream is not open" ); // TODO Is this what the JDK throws too?
+		if( lineNumber < 1 )
+			throw new IllegalArgumentException( "lineNumber must be 1 or greater" );
+
+		if( lineNumber < getLineNumber() )
+			reOpen();
+		while( lineNumber > getLineNumber() )
+			if( readLine() == null )
+				throw new IllegalArgumentException( "lineNumber " + lineNumber + " not found" );
+	}
+
+	public void close()
+	{
+		if( this.reader != null )
+			this.reader.close();
+		this.reader = null;
+	}
 
 	/**
-	 * Re-open the file with another encoding.
-	 *
-	 * @param encoding The new encoding.
+	 * Reopens itself to reset the position or change the character encoding.
 	 */
-	void reOpen( String encoding );
+	protected void reOpen()
+	{
+		close();
+		try
+		{
+			this.reader = new ResourceLineReader( this.resource, this.detector );
+		}
+		catch( FileNotFoundException e )
+		{
+			throw new FatalIOException( e );
+		}
+	}
 }

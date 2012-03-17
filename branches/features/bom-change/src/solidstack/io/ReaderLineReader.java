@@ -50,7 +50,7 @@ public class ReaderLineReader implements LineReader
 	/**
 	 * The underlying resource.
 	 */
-	protected Resource resource;
+	protected Resource resource; // TODO This is not filled by the constructor
 
 
 	/**

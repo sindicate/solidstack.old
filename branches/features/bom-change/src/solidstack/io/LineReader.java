@@ -76,12 +76,4 @@ public interface LineReader
 	 * @return The character encoding of the source where the bytes are read from.
 	 */
 	String getEncoding();
-
-	/**
-	 * Returns the BOM (Byte Order Mark) of the source where the bytes are read from.
-	 *
-	 * @return The BOM of the source where the bytes are read from.
-	 */
-	// TODO Remove?
-	byte[] getBOM();
 }
