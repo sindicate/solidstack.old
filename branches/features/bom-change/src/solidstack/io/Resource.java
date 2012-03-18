@@ -115,4 +115,9 @@ public class Resource
 	{
 		return this;
 	}
+
+	public SourceLocation getLocation()
+	{
+		return new SourceLocation( this, 1 );
+	}
 }

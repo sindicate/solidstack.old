@@ -1,12 +1,12 @@
 package solidstack.io;
 
 
-public class FileLocation
+public class SourceLocation
 {
 	private Resource resource;
 	private int pos;
 
-	public FileLocation( Resource resource, int pos )
+	public SourceLocation( Resource resource, int pos )
 	{
 		this.resource = resource;
 		this.pos = pos;
@@ -22,16 +22,16 @@ public class FileLocation
 		return this.pos;
 	}
 
-	public FileLocation previousLine()
+	public SourceLocation previousLine()
 	{
 		if( this.pos <= 0 )
 			throw new FatalIOException( "There is no previous line" );
-		return new FileLocation( this.resource, this.pos - 1 );
+		return new SourceLocation( this.resource, this.pos - 1 );
 	}
 
-	public FileLocation lineNumber( int lineNumber )
+	public SourceLocation lineNumber( int lineNumber )
 	{
-		return new FileLocation( this.resource, lineNumber );
+		return new SourceLocation( this.resource, lineNumber );
 	}
 
 	@Override

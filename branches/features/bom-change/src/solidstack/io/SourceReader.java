@@ -22,7 +22,7 @@ package solidstack.io;
  *
  * @author René M. de Bloois
  */
-public interface LineReader
+public interface SourceReader
 {
 	/**
 	 * Close the reader.
@@ -66,9 +66,9 @@ public interface LineReader
 	 * Returns the current location.
 	 *
 	 * @return The current location.
-	 * @see FileLocation
+	 * @see SourceLocation
 	 */
-	FileLocation getLocation();
+	SourceLocation getLocation();
 
 	/**
 	 * Returns the character encoding of the source where the bytes are read from.

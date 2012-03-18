@@ -31,7 +31,7 @@ public class PushbackReader
 	/**
 	 * The underlying reader.
 	 */
-	protected LineReader reader;
+	protected SourceReader reader;
 
 	/**
 	 * The push back buffer;
@@ -50,7 +50,7 @@ public class PushbackReader
 	 *
 	 * @param reader A reader.
 	 */
-	public PushbackReader( LineReader reader )
+	public PushbackReader( SourceReader reader )
 	{
 		this.reader = reader;
 		this.buffer = new StringBuilder();
@@ -67,9 +67,9 @@ public class PushbackReader
 		return this.lineNumber;
 	}
 
-	public FileLocation getLocation()
+	public SourceLocation getLocation()
 	{
-		return new FileLocation( this.reader.getResource(), this.lineNumber );
+		return new SourceLocation( this.reader.getResource(), this.lineNumber );
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class PushbackReader
 	 *
 	 * @return The underlying reader.
 	 */
-	public LineReader getReader()
+	public SourceReader getReader()
 	{
 		if( this.buffer.length() > 0 )
 			throw new IllegalStateException( "There are still pushed back characters in the buffer" );
@@ -103,7 +103,7 @@ public class PushbackReader
 		}
 		else
 		{
-			result = this.reader.read(); // No \r returned by the LineReader
+			result = this.reader.read(); // No \r returned by the SourceReader
 		}
 
 		if( result == '\n' )

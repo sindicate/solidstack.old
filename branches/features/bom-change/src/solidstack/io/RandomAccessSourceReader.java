@@ -25,26 +25,26 @@ import java.io.FileNotFoundException;
  *
  * @author René M. de Bloois
  */
-public class RandomAccessLineReader implements LineReader
+public class RandomAccessSourceReader implements SourceReader
 {
 	private Resource resource;
-	private LineReader reader;
+	private SourceReader reader;
 	private String encodingOverride;
 	private EncodingDetector detector;
 
-	public RandomAccessLineReader( Resource resource ) throws FileNotFoundException
+	public RandomAccessSourceReader( Resource resource ) throws FileNotFoundException
 	{
 		// TODO Check that the resource is reopenable
 		this.resource = resource;
-		this.reader = new ResourceLineReader( resource );
+		this.reader = ReaderSourceReader.forResource( resource );
 	}
 
-	public RandomAccessLineReader( Resource resource, EncodingDetector detector ) throws FileNotFoundException
+	public RandomAccessSourceReader( Resource resource, EncodingDetector detector ) throws FileNotFoundException
 	{
 		// TODO Check that the resource is reopenable
 		this.resource = resource;
 		this.detector = detector;
-		this.reader = new ResourceLineReader( resource, detector );
+		this.reader = ReaderSourceReader.forResource( resource, detector );
 	}
 
 	public int read()
@@ -62,7 +62,7 @@ public class RandomAccessLineReader implements LineReader
 		return this.reader.getResource();
 	}
 
-	public FileLocation getLocation()
+	public SourceLocation getLocation()
 	{
 		return this.reader.getLocation();
 	}
@@ -106,7 +106,7 @@ public class RandomAccessLineReader implements LineReader
 		close();
 		try
 		{
-			this.reader = new ResourceLineReader( this.resource, this.detector );
+			this.reader = ReaderSourceReader.forResource( this.resource, this.detector );
 		}
 		catch( FileNotFoundException e )
 		{

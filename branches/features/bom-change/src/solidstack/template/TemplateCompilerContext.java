@@ -2,7 +2,7 @@ package solidstack.template;
 
 import java.util.List;
 
-import solidstack.io.LineReader;
+import solidstack.io.SourceReader;
 import solidstack.io.Resource;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
@@ -13,7 +13,7 @@ public class TemplateCompilerContext
 {
 	private String path;
 	private Resource resource;
-	private LineReader reader;
+	private SourceReader reader;
 	private List<ParseEvent> events;
 	private List<Directive> directives;
 	private List<String> imports;
@@ -33,12 +33,12 @@ public class TemplateCompilerContext
 		return this.resource;
 	}
 
-	public void setReader( LineReader reader )
+	public void setReader( SourceReader reader )
 	{
 		this.reader = reader;
 	}
 
-	public LineReader getReader()
+	public SourceReader getReader()
 	{
 		return this.reader;
 	}

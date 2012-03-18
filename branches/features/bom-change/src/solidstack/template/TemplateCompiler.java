@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import solidstack.io.LineReader;
+import solidstack.io.ReaderSourceReader;
 import solidstack.io.Resource;
-import solidstack.io.ResourceLineReader;
+import solidstack.io.SourceReader;
 import solidstack.lang.Assert;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.EVENT;
@@ -85,11 +85,11 @@ public class TemplateCompiler
 	/**
 	 * Compiles a template into a {@link Template}.
 	 *
-	 * @param reader The {@link LineReader} that contains the template.
+	 * @param reader The {@link SourceReader} that contains the template.
 	 * @param path The path of the template, needed to generate a name for the class in memory.
 	 * @return A {@link Template}.
 	 */
-	public Template compile( LineReader reader, String path )
+	public Template compile( SourceReader reader, String path )
 	{
 		Loggers.compiler.info( "Compiling [{}] from [{}]", path, reader.getResource() );
 
@@ -157,7 +157,7 @@ public class TemplateCompiler
 
 		try
 		{
-			context.setReader( new ResourceLineReader( context.getResource(), EncodingDetector.INSTANCE ) );
+			context.setReader( ReaderSourceReader.forResource( context.getResource(), EncodingDetector.INSTANCE ) );
 		}
 		catch( FileNotFoundException e )
 		{

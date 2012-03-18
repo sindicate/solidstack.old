@@ -22,10 +22,10 @@ import java.util.Map;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import solidstack.io.LineReader;
+import solidstack.io.ReaderSourceReader;
 import solidstack.io.Resource;
 import solidstack.io.ResourceFactory;
-import solidstack.io.StringLineReader;
+import solidstack.io.SourceReader;
 import solidstack.template.JSPLikeTemplateParser.EVENT;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
 import solidstack.util.Pars;
@@ -103,7 +103,7 @@ public class Basic
 	@Test
 	public void testNewlinesWithinDirective() throws Exception
 	{
-		LineReader reader = new StringLineReader( "<%@ template\n" +
+		SourceReader reader = ReaderSourceReader.forString( "<%@ template\n" +
 				"import=\"java.util.ArrayList\"\n" +
 				"import=\"java.io.*\"\n" +
 				"version=\n" +
@@ -161,7 +161,7 @@ public class Basic
 		for( int i = 0; i < 1000; i++ )
 			buffer.append( "<%@template version=\"1.0\"%>abcdefghijklmnopqrstuvwxyz" );
 
-		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( new StringLineReader( buffer.toString() ) );
+		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( ReaderSourceReader.forString( buffer.toString() ) );
 		ParseEvent event = parser.next();
 		while( event.getEvent() != EVENT.EOF )
 		{
