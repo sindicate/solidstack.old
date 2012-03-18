@@ -1,5 +1,6 @@
 package solidstack.query.hibernate;
 
+@SuppressWarnings( "javadoc" )
 public class Test1
 {
 	private int id;

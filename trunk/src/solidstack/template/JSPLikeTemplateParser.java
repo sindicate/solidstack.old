@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import solidstack.io.LineReader;
+import solidstack.io.SourceReader;
 import solidstack.io.PushbackReader;
 import solidstack.lang.Assert;
 
@@ -114,7 +114,7 @@ public class JSPLikeTemplateParser
 	 *
 	 * @param reader The reader from which to read the source of the template.
 	 */
-	public JSPLikeTemplateParser( LineReader reader )
+	public JSPLikeTemplateParser( SourceReader reader )
 	{
 		this.reader = new PushbackReader( reader );
 	}

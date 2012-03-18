@@ -1,14 +1,13 @@
 package solidstack.template;
 
-import java.io.IOException;
-
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.testng.annotations.Test;
 
+@SuppressWarnings( "javadoc" )
 public class Spring
 {
 	@Test
-	public void testSpring() throws IOException
+	public void testSpring()
 	{
 		GenericXmlApplicationContext context = new GenericXmlApplicationContext();
 		context.load( "classpath:/solidstack/template/context.xml" );

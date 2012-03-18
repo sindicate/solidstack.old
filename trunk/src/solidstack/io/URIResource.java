@@ -24,44 +24,40 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 /**
- * A resource identified by a URL.
+ * A resource identified by a URI.
  *
  * @author René M. de Bloois
  */
-// TODO Maybe we should use URIResource. That one has no problems with the classpath scheme.
 public class URIResource extends Resource
 {
 	/**
-	 * The URL.
+	 * The URI.
 	 */
 	protected URI uri;
 
+
 	/**
-	 * Constructor.
-	 *
-	 * @param url The URL.
+	 * @param uri The URI.
 	 */
-	public URIResource( URI url )
+	public URIResource( URI uri )
 	{
-		this.uri = url;
+		this.uri = uri;
 	}
 
 	/**
-	 * Constructor.
-	 *
-	 * @param url The URL.
-	 * @throws URISyntaxException
+	 * @param uri The URI.
 	 */
 	public URIResource( String uri )
 	{
 		this( toURI( uri ) );
 	}
 
+	/**
+	 * @param url A URL.
+	 */
 	public URIResource( URL url )
 	{
 		this( toURI( url ) );
@@ -117,7 +113,7 @@ public class URIResource extends Resource
 	}
 
 	@Override
-	public InputStream getInputStream()
+	public InputStream newInputStream()
 	{
 		try
 		{
@@ -135,16 +131,6 @@ public class URIResource extends Resource
 		// TODO Unit test with folder url
 		// TODO The resource factory has more logic then this
 		return new URIResource( this.uri.resolve( path ) );
-	}
-
-	static String getScheme( String path )
-	{
-		// scheme starts with a-zA-Z, and contains a-zA-Z0-9 and $-_@.&+- and !*"'(), and %
-		Pattern pattern = Pattern.compile( "^([a-zA-Z][a-zA-Z0-9$_@.&+\\-!*\"'(),%]*):" );
-		Matcher matcher = pattern.matcher( path );
-		if( matcher.find() )
-			return matcher.group( 1 );
-		return null;
 	}
 
 	@Override
@@ -176,16 +162,8 @@ public class URIResource extends Resource
 	@Override
 	public Resource unwrap()
 	{
-		URL url = getURL();
-		if( url.getProtocol().equals( "file" ) )
-			try
-			{
-				return new FileResource( new File( url.toURI() ) );
-			}
-			catch( URISyntaxException e )
-			{
-				throw new FatalURISyntaxException( e );
-			}
+		if( "file".equals( this.uri.getScheme() ) )
+			return new FileResource( new File( this.uri ) );
 		return this;
 	}
 }

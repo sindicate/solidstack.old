@@ -41,21 +41,21 @@ public class Reload
 		Resource resource = ResourceFactory.getResource( "classpath:/java/lang/String.class" );
 		Assert.assertTrue( resource instanceof ClassPathResource );
 		Assert.assertEquals( resource.getURL().getProtocol(), "jar" );
-		InputStream in = resource.getInputStream();
+		InputStream in = resource.newInputStream();
 		Assert.assertTrue( in.read() >= 0 );
 		in.close();
 
 		resource = ResourceFactory.getResource( "classpath:/solidstack/template/dummy.slt" );
 		Assert.assertTrue( resource instanceof ClassPathResource );
 		Assert.assertEquals( resource.getURL().getProtocol(), "file" );
-		in = resource.getInputStream();
+		in = resource.newInputStream();
 		Assert.assertTrue( in.read() >= 0 );
 		in.close();
 
 		resource = ResourceFactory.getResource( "file:build.xml" );
 		Assert.assertTrue( resource instanceof FileResource );
 		Assert.assertEquals( resource.getURL().getProtocol(), "file" );
-		in = resource.getInputStream();
+		in = resource.newInputStream();
 		Assert.assertTrue( in.read() >= 0 );
 		in.close();
 
@@ -64,7 +64,7 @@ public class Reload
 		Assert.assertEquals( resource.getURL().getProtocol(), "http" );
 		try
 		{
-			in = resource.getInputStream();
+			in = resource.newInputStream();
 			Assert.assertTrue( in.read() >= 0 );
 			in.close();
 		}

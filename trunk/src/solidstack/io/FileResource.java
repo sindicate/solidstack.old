@@ -35,15 +35,10 @@ import java.net.URL;
  */
 public class FileResource extends Resource
 {
-	/**
-	 * The file.
-	 */
-	protected File file;
+	private File file;
 
 	/**
-	 * Constructor.
-	 *
-	 * @param file The file. The file cannot be a directory.
+	 * @param file The file.
 	 */
 	public FileResource( File file )
 	{
@@ -51,15 +46,16 @@ public class FileResource extends Resource
 	}
 
 	/**
-	 * Constructor.
-	 *
-	 * @param path The path of the file. The file cannot be a directory.
+	 * @param path The path of the file.
 	 */
 	public FileResource( String path )
 	{
 		this( new File( stripScheme( path ) ) );
 	}
 
+	/**
+	 * @param uri The URI of the file.
+	 */
 	public FileResource( URI uri )
 	{
 		this( new File( uri ) );
@@ -72,6 +68,9 @@ public class FileResource extends Resource
 		return path;
 	}
 
+	/**
+	 * @return True.
+	 */
 	@Override
 	public boolean supportsURL()
 	{
@@ -98,7 +97,7 @@ public class FileResource extends Resource
 	}
 
 	@Override
-	public InputStream getInputStream() throws FileNotFoundException
+	public InputStream newInputStream() throws FileNotFoundException
 	{
 		return new FileInputStream( this.file );
 	}
@@ -174,7 +173,6 @@ public class FileResource extends Resource
 		return result.toString();
 	}
 
-	// TODO Use normalized for printing resources, so not here but there were the message is printed
 	@Override
 	public String toString()
 	{

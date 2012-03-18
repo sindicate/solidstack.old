@@ -22,23 +22,18 @@ import java.net.URISyntaxException;
 
 
 /**
- * A factory to create some difficult data structures.
+ * A factory to create resources.
  *
  * @author René M. de Bloois
  */
 public final class ResourceFactory
 {
-	/**
-	 * This utility class cannot be instantiated.
-	 */
 	private ResourceFactory()
 	{
-		super();
+		// Utility class
 	}
 
 	/**
-	 *
-	 * @param parent The parent folder of the resource.
 	 * @param path The path for the resource.
 	 * @return The resource.
 	 */
@@ -61,15 +56,13 @@ public final class ResourceFactory
 			return new FileResource( path );
 
 		if( "classpath".equals( uri.getScheme() ) )
-				return new ClassPathResource( path );
+			return new ClassPathResource( path );
 
 		return new URIResource( path );
 	}
 
 	/**
-	 *
-	 * @param parent The parent folder of the resource.
-	 * @param path The path for the resource.
+	 * @param file A file.
 	 * @return The resource.
 	 */
 	static public Resource getResource( File file )
@@ -78,9 +71,7 @@ public final class ResourceFactory
 	}
 
 	/**
-	 *
-	 * @param parent The parent folder of the resource.
-	 * @param path The path for the resource.
+	 * @param uri The URI for the resource.
 	 * @return The resource.
 	 */
 	static public Resource getResource( URI uri )
@@ -89,11 +80,20 @@ public final class ResourceFactory
 		return getResource( uri.toString() );
 	}
 
+	/**
+	 * @return The current folder as a Resource.
+	 */
 	static public Resource currentFolder()
 	{
 		return getResource( "" ); // TODO Unit test
 	}
 
+	/**
+	 * Makes sure the path ends with a / or \.
+	 *
+	 * @param path The path to folderize.
+	 * @return The folderized path.
+	 */
 	static public String folderize( String path )
 	{
 		if( path.endsWith( "/" ) || path.endsWith( "\\" ) )

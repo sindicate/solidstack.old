@@ -29,7 +29,7 @@ import org.testng.annotations.Test;
 
 import solidstack.io.Resource;
 import solidstack.io.ResourceFactory;
-import solidstack.io.StringLineReader;
+import solidstack.io.SourceReaders;
 import solidstack.query.Query.PreparedSQL;
 import solidstack.template.ParseException;
 import solidstack.template.Template;
@@ -282,7 +282,7 @@ public class Basic
 		text = "<%@template version=\"1.0\"%>" + text;
 
 		TemplateCompilerContext context = new TemplateCompilerContext();
-		context.setReader( new StringLineReader( text ) );
+		context.setReader( SourceReaders.forString( text ) );
 		context.setPath( "p/c" );
 		new TemplateCompiler( null ).compile( context );
 		return context;

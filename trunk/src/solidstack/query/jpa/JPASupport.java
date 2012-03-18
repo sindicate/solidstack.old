@@ -193,11 +193,16 @@ public class JPASupport
 		return result;
 	}
 
+	/**
+	 * Reduces the memory footprint of the given list of objects arrays.
+	 *
+	 * @param list The list of object arrays.
+	 */
 	static public void reduceWeight( List<Object[]> list )
 	{
 		// THIS CAN REDUCE MEMORY USAGE WITH 90 TO 95 PERCENT, PERFORMANCE IMPACT IS ONLY 5 PERCENT
 
-		Map< Object, Object > sharedData = new HashMap< Object, Object >();
+		Map< Object, Object > dictionary = new HashMap< Object, Object >();
 		for( Object[] objects : list )
 			if( objects != null )
 				for( int len = objects.length, i = 0; i < len; i++ )
@@ -205,11 +210,11 @@ public class JPASupport
 					Object object = objects[ i ];
 					if( object != null )
 					{
-						Object temp = sharedData.get( object );
+						Object temp = dictionary.get( object );
 						if( temp != null )
 							objects[ i ] = temp;
 						else
-							sharedData.put( object, object );
+							dictionary.put( object, object );
 					}
 				}
 	}
