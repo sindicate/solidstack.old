@@ -2,7 +2,6 @@ package solidstack.io;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -10,6 +9,7 @@ import java.net.URL;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+@SuppressWarnings( "javadoc" )
 public class ResourceTests
 {
 	@Test(groups="new")
@@ -54,7 +54,7 @@ public class ResourceTests
 	}
 
 	@Test(groups="new")
-	public void testFileResource() throws MalformedURLException, FileNotFoundException, URISyntaxException
+	public void testFileResource() throws FileNotFoundException
 	{
 		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/test.sql.slt" );
 		Assert.assertTrue( resource.exists() );
@@ -84,7 +84,7 @@ public class ResourceTests
 	}
 
 	@Test(groups="new")
-	public void testURI() throws URISyntaxException, MalformedURLException
+	public void testURI() throws URISyntaxException
 	{
 		URI uri = new URI( "classpath:/solidstack/io" );
 		System.out.println( uri );

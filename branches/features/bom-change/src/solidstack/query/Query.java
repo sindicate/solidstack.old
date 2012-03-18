@@ -71,9 +71,8 @@ public class Query
 	private boolean flyWeight = true;
 	private Language language;
 
+
 	/**
-	 * Constructor.
-	 *
 	 * @param template The template for the query.
 	 */
 	// TODO Directive to enable JDBC escaping <%@ query jdbc-escapes="true" %>
@@ -107,9 +106,7 @@ public class Query
 	}
 
 	/**
-	 * Returns an adapter for Hibernate which enables you to use the query with Hibernate.
-	 *
-	 * @return An adapter for Hibernate.
+	 * @return An adapter which enables you to use the query with Hibernate.
 	 */
 	public HibernateQueryAdapter hibernate()
 	{
@@ -117,9 +114,8 @@ public class Query
 	}
 
 	/**
-	 * Returns an adapter for Hibernate which enables you to use the query with Hibernate.
-	 *
-	 * @return An adapter for Hibernate.
+	 * @param session A Hibernate session.
+	 * @return An adapter which enables you to use the query with Hibernate.
 	 */
 	public HibernateConnectedQueryAdapter hibernate( Object session )
 	{
@@ -127,7 +123,7 @@ public class Query
 	}
 
 	/**
-	 * @return An adapter for JPA which enables you to use the query with JPA.
+	 * @return An adapter which enables you to use the query with JPA.
 	 */
 	public JPAQueryAdapter jpa()
 	{
@@ -136,7 +132,7 @@ public class Query
 
 	/**
 	 * @param entityManager A {@link javax.persistence.EntityManager}.
-	 * @return An adapter for JPA which enables you to use the query with JPA.
+	 * @return An adapter which enables you to use the query with JPA.
 	 */
 	public JPAConnectedQueryAdapter jpa( Object entityManager )
 	{
@@ -234,7 +230,7 @@ public class Query
 			{
 				// THIS CAN REDUCE MEMORY USAGE WITH 90 TO 95 PERCENT, PERFORMANCE IMPACT IS ONLY 5 PERCENT
 
-				Map< Object, Object > sharedData = new HashMap< Object, Object >();
+				Map< Object, Object > dictionary = new HashMap< Object, Object >();
 				while( resultSet.next() )
 				{
 					Object[] line = new Object[ columnCount ];
@@ -243,12 +239,12 @@ public class Query
 						Object object = resultSet.getObject( col );
 						if( object != null )
 						{
-							Object temp = sharedData.get( object );
+							Object temp = dictionary.get( object );
 							if( temp != null )
 								line[ col - 1 ] = temp;
 							else
 							{
-								sharedData.put( object, object );
+								dictionary.put( object, object );
 								line[ col - 1 ] = object;
 							}
 						}

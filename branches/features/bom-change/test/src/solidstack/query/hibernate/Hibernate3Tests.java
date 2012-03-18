@@ -17,6 +17,7 @@ import solidstack.query.QueryManager;
 import solidstack.util.Pars;
 
 
+@SuppressWarnings( value = { "javadoc", "unchecked" } )
 public class Hibernate3Tests
 {
 	private SessionFactory factory;

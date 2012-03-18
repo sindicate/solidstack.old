@@ -31,24 +31,26 @@ public class PushbackReader
 	/**
 	 * The underlying reader.
 	 */
-	protected SourceReader reader;
+	private SourceReader reader;
 
 	/**
 	 * The push back buffer;
 	 */
-	protected StringBuilder buffer;
+	private StringBuilder buffer;
 
 	/**
 	 * The current line number.
 	 */
-	protected int lineNumber;
-
-	protected StringBuilder markBuffer;
+	private int lineNumber;
 
 	/**
-	 * Constructs a new instance of the PushbackReader.
-	 *
-	 * @param reader A reader.
+	 * Needed for {@link #mark(int)} and {@link #reset()}.
+	 */
+	private StringBuilder markBuffer;
+
+
+	/**
+	 * @param reader A source reader.
 	 */
 	public PushbackReader( SourceReader reader )
 	{
@@ -58,8 +60,6 @@ public class PushbackReader
 	}
 
 	/**
-	 * Returns the current line number.
-	 *
 	 * @return The current line number.
 	 */
 	public int getLineNumber()
@@ -67,6 +67,9 @@ public class PushbackReader
 		return this.lineNumber;
 	}
 
+	/**
+	 * @return The current location in the source.
+	 */
 	public SourceLocation getLocation()
 	{
 		return new SourceLocation( this.reader.getResource(), this.lineNumber );
@@ -80,7 +83,7 @@ public class PushbackReader
 	public SourceReader getReader()
 	{
 		if( this.buffer.length() > 0 )
-			throw new IllegalStateException( "There are still pushed back characters in the buffer" );
+			throw new IllegalStateException( "There are still characters in the push back buffer" );
 		return this.reader;
 	}
 
@@ -128,7 +131,7 @@ public class PushbackReader
 	public void push( int ch )
 	{
 		if( ch == '\r' )
-			throw new IllegalArgumentException( "A \\r can't be pushed back into the reader" );
+			throw new IllegalArgumentException( "A carriage return can't be pushed back into the reader" );
 		if( ch != -1 )
 		{
 			if( ch == '\n' )
@@ -161,17 +164,30 @@ public class PushbackReader
 			push( string.charAt( --len ) ); // Use push to decrement the line number when a \n is found
 	}
 
+    /**
+     * Marks the current position in the stream.
+     *
+     * @param maxLength If characters are read beyond the limit, the mark is lost.
+     */
 	public void mark( int maxLength )
 	{
 		this.markBuffer = new StringBuilder( maxLength );
 	}
 
+	/**
+	 * Resets the reader to the mark.
+	 */
 	public void reset()
 	{
+		if( this.markBuffer == null )
+			throw new FatalIOException( "The mark is lost or no mark has been set" );
 		push( this.markBuffer );
 		this.markBuffer = null;
 	}
 
+	/**
+	 * Close the reader.
+	 */
 	public void close()
 	{
 		this.reader.close();

@@ -21,43 +21,44 @@ import java.io.Reader;
 
 
 /**
- * Wraps a {@link Reader} and adds a line counting functionality.
+ * A source reader that reads from a reader.
  *
  * @author René M. de Bloois
  */
 public class ReaderSourceReader implements SourceReader
 {
 	/**
-	 * The reader used to read from the string.
+	 * The reader used to read from.
 	 */
-	protected Reader reader;
+	private Reader reader;
 
 	/**
 	 * The current line the reader is positioned on.
 	 */
-	protected int currentLineNumber;
+	private int currentLineNumber;
 
 	/**
 	 * Buffer to contain a character that has been read by mistake.
 	 */
-	protected int buffer = -1;
+	private int buffer = -1;
 
 	/**
 	 * Buffer to contain the line that is being read.
 	 */
-	protected StringBuilder line;
+	private StringBuilder line;
 
 	/**
 	 * The underlying resource.
 	 */
-	protected Resource resource;
+	private Resource resource;
 
-	protected String encoding;
+	/**
+	 * The character encoding of the resource.
+	 */
+	private String encoding;
 
 
 	/**
-	 * Constructor.
-	 *
 	 * @param reader The reader to read from.
 	 */
 	public ReaderSourceReader( Reader reader )
@@ -67,9 +68,8 @@ public class ReaderSourceReader implements SourceReader
 	}
 
 	/**
-	 * Constructor.
-	 *
 	 * @param reader The reader to read from.
+	 * @param location The location.
 	 */
 	public ReaderSourceReader( Reader reader, SourceLocation location )
 	{
@@ -79,9 +79,9 @@ public class ReaderSourceReader implements SourceReader
 	}
 
 	/**
-	 * Constructor.
-	 *
 	 * @param reader The reader to read from.
+	 * @param location The location.
+	 * @param encoding The encoding to use.
 	 */
 	public ReaderSourceReader( Reader reader, SourceLocation location, String encoding )
 	{
@@ -96,18 +96,19 @@ public class ReaderSourceReader implements SourceReader
 	 */
 	public void close()
 	{
-		if( this.reader != null )
+		if( this.reader == null )
+			return;
+
+		try
 		{
-			try
-			{
-				this.reader.close();
-			}
-			catch( IOException e )
-			{
-				throw new FatalIOException( e );
-			}
-			this.reader = null;
+			this.reader.close();
 		}
+		catch( IOException e )
+		{
+			throw new FatalIOException( e );
+		}
+
+		this.reader = null;
 	}
 
 	public String readLine()
@@ -115,10 +116,9 @@ public class ReaderSourceReader implements SourceReader
 		if( this.line == null )
 			this.line = new StringBuilder();
 
+		int ch;
 		while( true )
-		{
-			int ch = read();
-			switch( ch )
+			switch( ch = read() )
 			{
 				case -1:
 					if( this.line.length() == 0 )
@@ -131,7 +131,6 @@ public class ReaderSourceReader implements SourceReader
 				default:
 					this.line.append( (char)ch );
 			}
-		}
 	}
 
 	public int getLineNumber()

@@ -22,6 +22,7 @@ public class StackTrace extends Throwable
 	}
 
 	@Override
+	@SuppressWarnings( "all" )
 	public Throwable fillInStackTrace()
 	{
 		return this;

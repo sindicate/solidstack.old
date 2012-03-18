@@ -1,5 +1,5 @@
 /*--
- * Copyright 2010 René M. de Bloois
+ * Copyright 2012 René M. de Bloois
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,30 +28,54 @@ import java.nio.charset.Charset;
 
 
 /**
- * Wraps a {@link Reader} and adds a line counting functionality.
+ * A factory for source readers.
  *
  * @author René M. de Bloois
  */
 public class SourceReaders
 {
+	/**
+	 * @param resource The resource.
+	 * @return A source reader for the given resource.
+	 * @throws FileNotFoundException When the resource is not found.
+	 */
 	static public SourceReader forResource( Resource resource ) throws FileNotFoundException
 	{
 		return forResource( resource, null, null );
 	}
 
+	/**
+	 * @param resource The resource.
+	 * @param encoding The encoding to use.
+	 * @return A source reader for the given resource.
+	 * @throws FileNotFoundException When the resource is not found.
+	 */
 	static public SourceReader forResource( Resource resource, String encoding ) throws FileNotFoundException
 	{
 		return forResource( resource, null, encoding );
 	}
 
+	/**
+	 * @param resource The resource.
+	 * @param detector The encoding detector to use.
+	 * @return A source reader for the given resource.
+	 * @throws FileNotFoundException When the resource is not found.
+	 */
 	static public SourceReader forResource( Resource resource, EncodingDetector detector ) throws FileNotFoundException
 	{
 		return forResource( resource, detector, null );
 	}
 
+	/**
+	 * @param resource The resource.
+	 * @param detector The encoding detector to use.
+	 * @param defaultEncoding The encoding to use when the detector does not find an encoding.
+	 * @return A source reader for the given resource.
+	 * @throws FileNotFoundException When the resource is not found.
+	 */
 	static public SourceReader forResource( Resource resource, EncodingDetector detector, String defaultEncoding ) throws FileNotFoundException
 	{
-		InputStream is = new BufferedInputStream( resource.getInputStream() );
+		InputStream is = new BufferedInputStream( resource.newInputStream() );
 		boolean success = false;
 		try
 		{
@@ -64,7 +88,14 @@ public class SourceReaders
 
 				is.reset();
 
-				String encoding = detector.detect( buffer, len );
+				if( len < 256 )
+				{
+					byte[] bytes = new byte[ len ];
+					System.arraycopy( buffer, 0, bytes, 0, len );
+					buffer = bytes;
+				}
+
+				String encoding = detector.detect( buffer );
 				if( encoding != null )
 					defaultEncoding = encoding;
 			}
@@ -97,12 +128,20 @@ public class SourceReaders
 		}
 	}
 
-
+	/**
+	 * @param text The text.
+	 * @param location The location of the text.
+	 * @return A source reader for the given text.
+	 */
 	static public SourceReader forString( String text, SourceLocation location )
 	{
 		return new ReaderSourceReader( new StringReader( text ), location );
 	}
 
+	/**
+	 * @param text The text.
+	 * @return A source reader for the given text.
+	 */
 	static public SourceReader forString( String text )
 	{
 		return new ReaderSourceReader( new StringReader( text ) );

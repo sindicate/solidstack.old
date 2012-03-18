@@ -1,3 +1,19 @@
+/*--
+ * Copyright 2012 René M. de Bloois
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package solidstack.io;
 
 import java.io.FileNotFoundException;
@@ -40,7 +56,6 @@ public class Resource
 
 	/**
 	 * @return The URL of this resource.
-	 *
 	 * @throws FileNotFoundException If the resource is not found.
 	 */
 	// TODO Don't throw FileNotFoundException
@@ -51,7 +66,6 @@ public class Resource
 
 	/**
 	 * @return The URI of this resource.
-	 *
 	 * @throws FileNotFoundException If the resource is not found.
 	 */
 	// TODO Don't throw FileNotFoundException
@@ -61,11 +75,10 @@ public class Resource
 	}
 
 	/**
-	 * @return An InputStream to read from the resource.
-	 *
+	 * @return An new InputStream to read from the resource.
 	 * @throws FileNotFoundException If the resource is not found.
 	 */
-	public InputStream getInputStream() throws FileNotFoundException
+	public InputStream newInputStream() throws FileNotFoundException
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -73,6 +86,7 @@ public class Resource
 	/**
 	 * @return An OutputStream to write to the resource.
 	 */
+	// TODO Rename to newOutputStream?
 	public OutputStream getOutputStream()
 	{
 		throw new UnsupportedOperationException();
@@ -116,6 +130,9 @@ public class Resource
 		return this;
 	}
 
+	/**
+	 * @return The location of the resource.
+	 */
 	public SourceLocation getLocation()
 	{
 		return new SourceLocation( this, 1 );

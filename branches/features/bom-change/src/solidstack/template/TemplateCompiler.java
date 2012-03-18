@@ -161,7 +161,7 @@ public class TemplateCompiler
 		}
 		catch( FileNotFoundException e )
 		{
-			throw new TemplateNotFoundException( context.getResource().toString() + " not found" );
+			throw new TemplateNotFoundException( context.getResource().getNormalized() + " not found" );
 		}
 	}
 

@@ -17,6 +17,7 @@ import solidstack.query.hibernate.DerbyTable;
 import solidstack.query.hibernate.Test1;
 import solidstack.util.Pars;
 
+@SuppressWarnings( value = { "javadoc", "unchecked" } )
 public class JPA1Tests
 {
 	private EntityManagerFactory factory;

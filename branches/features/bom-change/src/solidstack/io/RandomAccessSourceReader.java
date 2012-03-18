@@ -21,7 +21,7 @@ import java.io.FileNotFoundException;
 
 
 /**
- * A line reader that automatically detects character encoding through the BOM and is able to reposition itself on a line.
+ * A source reader that can be repositioned with {@link #gotoLine(int)}.
  *
  * @author René M. de Bloois
  */
@@ -29,19 +29,25 @@ public class RandomAccessSourceReader implements SourceReader
 {
 	private Resource resource;
 	private SourceReader reader;
-	private String encodingOverride;
 	private EncodingDetector detector;
 
+	/**
+	 * @param resource The resource that should be read.
+	 * @throws FileNotFoundException When the resource is not found.
+	 */
 	public RandomAccessSourceReader( Resource resource ) throws FileNotFoundException
 	{
-		// TODO Check that the resource is reopenable
 		this.resource = resource;
 		this.reader = SourceReaders.forResource( resource );
 	}
 
+	/**
+	 * @param resource The resource that should be read.
+	 * @param detector The encoding detector to be used.
+	 * @throws FileNotFoundException When the resource is not found.
+	 */
 	public RandomAccessSourceReader( Resource resource, EncodingDetector detector ) throws FileNotFoundException
 	{
-		// TODO Check that the resource is reopenable
 		this.resource = resource;
 		this.detector = detector;
 		this.reader = SourceReaders.forResource( resource, detector );
@@ -77,20 +83,6 @@ public class RandomAccessSourceReader implements SourceReader
 		return this.reader.getEncoding();
 	}
 
-	public void gotoLine( int lineNumber )
-	{
-		if( this.reader == null )
-			throw new IllegalStateException( "Stream is not open" ); // TODO Is this what the JDK throws too?
-		if( lineNumber < 1 )
-			throw new IllegalArgumentException( "lineNumber must be 1 or greater" );
-
-		if( lineNumber < getLineNumber() )
-			reOpen();
-		while( lineNumber > getLineNumber() )
-			if( readLine() == null )
-				throw new IllegalArgumentException( "lineNumber " + lineNumber + " not found" );
-	}
-
 	public void close()
 	{
 		if( this.reader != null )
@@ -99,18 +91,35 @@ public class RandomAccessSourceReader implements SourceReader
 	}
 
 	/**
-	 * Reopens itself to reset the position or change the character encoding.
+	 * Jump to the given line number in the source. If the line number is smaller than the current line number, the
+	 * resource will be reopened and read from line 1.
+	 *
+	 * @param lineNumber The line number to jump to.
 	 */
-	protected void reOpen()
+	public void gotoLine( int lineNumber )
 	{
-		close();
-		try
+		if( this.reader == null )
+			throw new FatalIOException( "Reader is closed" );
+		if( lineNumber < 1 )
+			throw new IllegalArgumentException( "lineNumber must be greater than zero" );
+
+		// Re-open if needed
+		if( lineNumber < getLineNumber() )
 		{
-			this.reader = SourceReaders.forResource( this.resource, this.detector );
+			close();
+			try
+			{
+				this.reader = SourceReaders.forResource( this.resource, this.detector );
+			}
+			catch( FileNotFoundException e )
+			{
+				throw new FatalIOException( e );
+			}
 		}
-		catch( FileNotFoundException e )
-		{
-			throw new FatalIOException( e );
-		}
+
+		// Skip lines
+		while( lineNumber > getLineNumber() )
+			if( readLine() == null )
+				throw new IllegalArgumentException( "lineNumber " + lineNumber + " not found" );
 	}
 }

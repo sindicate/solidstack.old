@@ -50,9 +50,9 @@ public class QueryManager
 	}
 
 	/**
-	 * Configures the package which acts as the root of the template files.
+	 * Configures the path which acts as the root of the template files.
 	 *
-	 * @param pkg The package.
+	 * @param path The path.
 	 */
 	public void setTemplatePath( String path )
 	{

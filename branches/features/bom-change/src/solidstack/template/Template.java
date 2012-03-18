@@ -184,11 +184,12 @@ abstract public class Template
 	}
 
 	/**
-	 * Returns the directive attribute with the given directive name and attribute name.
+	 * Returns the directive attribute value with the given directive name and attribute name.
 	 *
+	 * @param directives A list of directives.
 	 * @param name The name of the directive.
 	 * @param attribute The name of the attribute.
-	 * @return The directive.
+	 * @return The directive attribute value.
 	 */
 	static public Directive getDirective( List<Directive> directives, String name, String attribute )
 	{
