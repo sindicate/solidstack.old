@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import solidstack.io.ReaderSourceReader;
 import solidstack.io.Resource;
 import solidstack.io.SourceReader;
+import solidstack.io.SourceReaders;
 import solidstack.lang.Assert;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.EVENT;
@@ -157,7 +157,7 @@ public class TemplateCompiler
 
 		try
 		{
-			context.setReader( ReaderSourceReader.forResource( context.getResource(), EncodingDetector.INSTANCE ) );
+			context.setReader( SourceReaders.forResource( context.getResource(), EncodingDetector.INSTANCE ) );
 		}
 		catch( FileNotFoundException e )
 		{

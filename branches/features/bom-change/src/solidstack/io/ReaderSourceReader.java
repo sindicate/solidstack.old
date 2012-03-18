@@ -16,15 +16,8 @@
 
 package solidstack.io;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.StringReader;
-import java.nio.charset.Charset;
 
 
 /**
@@ -60,81 +53,6 @@ public class ReaderSourceReader implements SourceReader
 	protected Resource resource;
 
 	protected String encoding;
-
-
-	static public ReaderSourceReader forResource( Resource resource ) throws FileNotFoundException
-	{
-		return forResource( resource, null, null );
-	}
-
-	static public ReaderSourceReader forResource( Resource resource, String encoding ) throws FileNotFoundException
-	{
-		return forResource( resource, null, encoding );
-	}
-
-	static public ReaderSourceReader forResource( Resource resource, EncodingDetector detector ) throws FileNotFoundException
-	{
-		return forResource( resource, detector, null );
-	}
-
-	static public ReaderSourceReader forResource( Resource resource, EncodingDetector detector, String defaultEncoding ) throws FileNotFoundException
-	{
-		InputStream is = new BufferedInputStream( resource.getInputStream() );
-		boolean success = false;
-		try
-		{
-			if( detector != null )
-			{
-				is.mark( 256 );
-
-				byte[] buffer = new byte[ 256 ]; // Initialized with zeros by the JVM
-				int len = is.read( buffer );
-
-				is.reset();
-
-				String encoding = detector.detect( buffer, len );
-				if( encoding != null )
-					defaultEncoding = encoding;
-			}
-
-			if( defaultEncoding == null )
-				defaultEncoding = Charset.defaultCharset().name();
-
-			// TODO Do we need this BufferedReader?
-			Reader reader = new BufferedReader( new InputStreamReader( is, defaultEncoding ) );
-
-			success = true;
-			return new ReaderSourceReader( reader, resource.getLocation(), defaultEncoding );
-		}
-		catch( IOException e )
-		{
-			throw new FatalIOException( e );
-		}
-		finally
-		{
-			// When an exception occurred we need to close the input stream
-			if( !success )
-				try
-				{
-					is.close();
-				}
-				catch( IOException ee )
-				{
-					throw new FatalIOException( ee );
-				}
-		}
-	}
-
-
-	static public ReaderSourceReader forString( String text, SourceLocation location )
-	{
-		return new ReaderSourceReader( new StringReader( text ), location, "internal" );
-	}
-
-	static public ReaderSourceReader forString( String text )
-	{
-		return new ReaderSourceReader( new StringReader( text ), null, "internal" );
-	}
 
 
 	/**

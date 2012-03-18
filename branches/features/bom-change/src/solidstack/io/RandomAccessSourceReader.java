@@ -36,7 +36,7 @@ public class RandomAccessSourceReader implements SourceReader
 	{
 		// TODO Check that the resource is reopenable
 		this.resource = resource;
-		this.reader = ReaderSourceReader.forResource( resource );
+		this.reader = SourceReaders.forResource( resource );
 	}
 
 	public RandomAccessSourceReader( Resource resource, EncodingDetector detector ) throws FileNotFoundException
@@ -44,7 +44,7 @@ public class RandomAccessSourceReader implements SourceReader
 		// TODO Check that the resource is reopenable
 		this.resource = resource;
 		this.detector = detector;
-		this.reader = ReaderSourceReader.forResource( resource, detector );
+		this.reader = SourceReaders.forResource( resource, detector );
 	}
 
 	public int read()
@@ -106,7 +106,7 @@ public class RandomAccessSourceReader implements SourceReader
 		close();
 		try
 		{
-			this.reader = ReaderSourceReader.forResource( this.resource, this.detector );
+			this.reader = SourceReaders.forResource( this.resource, this.detector );
 		}
 		catch( FileNotFoundException e )
 		{
