@@ -104,7 +104,7 @@ public class ClassPathResource extends Resource
 	}
 
 	@Override
-	public InputStream getInputStream() throws FileNotFoundException
+	public InputStream newInputStream() throws FileNotFoundException
 	{
 		InputStream result = ClassPathResource.class.getClassLoader().getResourceAsStream( getPath() );
 		if( result == null )

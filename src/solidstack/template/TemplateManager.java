@@ -89,9 +89,9 @@ public class TemplateManager
 	}
 
 	/**
-	 * Configures the package that will function as the root of the template resources.
+	 * Configures the path which acts as the root of the template files.
 	 *
-	 * @param pkg The package.
+	 * @param path The path.
 	 */
 	public void setTemplatePath( String path )
 	{
@@ -177,7 +177,7 @@ public class TemplateManager
 					resource = getResource( path );
 
 				if( !resource.exists() )
-					throw new TemplateNotFoundException( resource.toString() + " not found" );
+					throw new TemplateNotFoundException( resource.getNormalized() + " not found" );
 
 				template = new TemplateCompiler( this ).compile( resource, path ); // TODO Is this enough for a class name?
 				template.setName( path ); // Overwrite the name

@@ -16,13 +16,12 @@
 
 package solidstack.io;
 
-
 /**
- * A reader that reads lines or characters and maintains the current line number.
+ * A source reader.
  *
  * @author René M. de Bloois
  */
-public interface LineReader
+public interface SourceReader
 {
 	/**
 	 * Close the reader.
@@ -30,57 +29,46 @@ public interface LineReader
 	void close();
 
 	/**
-	 * Reads the next line. The current line number is incremented.
+	 * Reads the next line from the source. The current line number is incremented.
 	 *
 	 * @return The next line or null of there are no more lines to be read.
 	 */
 	String readLine();
 
 	/**
-	 * Returns the current line number. The current line number is the line that is about to be read with {@link #readLine()} or is being read with {@link #read()}.
+	 * Returns the current line number. The current line number is the line that is about to be read with
+	 * {@link #readLine()} or is being read with {@link #read()}.
 	 *
 	 * @return The current line number.
 	 */
+	// TODO Should line number be a long?
 	int getLineNumber();
 
 	/**
-	 * Reads a character. Carriage return characters (\r) are filtered out in the following way:
+	 * Reads a character. Carriage return characters (\r) are filtered out:
 	 * <ul>
 	 * <li>\r\n becomes \n</li>
 	 * <li>\r without \n becomes \n</li>
 	 * </ul>
 	 *
-	 * @return A character. An \r is never returned.
+	 * @return A character. A carriage return is never returned.
 	 */
-	// TODO Decide if this javadoc is appropriate for this interface or should it be moved to the implementation?
 	int read();
 
 	/**
-	 * Returns the underlying resource.
-	 *
 	 * @return The underlying resource.
 	 */
 	Resource getResource();
 
 	/**
-	 * Returns the current location.
-	 *
 	 * @return The current location.
-	 * @see FileLocation
 	 */
-	FileLocation getLocation();
+	SourceLocation getLocation();
 
 	/**
-	 * Returns the character encoding of the source where the bytes are read from.
+	 * Returns the character encoding of the source.
 	 *
-	 * @return The character encoding of the source where the bytes are read from.
+	 * @return The character encoding of the source.
 	 */
 	String getEncoding();
-
-	/**
-	 * Returns the BOM (Byte Order Mark) of the source where the bytes are read from.
-	 *
-	 * @return The BOM of the source where the bytes are read from.
-	 */
-	byte[] getBOM();
 }

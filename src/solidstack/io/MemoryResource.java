@@ -64,7 +64,7 @@ public class MemoryResource extends Resource
 	}
 
 	@Override
-	public InputStream getInputStream()
+	public InputStream newInputStream()
 	{
 		return new ByteMatrixInputStream( this.buffer.toArray( new byte[ this.buffer.size() ][] ) );
 	}

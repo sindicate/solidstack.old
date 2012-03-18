@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import solidstack.io.BOMDetectingLineReader;
-import solidstack.io.LineReader;
 import solidstack.io.Resource;
+import solidstack.io.SourceReader;
+import solidstack.io.SourceReaders;
 import solidstack.lang.Assert;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.EVENT;
@@ -44,7 +44,6 @@ import solidstack.template.javascript.JavaScriptTemplateCompiler;
 public class TemplateCompiler
 {
 	static final private Pattern CONTENT_TYPE_PATTERN = Pattern.compile( "^[ \\t]*(\\S*)[ \\t]*(?:;[ \\t]*charset[ \\t]*=[ \\t]*(\\S*)[ \\t]*)?$" ); // TODO case sensitive & http://www.iana.org/assignments/media-types/index.html
-	static final private Pattern ENCODING_PATTERN = Pattern.compile( "^<%@[ \t]*template[ \t]+encoding[ \t]*=\"([^\"]*)\".*", Pattern.CASE_INSENSITIVE ); // TODO Improve, case sensitive?
 
 	static boolean keepSource = false;
 
@@ -86,11 +85,11 @@ public class TemplateCompiler
 	/**
 	 * Compiles a template into a {@link Template}.
 	 *
-	 * @param reader The {@link LineReader} that contains the template.
+	 * @param reader The {@link SourceReader} that contains the template.
 	 * @param path The path of the template, needed to generate a name for the class in memory.
 	 * @return A {@link Template}.
 	 */
-	public Template compile( LineReader reader, String path )
+	public Template compile( SourceReader reader, String path )
 	{
 		Loggers.compiler.info( "Compiling [{}] from [{}]", path, reader.getResource() );
 
@@ -155,13 +154,14 @@ public class TemplateCompiler
 	{
 		if( context.getReader() != null )
 			return;
+
 		try
 		{
-			context.setReader( new BOMDetectingLineReader( context.getResource(), ENCODING_PATTERN ) );
+			context.setReader( SourceReaders.forResource( context.getResource(), EncodingDetector.INSTANCE ) );
 		}
 		catch( FileNotFoundException e )
 		{
-			throw new TemplateNotFoundException( context.getResource().toString() + " not found" );
+			throw new TemplateNotFoundException( context.getResource().getNormalized() + " not found" );
 		}
 	}
 

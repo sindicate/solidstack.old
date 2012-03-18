@@ -14,26 +14,18 @@
  * limitations under the License.
  */
 
-package solidstack.template;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+package solidstack.io;
 
 /**
- * Loggers for the template engine.
+ * Detects the character encoding from the first line.
  *
  * @author René de Bloois
  */
-public class Loggers
+public interface EncodingDetector
 {
 	/**
-	 * Logs the loading of templates.
+	 * @param bytes The first couple of bytes from the source.
+	 * @return The detected character encoding.
 	 */
-	static final public Logger loader = LoggerFactory.getLogger( "solidstack.template.loader" );
-
-	/**
-	 * Logs the compilation of templates.
-	 */
-	static final public Logger compiler = LoggerFactory.getLogger( "solidstack.template.compiler" );
+	String detect( byte[] bytes );
 }

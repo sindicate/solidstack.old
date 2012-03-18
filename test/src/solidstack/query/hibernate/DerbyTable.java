@@ -1,5 +1,6 @@
 package solidstack.query.hibernate;
 
+@SuppressWarnings( "javadoc" )
 public class DerbyTable
 {
 	private String name;

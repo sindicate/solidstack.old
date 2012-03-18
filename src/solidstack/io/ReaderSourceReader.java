@@ -21,63 +21,74 @@ import java.io.Reader;
 
 
 /**
- * Wraps a {@link Reader} and adds a line counting functionality.
+ * A source reader that reads from a reader.
  *
  * @author René M. de Bloois
  */
-public class ReaderLineReader implements LineReader
+public class ReaderSourceReader implements SourceReader
 {
 	/**
-	 * The reader used to read from the string.
+	 * The reader used to read from.
 	 */
-	protected Reader reader;
+	private Reader reader;
 
 	/**
 	 * The current line the reader is positioned on.
 	 */
-	protected int currentLineNumber = 1;
+	private int currentLineNumber;
 
 	/**
 	 * Buffer to contain a character that has been read by mistake.
 	 */
-	protected int buffer = -1;
+	private int buffer = -1;
 
 	/**
 	 * Buffer to contain the line that is being read.
 	 */
-	protected StringBuilder line;
+	private StringBuilder line;
 
 	/**
 	 * The underlying resource.
 	 */
-	protected Resource resource;
-
+	private Resource resource;
 
 	/**
-	 * Constructor.
+	 * The character encoding of the resource.
 	 */
-	protected ReaderLineReader()
-	{
-		// Used by sub classes
-	}
+	private String encoding;
+
 
 	/**
-	 * Constructor.
-	 *
 	 * @param reader The reader to read from.
 	 */
-	public ReaderLineReader( Reader reader )
-	{
-		this.reader = reader;
-	}
-
-	public void init( Reader reader )
+	public ReaderSourceReader( Reader reader )
 	{
 		this.reader = reader;
 		this.currentLineNumber = 1;
-		this.buffer = -1;
-		if( this.line != null )
-			this.line.setLength( 0 );
+	}
+
+	/**
+	 * @param reader The reader to read from.
+	 * @param location The location.
+	 */
+	public ReaderSourceReader( Reader reader, SourceLocation location )
+	{
+		this.reader = reader;
+		this.resource = location.getResource();
+		this.currentLineNumber = location.getLineNumber();
+	}
+
+	/**
+	 * @param reader The reader to read from.
+	 * @param location The location.
+	 * @param encoding The encoding to use.
+	 */
+	public ReaderSourceReader( Reader reader, SourceLocation location, String encoding )
+	{
+		this.reader = reader;
+		this.resource = location.getResource();
+		this.currentLineNumber = location.getLineNumber();
+		this.encoding = encoding;
 	}
 
 	/**
@@ -85,18 +96,19 @@ public class ReaderLineReader implements LineReader
 	 */
 	public void close()
 	{
-		if( this.reader != null )
+		if( this.reader == null )
+			return;
+
+		try
 		{
-			try
-			{
-				this.reader.close();
-			}
-			catch( IOException e )
-			{
-				throw new FatalIOException( e );
-			}
-			this.reader = null;
+			this.reader.close();
 		}
+		catch( IOException e )
+		{
+			throw new FatalIOException( e );
+		}
+
+		this.reader = null;
 	}
 
 	public String readLine()
@@ -104,10 +116,9 @@ public class ReaderLineReader implements LineReader
 		if( this.line == null )
 			this.line = new StringBuilder();
 
+		int ch;
 		while( true )
-		{
-			int ch = read();
-			switch( ch )
+			switch( ch = read() )
 			{
 				case -1:
 					if( this.line.length() == 0 )
@@ -120,7 +131,6 @@ public class ReaderLineReader implements LineReader
 				default:
 					this.line.append( (char)ch );
 			}
-		}
 	}
 
 	public int getLineNumber()
@@ -170,16 +180,11 @@ public class ReaderLineReader implements LineReader
 
 	public String getEncoding()
 	{
-		return "internal";
+		return this.encoding;
 	}
 
-	public byte[] getBOM()
+	public SourceLocation getLocation()
 	{
-		return null;
-	}
-
-	public FileLocation getLocation()
-	{
-		return new FileLocation( this.resource, getLineNumber() );
+		return new SourceLocation( this.resource, getLineNumber() );
 	}
 }
