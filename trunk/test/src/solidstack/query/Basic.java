@@ -28,7 +28,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import solidstack.io.Resource;
-import solidstack.io.ResourceFactory;
+import solidstack.io.Resources;
 import solidstack.io.SourceReaders;
 import solidstack.query.Query.PreparedSQL;
 import solidstack.template.ParseException;
@@ -108,7 +108,7 @@ public class Basic
 	@Test
 	public void testTransform() throws Exception
 	{
-		Resource resource = ResourceFactory.getResource( "test/src/solidstack/query/test.sql.slt" );
+		Resource resource = Resources.getResource( "test/src/solidstack/query/test.sql.slt" );
 		TemplateCompilerContext context = new TemplateCompilerContext();
 		context.setResource( resource );
 		context.setPath( "p/c" );
@@ -168,7 +168,7 @@ public class Basic
 		manager.setTemplatePath( "classpath:/solidstack/query" );
 		manager.setDefaultLanguage( "javascript" );
 
-		Resource resource = ResourceFactory.getResource( "test/src/solidstack/query/testjs.sql.slt" );
+		Resource resource = Resources.getResource( "test/src/solidstack/query/testjs.sql.slt" );
 		TemplateCompilerContext context = new TemplateCompilerContext();
 		context.setResource( resource );
 		context.setPath( "p/c" );

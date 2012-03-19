@@ -26,9 +26,9 @@ import java.net.URISyntaxException;
  *
  * @author René M. de Bloois
  */
-public final class ResourceFactory
+public final class Resources
 {
-	private ResourceFactory()
+	private Resources()
 	{
 		// Utility class
 	}
@@ -78,6 +78,11 @@ public final class ResourceFactory
 	{
 		// TODO Do it the other way around
 		return getResource( uri.toString() );
+	}
+
+	static public Resource getResource( byte[] bytes )
+	{
+		return new MemoryResource( bytes );
 	}
 
 	/**

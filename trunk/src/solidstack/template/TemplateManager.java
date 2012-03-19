@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import solidstack.io.Resource;
-import solidstack.io.ResourceFactory;
+import solidstack.io.Resources;
 import solidstack.lang.Assert;
 
 
@@ -50,7 +50,7 @@ public class TemplateManager
 	 */
 	public TemplateManager()
 	{
-		this.templatePath = ResourceFactory.currentFolder();
+		this.templatePath = Resources.currentFolder();
 
 		this.mimeTypeMap.put( "text/xml", XMLEncodingWriter.FACTORY );
 		// TODO Put this in a properties file, or not?
@@ -95,15 +95,8 @@ public class TemplateManager
 	 */
 	public void setTemplatePath( String path )
 	{
-		this.templatePath = ResourceFactory.getResource( ResourceFactory.folderize( path ) );
+		this.templatePath = Resources.getResource( Resources.folderize( path ) );
 	}
-
-	// TODO Come up with an alternative, this does not work with Spring
-//	public void setTemplatePath( Resource resource )
-//	{
-//		Assert.isTrue( resource.isFolder(), "Resource should be a folder" );
-//		this.templatePath = resource;
-//	}
 
 	/**
 	 * Enable or disable reloading. When enabled, the lastModified time stamp of the file is used to check if it needs reloading.

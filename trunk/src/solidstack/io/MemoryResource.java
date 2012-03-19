@@ -63,6 +63,7 @@ public class MemoryResource extends Resource
 		append( input );
 	}
 
+	// TODO supportsURL does not indicate that this one is re-iterable
 	@Override
 	public InputStream newInputStream()
 	{

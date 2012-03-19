@@ -122,7 +122,7 @@ public class FileResource extends Resource
 	@Override
 	public Resource resolve( String path )
 	{
-		return ResourceFactory.getResource( this.file.toURI().resolve( path ) );
+		return Resources.getResource( this.file.toURI().resolve( path ) );
 	}
 
 	// TODO Need test for this

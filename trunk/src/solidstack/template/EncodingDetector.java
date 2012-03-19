@@ -34,39 +34,9 @@ public class EncodingDetector implements solidstack.io.EncodingDetector
 	static final private Pattern ENCODING_PATTERN = Pattern.compile( "^<%@[ \t]*template[ \t]+encoding[ \t]*=\"([^\"]*)\".*", Pattern.CASE_INSENSITIVE ); // TODO Improve, case sensitive?
 
 	/**
-	 * Constant for the ISO-8859-1 character set.
-	 */
-	static final public String CHARSET_ISO = "ISO-8859-1";
-
-	/**
-	 * Constant for the UTF-8 character set.
-	 */
-	static final public String CHARSET_UTF8 = "UTF-8";
-
-	/**
 	 * Constant for the UTF character set.
 	 */
 	static final public String CHARSET_UTF = "UTF";
-
-	/**
-	 * Constant for the UTF-16BE character set.
-	 */
-	static final public String CHARSET_UTF16BE = "UTF-16BE";
-
-	/**
-	 * Constant for the UTF-16LE character set.
-	 */
-	static final public String CHARSET_UTF16LE = "UTF-16LE";
-
-	/**
-	 * Constant for the UTF-32BE character set.
-	 */
-	static final public String CHARSET_UTF32BE = "UTF-32BE";
-
-	/**
-	 * Constant for the UTF-32LE character set.
-	 */
-	static final public String CHARSET_UTF32LE = "UTF-32LE";
 
 	/**
 	 * The singleton instance of this encoding detector.
@@ -113,20 +83,20 @@ public class EncodingDetector implements solidstack.io.EncodingDetector
 		// TODO Maybe we should use UTF-16 and UTF-32 to make sure that any BOM is removed from the file.
 
 		if( bytes.length <= 1 )
-			return CHARSET_UTF8;
+			return CHARSET_UTF_8;
 		if( bytes[ 0 ] != 0 )
 		{
 			if( bytes[ 1 ] != 0 )
-				return CHARSET_UTF8;
+				return CHARSET_UTF_8;
 			if( bytes.length == 2 )
-				return CHARSET_UTF16LE;
+				return CHARSET_UTF_16LE;
 			if( bytes[ 2 ] != 0 )
-				return CHARSET_UTF16LE; // TODO Throw undetectable when length < 4
-			return CHARSET_UTF32LE; // TODO Throw undetectable when length < 4
+				return CHARSET_UTF_16LE; // TODO Throw undetectable when length < 4
+			return CHARSET_UTF_32LE; // TODO Throw undetectable when length < 4
 		}
 		if( bytes[ 1 ] != 0 )
-			return CHARSET_UTF16BE;
-		return CHARSET_UTF32BE; // TODO Throw undetectable when length < 4
+			return CHARSET_UTF_16BE;
+		return CHARSET_UTF_32BE; // TODO Throw undetectable when length < 4
 	}
 
 	static private String toAscii( byte[] chars )

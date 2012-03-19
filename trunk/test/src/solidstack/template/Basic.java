@@ -23,7 +23,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import solidstack.io.Resource;
-import solidstack.io.ResourceFactory;
+import solidstack.io.Resources;
 import solidstack.io.SourceReader;
 import solidstack.io.SourceReaders;
 import solidstack.template.JSPLikeTemplateParser.EVENT;
@@ -51,7 +51,7 @@ public class Basic
 	@Test
 	public void testTransform() throws Exception
 	{
-		Resource resource = ResourceFactory.getResource( "test/src/solidstack/template/test.txt.slt" );
+		Resource resource = Resources.getResource( "test/src/solidstack/template/test.txt.slt" );
 		TemplateCompilerContext context = new TemplateCompilerContext();
 		context.setResource( resource );
 		context.setPath( "a/b/c" );
@@ -170,7 +170,7 @@ public class Basic
 		}
 	}
 
-	@Test(groups="new")
+	@Test
 	public void testContextClassLoaderNull()
 	{
 		Assert.assertNotNull( Thread.currentThread().getContextClassLoader(), "ContextClassLoader should not be null" );

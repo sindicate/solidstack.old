@@ -61,7 +61,7 @@ public class ByteMatrixInputStream extends InputStream
 				return -1;
 			byte[] buffer = this.matrix[ this.pos1 ];
 			if( this.pos2 < buffer.length )
-				return buffer[ this.pos2++ ];
+				return (char)buffer[ this.pos2++ ];
 			this.pos1++;
 			this.pos2 = 0;
 		}

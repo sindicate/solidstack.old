@@ -22,7 +22,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import solidstack.io.Resource;
-import solidstack.io.ResourceFactory;
+import solidstack.io.Resources;
 
 
 @SuppressWarnings( "javadoc" )
@@ -95,7 +95,7 @@ public class JavascriptTest
 	@Test
 	public void testTransform() throws Exception
 	{
-		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/template/testjs.txt.slt" );
+		Resource resource = Resources.getResource( "file:test/src/solidstack/template/testjs.txt.slt" );
 		TemplateCompilerContext context = new TemplateCompilerContext();
 		context.setResource( resource );
 		context.setPath( "p/c" );
