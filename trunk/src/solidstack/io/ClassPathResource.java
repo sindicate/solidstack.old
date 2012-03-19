@@ -160,7 +160,7 @@ public class ClassPathResource extends Resource
 	{
 		URL url = ClassPathResource.class.getClassLoader().getResource( getPath() );
 		if( url == null )
-			return this; // TODO Or file not found?
+			return this;
 		if( url.getProtocol().equals( "jar" ) )
 			return this;
 		try

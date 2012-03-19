@@ -71,15 +71,18 @@ public final class Resources
 	}
 
 	/**
-	 * @param uri The URI for the resource.
+	 * @param uri The URI of the resource.
 	 * @return The resource.
 	 */
 	static public Resource getResource( URI uri )
 	{
-		// TODO Do it the other way around
-		return getResource( uri.toString() );
+		return new URIResource( uri );
 	}
 
+	/**
+	 * @param bytes Bytes.
+	 * @return The resource.
+	 */
 	static public Resource getResource( byte[] bytes )
 	{
 		return new MemoryResource( bytes );

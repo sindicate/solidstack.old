@@ -28,10 +28,9 @@ import solidstack.lang.SystemException;
  *
  * @author René de Bloois
  */
-// FIXME This does not work yet with the version="1.0" in the directive.
 public class EncodingDetector implements solidstack.io.EncodingDetector
 {
-	static final private Pattern ENCODING_PATTERN = Pattern.compile( "^<%@[ \t]*template[ \t]+encoding[ \t]*=\"([^\"]*)\".*", Pattern.CASE_INSENSITIVE ); // TODO Improve, case sensitive?
+	static final private Pattern ENCODING_PATTERN = Pattern.compile( "^<%@[ \t]*template[ \t]+(?:.+[ \t]+)?encoding[ \t]*=\"([^\"]*)\".*" ); // TODO Improve
 
 	/**
 	 * Constant for the UTF character set.
