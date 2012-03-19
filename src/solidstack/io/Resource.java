@@ -56,20 +56,16 @@ public class Resource
 
 	/**
 	 * @return The URL of this resource.
-	 * @throws FileNotFoundException If the resource is not found.
 	 */
-	// TODO Don't throw FileNotFoundException
-	public URL getURL() throws FileNotFoundException
+	public URL getURL()
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	/**
 	 * @return The URI of this resource.
-	 * @throws FileNotFoundException If the resource is not found.
 	 */
-	// TODO Don't throw FileNotFoundException
-	public URI getURI() throws FileNotFoundException
+	public URI getURI()
 	{
 		throw new UnsupportedOperationException();
 	}

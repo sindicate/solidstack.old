@@ -78,20 +78,20 @@ public class ClassPathResource extends Resource
 	@Override
 	public boolean supportsURL()
 	{
-		return true;
+		return exists();
 	}
 
 	@Override
-	public URL getURL() throws FileNotFoundException
+	public URL getURL()
 	{
 		URL result = ClassPathResource.class.getClassLoader().getResource( getPath() );
 		if( result == null )
-			throw new FileNotFoundException( "File " + toString() + " not found" );
+			throw new UnsupportedOperationException( "File " + toString() + " not found" );
 		return result;
 	}
 
 	@Override
-	public URI getURI() throws FileNotFoundException
+	public URI getURI()
 	{
 		try
 		{

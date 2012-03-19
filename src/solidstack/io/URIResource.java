@@ -107,17 +107,21 @@ public class URIResource extends Resource
 	}
 
 	@Override
-	public URI getURI() throws FileNotFoundException
+	public URI getURI()
 	{
 		return this.uri;
 	}
 
 	@Override
-	public InputStream newInputStream()
+	public InputStream newInputStream() throws FileNotFoundException
 	{
 		try
 		{
 			return this.uri.toURL().openStream();
+		}
+		catch( FileNotFoundException e )
+		{
+			throw e;
 		}
 		catch( IOException e )
 		{
