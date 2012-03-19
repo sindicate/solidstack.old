@@ -12,10 +12,10 @@ import org.testng.annotations.Test;
 @SuppressWarnings( "javadoc" )
 public class ResourceTests
 {
-	@Test(groups="new")
+	@Test
 	public void test()
 	{
-		Resource r1 = ResourceFactory.getResource( "classpath:/solidstack/" );
+		Resource r1 = Resources.getResource( "classpath:/solidstack/" );
 		Assert.assertTrue( r1 instanceof ClassPathResource, r1.getClass().getName() );
 		Resource r2 = r1.resolve( "io" );
 		Assert.assertTrue( r2 instanceof ClassPathResource, r2.getClass().getName() );
@@ -23,22 +23,22 @@ public class ResourceTests
 		Assert.assertTrue( r2.toString().endsWith( "io" ) );
 	}
 
-	@Test(groups="new")
+	@Test
 	public void testToString()
 	{
-		Resource resource = ResourceFactory.getResource( "classpath:/solidstack/../solidstack/io" );
+		Resource resource = Resources.getResource( "classpath:/solidstack/../solidstack/io" );
 		System.out.println( resource.toString() );
 
-		resource = ResourceFactory.getResource( "http://test.com/test" );
+		resource = Resources.getResource( "http://test.com/test" );
 		resource = resource.resolve( "test2" );
 		System.out.println( resource.getNormalized() );
 
-		resource = ResourceFactory.getResource( "http://test.com/test/" );
+		resource = Resources.getResource( "http://test.com/test/" );
 		resource = resource.resolve( "test2" );
 		System.out.println( resource.getNormalized() );
 	}
 
-	@Test(groups="new")
+	@Test
 	public void testClassPathResource()
 	{
 		URL url = ResourceTests.class.getClassLoader().getResource( "solidstack/template/test.js" );
@@ -53,15 +53,15 @@ public class ResourceTests
 		System.out.println( resource );
 	}
 
-	@Test(groups="new")
+	@Test
 	public void testFileResource() throws FileNotFoundException
 	{
-		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/test.sql.slt" );
+		Resource resource = Resources.getResource( "file:test/src/solidstack/query/test.sql.slt" );
 		Assert.assertTrue( resource.exists() );
 
 		String file = resource.toString();
 		System.out.println( file );
-		resource = ResourceFactory.getResource( file );
+		resource = Resources.getResource( file );
 		System.out.println( resource.toString() );
 		Assert.assertTrue( resource.exists() );
 
@@ -73,7 +73,7 @@ public class ResourceTests
 		System.out.println( resource.toString() );
 		Assert.assertTrue( resource.exists() );
 
-		resource = ResourceFactory.currentFolder();
+		resource = Resources.currentFolder();
 		System.out.println( resource.getURL() );
 		resource = resource.resolve( "build.xml" );
 		System.out.println( resource.getURL() );
@@ -83,7 +83,7 @@ public class ResourceTests
 		System.out.println( new File( "" ).toURI().toString() );
 	}
 
-	@Test(groups="new")
+	@Test
 	public void testURI() throws URISyntaxException
 	{
 		URI uri = new URI( "classpath:/solidstack/io" );

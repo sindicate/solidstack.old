@@ -116,7 +116,7 @@ public class ClassPathResource extends Resource
 	@Override
 	public Resource resolve( String path )
 	{
-		return ResourceFactory.getResource( this.uri.resolve( path ).toString() ); // TODO Test \
+		return Resources.getResource( this.uri.resolve( path ).toString() ); // TODO Test \
 	}
 
 	@Override
