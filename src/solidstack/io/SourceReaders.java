@@ -17,7 +17,6 @@
 package solidstack.io;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -103,8 +102,7 @@ public class SourceReaders
 			if( defaultEncoding == null )
 				defaultEncoding = Charset.defaultCharset().name();
 
-			// TODO Do we need this BufferedReader?
-			Reader reader = new BufferedReader( new InputStreamReader( is, defaultEncoding ) );
+			Reader reader = new InputStreamReader( is, defaultEncoding );
 
 			success = true;
 			return new ReaderSourceReader( reader, resource.getLocation(), defaultEncoding );

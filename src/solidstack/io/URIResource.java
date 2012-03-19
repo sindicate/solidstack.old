@@ -129,7 +129,6 @@ public class URIResource extends Resource
 	public Resource resolve( String path )
 	{
 		// TODO Unit test with folder url
-		// TODO The resource factory has more logic then this
 		return new URIResource( this.uri.resolve( path ) );
 	}
 
