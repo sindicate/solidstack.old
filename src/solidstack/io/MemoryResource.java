@@ -112,12 +112,6 @@ public class MemoryResource extends Resource
 	}
 
 	@Override
-	public String getPathFrom( Resource other )
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public boolean exists()
 	{
 		return true;

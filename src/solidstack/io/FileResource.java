@@ -127,50 +127,9 @@ public class FileResource extends Resource
 
 	// TODO Need test for this
 	@Override
-	public String getPathFrom( Resource base )
+	public URI getPathFrom( Resource base )
 	{
-		if( !( base instanceof FileResource ) )
-			throw new IllegalArgumentException( "base should be a FileResource" );
-
-		String myPath;
-		String basePath;
-		try
-		{
-			myPath = this.file.getCanonicalPath();
-			basePath = ((FileResource)base).file.getCanonicalPath();
-		}
-		catch( IOException e )
-		{
-			throw new FatalIOException( e );
-		}
-
-		// getCanonicalPath returns the os dependent path separator
-		String[] myElems = myPath.split( "[\\\\/]" );
-		String[] baseElems = basePath.split( "[\\\\/]" );
-
-		int common = 0;
-		while( common < myElems.length && common < baseElems.length && myElems[ common ].equals( baseElems[ common ] ) )
-			common++;
-		if( common == 0 )
-			throw new FatalIOException( "Internal error" );
-
-		StringBuffer result = new StringBuffer();
-
-		if( baseElems.length > common )
-			for( int j = 0; j < baseElems.length - common - 1; j++ )
-				result.append( "../" );
-
-		if( common >= myElems.length )
-			throw new FatalIOException( "Internal error" );
-		result.append( myElems[ common ] );
-
-		for( int j = common + 1; j < myElems.length; j++ )
-		{
-			result.append( '/' );
-			result.append( myElems[ j ] );
-		}
-
-		return result.toString();
+		return URIResource.relativize( base.getURI(), getURI() );
 	}
 
 	@Override
