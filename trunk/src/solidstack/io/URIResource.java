@@ -169,4 +169,79 @@ public class URIResource extends Resource
 			return new FileResource( new File( this.uri ) );
 		return this;
 	}
+
+	static private int findCommonIndex( char[] path1, char[] path2 )
+	{
+		int len = path1.length;
+		if( len > path2.length )
+			len = path2.length;
+
+		int lastSlash = -1;
+		for( int i = 0; i < len; i++ )
+		{
+			char ch1 = path1[ i ];
+			if( ch1 != path2[ i ] )
+				break;
+			if( ch1 == '/' )
+				lastSlash = i;
+		}
+
+		return lastSlash + 1;
+	}
+
+	static private int countSlashes( char[] base, int from )
+	{
+		int len = base.length;
+		int result = 0;
+		for( int i = from; i < len; i++ )
+			if( base[ i ] == '/' )
+				result++;
+		return result;
+	}
+
+	static public URI relativize( URI base, URI child )
+	{
+		// Checks
+
+		if( child.isOpaque() )
+			return child;
+		if( base.isOpaque() )
+			return child;
+		if( base.getScheme() != child.getScheme() ) // TODO Add equals and equalsIgnoreCase
+		{
+			if( base.getScheme() == null )
+				return child;
+			if( !base.getScheme().equalsIgnoreCase( child.getScheme() ) )
+				return child;
+		}
+		if( base.getAuthority() != child.getAuthority() )
+		{
+			if( base.getAuthority() == null )
+				return child;
+			if( !base.getAuthority().equals( child.getAuthority() ) )
+				return child;
+		}
+
+		// Do it
+
+		char[] baseChars = base.normalize().getPath().toCharArray();
+		char[] childChars = child.normalize().getPath().toCharArray();
+
+		int common = findCommonIndex( baseChars, childChars );
+		int slashes = countSlashes( baseChars, common );
+
+		StringBuilder result = new StringBuilder();
+		for( int i = 0; i < slashes; i++ )
+			result.append( "../" );
+		result.append( childChars, common, childChars.length - common );
+
+		try
+		{
+			return new URI( null, null, result.toString(), child.getQuery(), child.getFragment() );
+		}
+		catch( URISyntaxException e )
+		{
+			throw new FatalURISyntaxException( e );
+		}
+	}
 }

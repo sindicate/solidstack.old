@@ -105,7 +105,7 @@ public class Resource
  	 * @param other The resource to calculate the relative path from.
  	 * @return The relative path from the given resource to this resource.
  	 */
-	public String getPathFrom( @SuppressWarnings( "unused" ) Resource other )
+	public URI getPathFrom( @SuppressWarnings( "unused" ) Resource other )
 	{
 		throw new UnsupportedOperationException();
 	}

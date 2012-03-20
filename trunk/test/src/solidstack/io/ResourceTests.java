@@ -139,4 +139,91 @@ public class ResourceTests
 		System.out.println( uri );
 		System.out.println( uri.normalize() );
 	}
+
+	static private void test1_( String base, String child, String result ) throws URISyntaxException
+	{
+		URI uri1 = new URI( base );
+		URI uri2 = new URI( child );
+		URI res = URIResource.relativize( uri1, uri2 );
+		//String s = res.toString();
+		Assert.assertEquals( res.toString(), result );
+		URI back = uri1.resolve( res );
+		Assert.assertEquals( back.toString(), child );
+	}
+
+	@Test(groups="new")
+	static public void testPathFrom1() throws URISyntaxException
+	{
+		Object o1 = null;
+		Object o2 = null;
+		Assert.assertTrue( o1 == o2 );
+
+		// Relative folder to folder
+		test1_( "/folder1/folder2/", "/folder1/folder2/", "" );
+		test1_( "/folder1/folder2/", "/folder1/folder2/folder3/", "folder3/" );
+		test1_( "/folder1/folder2/", "/folder1/", "../" );
+		test1_( "/folder1/folder2/", "/folder1/folder3/", "../folder3/" );
+		test1_( "/folder1/folder2/", "/folder3/", "../../folder3/" );
+		test1_( "/folder1/folder2/", "/", "../../" );
+		//test1_( "/folder1/folder2/", "", "" ); // TODO
+		//test1_( "/folder1/folder2/", "folder1/", "../" ); // TODO
+
+		// Relative file to folder
+		test1_( "/folder1/folder2/", "/folder1/folder2/file", "file" );
+		test1_( "/folder1/folder2/", "/folder1/file", "../file" );
+		test1_( "/folder1/folder2/", "/file", "../../file" );
+		test1_( "/folder1/folder2/", "/folder3/file", "../../folder3/file" );
+
+		// Relative folder to file
+		test1_( "/folder1/folder2/f", "/folder1/folder2/", "" );
+		test1_( "/folder1/folder2/f", "/folder1/folder2/folder3/", "folder3/" );
+		test1_( "/folder1/folder2/f", "/folder1/", "../" );
+		test1_( "/folder1/folder2/f", "/folder1/folder3/", "../folder3/" );
+		test1_( "/folder1/folder2/f", "/folder3/", "../../folder3/" );
+		test1_( "/folder1/folder2/f", "/", "../../" );
+		//test1_( "/folder1/folder2/f", "", "" ); // TODO
+		//test1_( "/folder1/folder2/f", "folder1/", "../" ); // TODO
+
+		// Relative file to file
+		test1_( "/folder1/folder2/f", "/folder1/folder2/file", "file" );
+		test1_( "/folder1/folder2/f", "/folder1/file", "../file" );
+		test1_( "/folder1/folder2/f", "/file", "../../file" );
+		test1_( "/folder1/folder2/f", "/folder3/file", "../../folder3/file" );
+
+		// With query and fragment
+		test1_( "/folder1/folder2/f?q#f", "/folder1/folder2/file?query", "file?query" );
+		test1_( "/folder1/folder2/f?q#f", "/folder1/folder2/file#fragment", "file#fragment" );
+		test1_( "/folder1/folder2/f?q#f", "/folder1/folder2/file?query#fragment", "file?query#fragment" );
+		test1_( "/folder1/folder2/f?q#f", "/folder1/folder2/file#fragment?query", "file#fragment?query" ); // This is only a fragment
+	}
+
+	static public void test2_( String base, String child, String result ) throws URISyntaxException
+	{
+		Resource baseResource = new FileResource( base );
+		Resource childResource = new FileResource( child );
+		URI resultURI = childResource.getPathFrom( baseResource );
+		Assert.assertEquals( resultURI.toString(), result );
+		Resource back = baseResource.resolve( resultURI.toString() );
+		Assert.assertTrue( back.toString().endsWith( child ) );
+	}
+
+	@Test(groups="new")
+	static public void testPathFrom2() throws URISyntaxException
+	{
+		test2_( "/folder1/folder2/f", "/folder1/folder2/file", "file" );
+		test2_( "/folder1/folder2/f", "/folder1/folder3/file", "../folder3/file" );
+		test2_( "/folder1/folder2/f", "/folder1/folder2/folder3/file", "folder3/file" );
+		test2_( "/folder1/folder2/f", "/folder1/file", "../file" );
+		test2_( "/folder1/folder2/f", "/file", "../../file" );
+		test2_( "/folder1/folder2/f", "/folder3/file", "../../folder3/file" );
+
+		// Folders only works if the folder really exists on the file system
+		test2_( "test/src", "test/src/file", "file" );
+		test2_( "test/src", "test/file", "../file" );
+		test2_( "test/src", "test/src/folder/file", "folder/file" );
+		test2_( "test/src", "test/folder/file", "../folder/file" );
+
+		test2_( "test/src", "test/src/solidstack", "solidstack/" );
+		test2_( "test/src", "test/lib/hibernate", "../lib/hibernate/" );
+	}
 }
