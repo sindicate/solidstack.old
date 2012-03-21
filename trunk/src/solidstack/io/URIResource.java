@@ -203,6 +203,8 @@ public class URIResource extends Resource
 	{
 		// Checks
 
+		// TODO Or should we throw an exception when a relative path is not possible?
+
 		if( child.isOpaque() )
 			return child;
 		if( base.isOpaque() )
