@@ -125,13 +125,6 @@ public class FileResource extends Resource
 		return Resources.getResource( this.file.toURI().resolve( path ) );
 	}
 
-	// TODO Need test for this
-	@Override
-	public URI getPathFrom( Resource base )
-	{
-		return URIResource.relativize( base.getURI(), getURI() );
-	}
-
 	@Override
 	public String toString()
 	{

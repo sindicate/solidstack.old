@@ -102,13 +102,15 @@ public class Resource
  	/**
  	 * Calculates a relative path from the given resource to this resource.
  	 *
- 	 * @param other The resource to calculate the relative path from.
+ 	 * @param base The resource to calculate the relative path from.
  	 * @return The relative path from the given resource to this resource.
  	 */
-	public URI getPathFrom( @SuppressWarnings( "unused" ) Resource other )
+	// TODO Return String or URI?
+	public URI getPathFrom( Resource base )
 	{
-		throw new UnsupportedOperationException();
+		return URIResource.relativize( base.getURI(), getURI() );
 	}
+
 
     /**
      * @return A normalized path to this resource.
