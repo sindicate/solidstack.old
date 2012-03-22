@@ -118,7 +118,6 @@ public class FileResource extends Resource
 		}
 	}
 
-	// TODO Need test for this
 	@Override
 	public Resource resolve( String path )
 	{
