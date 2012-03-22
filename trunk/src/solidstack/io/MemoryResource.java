@@ -19,8 +19,6 @@ package solidstack.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.LinkedList;
-import java.util.List;
 
 
 /**
@@ -33,7 +31,7 @@ public class MemoryResource extends Resource
 	/**
 	 * The buffer containing the resource's bytes.
 	 */
-	protected List< byte[] > buffer = new LinkedList< byte[] >();
+	private ByteMatrixOutputStream buffer = new ByteMatrixOutputStream();
 
 	/**
 	 * Constructor for an empty memory resource.
@@ -50,7 +48,14 @@ public class MemoryResource extends Resource
 	 */
 	public MemoryResource( byte[] bytes )
 	{
-		this.buffer.add( bytes );
+		try
+		{
+			this.buffer.write( bytes );
+		}
+		catch( IOException e )
+		{
+			throw new FatalIOException( e );
+		}
 	}
 
 	/**
@@ -67,7 +72,7 @@ public class MemoryResource extends Resource
 	@Override
 	public InputStream newInputStream()
 	{
-		return new ByteMatrixInputStream( this.buffer.toArray( new byte[ this.buffer.size() ][] ) );
+		return new ByteMatrixInputStream( this.buffer.toByteMatrix() );
 	}
 
 	@Override
@@ -94,14 +99,8 @@ public class MemoryResource extends Resource
 		int count;
 		try
 		{
-			// TODO What if the input stream returns very small blocks?
 			while( ( count = input.read( buffer ) ) >= 0 )
-				if( count > 0 )
-				{
-					byte[] b = new byte[ count ];
-					System.arraycopy( buffer, 0, b, 0, count );
-					this.buffer.add( b );
-				}
+				this.buffer.write( buffer, 0, count );
 		}
 		catch( IOException e )
 		{
