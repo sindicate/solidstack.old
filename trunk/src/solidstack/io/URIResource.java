@@ -25,6 +25,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import solidstack.util.Strings;
+
 
 /**
  * A resource identified by a URI.
@@ -132,7 +134,6 @@ public class URIResource extends Resource
 	@Override
 	public Resource resolve( String path )
 	{
-		// TODO Unit test with folder url
 		return new URIResource( this.uri.resolve( path ) );
 	}
 
@@ -145,14 +146,25 @@ public class URIResource extends Resource
 	@Override
 	public boolean exists()
 	{
-		// TODO This should be implemented I think
-		throw new UnsupportedOperationException();
+		try
+		{
+			this.uri.toURL().openStream();
+			return true;
+		}
+		catch( FileNotFoundException e )
+		{
+			return false;
+		}
+		catch( IOException e )
+		{
+			throw new FatalIOException( e );
+		}
 	}
 
 	@Override
 	public long getLastModified()
 	{
-		// TODO This should be implemented I think
+		// TODO This should be implemented I think (for file: and http:), maybe we need a HttpResource
 		return 0;
 	}
 
@@ -209,20 +221,10 @@ public class URIResource extends Resource
 			return child;
 		if( base.isOpaque() )
 			return child;
-		if( base.getScheme() != child.getScheme() ) // TODO Add equals and equalsIgnoreCase
-		{
-			if( base.getScheme() == null )
-				return child;
-			if( !base.getScheme().equalsIgnoreCase( child.getScheme() ) )
-				return child;
-		}
-		if( base.getAuthority() != child.getAuthority() )
-		{
-			if( base.getAuthority() == null )
-				return child;
-			if( !base.getAuthority().equals( child.getAuthority() ) )
-				return child;
-		}
+		if( !Strings.equals( base.getScheme(), child.getScheme() ) )
+			return child;
+		if( !Strings.equalsIgnoreCase( base.getAuthority(), child.getAuthority() ) )
+			return child;
 
 		// Do it
 
