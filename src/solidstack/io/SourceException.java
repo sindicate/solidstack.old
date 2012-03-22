@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package solidstack.template;
+package solidstack.io;
 
-import solidstack.io.SourceException;
-import solidstack.io.SourceLocation;
 
 
 /**
- * Something has gone wrong during template parsing.
+ * Something has gone wrong during reading of the source.
  *
  * @author René M. de Bloois
  */
-public class ParseException extends SourceException
+public class SourceException extends RuntimeException
 {
 	private static final long serialVersionUID = 1L;
+
+	private SourceLocation location;
 
 	/**
 	 * Constructor.
@@ -35,8 +35,25 @@ public class ParseException extends SourceException
 	 * @param message The message.
 	 * @param location The file location where the problem is located.
 	 */
-	public ParseException( String message, SourceLocation location )
+	public SourceException( String message, SourceLocation location )
 	{
-		super( message, location );
+		super( message );
+		this.location = location;
+	}
+
+	@Override
+	public String getMessage()
+	{
+		return super.getMessage() + ", at " + this.location;
+	}
+
+	/**
+	 * Returns the file location where the problem is located.
+	 *
+	 * @return The file location where the problem is located.
+	 */
+	public SourceLocation getLocation()
+	{
+		return this.location;
 	}
 }
