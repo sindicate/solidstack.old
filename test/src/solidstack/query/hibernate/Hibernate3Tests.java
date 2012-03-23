@@ -23,6 +23,7 @@ public class Hibernate3Tests
 	private SessionFactory factory;
 	private Method openSession;
 
+	@SuppressWarnings( "deprecation" )
 	@BeforeClass(groups="new")
 	public void init() throws NoSuchMethodException, SecurityException
 	{
@@ -59,7 +60,7 @@ public class Hibernate3Tests
 
 
 	@Test
-	public void testHQL() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
+	public void testHQL() throws SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{
 		Session session = (Session)this.openSession.invoke( this.factory );
 

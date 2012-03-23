@@ -1,7 +1,6 @@
 package solidstack.io;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -54,7 +53,7 @@ public class ResourceTests
 	}
 
 	@Test
-	public void testFileResource() throws FileNotFoundException
+	public void testFileResource()
 	{
 		Resource resource = Resources.getResource( "file:test/src/solidstack/query/test.sql.slt" );
 		Assert.assertTrue( resource.exists() );
@@ -228,7 +227,7 @@ public class ResourceTests
 //		test1_( "", "/folder1/folder2/f", "" ); // TODO
 	}
 
-	static public void test2_( String base, String child, String result ) throws URISyntaxException
+	static public void test2_( String base, String child, String result )
 	{
 		Resource baseResource = new FileResource( base );
 		Resource childResource = new FileResource( child );
@@ -239,7 +238,7 @@ public class ResourceTests
 	}
 
 	@Test(groups="new")
-	static public void testPathFrom2() throws URISyntaxException
+	static public void testPathFrom2()
 	{
 		test2_( "/folder1/folder2/f", "/folder1/folder2/file", "file" );
 		test2_( "/folder1/folder2/f", "/folder1/folder3/file", "../folder3/file" );
@@ -258,7 +257,7 @@ public class ResourceTests
 		test2_( "test/src", "test/lib/hibernate", "../lib/hibernate/" );
 	}
 
-	static public void test3_( Resource base, Resource child, String result, String resolve ) throws URISyntaxException
+	static public void test3_( Resource base, Resource child, String result, String resolve )
 	{
 		URI resultURI = child.getPathFrom( base );
 		Assert.assertEquals( resultURI.toString(), result );
@@ -268,7 +267,7 @@ public class ResourceTests
 	}
 
 	@Test(groups="new")
-	static public void testPathFrom3() throws URISyntaxException
+	static public void testPathFrom3()
 	{
 		test3_( new URIResource( "http:/folder1/folder2/f" ), new URIResource( "file:/folder1/folder2/file" ), "file:/folder1/folder2/file", "file:/folder1/folder2/file" );
 		test3_( new URIResource( "http:/folder1/folder2/f" ), new URIResource( "/folder1/folder2/file" ), "/folder1/folder2/file", "http:/folder1/folder2/file" );

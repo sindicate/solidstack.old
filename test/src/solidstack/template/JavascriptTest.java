@@ -25,7 +25,7 @@ import solidstack.io.Resource;
 import solidstack.io.Resources;
 
 
-@SuppressWarnings( "javadoc" )
+@SuppressWarnings( { "javadoc", "restriction" } )
 public class JavascriptTest
 {
 	static public final String CONSTANT = "CONSTANT";

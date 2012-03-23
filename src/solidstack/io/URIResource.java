@@ -211,6 +211,13 @@ public class URIResource extends Resource
 		return result;
 	}
 
+	/**
+	 * Returns a relative URI from the base URI to the child URI.
+	 *
+	 * @param base The base URI.
+	 * @param child The child URI.
+	 * @return A relative URI from the base URI to the child URI.
+	 */
 	static public URI relativize( URI base, URI child )
 	{
 		// Checks
