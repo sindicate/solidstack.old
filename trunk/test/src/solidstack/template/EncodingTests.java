@@ -11,6 +11,8 @@ import solidstack.io.Resources;
 import solidstack.io.SourceReader;
 import solidstack.io.SourceReaders;
 
+
+@SuppressWarnings( "javadoc" )
 public class EncodingTests
 {
 	static private void _test1( byte[] bytes, String encoding ) throws FileNotFoundException
