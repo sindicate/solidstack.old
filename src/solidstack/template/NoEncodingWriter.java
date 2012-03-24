@@ -69,4 +69,9 @@ public class NoEncodingWriter implements EncodingWriter
 	{
 		return true;
 	}
+
+	public void flush() throws IOException
+	{
+		this.out.flush();
+	}
 }

@@ -33,6 +33,7 @@ import solidstack.lang.Assert;
  */
 // TODO TemplateLoader hierarchy, so that they can inherit MIME type mappings? And fallback like ClassLoaders do? Useful for include and templating?
 // TODO Or a separate MIME type registry?
+// TODO What about precompiled templates?
 public class TemplateLoader
 {
 	static private final Pattern XML_MIME_TYPE_PATTERN = Pattern.compile( "^[a-z]+/.+\\+xml" ); // TODO http://www.iana.org/assignments/media-types/index.html
@@ -145,8 +146,6 @@ public class TemplateLoader
 		Loggers.loader.debug( "getTemplate [{}]", path );
 		Assert.isTrue( !path.startsWith( "/" ), "path should not start with a /" ); // TODO When doing includes, / should be allowed for absolute paths
 
-		path += ".slt"; // TODO Configurable, and maybe another default
-
 		synchronized( this.templates )
 		{
 			Template template = this.templates.get( path );
@@ -155,7 +154,7 @@ public class TemplateLoader
 			// If reloading == true and resource is changed, clear current query
 			if( this.reloading && template != null && template.getLastModified() > 0 )
 			{
-				resource = getResource( path );
+				resource = getResource( path + ".slt" ); // TODO Configurable, and maybe another default
 				if( resource.exists() && resource.getLastModified() > template.getLastModified() )
 				{
 					Loggers.loader.info( "{} changed, reloading", resource );
@@ -167,7 +166,7 @@ public class TemplateLoader
 			if( template == null )
 			{
 				if( resource == null )
-					resource = getResource( path );
+					resource = getResource( path + ".slt" );
 
 				if( !resource.exists() )
 					throw new TemplateNotFoundException( resource.getNormalized() + " not found" );
@@ -180,6 +179,31 @@ public class TemplateLoader
 			}
 
 			return template;
+		}
+	}
+
+	/**
+	 * Explicitly defines a new template. The compiled template is cached in memory and can be retrieved by calling {@link #getTemplate(String)}.
+	 *
+	 * @param path The path of the template.
+	 * @param resource The resource containing the source of the template.
+	 */
+	public void defineTemplate( String path, Resource resource )
+	{
+		Loggers.loader.debug( "defineTemplate [{}]", path );
+		Assert.isTrue( !path.startsWith( "/" ), "path should not start with a /" ); // TODO When doing includes, / should be allowed for absolute paths
+
+		Template template = new TemplateCompiler( this ).compile( resource, path );
+		template.setName( path ); // Overwrite the name
+		template.setLastModified( 0 );
+		template.setLoader( this );
+
+		// TODO Reloading does not work, because the path has nothing to do with the resource
+		// TODO I think we need to store the URI in the template, if it has one
+
+		synchronized( this.templates )
+		{
+			this.templates.put( path, template );
 		}
 	}
 

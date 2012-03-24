@@ -20,14 +20,14 @@ import java.io.IOException;
 
 /**
  * An encoding writer. Can encode strings to the target content type.
- * 
+ *
  * @author René M. de Bloois
  */
 public interface EncodingWriter
 {
 	/**
 	 * Write the string to the writer unencoded.
-	 * 
+	 *
 	 * @param s The string to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
@@ -35,7 +35,7 @@ public interface EncodingWriter
 
 	/**
 	 * Write the value to the writer encoded.
-	 * 
+	 *
 	 * @param value The value to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
@@ -43,8 +43,15 @@ public interface EncodingWriter
 
 	/**
 	 * Indicates that {@link #writeEncoded(Object)} only accepts Strings, not Objects.
-	 * 
+	 *
 	 * @return True when {@link #writeEncoded(Object)} only accepts Strings, not Objects.
 	 */
 	boolean stringsOnly();
+
+	/**
+     * Flushes the stream.
+     *
+	 * @throws IOException If an I/O error occurs.
+	 */
+	void flush() throws IOException;
 }

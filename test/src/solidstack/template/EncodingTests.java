@@ -31,7 +31,7 @@ public class EncodingTests
 		Assert.assertEquals( reader.getEncoding(), EncodingDetector.CHARSET_ISO_8859_1 );
 	}
 
-	@Test(groups="new")
+	@Test
 	static public void test1() throws UnsupportedEncodingException, FileNotFoundException
 	{
 		_test1( new byte[] { 32, 32 }, EncodingDetector.CHARSET_UTF_8 );
@@ -78,7 +78,7 @@ public class EncodingTests
 		*/
 	}
 
-	@Test(groups="new")
+	@Test
 	static public void test2() throws UnsupportedEncodingException, FileNotFoundException
 	{
 		String s = "<%@ template encoding=\"" + EncodingDetector.CHARSET_ISO_8859_1 + "\" version=\"1.0\" %>";

@@ -74,6 +74,9 @@ public class SourceReaders
 	 */
 	static public SourceReader forResource( Resource resource, EncodingDetector detector, String defaultEncoding ) throws FileNotFoundException
 	{
+		if( resource.supportsReader() )
+			return new ReaderSourceReader( resource.newReader(), resource.getLocation() );
+
 		InputStream is = new BufferedInputStream( resource.newInputStream() );
 		boolean success = false;
 		try
