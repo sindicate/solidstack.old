@@ -31,9 +31,9 @@ import solidstack.lang.Assert;
  *
  * @author René M. de Bloois
  */
-// TODO TemplateManager hierarchy, so that they can inherit MIME type mappings? And fallback like ClassLoaders do? Useful for include and templating?
+// TODO TemplateLoader hierarchy, so that they can inherit MIME type mappings? And fallback like ClassLoaders do? Useful for include and templating?
 // TODO Or a separate MIME type registry?
-public class TemplateManager
+public class TemplateLoader
 {
 	static private final Pattern XML_MIME_TYPE_PATTERN = Pattern.compile( "^[a-z]+/.+\\+xml" ); // TODO http://www.iana.org/assignments/media-types/index.html
 
@@ -48,7 +48,7 @@ public class TemplateManager
 	/**
 	 * Constructor.
 	 */
-	public TemplateManager()
+	public TemplateLoader()
 	{
 		this.templatePath = Resources.currentFolder();
 
@@ -105,7 +105,7 @@ public class TemplateManager
 	 */
 	public void setReloading( boolean reloading )
 	{
-		// FIXME Should we add the name of the TemplateManager?
+		// FIXME Should we add the name of the TemplateLoader?
 		Loggers.loader.info( "reloading = [{}]", reloading );
 		this.reloading = reloading;
 	}
@@ -175,7 +175,7 @@ public class TemplateManager
 				template = new TemplateCompiler( this ).compile( resource, path ); // TODO Is this enough for a class name?
 				template.setName( path ); // Overwrite the name
 				template.setLastModified( resource.getLastModified() );
-				template.setManager( this );
+				template.setLoader( this );
 				this.templates.put( path, template );
 			}
 

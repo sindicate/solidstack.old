@@ -39,17 +39,17 @@ abstract public class Template
 	private String contentType;
 	private String charSet; // FIXME Rename to characterencoding, including the contenttype directive?
 	private long lastModified;
-	private TemplateManager manager;
+	private TemplateLoader loader;
 
 
 	/**
-	 * Sets the manager of the template. The template needs this to access the MIME type registry.
+	 * Sets the loader of the template. The template needs this to access the MIME type registry.
 	 *
-	 * @param manager A template manager.
+	 * @param loader A template loader.
 	 */
-	protected void setManager( TemplateManager manager )
+	protected void setLoader( TemplateLoader loader )
 	{
-		this.manager = manager;
+		this.loader = loader;
 	}
 
 	/**
@@ -122,7 +122,7 @@ abstract public class Template
 	{
 		if( this.contentType != null )
 		{
-			EncodingWriterFactory factory = this.manager.getWriterFactory( this.contentType );
+			EncodingWriterFactory factory = this.loader.getWriterFactory( this.contentType );
 			if( factory != null )
 				return factory.createWriter( writer );
 		}

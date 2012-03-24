@@ -123,7 +123,7 @@ public class JavascriptTest
 				"\"); } \n" +
 				";\n" );
 
-		TemplateManager queries = new TemplateManager();
+		TemplateLoader queries = new TemplateLoader();
 		queries.setTemplatePath( "classpath:/solidstack/template" );
 
 		Map< String, Object > params = new HashMap< String, Object >();

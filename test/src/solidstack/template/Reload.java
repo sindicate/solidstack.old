@@ -78,7 +78,7 @@ public class Reload
 	@Test
 	public void testReloading() throws IOException
 	{
-		TemplateManager templates = new TemplateManager();
+		TemplateLoader templates = new TemplateLoader();
 		templates.setTemplatePath( "classpath:/solidstack/template" );
 		templates.setDefaultLanguage( "javascript" );
 

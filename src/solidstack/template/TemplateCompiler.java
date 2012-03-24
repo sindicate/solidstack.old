@@ -47,17 +47,17 @@ public class TemplateCompiler
 
 	static boolean keepSource = false;
 
-	private TemplateManager manager;
+	private TemplateLoader loader;
 
 
 	/**
 	 * Constructor.
 	 *
-	 * @param manager The template manager that created this compiler.
+	 * @param loader The template loader that created this compiler.
 	 */
-	public TemplateCompiler( TemplateManager manager )
+	public TemplateCompiler( TemplateLoader loader )
 	{
-		this.manager = manager;
+		this.loader = loader;
 	}
 
 	/**
@@ -116,11 +116,11 @@ public class TemplateCompiler
 
 		String lang = context.getLanguage();
 		if( lang == null )
-			if( this.manager != null )
+			if( this.loader != null )
 			{
-				lang = this.manager.getDefaultLanguage();
+				lang = this.loader.getDefaultLanguage();
 				if( lang == null )
-					throw new TemplateException( "Template has no \"language\" directive, and no defaultLanguage configured in the TemplateManager" );
+					throw new TemplateException( "Template has no \"language\" directive, and no defaultLanguage configured in the TemplateLoader" );
 			}
 			else
 				throw new TemplateException( "Template has no \"language\" directive" );

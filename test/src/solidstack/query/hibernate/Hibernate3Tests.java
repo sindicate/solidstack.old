@@ -13,7 +13,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import solidstack.query.Query;
-import solidstack.query.QueryManager;
+import solidstack.query.QueryLoader;
 import solidstack.util.Pars;
 
 
@@ -48,7 +48,7 @@ public class Hibernate3Tests
 	{
 		Session session = (Session)this.openSession.invoke( this.factory );
 
-		QueryManager queries = new QueryManager();
+		QueryLoader queries = new QueryLoader();
 		queries.setTemplatePath( "classpath:/solidstack/query" );
 		Query query = queries.getQuery( "test.sql" );
 		List<Map<String, Object>> tables = query.hibernate().listOfMaps( session, new Pars() );
@@ -71,7 +71,7 @@ public class Hibernate3Tests
 			System.out.println( table.getName() );
 		System.out.println( "-----" );
 
-		QueryManager queries = new QueryManager();
+		QueryLoader queries = new QueryLoader();
 		queries.setTemplatePath( "classpath:/solidstack/query/hibernate" );
 		Query query = queries.getQuery( "test.hql" );
 
