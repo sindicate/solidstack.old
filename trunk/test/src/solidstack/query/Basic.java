@@ -35,7 +35,7 @@ import solidstack.template.ParseException;
 import solidstack.template.Template;
 import solidstack.template.TemplateCompiler;
 import solidstack.template.TemplateCompilerContext;
-import solidstack.template.TemplateManager;
+import solidstack.template.TemplateLoader;
 import solidstack.util.Pars;
 
 
@@ -48,7 +48,7 @@ public class Basic
 		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
 		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
-		QueryManager queries = new QueryManager();
+		QueryLoader queries = new QueryLoader();
 		queries.setTemplatePath( "classpath:/solidstack/query" );
 
 		Query query = queries.getQuery( "test.sql" );
@@ -78,7 +78,7 @@ public class Basic
 		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
 		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
-		QueryManager queries = new QueryManager();
+		QueryLoader queries = new QueryLoader();
 		queries.setTemplatePath( "classpath:/solidstack/query" );
 		queries.setDefaultLanguage( "javascript" );
 
@@ -140,7 +140,7 @@ public class Basic
 				"}}}"
 				);
 
-		QueryManager queries = new QueryManager();
+		QueryLoader queries = new QueryLoader();
 		queries.setTemplatePath( "classpath:/solidstack/query" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
@@ -164,15 +164,15 @@ public class Basic
 	@Test
 	public void testTransformJS() throws Exception
 	{
-		TemplateManager manager = new TemplateManager();
-		manager.setTemplatePath( "classpath:/solidstack/query" );
-		manager.setDefaultLanguage( "javascript" );
+		TemplateLoader loader = new TemplateLoader();
+		loader.setTemplatePath( "classpath:/solidstack/query" );
+		loader.setDefaultLanguage( "javascript" );
 
 		Resource resource = Resources.getResource( "test/src/solidstack/query/testjs.sql.slt" );
 		TemplateCompilerContext context = new TemplateCompilerContext();
 		context.setResource( resource );
 		context.setPath( "p/c" );
-		new TemplateCompiler( manager ).compile( context );
+		new TemplateCompiler( loader ).compile( context );
 
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 
@@ -197,7 +197,7 @@ public class Basic
 				"\"); } \n" +
 				";\n" );
 
-		QueryManager queries = new QueryManager( manager );
+		QueryLoader queries = new QueryLoader( loader );
 
 		Map< String, Object > params = new HashMap< String, Object >();
 		params.put( "prefix", "SYST" );
@@ -222,7 +222,7 @@ public class Basic
 	{
 		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
-		QueryManager queries = new QueryManager();
+		QueryLoader queries = new QueryLoader();
 		queries.setTemplatePath( "classpath:/solidstack/query" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
@@ -254,7 +254,7 @@ public class Basic
 		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
 		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
-		QueryManager queries = new QueryManager();
+		QueryLoader queries = new QueryLoader();
 		queries.setTemplatePath( "classpath:/solidstack/query" );
 		queries.setDefaultLanguage( "groovy" );
 

@@ -12,7 +12,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import solidstack.query.Query;
-import solidstack.query.QueryManager;
+import solidstack.query.QueryLoader;
 import solidstack.query.hibernate.DerbyTable;
 import solidstack.query.hibernate.Test1;
 import solidstack.util.Pars;
@@ -38,7 +38,7 @@ public class JPA1Tests
 	{
 		EntityManager em = this.factory.createEntityManager();
 
-		QueryManager queries = new QueryManager();
+		QueryLoader queries = new QueryLoader();
 		queries.setTemplatePath( "classpath:/solidstack/query" );
 		Query query = queries.getQuery( "test.sql" );
 		List<DerbyTable> tables = query.jpa().getResultList( em, DerbyTable.class, new Pars() );
@@ -53,7 +53,7 @@ public class JPA1Tests
 	{
 		EntityManager em = this.factory.createEntityManager();
 
-		QueryManager queries = new QueryManager();
+		QueryLoader queries = new QueryLoader();
 		queries.setTemplatePath( "classpath:/solidstack/query" );
 		Query query = queries.getQuery( "test.sql" );
 		List<Object[]> tables = query.jpa().getResultList( em, new Pars() );
@@ -75,7 +75,7 @@ public class JPA1Tests
 			System.out.println( table.getName() );
 		System.out.println( "-----" );
 
-		QueryManager queries = new QueryManager();
+		QueryLoader queries = new QueryLoader();
 		queries.setTemplatePath( "classpath:/solidstack/query/jpa" );
 		Query query = queries.getQuery( "test.jpql" );
 
@@ -101,7 +101,7 @@ public class JPA1Tests
 	{
 		EntityManager em = this.factory.createEntityManager();
 
-		QueryManager queries = new QueryManager();
+		QueryLoader queries = new QueryLoader();
 		queries.setTemplatePath( "classpath:/solidstack/query/hibernate" );
 		Query query = queries.getQuery( "test.hql" );
 
@@ -120,7 +120,7 @@ public class JPA1Tests
 
 		EntityTransaction transaction = em.getTransaction();
 
-		QueryManager queries = new QueryManager();
+		QueryLoader queries = new QueryLoader();
 		queries.setTemplatePath( "classpath:/solidstack/query/jpa" );
 		Query sqlQuery = queries.getQuery( "big.sql" );
 		Query jpqlQuery = queries.getQuery( "big.jpql" );

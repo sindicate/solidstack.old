@@ -16,7 +16,7 @@
 
 package solidstack.query;
 
-import solidstack.template.TemplateManager;
+import solidstack.template.TemplateLoader;
 
 
 /**
@@ -24,28 +24,28 @@ import solidstack.template.TemplateManager;
  *
  * @author René M. de Bloois
  */
-public class QueryManager
+public class QueryLoader
 {
-	private TemplateManager templateManager;
+	private TemplateLoader templateLoader;
 	private boolean locked;
 
 
 	/**
 	 * Constructor.
 	 */
-	public QueryManager()
+	public QueryLoader()
 	{
-		this.templateManager = new TemplateManager();
+		this.templateLoader = new TemplateLoader();
 	}
 
 	/**
-	 * Constructor which uses an existing TemplateManager.
+	 * Constructor which uses an existing TemplateLoader.
 	 *
-	 * @param templateManager The template manager to use.
+	 * @param templateLoader The template loader to use.
 	 */
-	public QueryManager( TemplateManager templateManager )
+	public QueryLoader( TemplateLoader templateLoader )
 	{
-		this.templateManager = templateManager;
+		this.templateLoader = templateLoader;
 		this.locked = true;
 	}
 
@@ -56,7 +56,7 @@ public class QueryManager
 	 */
 	public void setTemplatePath( String path )
 	{
-		this.templateManager.setTemplatePath( path );
+		this.templateLoader.setTemplatePath( path );
 	}
 
 	/**
@@ -68,7 +68,7 @@ public class QueryManager
 	public void setReloading( boolean reloading )
 	{
 		checkLock();
-		this.templateManager.setReloading( reloading );
+		this.templateLoader.setReloading( reloading );
 	}
 
 	/**
@@ -79,7 +79,7 @@ public class QueryManager
 	public void setDefaultLanguage( String language )
 	{
 		checkLock();
-		this.templateManager.setDefaultLanguage( language );
+		this.templateLoader.setDefaultLanguage( language );
 	}
 
 	/**
@@ -90,12 +90,12 @@ public class QueryManager
 	 */
 	public Query getQuery( String path )
 	{
-		return new Query( this.templateManager.getTemplate( path ) );
+		return new Query( this.templateLoader.getTemplate( path ) );
 	}
 
 	private void checkLock()
 	{
 		if( this.locked )
-			throw new IllegalStateException( "The TemplateManager must be configured directly." );
+			throw new IllegalStateException( "The TemplateLoader must be configured directly." );
 	}
 }

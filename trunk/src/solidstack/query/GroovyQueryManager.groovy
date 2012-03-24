@@ -16,7 +16,7 @@
 
 package solidstack.query
 
-class GroovyQueryManager extends QueryManager
+class GroovyQueryManager extends QueryLoader
 {
 	def methodMissing( String name, Object args )
 	{
@@ -28,6 +28,6 @@ class GroovyQueryManager extends QueryManager
 				return query
 			}
 
-		throw new MissingMethodException( name, QueryManager, args )
+		throw new MissingMethodException( name, QueryLoader, args )
 	}
 }

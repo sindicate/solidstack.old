@@ -37,7 +37,7 @@ public class Basic
 	@Test
 	public void testBasic()
 	{
-		TemplateManager templates = new TemplateManager();
+		TemplateLoader templates = new TemplateLoader();
 		templates.setTemplatePath( "classpath:/solidstack/template" );
 
 		Template template = templates.getTemplate( "test.txt" );
@@ -82,7 +82,7 @@ public class Basic
 				"}}}"
 				);
 
-		TemplateManager queries = new TemplateManager();
+		TemplateLoader queries = new TemplateLoader();
 		queries.setTemplatePath( "classpath:/solidstack/template" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
@@ -133,7 +133,7 @@ public class Basic
 	@Test
 	public void testNulls()
 	{
-		TemplateManager templates = new TemplateManager();
+		TemplateLoader templates = new TemplateLoader();
 		TemplateCompiler.keepSource = true;
 		templates.setTemplatePath( "classpath:/solidstack/template" );
 
