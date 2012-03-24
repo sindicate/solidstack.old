@@ -9,7 +9,7 @@ import org.testng.annotations.Test;
 @SuppressWarnings( "javadoc" )
 public class ByteMatrix
 {
-	@Test(groups="new")
+	@Test
 	static public void test1() throws IOException
 	{
 		byte[] bytes = new byte[ 20480 ];
@@ -39,7 +39,7 @@ public class ByteMatrix
 			Assert.assertEquals( (byte)b, bytes[ pos++ ] );
 	}
 
-	@Test(groups="new")
+	@Test
 	static public void test2() throws IOException
 	{
 		byte[] bytes = new byte[ 4097 ];

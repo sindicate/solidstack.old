@@ -18,14 +18,17 @@ package solidstack.template.groovy;
 
 import groovy.lang.Closure;
 
+import java.io.IOException;
 import java.util.Map;
 
+import solidstack.io.FatalIOException;
+import solidstack.template.ConvertingWriter;
 import solidstack.template.EncodingWriter;
 import solidstack.template.Template;
 
 /**
  * A compiled Groovy template.
- * 
+ *
  * @author René M. de Bloois
  */
 public class GroovyTemplate extends Template
@@ -46,6 +49,15 @@ public class GroovyTemplate extends Template
 	{
 		Closure template = (Closure)this.closure.clone();
 		template.setDelegate( params );
-		template.call( new GroovyConvertingWriter( writer ) );
+		ConvertingWriter out = new GroovyConvertingWriter( writer );
+		template.call( out );
+		try
+		{
+			out.flush();
+		}
+		catch( IOException e )
+		{
+			throw new FatalIOException( e );
+		}
 	}
 }

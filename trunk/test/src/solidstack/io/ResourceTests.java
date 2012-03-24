@@ -155,7 +155,7 @@ public class ResourceTests
 		test1_( base, child, result, child );
 	}
 
-	@Test(groups="new")
+	@Test
 	static public void testPathFrom1() throws URISyntaxException
 	{
 		// Relative folder to folder
@@ -237,7 +237,7 @@ public class ResourceTests
 		Assert.assertTrue( back.toString().endsWith( child ) );
 	}
 
-	@Test(groups="new")
+	@Test
 	static public void testPathFrom2()
 	{
 		test2_( "/folder1/folder2/f", "/folder1/folder2/file", "file" );
@@ -266,7 +266,7 @@ public class ResourceTests
 		Assert.assertEquals( back.toString(), resolve );
 	}
 
-	@Test(groups="new")
+	@Test
 	static public void testPathFrom3()
 	{
 		test3_( new URIResource( "http:/folder1/folder2/f" ), new URIResource( "file:/folder1/folder2/file" ), "file:/folder1/folder2/file", "file:/folder1/folder2/file" );

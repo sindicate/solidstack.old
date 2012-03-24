@@ -24,7 +24,7 @@ import solidstack.template.EncodingWriter;
 
 /**
  * A ConvertingWriter that converts JavaScript specific data types to Java data types.
- * 
+ *
  * @author René de Bloois
  */
 public class JavaScriptConvertingWriter implements ConvertingWriter
@@ -36,7 +36,7 @@ public class JavaScriptConvertingWriter implements ConvertingWriter
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param writer The EncodingWriter to write to.
 	 */
 	public JavaScriptConvertingWriter( EncodingWriter writer )
@@ -63,5 +63,10 @@ public class JavaScriptConvertingWriter implements ConvertingWriter
 			else
 				this.writer.writeEncoded( o );
 		}
+	}
+
+	public void flush() throws IOException
+	{
+		this.writer.flush();
 	}
 }

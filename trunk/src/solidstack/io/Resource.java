@@ -19,6 +19,7 @@ package solidstack.io;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.net.URI;
 import java.net.URL;
 
@@ -71,10 +72,28 @@ public class Resource
 	}
 
 	/**
-	 * @return An new InputStream to read from the resource.
+	 * @return A new InputStream to read from the resource.
 	 * @throws FileNotFoundException If the resource is not found.
 	 */
 	public InputStream newInputStream() throws FileNotFoundException
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * @return True if {@link #newReader()} is supported, false otherwise.
+	 */
+	// TODO Rename to ?
+	public boolean supportsReader()
+	{
+		return false;
+	}
+
+	/**
+	 * @return A new Reader to read from the resource.
+	 * @throws FileNotFoundException If the resource is not found.
+	 */
+	public Reader newReader() throws FileNotFoundException
 	{
 		throw new UnsupportedOperationException();
 	}
