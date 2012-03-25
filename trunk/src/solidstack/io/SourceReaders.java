@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
  */
 public class SourceReaders
 {
-	static private final Pattern UTF_PATTERN = Pattern.compile( "(X-)?UTF-.+", Pattern.CASE_INSENSITIVE | Pattern.DOTALL );
+	static private final Pattern SKIP_BOM_PATTERN = Pattern.compile( "UTF-(8|16(BE|LE))", Pattern.CASE_INSENSITIVE );
 
 	/**
 	 * @param resource The resource.
@@ -116,7 +116,7 @@ public class SourceReaders
 			Reader reader = new InputStreamReader( is, encoding );
 			ReaderSourceReader result = new ReaderSourceReader( reader, resource.getLocation(), encoding );
 
-			if( UTF_PATTERN.matcher( encoding ).matches() )
+			if( SKIP_BOM_PATTERN.matcher( encoding ).matches() )
 			{
 				int bom = result.read();
 				if( bom != 0xFEFF ) // The Byte Order Mark = ZERO WIDTH NO-BREAK SPACE (deprecated character)

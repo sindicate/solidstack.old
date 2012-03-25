@@ -1,6 +1,10 @@
 package solidstack.template;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -17,7 +21,7 @@ import solidstack.io.SourceReaders;
 @SuppressWarnings( "javadoc" )
 public class EncodingTests
 {
-	static public void main( String[] args )
+	static public void main( String[] args ) throws IOException
 	{
 		Map< String, Charset > sets = Charset.availableCharsets();
 		for( String name : sets.keySet() )
@@ -116,5 +120,31 @@ public class EncodingTests
 		SourceReader reader = SourceReaders.forResource( resource, EncodingDetector.INSTANCE );
 		Assert.assertEquals( reader.getEncoding(), EncodingDetector.CHARSET_UTF_8 );
 		Assert.assertEquals( reader.read(), '<' );
+	}
+
+	@Test
+	static public void test4() throws IOException
+	{
+		skipTest( "UTF-8", 7, false, false );
+		skipTest( "UTF-16", 10, true, true ); // Adds, skips
+		skipTest( "UTF-16BE", 10, false, false );
+		skipTest( "UTF-16LE", 10, false, false );
+		skipTest( "UTF-32", 20, false, true ); // Skips
+		skipTest( "UTF-32BE", 20, false, true ); // Skips
+		skipTest( "UTF-32LE", 20, false, true ); // Skips
+		skipTest( "X-UTF-16LE-BOM", 10, true, true ); // Adds, skips
+		skipTest( "X-UTF-32BE-BOM", 20, true, true ); // Adds, skips
+		skipTest( "X-UTF-32LE-BOM", 20, true, true ); // Adds, skips
+	}
+
+	static private void skipTest( String charset, int byteCount, boolean javaAdds, boolean skips ) throws IOException
+	{
+		String text = javaAdds ? "TEST" : "\uFEFFTEST";
+		byte[] bytes = text.getBytes( charset );
+		Assert.assertEquals( bytes.length, byteCount );
+		ByteArrayInputStream in = new ByteArrayInputStream( bytes );
+		Reader reader = new InputStreamReader( in, charset );
+		int ch = reader.read();
+		Assert.assertEquals( ch != 0xFEFF, skips, ch != 0xFEFF ? charset + " skips the BOM" : charset + " does not skip the BOM" );
 	}
 }
