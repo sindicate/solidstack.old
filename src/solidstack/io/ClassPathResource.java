@@ -18,6 +18,7 @@ package solidstack.io;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -36,10 +37,13 @@ public class ClassPathResource extends Resource
 	 */
 	protected URI uri;
 
+	protected ClassLoader classLoader;
+
+
 	/**
 	 * @param path The path of the resource.
 	 */
-	// TODO Need a classloader too
+	// TODO Need a classloader parameter?
 	public ClassPathResource( String path )
 	{
 		this( toURI( path ) );
@@ -56,6 +60,8 @@ public class ClassPathResource extends Resource
 		if( path == null ) // If path does not start with / then getPath() returns null
 			throw new IllegalArgumentException( "path must start with /" );
 		this.uri = uri.normalize();
+
+		this.classLoader = Thread.currentThread().getContextClassLoader();
 	}
 
 	static private URI toURI( String path )
@@ -84,10 +90,17 @@ public class ClassPathResource extends Resource
 	@Override
 	public URL getURL()
 	{
-		URL result = ClassPathResource.class.getClassLoader().getResource( getPath() );
+		URL result = getResource();
 		if( result == null )
 			throw new UnsupportedOperationException( "File " + toString() + " not found" );
 		return result;
+	}
+
+	private URL getResource()
+	{
+		if( this.classLoader != null )
+			return this.classLoader.getResource( getPath() );
+		return ClassPathResource.class.getClassLoader().getResource( getPath() );
 	}
 
 	@Override
@@ -106,10 +119,17 @@ public class ClassPathResource extends Resource
 	@Override
 	public InputStream newInputStream() throws FileNotFoundException
 	{
-		InputStream result = ClassPathResource.class.getClassLoader().getResourceAsStream( getPath() );
+		URL result = getResource();
 		if( result == null )
 			throw new FileNotFoundException( "File " + toString() + " not found" );
-		return result;
+		try
+		{
+			return result.openStream();
+		}
+		catch( IOException e )
+		{
+			throw new FatalIOException( e );
+		}
 	}
 
 	// TODO Need test for this
@@ -128,7 +148,7 @@ public class ClassPathResource extends Resource
 	@Override
 	public boolean exists()
 	{
-		return ClassPathResource.class.getClassLoader().getResource( getPath() ) != null;
+		return getResource() != null;
 	}
 
 	// A resource in the class path cannot start with a /
@@ -158,7 +178,7 @@ public class ClassPathResource extends Resource
 	@Override
 	public Resource unwrap()
 	{
-		URL url = ClassPathResource.class.getClassLoader().getResource( getPath() );
+		URL url = getResource();
 		if( url == null )
 			return this;
 		if( url.getProtocol().equals( "jar" ) )

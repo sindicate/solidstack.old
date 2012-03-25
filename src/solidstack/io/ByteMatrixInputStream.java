@@ -51,7 +51,6 @@ public class ByteMatrixInputStream extends InputStream
 		this.matrix = matrix;
 	}
 
-	// TODO Override the other read() methods too
 	@Override
 	public int read() throws IOException
 	{
@@ -62,6 +61,28 @@ public class ByteMatrixInputStream extends InputStream
 			byte[] buffer = this.matrix[ this.pos1 ];
 			if( this.pos2 < buffer.length )
 				return (char)buffer[ this.pos2++ ];
+			this.pos1++;
+			this.pos2 = 0;
+		}
+	}
+
+	// TODO Test
+	@Override
+	public int read( byte[] b, int off, int len ) throws IOException
+	{
+		// No need to check arguments. arraycopy's checks are enough.
+		while( true )
+		{
+			if( this.pos1 >= this.matrix.length )
+				return -1;
+			byte[] buffer = this.matrix[ this.pos1 ];
+			if( this.pos2 < buffer.length )
+			{
+				len = Math.min( buffer.length - this.pos2, len );
+				System.arraycopy( buffer, this.pos2, b, off, len );
+				this.pos2 += len;
+				return len;
+			}
 			this.pos1++;
 			this.pos2 = 0;
 		}

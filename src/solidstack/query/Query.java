@@ -75,7 +75,7 @@ public class Query
 	/**
 	 * @param template The template for the query.
 	 */
-	// TODO Directive to enable JDBC escaping <%@ query jdbc-escapes="true" %>
+	// TODO Directive to enable/disable JDBC escaping <%@ query jdbc-escapes="true" %>. What's the default?
 	public Query( Template template )
 	{
 		this.template = template;
