@@ -51,10 +51,10 @@ public class ClassPathResource extends Resource
 	public ClassPathResource( URI uri )
 	{
 		String path = uri.getPath();
-		if( path == null ) // If path does not start with / then getPath() returns null
-			throw new IllegalArgumentException( "path must start with /" );
 		if( !"classpath".equals( uri.getScheme() ) )
 			throw new IllegalArgumentException( "uri scheme must be 'classpath'" );
+		if( path == null ) // If path does not start with / then getPath() returns null
+			throw new IllegalArgumentException( "path must start with /" );
 		this.uri = uri.normalize();
 	}
 

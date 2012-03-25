@@ -2,6 +2,8 @@ package solidstack.template;
 
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.util.Map;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -15,6 +17,13 @@ import solidstack.io.SourceReaders;
 @SuppressWarnings( "javadoc" )
 public class EncodingTests
 {
+	static public void main( String[] args )
+	{
+		Map< String, Charset > sets = Charset.availableCharsets();
+		for( String name : sets.keySet() )
+			System.out.println( name );
+	}
+
 	static private void _test1( byte[] bytes, String encoding ) throws FileNotFoundException
 	{
 		Resource resource = Resources.getResource( bytes );
@@ -92,5 +101,20 @@ public class EncodingTests
 		resource = Resources.getResource( bytes );
 		reader = SourceReaders.forResource( resource, EncodingDetector.INSTANCE );
 		Assert.assertEquals( reader.getEncoding(), EncodingDetector.CHARSET_ISO_8859_1 );
+	}
+
+	@Test
+	static public void test3() throws UnsupportedEncodingException, FileNotFoundException
+	{
+		String text = "\u00EF\u00BB\u00BF<%@ template encoding=\"" + EncodingDetector.CHARSET_UTF_8 + "\" %>";
+		byte[] bytes = text.getBytes( "ISO-8859-1" );
+		Assert.assertEquals( bytes[ 0 ], -17 );
+		Assert.assertEquals( bytes[ 1 ], -69 );
+		Assert.assertEquals( bytes[ 2 ], -65 );
+
+		Resource resource = Resources.getResource( bytes );
+		SourceReader reader = SourceReaders.forResource( resource, EncodingDetector.INSTANCE );
+		Assert.assertEquals( reader.getEncoding(), EncodingDetector.CHARSET_UTF_8 );
+		Assert.assertEquals( reader.read(), '<' );
 	}
 }
