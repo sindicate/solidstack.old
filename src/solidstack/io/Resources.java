@@ -76,8 +76,6 @@ public final class Resources
 	 */
 	static public Resource getResource( URI uri )
 	{
-		// TODO Choose from below. The first one gives a unit test failure in SolidBase. See: FileResource.resolve()
-		// return new URIResource( uri );
 		return getResource( uri.toString() );
 	}
 

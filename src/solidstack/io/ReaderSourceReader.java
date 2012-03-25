@@ -81,7 +81,7 @@ public class ReaderSourceReader implements SourceReader
 	/**
 	 * @param reader The reader to read from.
 	 * @param location The location.
-	 * @param encoding The encoding to use.
+	 * @param encoding The encoding used.
 	 */
 	public ReaderSourceReader( Reader reader, SourceLocation location, String encoding )
 	{
@@ -186,5 +186,12 @@ public class ReaderSourceReader implements SourceReader
 	public SourceLocation getLocation()
 	{
 		return new SourceLocation( this.resource, getLineNumber() );
+	}
+
+	void push( int ch )
+	{
+		if( this.buffer != -1 )
+			throw new IllegalStateException( "buffer is not empty" );
+		this.buffer = ch;
 	}
 }

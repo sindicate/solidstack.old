@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.charset.Charset;
+import java.util.regex.Pattern;
 
 
 /**
@@ -33,6 +34,8 @@ import java.nio.charset.Charset;
  */
 public class SourceReaders
 {
+	static private final Pattern UTF_PATTERN = Pattern.compile( "(X-)?UTF-.+", Pattern.CASE_INSENSITIVE | Pattern.DOTALL );
+
 	/**
 	 * @param resource The resource.
 	 * @return A source reader for the given resource.
@@ -81,6 +84,8 @@ public class SourceReaders
 		boolean success = false;
 		try
 		{
+			String encoding = null;
+
 			if( detector != null )
 			{
 				is.mark( 256 );
@@ -97,18 +102,29 @@ public class SourceReaders
 					buffer = bytes;
 				}
 
-				String encoding = detector.detect( buffer );
-				if( encoding != null )
-					defaultEncoding = encoding;
+				String detectedEncoding = detector.detect( buffer );
+				if( detectedEncoding != null )
+					encoding = detectedEncoding;
 			}
 
-			if( defaultEncoding == null )
-				defaultEncoding = Charset.defaultCharset().name();
+			if( encoding == null )
+				if( defaultEncoding != null )
+					encoding = defaultEncoding;
+				else
+					encoding = Charset.defaultCharset().name();
 
-			Reader reader = new InputStreamReader( is, defaultEncoding );
+			Reader reader = new InputStreamReader( is, encoding );
+			ReaderSourceReader result = new ReaderSourceReader( reader, resource.getLocation(), encoding );
+
+			if( UTF_PATTERN.matcher( encoding ).matches() )
+			{
+				int bom = result.read();
+				if( bom != 0xFEFF ) // The Byte Order Mark = ZERO WIDTH NO-BREAK SPACE (deprecated character)
+					result.push( bom );
+			}
 
 			success = true;
-			return new ReaderSourceReader( reader, resource.getLocation(), defaultEncoding );
+			return result;
 		}
 		catch( IOException e )
 		{

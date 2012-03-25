@@ -196,6 +196,14 @@
 	</target>
 
 
+	<target name="testclass" depends="buildtest" description="Run a test class">
+		<testng classpathref="test.classpath" outputDir="${build.home}/testreports" haltOnFailure="true" verbose="3"
+			listeners="org.testng.reporters.JUnitReportReporter">
+			<classfileset dir="${build.home}/testclasses" includes="**/${testclass}.class" />
+		</testng>
+	</target>
+
+
 	<target name="testnew" depends="buildtest" description="Run new tests">
 		<testng classpathref="test.classpath" outputDir="${build.home}/testreports" haltOnFailure="true" verbose="3" groups="new" >
 			<classfileset dir="${build.home}/testclasses" />
