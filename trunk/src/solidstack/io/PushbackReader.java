@@ -114,7 +114,7 @@ public class PushbackReader
 
 		if( this.markBuffer != null )
 		{
-			if( this.markBuffer.length() == this.markBuffer.capacity() ) // TODO May need unit test for this
+			if( this.markBuffer.length() == this.markBuffer.capacity() ) // TODO May need unit test for this, or do it differently
 				this.markBuffer = null; // Reached limit
 			else
 				this.markBuffer.append( (char)result );

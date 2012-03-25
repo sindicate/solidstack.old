@@ -144,7 +144,8 @@ public class TemplateLoader
 	public Template getTemplate( String path )
 	{
 		Loggers.loader.debug( "getTemplate [{}]", path );
-		Assert.isTrue( !path.startsWith( "/" ), "path should not start with a /" ); // TODO When doing includes, / should be allowed for absolute paths
+		Assert.isTrue( !path.startsWith( "/" ), "path should not start with a /" ); // FIXME When doing includes, / should be allowed for absolute paths
+		// FIXME So / becomes always relative from the search path. How can we override that? Adding the scheme?
 
 		synchronized( this.templates )
 		{
