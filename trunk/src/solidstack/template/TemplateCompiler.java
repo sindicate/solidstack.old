@@ -110,39 +110,46 @@ public class TemplateCompiler
 	public void compile( TemplateCompilerContext context )
 	{
 		createReader( context );
-		parse( context );
-		collectDirectives( context );
-		processDirectives( context );
+		try
+		{
+			parse( context );
+			collectDirectives( context );
+			processDirectives( context );
 
-		String lang = context.getLanguage();
-		if( lang == null )
-			if( this.loader != null )
+			String lang = context.getLanguage();
+			if( lang == null )
+				if( this.loader != null )
+				{
+					lang = this.loader.getDefaultLanguage();
+					if( lang == null )
+						throw new TemplateException( "Template has no \"language\" directive, and no defaultLanguage configured in the TemplateLoader" );
+				}
+				else
+					throw new TemplateException( "Template has no \"language\" directive" );
+
+			if( lang.equals( "javascript" ) )
 			{
-				lang = this.loader.getDefaultLanguage();
-				if( lang == null )
-					throw new TemplateException( "Template has no \"language\" directive, and no defaultLanguage configured in the TemplateLoader" );
+				JavaScriptTemplateCompiler compiler = new JavaScriptTemplateCompiler();
+				compiler.generateScript( context );
+				Loggers.compiler.trace( "Generated JavaScript:\n{}", context.getScript() );
+				compiler.compileScript( context );
+			}
+			else if( lang.equals( "groovy" ) )
+			{
+				GroovyTemplateCompiler compiler = new GroovyTemplateCompiler();
+				compiler.generateScript( context );
+				Loggers.compiler.trace( "Generated Groovy:\n{}", context.getScript() );
+				compiler.compileScript( context );
 			}
 			else
-				throw new TemplateException( "Template has no \"language\" directive" );
+				throw new TemplateException( "Unsupported scripting language: " + lang );
 
-		if( lang.equals( "javascript" ) )
-		{
-			JavaScriptTemplateCompiler compiler = new JavaScriptTemplateCompiler();
-			compiler.generateScript( context );
-			Loggers.compiler.trace( "Generated JavaScript:\n{}", context.getScript() );
-			compiler.compileScript( context );
+			configureTemplate( context );
 		}
-		else if( lang.equals( "groovy" ) )
+		finally
 		{
-			GroovyTemplateCompiler compiler = new GroovyTemplateCompiler();
-			compiler.generateScript( context );
-			Loggers.compiler.trace( "Generated Groovy:\n{}", context.getScript() );
-			compiler.compileScript( context );
+			closeReader( context );
 		}
-		else
-			throw new TemplateException( "Unsupported scripting language: " + lang );
-
-		configureTemplate( context );
 	}
 
 	/**
@@ -152,7 +159,7 @@ public class TemplateCompiler
 	 */
 	protected void createReader( TemplateCompilerContext context )
 	{
-		if( context.getReader() != null )
+		if( context.getReader() != null ) // TODO Why is this?
 			return;
 
 		try
@@ -163,6 +170,11 @@ public class TemplateCompiler
 		{
 			throw new TemplateNotFoundException( context.getResource().getNormalized() + " not found" );
 		}
+	}
+
+	protected void closeReader( TemplateCompilerContext context )
+	{
+		context.getReader().close();
 	}
 
 	/**
