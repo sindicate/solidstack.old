@@ -95,16 +95,19 @@ public class SourceReaders
 
 				is.reset();
 
-				if( len < 256 )
+				if( len != -1 )
 				{
-					byte[] bytes = new byte[ len ];
-					System.arraycopy( buffer, 0, bytes, 0, len );
-					buffer = bytes;
-				}
+					if( len < 256 )
+					{
+						byte[] bytes = new byte[ len ];
+						System.arraycopy( buffer, 0, bytes, 0, len );
+						buffer = bytes;
+					}
 
-				String detectedEncoding = detector.detect( buffer );
-				if( detectedEncoding != null )
-					encoding = detectedEncoding;
+					String detectedEncoding = detector.detect( buffer );
+					if( detectedEncoding != null )
+						encoding = detectedEncoding;
+				}
 			}
 
 			if( encoding == null )
