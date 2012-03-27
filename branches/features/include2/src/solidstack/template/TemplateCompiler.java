@@ -248,7 +248,7 @@ public class TemplateCompiler
 	protected void configureTemplate( TemplateCompilerContext context )
 	{
 		Template template = context.getTemplate();
-		template.setName( context.getName() );
+		template.setPath( context.getPath() );
 		template.setDirectives( context.getDirectivesArray() );
 		template.setContentType( context.getContentType() );
 		template.setCharSet( context.getCharSet() );

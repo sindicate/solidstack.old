@@ -3,6 +3,8 @@
 <%--@ template import="solidbase.http.*" --%>
 <%@ template import="solidstack.hyperdb.*" %>
 
+<% include( template: "/template", body: { %>
+
 <%
 List< Table > tables = Database.getTables();
 %>
@@ -33,3 +35,5 @@ List< Table > tables = Database.getTables();
 		}
 //	}
 </script>
+
+<% } ) %>

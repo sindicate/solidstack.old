@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import solidstack.io.Resource;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 
 /**
@@ -33,7 +34,8 @@ import solidstack.template.JSPLikeTemplateParser.Directive;
  */
 abstract public class Template
 {
-	private String name;
+	private Resource resource;
+	private String path;
 	private Directive[] directives;
 
 	private String contentType;
@@ -50,6 +52,11 @@ abstract public class Template
 	protected void setLoader( TemplateLoader loader )
 	{
 		this.loader = loader;
+	}
+
+	public TemplateLoader getLoader()
+	{
+		return this.loader;
 	}
 
 	/**
@@ -160,13 +167,13 @@ abstract public class Template
 	}
 
 	/**
-	 * Returns the name of the template.
+	 * Returns the path of the template.
 	 *
-	 * @return The name of the template.
+	 * @return The path of the template.
 	 */
-	public String getName()
+	public String getPath()
 	{
-		return this.name;
+		return this.path;
 	}
 
 	/**
@@ -202,11 +209,11 @@ abstract public class Template
 	/**
 	 * Sets the name of this template.
 	 *
-	 * @param name The name of this template.
+	 * @param path The path of this template.
 	 */
-	protected void setName( String name )
+	protected void setPath( String path )
 	{
-		this.name = name;
+		this.path = path;
 	}
 
 	/**
@@ -247,5 +254,15 @@ abstract public class Template
 	protected void setDirectives( Directive[] directives )
 	{
 		this.directives = directives;
+	}
+
+	protected void setResource( Resource resource )
+	{
+		this.resource = resource;
+	}
+
+	public Resource getResource()
+	{
+		return this.resource;
 	}
 }

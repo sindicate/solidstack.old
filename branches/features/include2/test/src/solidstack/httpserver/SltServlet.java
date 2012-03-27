@@ -17,8 +17,8 @@ public class SltServlet implements Servlet
 	{
 		// TODO / should be allowed after fixing the other todo
 		String url = request.getRequest().getParameter( "path" );
-		if( url.startsWith( "/" ) )
-			url = url.substring( 1 );
+//		if( url.startsWith( "/" ) )
+//			url = url.substring( 1 );
 
 		Template template = this.loader.getTemplate( url );
 		template.apply( params, request.getResponse().getWriter() );

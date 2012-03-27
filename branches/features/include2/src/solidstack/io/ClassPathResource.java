@@ -136,6 +136,7 @@ public class ClassPathResource extends Resource
 	@Override
 	public Resource resolve( String path )
 	{
+		// FIXME I think this should inherit the class loader
 		return Resources.getResource( this.uri.resolve( path ).toString() ); // TODO Test \
 	}
 
@@ -175,6 +176,7 @@ public class ClassPathResource extends Resource
 	 *
 	 * @return A {@link FileResource}, {@link URIResource} or a {@link ClassPathResource}.
 	 */
+	// TODO Find another way, maybe automatic unwrap when getLastModified() is called, etc. Maybe cache the unwrapped resource.
 	@Override
 	public Resource unwrap()
 	{
