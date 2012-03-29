@@ -141,11 +141,12 @@ public class TemplateLoader
 	 * @return The {@link Template}.
 	 */
 	// TODO Also cache that a template is not found?
+	// TODO Normalize the path, otherwise you may get two or more cached instances
 	public Template getTemplate( String path )
 	{
 		Loggers.loader.debug( "getTemplate [{}]", path );
-		Assert.isTrue( path.startsWith( "/" ), "path should start with a /" );
-//		path = path.substring( 1 );
+		if( path.startsWith( "/" ) )
+			path = path.substring( 1 );
 		// FIXME So / becomes always relative from the search path. How can we override that? Adding the scheme?
 
 		synchronized( this.templates )
@@ -170,7 +171,7 @@ public class TemplateLoader
 			{
 				if( resource == null )
 				{
-					resource = this.templatePath.resolve( path.substring( 1 ) + ".slt" );
+					resource = this.templatePath.resolve( path + ".slt" );
 					modified = resource.unwrap().getLastModified();
 					Loggers.loader.debug( "{}, lastModified: {} ({})", new Object[] { resource, new Date( modified ), modified } );
 				}

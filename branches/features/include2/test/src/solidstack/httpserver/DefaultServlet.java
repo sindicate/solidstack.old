@@ -4,12 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import solidstack.util.Pars;
-
 
 public class DefaultServlet implements Servlet
 {
-	public void call( RequestContext context, Pars params )
+	public void call( RequestContext context )
 	{
 		Response response = context.getResponse();
 

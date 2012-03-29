@@ -1,3 +1,12 @@
-<%@ template version="1.0" language="groovy" %>
-
-<% body() %>
+<%@ template version="1.0" language="groovy" contentType="text/html; charset=UTF-8" %>
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>HyperDB${ args.title }</title>
+		<link rel="stylesheet" type="text/css" href="/styles.css" />
+		<script type="text/javascript" src="/util.js"></script>
+	</head>
+	<body>
+<% args.body.call() %>
+	</body>
+</html>

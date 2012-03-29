@@ -23,7 +23,7 @@ import java.util.Map;
 
 /**
  * Parameters support class that makes it easier to build up a map of parameters.
- * 
+ *
  * @author René de Bloois
  */
 public class Pars extends HashMap< String, Object >
@@ -37,8 +37,6 @@ public class Pars extends HashMap< String, Object >
 
 
 	/**
-	 * Constructor.
-	 * 
 	 * @param name The name of the parameter.
 	 * @param value The value of the parameter.
 	 */
@@ -48,8 +46,6 @@ public class Pars extends HashMap< String, Object >
 	}
 
 	/**
-	 * Constructor.
-	 * 
 	 * @param nameValue Pairs of names and values.
 	 */
 	public Pars( Object... nameValue )
@@ -57,9 +53,14 @@ public class Pars extends HashMap< String, Object >
 		set( nameValue );
 	}
 
+	public Pars( Map< String, Object > pars )
+	{
+		putAll( pars );
+	}
+
 	/**
 	 * Set the given parameter.
-	 * 
+	 *
 	 * @param name The name of the parameter.
 	 * @param value The value of the parameter.
 	 * @return This object so that you can chain set calls.
@@ -72,7 +73,7 @@ public class Pars extends HashMap< String, Object >
 
 	/**
 	 * Set the given parameters.
-	 * 
+	 *
 	 * @param nameValue Pairs of names and values.
 	 * @return This object so that you can chain set calls.
 	 */

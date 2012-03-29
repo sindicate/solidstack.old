@@ -2,11 +2,9 @@
 <%--@ template import="java.util.List" --%>
 <%--@ template import="solidbase.http.*" --%>
 <%@ template import="solidstack.hyperdb.*" %>
-
-<% include( template: "/template", body: { %>
-
 <%
-List< Table > tables = Database.getTables();
+include( template: "/template", body: {
+	List< Table > tables = Database.getTables();
 %>
 		<table id="tables">
 			<tr><th>Table</th><th># records</th></tr>
@@ -14,6 +12,7 @@ List< Table > tables = Database.getTables();
 			<tr><td><a href="/tables/${table.name}">${table.name}</a></td><td></td></tr>
 <%		} %>
 		</table>
+<%--
 <script>
 //	window.onload = function()
 //	{
@@ -35,5 +34,5 @@ List< Table > tables = Database.getTables();
 		}
 //	}
 </script>
-
+--%>
 <% } ) %>

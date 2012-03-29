@@ -13,7 +13,7 @@ public class SltServlet implements Servlet
 		this.loader = loader;
 	}
 
-	public void call( RequestContext request, Pars params )
+	public void call( RequestContext request )
 	{
 		// TODO / should be allowed after fixing the other todo
 		String url = request.getRequest().getParameter( "path" );
@@ -21,7 +21,8 @@ public class SltServlet implements Servlet
 //			url = url.substring( 1 );
 
 		Template template = this.loader.getTemplate( url );
-		template.apply( params, request.getResponse().getWriter() );
+		Pars pars = new Pars( "request", request.getRequest() ); // TODO response
+		template.apply( pars, request.getResponse().getWriter() );
 
 //		url = url.replaceAll( "[\\\\/]", "." );
 //		url = url.replaceAll( "[\\.-]", "_" );

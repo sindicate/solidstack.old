@@ -19,6 +19,8 @@ public class Main
 		loader.setTemplatePath( "classpath:/solidstack/hyperdb" );
 		loader.setReloading( true );
 
+		// TODO I think we need a ResourceLoader for the DefaultServlet that functions similarly to the TemplateLoader
+
 //		context.registerServlet( "/tables/([^/]*)/recordcount", "tablename", new TableRecordCountServlet() );
 //		context.registerServlet( "/tables/([^/]*)", "tablename", new TableServlet() );
 //		context.registerServlet( "/tables", new TablesServlet() );

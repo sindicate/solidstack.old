@@ -82,10 +82,13 @@ public class Handler extends Thread
 								request.addParameter( par, null );
 						}
 					}
+
+					// TODO Fragment too? Maybe use the URI class?
+
 					if( url.endsWith( "/" ) )
 						url = url.substring( 0, url.length() - 1 );
 					request.setUrl( url );
-					request.setParameters( parameters );
+					request.setQuery( parameters );
 
 					requestTokenizer.getNewline();
 

@@ -3,12 +3,11 @@ package solidstack.hyperdb;
 import solidstack.httpserver.RequestContext;
 import solidstack.httpserver.ResponseWriter;
 import solidstack.httpserver.Servlet;
-import solidstack.util.Pars;
 
 
 public class RootServlet implements Servlet
 {
-	public void call( RequestContext context, Pars params )
+	public void call( RequestContext context )
 	{
 //		new TemplateServlet().call( context, new Parameters( params ).put( "title", null ).put( "body", new Servlet()
 //		{

@@ -13,7 +13,7 @@ public class Request
 	protected String url;
 	protected String query;
 	protected Map< String, List< String > > headers = new HashMap< String, List<String> >();
-	protected Map< String, List< String > > parameters = new HashMap< String, List< String > >();
+	protected Map< String, Object > parameters = new HashMap< String, Object >();
 	protected String fragment;
 
 	public void setUrl( String url )
@@ -26,17 +26,23 @@ public class Request
 		return this.url;
 	}
 
-	public void setParameters( String query )
+	public void setQuery( String query )
 	{
 		this.query = query;
 	}
 
 	public void addParameter( String name, String value )
 	{
-		List< String > values = this.parameters.get( name );
-		if( values == null )
-			this.parameters.put( name, values = new ArrayList< String >() );
-		values.add( value );
+		Object elem = this.parameters.get( name );
+		if( elem == null )
+			this.parameters.put( name, value );
+		else
+		{
+			List< String > values = new ArrayList<String>();
+			values.add( (String)elem );
+			values.add( value );
+			this.parameters.put( name, values );
+		}
 	}
 
 	public void addHeader( String name, String value )
@@ -47,12 +53,18 @@ public class Request
 		values.add( value );
 	}
 
+	@SuppressWarnings( "unchecked" )
 	public String getParameter( String name )
 	{
-		List< String > values = this.parameters.get( name );
-		if( values == null )
-			return null;
-		return values.get( 0 );
+		Object elem = this.parameters.get( name );
+		if( elem instanceof List )
+			return ( (List< String >)elem ).get( 0 );
+		return (String)elem;
+	}
+
+	public Map< String, Object > getParameters()
+	{
+		return this.parameters;
 	}
 
 	public String getHeader( String name )

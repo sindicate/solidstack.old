@@ -25,7 +25,7 @@ public class FilterChain
 	{
 		Assert.notNull( this.servlet );
 		if( this.filters.isEmpty() )
-			this.servlet.call( request, null );
+			this.servlet.call( request );
 		else
 		{
 			Filter filter = this.filters.remove( 0 );
