@@ -1,8 +1,8 @@
-<%@ template version="1.0" language="groovy" contentType="text/html; charset=UTF-8" %>
-<!DOCTYPE html>
+<%@ template version="1.0" language="groovy" %>
+<!DOCTYPE html><%-- An HTML 5 page --%>
 <html>
 	<head>
-		<title>HyperDB${ args.title }</title>
+		<title>${args.title} - HyperDB</title>
 		<link rel="stylesheet" type="text/css" href="/styles.css" />
 		<script type="text/javascript" src="/util.js"></script>
 	</head>

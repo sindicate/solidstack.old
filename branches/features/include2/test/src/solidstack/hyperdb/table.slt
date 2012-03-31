@@ -1,8 +1,9 @@
 <%@ template version="1.0" language="groovy" contentType="text/html; charset=UTF-8" %>
 <%
-include( template: "/template", body: {
+def table = args.table
 
-	def table = args.tablename
+include( template: "/template", title: "Table ${table}", body: {
+
 	def recordCount = args.count
 	def result = args.result
 	

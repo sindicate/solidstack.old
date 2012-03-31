@@ -29,7 +29,7 @@ public class TableServlet implements Servlet
 
 				final ResultSet result2 = statement.executeQuery( "SELECT * FROM " + table );
 
-				context.include( "/slt/table", new Pars( "title", "table " + table, "result", result2, "count", object ) );
+				context.include( "/slt/table", new Pars( "title", "table " + table, "table", table, "result", result2, "count", object ) );
 			}
 			finally
 			{

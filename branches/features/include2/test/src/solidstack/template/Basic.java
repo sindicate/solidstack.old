@@ -201,4 +201,10 @@ public class Basic
 		test_( "\n    ", "    " );
 		test_( "\n    <% null %>    ", "" );
 	}
+
+	@Test
+	public void testCommentAfterDoctype()
+	{
+		test_( "\n<!DOCTYPE html><%-- An HTML 5 page --%>\n<html>", "<!DOCTYPE html>\n<html>" );
+	}
 }
