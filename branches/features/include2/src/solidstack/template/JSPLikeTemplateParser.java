@@ -131,6 +131,7 @@ public class JSPLikeTemplateParser
 			return this.queue.remove( 0 );
 
 		ParseEvent event;
+		boolean scriptFound = false;
 
 		if( !this.firstRead )
 		{
@@ -151,6 +152,7 @@ public class JSPLikeTemplateParser
 			this.queue.add( event ); // Need to wait for the rest
 
 			this.firstRead = true;
+			scriptFound = true;
 		}
 
 		while( true )
@@ -159,24 +161,26 @@ public class JSPLikeTemplateParser
 				case TEXT:
 				case EXPRESSION:
 				case EXPRESSION2:
-				case EOF:
 					if( this.queue.size() == 0 )
 						return event; // Just pass through
 					this.queue.add( event );
 					return this.queue.remove( 0 ); // The queue can now be emptied again
 
-				case WHITESPACE:
 				case SCRIPT:
 				case DIRECTIVE:
 				case COMMENT:
+					scriptFound = true; //$FALL-THROUGH$
+				case WHITESPACE:
 					this.queue.add( event ); // Need to wait for the rest
 					break;
 
 				case NEWLINE:
+				case EOF:
 					if( this.queue.size() == 0 )
 						return event; // Just pass through
 					this.queue.add( event );
-					reassignNewlines(); // We need to reassign the whitespace because no template text has been found on the last lines
+					if( scriptFound )
+						reassignNewlines(); // We need to reassign the whitespace because no template text has been found on the last lines
 					return this.queue.remove( 0 ); // The queue can now be emptied again
 			}
 	}
@@ -276,7 +280,7 @@ public class JSPLikeTemplateParser
 			if( i.next().getEvent() == EVENT.WHITESPACE )
 				i.remove();
 
-		// And reassign newlines
+		// And reassign the newline
 		int index = 0;
 		while( index < this.queue.size() )
 		{
@@ -285,31 +289,17 @@ public class JSPLikeTemplateParser
 			switch( event.getEvent() )
 			{
 				case NEWLINE:
-					if( index >= this.queue.size() ) // Is it the last one?
-					{
-						index -= 2;
-						Assert.isTrue( index >= 0 );
-						switch( ( event2 = this.queue.get( index ) ).getEvent() ) // TODO This whole switch is only for the assertion failure
-						{
-							case SCRIPT:
-							case DIRECTIVE:
-							case COMMENT:
-								event2.setData( event2.getData() + event.getData() );
-								this.queue.remove( ++index );
-								return;
-							default:
-								Assert.fail( "Should not come here" );
-						}
-					}
-					switch( ( event2 = this.queue.get( index ) ).getEvent() )
+					Assert.isTrue( index == this.queue.size() ); // Should be the last one
+					index -= 2;
+					Assert.isTrue( index >= 0 );
+					switch( ( event2 = this.queue.get( index ) ).getEvent() ) // TODO This whole switch is only for the assertion failure
 					{
 						case SCRIPT:
 						case DIRECTIVE:
 						case COMMENT:
-						case NEWLINE:
-							event2.setData( event.getData() + event2.getData() );
-							this.queue.remove( --index );
-							break;
+							event2.setData( event2.getData() + event.getData() );
+							this.queue.remove( ++index );
+							return;
 						default:
 							Assert.fail( "Should not come here" );
 					}
@@ -319,6 +309,9 @@ public class JSPLikeTemplateParser
 				case SCRIPT:
 				case COMMENT:
 					break;
+
+				case EOF:
+					return;
 
 				default:
 					Assert.fail( "Unexpected event " + event.getEvent() );

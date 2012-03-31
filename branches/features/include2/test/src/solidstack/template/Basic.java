@@ -26,6 +26,7 @@ import solidstack.io.Resource;
 import solidstack.io.Resources;
 import solidstack.io.SourceReader;
 import solidstack.io.SourceReaders;
+import solidstack.io.StringResource;
 import solidstack.template.JSPLikeTemplateParser.EVENT;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
 import solidstack.util.Pars;
@@ -174,5 +175,30 @@ public class Basic
 	public void testContextClassLoaderNull()
 	{
 		Assert.assertNotNull( Thread.currentThread().getContextClassLoader(), "ContextClassLoader should not be null" );
+	}
+
+	static private void test_( String input, String expect )
+	{
+		input = "<%@ template version=\"1.0\" language=\"javascript\" %>" + input;
+		Template template = new TemplateCompiler( null ).compile( new StringResource( input ), "test" );
+		String output = template.apply( Pars.EMPTY );
+		Assert.assertEquals( output, expect );
+	}
+
+	@Test
+	public void testEmptyLineWithWhiteSpace()
+	{
+		test_( "abcd\n    \nefgh\n", "abcd\n    \nefgh\n" );
+	}
+
+	@Test
+	public void testEOFBehavesAsNewline()
+	{
+		test_( "    \n", "" );
+		test_( "    ", "" );
+		test_( "    <% null %>    ", "" );
+		test_( "\n    \n", "    \n" );
+		test_( "\n    ", "    " );
+		test_( "\n    <% null %>    ", "" );
 	}
 }

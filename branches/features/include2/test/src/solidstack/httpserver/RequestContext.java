@@ -9,6 +9,7 @@ public class RequestContext
 	protected ApplicationContext applicationContext;
 	protected Map< String, Object > args;
 
+	// TODO Parameter order
 	public RequestContext( Request request, Response response, ApplicationContext applicationContext )
 	{
 		this.request = request;
@@ -16,9 +17,11 @@ public class RequestContext
 		this.applicationContext = applicationContext;
 	}
 
-	public RequestContext( RequestContext parent, Map< String, Object > args )
+	// TODO Parameter order
+	public RequestContext( RequestContext parent, String path, Map< String, Object > args )
 	{
-		this.request = parent.getRequest();
+		this.request = new Request();
+		this.request.setUrl( path );
 		this.reponse = parent.getResponse();
 		this.applicationContext = parent.getApplication();
 		this.args = args;
@@ -47,5 +50,11 @@ public class RequestContext
 	public Object getArgs()
 	{
 		return this.args;
+	}
+
+	public void include( String path, Map< String, Object > args )
+	{
+		RequestContext context = new RequestContext( this, path, args );
+		getApplication().dispatch( context );
 	}
 }

@@ -31,11 +31,14 @@ public class Request
 		this.query = query;
 	}
 
+	@SuppressWarnings( "unchecked" )
 	public void addParameter( String name, String value )
 	{
 		Object elem = this.parameters.get( name );
 		if( elem == null )
 			this.parameters.put( name, value );
+		else if( elem instanceof List )
+			( (List<String>)elem ).add( value );
 		else
 		{
 			List< String > values = new ArrayList<String>();

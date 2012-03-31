@@ -22,7 +22,7 @@ public class Main
 		// TODO I think we need a ResourceLoader for the DefaultServlet that functions similarly to the TemplateLoader
 
 //		context.registerServlet( "/tables/([^/]*)/recordcount", "tablename", new TableRecordCountServlet() );
-//		context.registerServlet( "/tables/([^/]*)", "tablename", new TableServlet() );
+		context.registerServlet( "/tables/([^/]*)", "tablename", new TableServlet() );
 //		context.registerServlet( "/tables", new TablesServlet() );
 //		context.registerServlet( "/test", new TestServlet() );
 		context.registerServlet( "", new RootServlet() );

@@ -1,20 +1,14 @@
-<%@ page import="java.sql.*" %>
-<%@ page import="solidbase.util.Assert" %>
-<%@ page import="solidbase.http.*" %>
-
+<%@ template version="1.0" language="groovy" contentType="text/html; charset=UTF-8" %>
 <%
-String table = request.parameters.tablename
+include( template: "/template", body: {
+def table = args.tablename
+def recordCount = args.count
+def result = args.result
 
-ResponseWriter writer = request.getResponse().getWriter();
-
-Object recordCount = params.get( "count" );
-ResultSet result = (ResultSet)params.get( "result" );
-try
+if( result.next() )
 {
-	if( result.next() )
-	{
-		ResultSetMetaData meta = result.getMetaData();
-		int count = meta.getColumnCount();
+	def meta = result.metaData
+	def count = meta.columnCount
 %>
 <div id="popup" style="visibility: hidden; left: 0px; top: 0px;">
 	<a href="detail1">detail1</a><br/>
@@ -24,36 +18,32 @@ try
 	<tr><th colspan="${count}">Table ${table} - ${recordCount} records</th></tr>
 	<tr><% for( int i = 1; i <= count; i++ ) { %><th>${meta.getColumnLabel(i)}</th><% } %></tr>
 <%
-		do
-		{
+	def next = true
+	while( next )
+	{
 %>
 	<tr class="data"></td><%
-			for( int i = 1; i <= count; i++ )
-			{
-				Object object = result.getObject(  i );
-				if( object != null ) { %><td>${object}</td><% } else { %><td class="null"></td><% }
-			}
+		for( int i = 1; i <= count; i++ )
+		{
+			def object = result.getObject( i )
+			if( object != null ) { %><td>${object}</td><% } else { %><td class="null"></td><% }
+		}
 %></tr>
 <%
-		}
-		while( result.next() );
+		next = result.next()
+	}
 %>
 </table>
 <%
-	}
-	else
-	{
+}
+else
+{
 %>
 <table>
 	<tr><th>Table ${table}, ${recordCount} records</th></tr>
 	<tr><td class="null">No records.</td></tr>
 </table>
 <%
-	}
-}
-catch( SQLException e )
-{
-	throw new HttpException( e );
 }
 %>
 <script>
@@ -82,3 +72,4 @@ catch( SQLException e )
 		}
 	)
 </script>
+<% } ) %>
