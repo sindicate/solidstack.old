@@ -11,21 +11,21 @@ include( template: "/template", title: "Tables", body: {
 <%		} %>
 		</table>
 		<script>
-				var tables = document.getElementById( "tables" );
-				var rows = tables.rows;
-				for( var i = 1, len = rows.length; i < len; i++ )
-				{
-					var cells = rows[ i ].cells;
-					var table = cells[ 0 ].innerText;
-					getAsync( "/tables/" + table + "/recordcount",
-						function( cell )
+			var tables = document.getElementById( "tables" );
+			var rows = tables.rows;
+			for( var i = 1, len = rows.length; i < len; i++ )
+			{
+				var cells = rows[ i ].cells;
+				var table = cells[ 0 ].innerText;
+				getAsync( "/tables/" + table + "/recordcount",
+					function( cell )
+					{
+						return function( result )
 						{
-							return function( result )
-							{
-								cell.innerHTML = result;
-							}
-						} ( cells[ 1 ] )
-					)
-				}
+							cell.innerHTML = result;
+						}
+					} ( cells[ 1 ] )
+				)
+			}
 		</script>
 <% } ) %>
