@@ -21,7 +21,7 @@ public class SltServlet implements Servlet
 //			url = url.substring( 1 );
 
 		Template template = this.loader.getTemplate( url );
-		Pars pars = new Pars( "request", request.getRequest() ); // TODO response
+		Pars pars = new Pars( "request", request.getRequest(), "args", request.getArgs() ); // TODO response
 		template.apply( pars, request.getResponse().getWriter() );
 
 //		url = url.replaceAll( "[\\\\/]", "." );
