@@ -10,27 +10,22 @@ include( template: "/template", body: {
 			<tr><td><a href="/tables/${table.name}">${table.name}</a></td><td></td></tr>
 <%		} %>
 		</table>
-<%--
-<script>
-//	window.onload = function()
-//	{
-		var tables = document.getElementById( "tables" );
-		var rows = tables.rows;
-		for( var i = 1, len = rows.length; i < len; i++ )
-		{
-			var cells = rows[ i ].cells;
-			var table = cells[ 0 ].innerText;
-			getAsync( "/tables/" + table + "/recordcount",
-				function( cell )
+		<script>
+				var tables = document.getElementById( "tables" );
+				var rows = tables.rows;
+				for( var i = 1, len = rows.length; i < len; i++ )
 				{
-					return function( result )
-					{
-						cell.innerHTML = result;
-					}
-				} ( cells[ 1 ] )
-			)
-		}
-//	}
-</script>
---%>
+					var cells = rows[ i ].cells;
+					var table = cells[ 0 ].innerText;
+					getAsync( "/tables/" + table + "/recordcount",
+						function( cell )
+						{
+							return function( result )
+							{
+								cell.innerHTML = result;
+							}
+						} ( cells[ 1 ] )
+					)
+				}
+		</script>
 <% } ) %>
