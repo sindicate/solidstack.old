@@ -17,7 +17,7 @@ public class ViewServlet implements Servlet
 	{
 		String schema = context.getRequest().getParameter( "schema" );
 		String view = context.getRequest().getParameter( "view" );
-		view = schema + "." + view; // TODO SQL Escaping
+		view = '\"' + schema + "\".\"" + view + '\"'; // TODO SQL Escaping
 
 		Connection connection = DataSource.getConnection();
 		try

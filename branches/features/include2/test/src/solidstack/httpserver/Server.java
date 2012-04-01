@@ -7,15 +7,21 @@ import java.net.Socket;
 
 public class Server
 {
-	protected boolean nio = false;
+	private ApplicationContext application; // TODO Make this a Map
 
-	public void start( ApplicationContext context, int port ) throws IOException
+	public void addApplication( ApplicationContext application )
+	{
+		this.application = application;
+	}
+
+	public void start( int port ) throws IOException
 	{
 		ServerSocket server = new ServerSocket( port );
 		while( true )
 		{
 			Socket socket = server.accept();
-			Handler handler = new Handler( socket, context );
+			// TODO Threadpool
+			Handler handler = new Handler( socket, this.application );
 			handler.start();
 		}
 	}

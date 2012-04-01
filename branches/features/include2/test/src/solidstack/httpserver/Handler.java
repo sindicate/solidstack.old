@@ -40,6 +40,7 @@ public class Handler extends Thread
 	 *
 	 * @throws IOException Whenever the socket throws an {@link IOException}.
 	 */
+	// TODO Check exception handling
 	public void handle() throws IOException
 	{
 		try
@@ -119,8 +120,9 @@ public class Handler extends Thread
 					{
 						throw e;
 					}
-					catch( Throwable t )
+					catch( Exception e )
 					{
+						Throwable t = e;
 						if( t.getClass().equals( HttpException.class ) && t.getCause() != null )
 							t = t.getCause();
 						t.printStackTrace( System.out );
@@ -133,6 +135,7 @@ public class Handler extends Thread
 							t.printStackTrace( writer );
 							writer.flush();
 						}
+						// TODO Is the socket going to be closed?
 					}
 
 					response.finish();
@@ -166,10 +169,10 @@ public class Handler extends Thread
 //							return;
 				}
 			}
-			catch( Throwable t )
+			catch( Exception e )
 			{
 				this.socket.close();
-				t.printStackTrace( System.out );
+				e.printStackTrace( System.out );
 			}
 		}
 		finally

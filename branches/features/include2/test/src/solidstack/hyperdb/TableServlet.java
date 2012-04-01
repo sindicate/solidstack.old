@@ -17,7 +17,7 @@ public class TableServlet implements Servlet
 	{
 		String schema = context.getRequest().getParameter( "schema" );
 		String table = context.getRequest().getParameter( "table" );
-		table = schema + "." + table; // TODO SQL Escaping
+		table = '\"' + schema + "\".\"" + table + '\"'; // TODO SQL Escaping
 
 		Connection connection = DataSource.getConnection();
 		try
