@@ -1,13 +1,15 @@
 <%@ template version="1.0" language="groovy" contentType="text/html; charset=UTF-8" %>
 <%@ template import="solidstack.hyperdb.*" %>
 <%
+def schema = request.parameters.schema
+
 include( template: "/template", title: "Tables", body: {
-	List< Table > tables = Database.getTables();
+	List< Table > tables = Database.getTables( schema );
 %>
 		<table id="tables">
 			<tr><th>Table</th><th># records</th></tr>
 <%		for( Table table : tables ) { %>
-			<tr><td><a href="/tables/${table.name}">${table.name}</a></td><td></td></tr>
+			<tr><td><a href="tables/${table.name}">${table.name}</a></td><td></td></tr>
 <%		} %>
 		</table>
 		<script>
@@ -17,7 +19,7 @@ include( template: "/template", title: "Tables", body: {
 			{
 				var cells = rows[ i ].cells;
 				var table = cells[ 0 ].innerText;
-				getAsync( "/tables/" + table + "/recordcount",
+				getAsync( "/schemas/${schema}/tables/" + table + "/recordcount",
 					function( cell )
 					{
 						return function( result )

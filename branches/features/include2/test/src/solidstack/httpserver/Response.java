@@ -89,6 +89,8 @@ public class Response
 			if( getHeader( "Content-Length" ) == null ) // TODO What about empty string?
 				setHeader0( "Transfer-Encoding", "chunked" );
 
+		// TODO status 404 and chunked encoding conflict each other
+
 		if( this.contentType != null )
 			if( this.charSet != null )
 				setHeader0( "Content-Type", this.contentType + "; charset=" + this.charSet );

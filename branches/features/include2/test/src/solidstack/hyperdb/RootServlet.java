@@ -19,6 +19,6 @@ public class RootServlet implements Servlet
 //		}));
 
 		ResponseWriter writer = context.getResponse().getWriter();
-		writer.write( "<a href=\"/slt/tables\">tables</a>\n" );
+		writer.write( "<a href=\"/schemas\">schemas</a>\n" );
 	}
 }

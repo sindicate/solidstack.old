@@ -22,6 +22,7 @@ public class RequestContext
 	{
 		this.request = new Request();
 		this.request.setUrl( path );
+		this.request.parameters = parent.getRequest().getParameters();
 		this.reponse = parent.getResponse();
 		this.applicationContext = parent.getApplication();
 		this.args = args;
@@ -56,5 +57,10 @@ public class RequestContext
 	{
 		RequestContext context = new RequestContext( this, path, args );
 		getApplication().dispatch( context );
+	}
+
+	public void include( String path )
+	{
+		include( path, null );
 	}
 }

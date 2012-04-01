@@ -18,7 +18,9 @@ public class TableRecordCountServlet implements Servlet
 		boolean complete = false;
 		try
 		{
-			String table = context.getRequest().getParameter( "tablename" );
+			String schema = context.getRequest().getParameter( "schema" );
+			String table = context.getRequest().getParameter( "table" );
+			table = schema + "." + table; // TODO SQL Escaping
 
 			Connection connection = DataSource.getConnection();
 			try

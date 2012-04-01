@@ -11,13 +11,13 @@ import solidstack.httpserver.Servlet;
 import solidstack.lang.Assert;
 import solidstack.util.Pars;
 
-public class TableServlet implements Servlet
+public class ViewServlet implements Servlet
 {
 	public void call( RequestContext context )
 	{
 		String schema = context.getRequest().getParameter( "schema" );
-		String table = context.getRequest().getParameter( "table" );
-		table = schema + "." + table; // TODO SQL Escaping
+		String view = context.getRequest().getParameter( "view" );
+		view = schema + "." + view; // TODO SQL Escaping
 
 		Connection connection = DataSource.getConnection();
 		try
@@ -25,13 +25,13 @@ public class TableServlet implements Servlet
 			Statement statement = connection.createStatement();
 			try
 			{
-				final ResultSet result1 = statement.executeQuery( "SELECT COUNT(*) FROM " + table );
+				final ResultSet result1 = statement.executeQuery( "SELECT COUNT(*) FROM " + view );
 				Assert.isTrue( result1.next() );
 				final Object object = result1.getObject( 1 );
 
-				final ResultSet result2 = statement.executeQuery( "SELECT * FROM " + table );
+				final ResultSet result2 = statement.executeQuery( "SELECT * FROM " + view );
 
-				context.include( "/slt/table", new Pars( "title", "table " + table, "table", table, "result", result2, "count", object ) );
+				context.include( "/slt/view", new Pars( "title", "view " + view, "view", view, "result", result2, "count", object ) );
 			}
 			finally
 			{
