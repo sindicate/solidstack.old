@@ -3,10 +3,11 @@ package solidstack.hyperdb;
 public class Table
 {
 	protected String name;
-//	protected Integer records;
+	protected long records;
 
-	public Table( String name )
+	public Table( String name, long records )
 	{
 		this.name = name;
+		this.records = records;
 	}
 }

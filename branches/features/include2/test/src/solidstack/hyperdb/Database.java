@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +29,7 @@ public class Database
 				"ON VIEWS.OWNER = TABLES.OWNER\n" +
 				"ORDER BY TABLES.OWNER";
 
-		Map< String, Schema > schemas = new HashMap< String, Schema >();
+		Map< String, Schema > schemas = new LinkedHashMap< String, Schema >();
 		try
 		{
 			Connection connection = DataSource.getConnection();
@@ -75,7 +75,7 @@ public class Database
 		if( schema.getTables() != null )
 			return schema.getTables();
 
-		String sql = "SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = ? ORDER BY TABLE_NAME";
+		String sql = "SELECT TABLE_NAME, NUM_ROWS FROM ALL_TABLES WHERE OWNER = ? ORDER BY TABLE_NAME";
 
 		List< Table > tables = new ArrayList< Table >();
 		try
@@ -89,7 +89,7 @@ public class Database
 					statement.setString( 1, schemaName );
 					ResultSet result = statement.executeQuery();
 					while( result.next() )
-						tables.add( new Table( result.getString( 1 ) ) );
+						tables.add( new Table( result.getString( 1 ), result.getLong( 2 ) ) );
 
 					schema.setTables( tables );
 				}
