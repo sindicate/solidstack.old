@@ -6,6 +6,7 @@ public class RequestContext
 {
 	protected Request request;
 	protected Response reponse;
+	protected Session session;
 	protected ApplicationContext applicationContext;
 	protected Map< String, Object > args;
 
@@ -62,5 +63,10 @@ public class RequestContext
 	public void include( String path )
 	{
 		include( path, null );
+	}
+
+	public void setSession( Session session )
+	{
+		this.session = session;
 	}
 }

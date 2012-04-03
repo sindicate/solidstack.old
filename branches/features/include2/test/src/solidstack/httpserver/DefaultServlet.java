@@ -18,7 +18,7 @@ public class DefaultServlet implements Servlet
 		InputStream in = DefaultServlet.class.getClassLoader().getResourceAsStream( url );
 		if( in == null )
 		{
-			response.setStatusCode( 404, url + " not Found" );
+			response.setStatusCode( 404, "Not found" );
 			return;
 		}
 

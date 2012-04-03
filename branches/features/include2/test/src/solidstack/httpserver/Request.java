@@ -13,6 +13,7 @@ public class Request
 	protected String url;
 	protected String query;
 	protected Map< String, List< String > > headers = new HashMap< String, List<String> >();
+	protected Map< String, String > cookies = new HashMap< String, String >();
 	protected Map< String, Object > parameters = new HashMap< String, Object >();
 	protected String fragment;
 
@@ -56,6 +57,11 @@ public class Request
 		values.add( value );
 	}
 
+	public void addCookie( String name, String value )
+	{
+		this.cookies.put( name, value );
+	}
+
 	@SuppressWarnings( "unchecked" )
 	public String getParameter( String name )
 	{
@@ -79,6 +85,11 @@ public class Request
 		if( values.size() > 1 )
 			throw new IllegalStateException( "Found more than 1 value for the header " + name );
 		return values.get( 0 );
+	}
+
+	public String getCookie( String name )
+	{
+		return this.cookies.get( name );
 	}
 
 	public boolean isConnectionClose()

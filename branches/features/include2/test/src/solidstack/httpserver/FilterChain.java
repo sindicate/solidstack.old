@@ -21,15 +21,15 @@ public class FilterChain
 		this.servlet = servlet;
 	}
 
-	public void call( RequestContext request )
+	public void call( RequestContext context )
 	{
 		Assert.notNull( this.servlet );
 		if( this.filters.isEmpty() )
-			this.servlet.call( request );
+			this.servlet.call( context );
 		else
 		{
 			Filter filter = this.filters.remove( 0 );
-			filter.call( request, this );
+			filter.call( context, this );
 		}
 	}
 }

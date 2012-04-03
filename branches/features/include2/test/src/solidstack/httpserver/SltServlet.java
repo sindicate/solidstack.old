@@ -2,6 +2,7 @@ package solidstack.httpserver;
 
 import solidstack.template.Template;
 import solidstack.template.TemplateLoader;
+import solidstack.template.TemplateNotFoundException;
 import solidstack.util.Pars;
 
 public class SltServlet implements Servlet
@@ -20,9 +21,16 @@ public class SltServlet implements Servlet
 //		if( url.startsWith( "/" ) )
 //			url = url.substring( 1 );
 
-		Template template = this.loader.getTemplate( url );
-		Pars pars = new Pars( "request", request.getRequest(), "args", request.getArgs() ); // TODO response
-		template.apply( pars, request.getResponse().getWriter() );
+		try
+		{
+			Template template = this.loader.getTemplate( url );
+			Pars pars = new Pars( "request", request.getRequest(), "args", request.getArgs() ); // TODO response
+			template.apply( pars, request.getResponse().getWriter() );
+		}
+		catch( TemplateNotFoundException e )
+		{
+			request.getResponse().setStatusCode( 404, "Not found" );
+		}
 
 //		url = url.replaceAll( "[\\\\/]", "." );
 //		url = url.replaceAll( "[\\.-]", "_" );

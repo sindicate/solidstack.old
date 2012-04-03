@@ -18,6 +18,18 @@ public class Database
 {
 	static protected Map< String, Schema > schemaCache;
 
+	private String url;
+
+	public Database( String url )
+	{
+		this.url = url;
+	}
+
+	public String getUrl()
+	{
+		return this.url;
+	}
+
 	synchronized static public Map< String, Schema > getSchemas()
 	{
 		if( schemaCache != null )

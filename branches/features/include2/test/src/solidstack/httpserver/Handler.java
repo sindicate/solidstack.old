@@ -99,16 +99,23 @@ public class Handler extends Thread
 					{
 						Token value = headerTokenizer.getValue();
 						//			System.out.println( "    "+ field.getValue() + " = " + value.getValue() );
-						request.addHeader( field.getValue(), value.getValue() );
+						if( field.equals( "Cookie" ) ) // TODO Case insensitive?
+						{
+							String s = value.getValue();
+							int pos2 = s.indexOf( '=' );
+							if( pos2 >= 0 )
+								request.addCookie( s.substring( 0, pos2 ), s.substring( pos2 + 1 ) );
+							else
+								request.addHeader( field.getValue(), s );
+						}
+						else
+						{
+							request.addHeader( field.getValue(), value.getValue() );
+						}
 						field = headerTokenizer.getField();
 					}
 
-					//		String filename = "response" + (++counter) + ".out";
-					//		OutputStream file = new FileOutputStream( filename );
-					//		try
-					//		{
 					OutputStream out = this.socket.getOutputStream();
-					//		out = new TeeOutputStream( out, file );
 					out = new CloseBlockingOutputStream( out );
 					Response response = new Response( request, out );
 					RequestContext context = new RequestContext( request, response, this.applicationContext );

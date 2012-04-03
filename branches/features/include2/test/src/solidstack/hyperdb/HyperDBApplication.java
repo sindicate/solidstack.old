@@ -3,6 +3,7 @@ package solidstack.hyperdb;
 import solidstack.httpserver.ApplicationContext;
 import solidstack.httpserver.DefaultServlet;
 import solidstack.httpserver.Servlet;
+import solidstack.httpserver.SessionFilter;
 import solidstack.httpserver.SltServlet;
 import solidstack.template.TemplateLoader;
 
@@ -27,10 +28,12 @@ public class HyperDBApplication extends ApplicationContext
 		registerServlet( "/schemas/([^/]*)/views/([^/]*)", "schema view", new ViewServlet() );
 		registerServlet( "/schemas/([^/]*)/views", "schema", new IncludeServlet( "/slt/views" ) );
 		registerServlet( "/schemas", new IncludeServlet( "/slt/schemas" ) );
+		registerServlet( "/databases", new IncludeServlet( "/slt/databases" ) );
 		registerServlet( "", new RootServlet() );
 		registerServlet( "/slt(/.*)", "path", sltServlet );
 		registerServlet( ".*", new DefaultServlet() );
 
+		registerFilter( ".*", new SessionFilter() );
 //		context.registerFilter( ".*", new CompressionFilter() );
 	}
 }

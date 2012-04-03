@@ -180,4 +180,9 @@ public class Response
 			throw new IllegalStateException( "Found more than 1 value for the header " + name );
 		return values.get( 0 );
 	}
+
+	public void setCookie( String name, String value )
+	{
+		setHeader( "Set-Cookie", name + "=" + value );
+	}
 }
