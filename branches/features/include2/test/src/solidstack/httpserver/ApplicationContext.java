@@ -43,6 +43,16 @@ public class ApplicationContext
 			}
 		}
 
+		dispatch2( context, chain );
+	}
+
+	public void dispatchInternal( RequestContext context )
+	{
+		dispatch2( context, null );
+	}
+
+	protected void dispatch2( RequestContext context, FilterChain chain )
+	{
 		for( ServletMapping mapping : this.mappings )
 		{
 			Matcher matcher = mapping.pattern.matcher( context.getRequest().getUrl() );

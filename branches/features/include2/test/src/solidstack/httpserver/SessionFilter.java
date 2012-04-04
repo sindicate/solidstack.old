@@ -21,6 +21,7 @@ public class SessionFilter implements Filter
 		else
 		{
 			session = new Session();
+			context.setSession( session );
 			sessionId = Integer.toString( ++this.sessionid );
 			this.sessions.put( sessionId, session );
 			context.getResponse().setCookie( "SESSIONID", sessionId );

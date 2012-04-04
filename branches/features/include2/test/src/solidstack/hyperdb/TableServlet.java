@@ -15,11 +15,16 @@ public class TableServlet implements Servlet
 {
 	public void call( RequestContext context )
 	{
+		String database = context.getRequest().getParameter( "database" );
+		String user = context.getRequest().getParameter( "user" );
 		String schema = context.getRequest().getParameter( "schema" );
 		String table = context.getRequest().getParameter( "table" );
+
+		Connections connections = (Connections)context.getSession().getAttribute( "connections" );
+		Connection connection = connections.getConnection( database, user );
+
 		table = '\"' + schema + "\".\"" + table + '\"'; // TODO SQL Escaping
 
-		Connection connection = DataSource.getConnection();
 		try
 		{
 			Statement statement = connection.createStatement();
@@ -41,11 +46,6 @@ public class TableServlet implements Servlet
 		catch( SQLException e )
 		{
 			throw new HttpException( e );
-		}
-		finally
-		{
-			// TODO What if the connection has been broken?: java.sql.SQLException: Closed Connection
-			DataSource.release( connection );
 		}
 	}
 }

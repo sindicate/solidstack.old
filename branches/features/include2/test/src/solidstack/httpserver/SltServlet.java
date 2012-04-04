@@ -14,22 +14,22 @@ public class SltServlet implements Servlet
 		this.loader = loader;
 	}
 
-	public void call( RequestContext request )
+	public void call( RequestContext context )
 	{
 		// TODO / should be allowed after fixing the other todo
-		String url = request.getRequest().getParameter( "path" );
+		String url = context.getRequest().getParameter( "path" );
 //		if( url.startsWith( "/" ) )
 //			url = url.substring( 1 );
 
 		try
 		{
 			Template template = this.loader.getTemplate( url );
-			Pars pars = new Pars( "request", request.getRequest(), "args", request.getArgs() ); // TODO response
-			template.apply( pars, request.getResponse().getWriter() );
+			Pars pars = new Pars( "session", context.getSession(), "request", context.getRequest(), "args", context.getArgs() ); // TODO response
+			template.apply( pars, context.getResponse().getWriter() );
 		}
 		catch( TemplateNotFoundException e )
 		{
-			request.getResponse().setStatusCode( 404, "Not found" );
+			context.getResponse().setStatusCode( 404, "Not found" );
 		}
 
 //		url = url.replaceAll( "[\\\\/]", "." );

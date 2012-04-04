@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 import solidstack.httpserver.HttpException;
-import solidstack.lang.Assert;
 import solidstack.query.Query;
 import solidstack.query.QueryLoader;
 import solidstack.util.Pars;
@@ -19,7 +18,7 @@ import solidstack.util.Pars;
 
 public class Database
 {
-	static protected Map< String, Schema > schemaCache;
+//	static protected Map< String, Schema > schemaCache;
 	static public final QueryLoader queries;
 
 	static
@@ -30,11 +29,18 @@ public class Database
 		queries.setTemplatePath( "classpath:/solidstack/hyperdb" );
 	}
 
+	private String name;
 	private String url;
 
-	public Database( String url )
+	public Database( String name, String url )
 	{
+		this.name = name;
 		this.url = url;
+	}
+
+	public String getName()
+	{
+		return this.name;
 	}
 
 	public String getUrl()
@@ -42,17 +48,17 @@ public class Database
 		return this.url;
 	}
 
-	synchronized static public Map< String, Schema > getSchemas()
+	synchronized static public Map< String, Schema > getSchemas( Connection connection )
 	{
-		if( schemaCache != null )
-			return schemaCache;
+//		if( schemaCache != null )
+//			return schemaCache;
 
 		Query query = queries.getQuery( "selectUsers.sql" );
 
 		Map< String, Schema > schemas = new LinkedHashMap< String, Schema >();
-		Connection connection = DataSource.getConnection();
-		try
-		{
+//		Connection connection = DataSource.getConnection();
+//		try
+//		{
 			List<Object[]> users = query.listOfArrays( connection, Pars.EMPTY );
 			for( Object[] user : users )
 			{
@@ -61,50 +67,34 @@ public class Database
 				BigDecimal views = (BigDecimal)user[ 2 ];
 				schemas.put( name, new Schema( name, tables.intValue(), views.intValue() ) );
 			}
-			schemaCache = schemas;
-		}
-		finally
-		{
-			DataSource.release( connection );
-		}
+//			schemaCache = schemas;
+//		}
+//		finally
+//		{
+//			DataSource.release( connection );
+//		}
 
 		return schemas;
 	}
 
-	synchronized static public List< Table > getTables( String schemaName )
+	synchronized static public List< Table > getTables( Connection connection, String schemaName )
 	{
-		Schema schema = getSchemas().get( schemaName );
-		Assert.notNull( schema, "Schema not found" );
-
-		if( schema.getTables() != null )
-			return schema.getTables();
-
 		String sql = "SELECT TABLE_NAME, NUM_ROWS FROM ALL_TABLES WHERE OWNER = ? ORDER BY TABLE_NAME";
 
 		List< Table > tables = new ArrayList< Table >();
 		try
 		{
-			Connection connection = DataSource.getConnection();
+			PreparedStatement statement = connection.prepareStatement( sql );
 			try
 			{
-				PreparedStatement statement = connection.prepareStatement( sql );
-				try
-				{
-					statement.setString( 1, schemaName );
-					ResultSet result = statement.executeQuery();
-					while( result.next() )
-						tables.add( new Table( result.getString( 1 ), result.getLong( 2 ) ) );
-
-					schema.setTables( tables );
-				}
-				finally
-				{
-					statement.close();
-				}
+				statement.setString( 1, schemaName );
+				ResultSet result = statement.executeQuery();
+				while( result.next() )
+					tables.add( new Table( result.getString( 1 ), result.getLong( 2 ) ) );
 			}
 			finally
 			{
-				DataSource.release( connection );
+				statement.close();
 			}
 		}
 		catch( SQLException e )
@@ -115,40 +105,24 @@ public class Database
 		return tables;
 	}
 
-	synchronized static public List< View > getViews( String schemaName )
+	synchronized static public List< View > getViews( Connection connection, String schemaName )
 	{
-		Schema schema = getSchemas().get( schemaName );
-		Assert.notNull( schema, "Schema not found" );
-
-		if( schema.getViews() != null )
-			return schema.getViews();
-
 		String sql = "SELECT VIEW_NAME FROM ALL_VIEWS WHERE OWNER = ? ORDER BY VIEW_NAME";
 
 		List< View > views = new ArrayList< View >();
 		try
 		{
-			Connection connection = DataSource.getConnection();
+			PreparedStatement statement = connection.prepareStatement( sql );
 			try
 			{
-				PreparedStatement statement = connection.prepareStatement( sql );
-				try
-				{
-					statement.setString( 1, schemaName );
-					ResultSet result = statement.executeQuery();
-					while( result.next() )
-						views.add( new View( result.getString( 1 ) ) );
-
-					schema.setViews( views );
-				}
-				finally
-				{
-					statement.close();
-				}
+				statement.setString( 1, schemaName );
+				ResultSet result = statement.executeQuery();
+				while( result.next() )
+					views.add( new View( result.getString( 1 ) ) );
 			}
 			finally
 			{
-				DataSource.release( connection );
+				statement.close();
 			}
 		}
 		catch( SQLException e )

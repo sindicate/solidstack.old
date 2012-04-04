@@ -7,7 +7,7 @@ include( template: "/template", title: "Databases", body: {
 		<table>
 			<tr><th>Database</th></tr>
 <%		for( def name : databases.keySet() ) { %>
-			<tr><td><a href="databases/${name}">${name}</a></td></tr>
+			<tr><td><a href="databases/${name}/connect">${name}</a></td></tr>
 <%		} %>
 		</table>
 <% } ) %>

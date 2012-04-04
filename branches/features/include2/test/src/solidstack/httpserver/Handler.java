@@ -50,14 +50,14 @@ public class Handler extends Thread
 				while( true )
 				{
 					InputStream in = this.socket.getInputStream();
+					// TODO Use a PushbackInputStream
 					PushbackReader reader = new PushbackReader( new ReaderSourceReader( new BufferedReader( new InputStreamReader( in, "ISO-8859-1" ) ) ) );
 
 					Request request = new Request();
 
 					RequestTokenizer requestTokenizer = new RequestTokenizer( reader );
 					Token token = requestTokenizer.get();
-					if( !token.equals( "GET" ) )
-						throw new HttpException( "Only GET requests are supported" );
+					request.setMethod( token.getValue() );
 
 					String url = requestTokenizer.get().getValue();
 					token = requestTokenizer.get();
@@ -113,6 +113,24 @@ public class Handler extends Thread
 							request.addHeader( field.getValue(), value.getValue() );
 						}
 						field = headerTokenizer.getField();
+					}
+
+					String contentType = request.getHeader( "Content-Type" );
+					if( "application/x-www-form-urlencoded".equals( contentType ) )
+					{
+						String contentLength = request.getHeader( "Content-Length" );
+						if( contentLength != null )
+						{
+							int len = Integer.parseInt( contentLength );
+							UrlEncodedParser parser = new UrlEncodedParser( reader, len );
+							String parameter = parser.getParameter();
+							while( parameter != null )
+							{
+								String value = parser.getValue();
+								request.addParameter( parameter, value );
+								parameter = parser.getParameter();
+							}
+						}
 					}
 
 					OutputStream out = this.socket.getOutputStream();

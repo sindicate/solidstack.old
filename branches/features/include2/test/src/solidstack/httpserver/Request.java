@@ -10,12 +10,23 @@ import solidstack.lang.Assert;
 
 public class Request
 {
+	protected String method;
 	protected String url;
 	protected String query;
 	protected Map< String, List< String > > headers = new HashMap< String, List<String> >();
 	protected Map< String, String > cookies = new HashMap< String, String >();
 	protected Map< String, Object > parameters = new HashMap< String, Object >();
 	protected String fragment;
+
+	public void setMethod( String method )
+	{
+		this.method = method;
+	}
+
+	public String getMethod()
+	{
+		return this.method;
+	}
 
 	public void setUrl( String url )
 	{

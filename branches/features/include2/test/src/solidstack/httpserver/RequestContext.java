@@ -24,6 +24,8 @@ public class RequestContext
 		this.request = new Request();
 		this.request.setUrl( path );
 		this.request.parameters = parent.getRequest().getParameters();
+
+		this.session = parent.getSession();
 		this.reponse = parent.getResponse();
 		this.applicationContext = parent.getApplication();
 		this.args = args;
@@ -57,7 +59,7 @@ public class RequestContext
 	public void include( String path, Map< String, Object > args )
 	{
 		RequestContext context = new RequestContext( this, path, args );
-		getApplication().dispatch( context );
+		getApplication().dispatchInternal( context );
 	}
 
 	public void include( String path )
@@ -68,5 +70,18 @@ public class RequestContext
 	public void setSession( Session session )
 	{
 		this.session = session;
+	}
+
+	public Session getSession()
+	{
+		return this.session;
+	}
+
+	public void redirect( String path )
+	{
+		Response response = getResponse();
+//		response.reset(); Do not reset, we need the Set-Cookies
+		response.setStatusCode( 303, "Redirect" );
+		response.setHeader( "Location", path );
 	}
 }
