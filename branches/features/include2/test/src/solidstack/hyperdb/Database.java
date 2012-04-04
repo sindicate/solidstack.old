@@ -1,10 +1,10 @@
 package solidstack.hyperdb;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,11 +12,23 @@ import java.util.Map;
 
 import solidstack.httpserver.HttpException;
 import solidstack.lang.Assert;
+import solidstack.query.Query;
+import solidstack.query.QueryLoader;
+import solidstack.util.Pars;
 
 
 public class Database
 {
 	static protected Map< String, Schema > schemaCache;
+	static public final QueryLoader queries;
+
+	static
+	{
+		queries = new QueryLoader();
+		queries.setDefaultLanguage( "groovy" );
+		queries.setReloading( true );
+		queries.setTemplatePath( "classpath:/solidstack/hyperdb" );
+	}
 
 	private String url;
 
@@ -35,45 +47,25 @@ public class Database
 		if( schemaCache != null )
 			return schemaCache;
 
-		String sql = "SELECT TABLES.OWNER, COALESCE( TABLES.COUNT, 0 ) TABLES, COALESCE( VIEWS.COUNT, 0 ) VIEWS\n" +
-				"FROM ( SELECT OWNER, COUNT(*) COUNT FROM ALL_TABLES GROUP BY OWNER ) TABLES\n" +
-				"FULL OUTER JOIN ( SELECT OWNER, COUNT(*) COUNT FROM ALL_VIEWS GROUP BY OWNER ) VIEWS\n" +
-				"ON VIEWS.OWNER = TABLES.OWNER\n" +
-				"ORDER BY TABLES.OWNER";
+		Query query = queries.getQuery( "selectUsers.sql" );
 
 		Map< String, Schema > schemas = new LinkedHashMap< String, Schema >();
+		Connection connection = DataSource.getConnection();
 		try
 		{
-			Connection connection = DataSource.getConnection();
-			try
+			List<Object[]> users = query.listOfArrays( connection, Pars.EMPTY );
+			for( Object[] user : users )
 			{
-				Statement statement = connection.createStatement();
-				try
-				{
-					ResultSet result = statement.executeQuery( sql );
-					while( result.next() )
-					{
-						String name = result.getString( 1 );
-						int tables = result.getInt( 2 );
-						int views = result.getInt( 3 );
-						schemas.put( name, new Schema( name, tables, views ) );
-					}
-
-					schemaCache = schemas;
-				}
-				finally
-				{
-					statement.close();
-				}
+				String name = (String)user[ 0 ];
+				BigDecimal tables = (BigDecimal)user[ 1 ];
+				BigDecimal views = (BigDecimal)user[ 2 ];
+				schemas.put( name, new Schema( name, tables.intValue(), views.intValue() ) );
 			}
-			finally
-			{
-				DataSource.release( connection );
-			}
+			schemaCache = schemas;
 		}
-		catch( SQLException e )
+		finally
 		{
-			throw new HttpException( e );
+			DataSource.release( connection );
 		}
 
 		return schemas;
