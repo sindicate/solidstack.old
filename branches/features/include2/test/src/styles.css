@@ -7,7 +7,7 @@ table { border-collapse: collapse; padding: 0px; border: 0px; border-spacing: 0p
 tr.data { cursor: pointer; }
 tr.data:hover { background-color: #FF8; }
 tr.data:hover td.null { background-color: #DD5; }
-th, td { padding: 4px; border: 1px solid black; vertical-align: top; }
+th, td { padding: 4px; border: 1px solid black; vertical-align: top; text-align: left; }
 td.null { background-color: #DDD; }
 
 a { color: black; }

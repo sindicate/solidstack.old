@@ -20,8 +20,9 @@ include( template: "/template", title: "Table ${table}", body: {
 			<tr><th colspan="${count}">Table ${table} - ${recordCount} records</th></tr>
 			<tr><% for( int i = 1; i <= count; i++ ) { %><th>${meta.getColumnLabel(i)}</th><% } %></tr>
 <%
+		def recordsWritten = 0
 		def next = true
-		while( next )
+		while( next && recordsWritten < 1000 )
 		{
 %>
 			<tr class="data"></td><%
@@ -32,7 +33,14 @@ include( template: "/template", title: "Table ${table}", body: {
 			}
 			%></tr>
 <%
+			recordsWritten ++
 			next = result.next()
+		}
+		if( recordsWritten >= 1000 )
+		{
+%>
+			<tr><td class="null" colspan="${count}">Too many records, only ${recordsWritten} displayed.</td></tr>
+<%
 		}
 %>
 		</table>
