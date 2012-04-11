@@ -732,8 +732,7 @@ public class ReadThroughCache
 			}
 			catch( InterruptedException e )
 			{
-				// TODO Problem is, this one may be logged as error, and ThreadDeath possibly not
-				throw new ThreadInterrupted( e );
+				throw new ThreadInterrupted();
 			}
 
 			if( this.result == null )
