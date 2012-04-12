@@ -1,7 +1,5 @@
 package solidstack.hyperdb;
 
-import java.io.IOException;
-
 import solidstack.httpserver.Server;
 
 public class Main
@@ -11,16 +9,9 @@ public class Main
 	 */
 	public static void main( String[] args )
 	{
-		Server server = new Server();
+		Server server = new Server( 80 );
 		server.addApplication( new HyperDBApplication() );
 
-		try
-		{
-			server.start( 80 );
-		}
-		catch( IOException e )
-		{
-			e.printStackTrace( System.err );
-		}
+		server.run();
 	}
 }
