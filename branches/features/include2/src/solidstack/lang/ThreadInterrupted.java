@@ -30,7 +30,7 @@ package solidstack.lang;
  * @see ThreadDeath for more information about cleanly interrupting a thread.
  * @author René de Bloois
  */
-public class ThreadInterrupted extends Error
+public class ThreadInterrupted extends ThreadDeath
 {
 	private static final long serialVersionUID = 1L;
 }
