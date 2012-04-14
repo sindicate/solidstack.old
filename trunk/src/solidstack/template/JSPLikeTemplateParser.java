@@ -18,13 +18,11 @@ package solidstack.template;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import solidstack.io.PushbackReader;
 import solidstack.io.SourceLocation;
 import solidstack.io.SourceReader;
-import solidstack.lang.Assert;
 
 
 /**
@@ -101,13 +99,6 @@ public class JSPLikeTemplateParser
 	 */
 	private StringBuilder buffer = new StringBuilder( 1024 );
 
-	/**
-	 * This queue of parse events is used to consolidate whitespace. This means that when scripts, comments and
-	 * directives are completely contained in their own lines in the template, the surrounding whitespace is assigned to
-	 * the script, comment and directive events and no whitespace events are triggered.
-	 */
-	private List< ParseEvent > queue = new ArrayList< ParseEvent >();
-
 	private boolean firstRead;
 
 	/**
@@ -127,58 +118,26 @@ public class JSPLikeTemplateParser
 	 */
 	public ParseEvent next()
 	{
-		if( this.queue.size() > 0 )
-			return this.queue.remove( 0 );
+		ParseEvent event = next0();
+		if( this.firstRead )
+			return event;
 
-		ParseEvent event;
+		// Get first event which must be a <%@ template version="1.0" %>
 
-		if( !this.firstRead )
-		{
-			// Get first event which must be a <%@ template version="1.0" %>
+		if( event.getEvent() != EVENT.DIRECTIVE )
+			throw new ParseException( "Template must start with a 'template' directive on the first character of the first line", this.reader.getLocation() );
 
-			event = next0();
-			if( event.getEvent() != EVENT.DIRECTIVE )
-				throw new ParseException( "Template must start with a 'template' directive on the first character of the first line", this.reader.getLocation() );
+		Directive version = Template.getDirective( event.getDirectives(), "template", "version" );
+		if( version == null )
+			throw new ParseException( "Template must start with a 'template' directive that has a 'version' attribute", this.reader.getLocation() );
 
-			Directive version = Template.getDirective( event.getDirectives(), "template", "version" );
-			if( version == null )
-				throw new ParseException( "Template must start with a 'template' directive that has a 'version' attribute", this.reader.getLocation() );
+		String versionString = version.getValue();
+		if( !versionString.equals( "1.0" ) )
+			throw new ParseException( "Version '" + versionString + "' is not supported", this.reader.getLocation() );
 
-			String versionString = version.getValue();
-			if( !versionString.equals( "1.0" ) )
-				throw new ParseException( "Version '" + versionString + "' is not supported", this.reader.getLocation() );
+		this.firstRead = true;
 
-			this.queue.add( event ); // Need to wait for the rest
-
-			this.firstRead = true;
-		}
-
-		while( true )
-			switch( ( event = next0() ).getEvent() )
-			{
-				case TEXT:
-				case EXPRESSION:
-				case EXPRESSION2:
-				case EOF:
-					if( this.queue.size() == 0 )
-						return event; // Just pass through
-					this.queue.add( event );
-					return this.queue.remove( 0 ); // The queue can now be emptied again
-
-				case WHITESPACE:
-				case SCRIPT:
-				case DIRECTIVE:
-				case COMMENT:
-					this.queue.add( event ); // Need to wait for the rest
-					break;
-
-				case NEWLINE:
-					if( this.queue.size() == 0 )
-						return event; // Just pass through
-					this.queue.add( event );
-					reassignNewlines(); // We need to reassign the whitespace because no template text has been found on the last lines
-					return this.queue.remove( 0 ); // The queue can now be emptied again
-			}
+		return event;
 	}
 
 	/**
@@ -264,66 +223,6 @@ public class JSPLikeTemplateParser
 					if( buffer.length() >= 0x1000 )
 						return new ParseEvent( textFound ? EVENT.TEXT : EVENT.WHITESPACE, popBuffer() );
 			}
-	}
-
-	/**
-	 * Consolidates whitespace and newlines.
-	 */
-	private void reassignNewlines()
-	{
-		// Remove all whitespace
-		for( Iterator< ParseEvent > i = this.queue.iterator(); i.hasNext(); )
-			if( i.next().getEvent() == EVENT.WHITESPACE )
-				i.remove();
-
-		// And reassign newlines
-		int index = 0;
-		while( index < this.queue.size() )
-		{
-			ParseEvent event = this.queue.get( index++ );
-			ParseEvent event2;
-			switch( event.getEvent() )
-			{
-				case NEWLINE:
-					if( index >= this.queue.size() ) // Is it the last one?
-					{
-						index -= 2;
-						Assert.isTrue( index >= 0 );
-						switch( ( event2 = this.queue.get( index ) ).getEvent() ) // TODO This whole switch is only for the assertion failure
-						{
-							case SCRIPT:
-							case DIRECTIVE:
-							case COMMENT:
-								event2.setData( event2.getData() + event.getData() );
-								this.queue.remove( ++index );
-								return;
-							default:
-								Assert.fail( "Should not come here" );
-						}
-					}
-					switch( ( event2 = this.queue.get( index ) ).getEvent() )
-					{
-						case SCRIPT:
-						case DIRECTIVE:
-						case COMMENT:
-						case NEWLINE:
-							event2.setData( event.getData() + event2.getData() );
-							this.queue.remove( --index );
-							break;
-						default:
-							Assert.fail( "Should not come here" );
-					}
-					break;
-
-				case DIRECTIVE:
-				case SCRIPT:
-				case COMMENT:
-					break;
-
-				default:
-					Assert.fail( "Unexpected event " + event.getEvent() );
-			}
-		}
 	}
 
 	/**

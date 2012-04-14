@@ -113,6 +113,7 @@ public class TemplateCompiler
 		try
 		{
 			parse( context );
+			consolidateWhitespace( context );
 			collectDirectives( context );
 			processDirectives( context );
 
@@ -196,6 +197,84 @@ public class TemplateCompiler
 		context.setEvents( events );
 	}
 
+	protected void consolidateWhitespace( TemplateCompilerContext context )
+	{
+		List<ParseEvent> events = context.getEvents();
+		List<ParseEvent> result = new ArrayList<ParseEvent>();
+		int len = events.size();
+		int start = 0;
+		boolean hasText = false;
+		boolean hasScript = false;
+		for( int i = 0; i < len; i++ )
+		{
+			ParseEvent event = events.get( i );
+			switch( event.getEvent() )
+			{
+				case EXPRESSION:
+				case EXPRESSION2:
+				case TEXT:
+					hasText = true;
+					break;
+				case DIRECTIVE:
+				case COMMENT:
+				case SCRIPT:
+					if( event.getData().indexOf( '\n' ) >= 0 )
+					{
+						consolidate( events, start, i - 1, result, hasText, true );
+						start = i;
+						hasText = false;
+					}
+					hasScript = true;
+					break;
+				case WHITESPACE:
+					break;
+				case NEWLINE:
+					consolidate( events, start, i, result, hasText, hasScript );
+					start = i + 1;
+					hasText = hasScript = false;
+					break;
+				default:
+					Assert.fail( "Unexpected event " + event.getEvent() );
+			}
+		}
+		if( start < len )
+			consolidate( events, start, len - 1, result, hasText, hasScript );
+		context.setEvents( result );
+	}
+
+	private static void consolidate( List<ParseEvent> source, int start, int end, List<ParseEvent> result, boolean hasText, boolean hasScript )
+	{
+		if( hasText || !hasScript )
+		{
+			for( int i = start; i <= end; i++ )
+				result.add( source.get( i ) );
+			return;
+		}
+
+		ParseEvent last = null;
+		for( int i = start; i <= end; i++ )
+		{
+			ParseEvent event = source.get( i );
+			switch( event.getEvent() )
+			{
+				case WHITESPACE:
+					break;
+				case DIRECTIVE:
+				case COMMENT:
+				case SCRIPT:
+					result.add( event );
+					last = event;
+					break;
+				case NEWLINE:
+					Assert.isTrue( i == end );
+					last.setData( last.getData() + event.getData() );
+					break;
+				default:
+					Assert.fail( "Unexpected event " + event.getEvent() );
+			}
+		}
+	}
+
 	/**
 	 * Collects the directives.
 	 *
@@ -248,7 +327,7 @@ public class TemplateCompiler
 	protected void configureTemplate( TemplateCompilerContext context )
 	{
 		Template template = context.getTemplate();
-		template.setName( context.getName() );
+		template.setPath( context.getPath() );
 		template.setDirectives( context.getDirectivesArray() );
 		template.setContentType( context.getContentType() );
 		template.setCharSet( context.getCharSet() );

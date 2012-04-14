@@ -4,12 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import solidstack.util.Pars;
-
 
 public class DefaultServlet implements Servlet
 {
-	public void call( RequestContext context, Pars params )
+	public void call( RequestContext context )
 	{
 		Response response = context.getResponse();
 
@@ -20,7 +18,7 @@ public class DefaultServlet implements Servlet
 		InputStream in = DefaultServlet.class.getClassLoader().getResourceAsStream( url );
 		if( in == null )
 		{
-			response.setStatusCode( 404, url + " not Found" );
+			response.setStatusCode( 404, "Not found" );
 			return;
 		}
 

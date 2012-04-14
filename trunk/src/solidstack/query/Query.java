@@ -431,7 +431,7 @@ public class Query
 		if( Loggers.execution.isDebugEnabled() )
 		{
 			StringBuilder debug = new StringBuilder();
-			debug.append( "Prepare statement: " ).append( this.template.getName() ).append( '\n' );
+			debug.append( "Prepare statement: " ).append( this.template.getPath() ).append( '\n' );
 			if( Loggers.execution.isTraceEnabled() )
 				debug.append( result ).append( '\n' );
 			debug.append( "Parameters:" );

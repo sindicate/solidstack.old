@@ -40,6 +40,7 @@ public class Handler extends Thread
 	 *
 	 * @throws IOException Whenever the socket throws an {@link IOException}.
 	 */
+	// TODO Check exception handling
 	public void handle() throws IOException
 	{
 		try
@@ -49,14 +50,14 @@ public class Handler extends Thread
 				while( true )
 				{
 					InputStream in = this.socket.getInputStream();
+					// TODO Use a PushbackInputStream
 					PushbackReader reader = new PushbackReader( new ReaderSourceReader( new BufferedReader( new InputStreamReader( in, "ISO-8859-1" ) ) ) );
 
 					Request request = new Request();
 
 					RequestTokenizer requestTokenizer = new RequestTokenizer( reader );
 					Token token = requestTokenizer.get();
-					if( !token.equals( "GET" ) )
-						throw new HttpException( "Only GET requests are supported" );
+					request.setMethod( token.getValue() );
 
 					String url = requestTokenizer.get().getValue();
 					token = requestTokenizer.get();
@@ -82,10 +83,13 @@ public class Handler extends Thread
 								request.addParameter( par, null );
 						}
 					}
+
+					// TODO Fragment too? Maybe use the URI class?
+
 					if( url.endsWith( "/" ) )
 						url = url.substring( 0, url.length() - 1 );
 					request.setUrl( url );
-					request.setParameters( parameters );
+					request.setQuery( parameters );
 
 					requestTokenizer.getNewline();
 
@@ -95,16 +99,41 @@ public class Handler extends Thread
 					{
 						Token value = headerTokenizer.getValue();
 						//			System.out.println( "    "+ field.getValue() + " = " + value.getValue() );
-						request.addHeader( field.getValue(), value.getValue() );
+						if( field.equals( "Cookie" ) ) // TODO Case insensitive?
+						{
+							String s = value.getValue();
+							int pos2 = s.indexOf( '=' );
+							if( pos2 >= 0 )
+								request.addCookie( s.substring( 0, pos2 ), s.substring( pos2 + 1 ) );
+							else
+								request.addHeader( field.getValue(), s );
+						}
+						else
+						{
+							request.addHeader( field.getValue(), value.getValue() );
+						}
 						field = headerTokenizer.getField();
 					}
 
-					//		String filename = "response" + (++counter) + ".out";
-					//		OutputStream file = new FileOutputStream( filename );
-					//		try
-					//		{
+					String contentType = request.getHeader( "Content-Type" );
+					if( "application/x-www-form-urlencoded".equals( contentType ) )
+					{
+						String contentLength = request.getHeader( "Content-Length" );
+						if( contentLength != null )
+						{
+							int len = Integer.parseInt( contentLength );
+							UrlEncodedParser parser = new UrlEncodedParser( reader, len );
+							String parameter = parser.getParameter();
+							while( parameter != null )
+							{
+								String value = parser.getValue();
+								request.addParameter( parameter, value );
+								parameter = parser.getParameter();
+							}
+						}
+					}
+
 					OutputStream out = this.socket.getOutputStream();
-					//		out = new TeeOutputStream( out, file );
 					out = new CloseBlockingOutputStream( out );
 					Response response = new Response( request, out );
 					RequestContext context = new RequestContext( request, response, this.applicationContext );
@@ -116,8 +145,9 @@ public class Handler extends Thread
 					{
 						throw e;
 					}
-					catch( Throwable t )
+					catch( Exception e )
 					{
+						Throwable t = e;
 						if( t.getClass().equals( HttpException.class ) && t.getCause() != null )
 							t = t.getCause();
 						t.printStackTrace( System.out );
@@ -130,6 +160,7 @@ public class Handler extends Thread
 							t.printStackTrace( writer );
 							writer.flush();
 						}
+						// TODO Is the socket going to be closed?
 					}
 
 					response.finish();
@@ -163,10 +194,10 @@ public class Handler extends Thread
 //							return;
 				}
 			}
-			catch( Throwable t )
+			catch( Exception e )
 			{
 				this.socket.close();
-				t.printStackTrace( System.out );
+				e.printStackTrace( System.out );
 			}
 		}
 		finally

@@ -19,28 +19,18 @@ package solidstack.lang;
 
 /**
  * <p>
- * Throw this {@link Error} whenever a thread is interrupted by {@link InterruptedException}.
+ * This a subclass of {@link ThreadDeath}. Throwing a {@link ThreadInterrupted} is a beautiful way of rolling up a
+ * thread when an {@link Thread#interrupt()} is requested. So, whenever you catch an {@link InterruptedException} or
+ * check {@link Thread#interrupted()}, you can throw a ThreadInterrupted to stop the thread.
  * </p>
  * <p>
- * This is subclass of {@link Error} because lots of applications catch {@link Exception} and discard it.
- * </p>
- * <p>
- * You could also use {@link ThreadDeath}, but then you can't distinguish between the use of {@link Thread#interrupt()}
- * and {@link Thread#stop()}.
+ * Furthermore, {@link ThreadGroup#uncaughtException(Thread, Throwable) ignores a ThreadDeath}.
  * </p>
  *
  * @see ThreadDeath for more information about cleanly interrupting a thread.
  * @author René de Bloois
  */
-public class ThreadInterrupted extends Error
+public class ThreadInterrupted extends ThreadDeath
 {
 	private static final long serialVersionUID = 1L;
-
-	/**
-	 * @param cause The cause of this interruption.
-	 */
-	public ThreadInterrupted( Throwable cause )
-	{
-		super( cause.getMessage(), cause );
-	}
 }

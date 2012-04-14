@@ -76,11 +76,6 @@ public class EncodingDetector implements solidstack.io.EncodingDetector
 		// 00 xx          UTF-16BE (default for UTF-16)
 		// 00 00 (00 xx)  UTF-32BE
 
-		// BOM is only read by the JVM when UTF-8, UTF-16 or UTF-32. TODO Test
-		// specifying BE or LE means the BOM is not removed when there is one. TODO Test
-		// The BOM is a Zero-width non-breaking space (ZWNBSP), but is deprecated as a real character, so that it can be used as a BOM.
-		// TODO Maybe we should use UTF-16 and UTF-32 to make sure that any BOM is removed from the file.
-
 		if( bytes.length <= 1 )
 			return CHARSET_UTF_8;
 		if( bytes[ 0 ] != 0 )
@@ -98,7 +93,7 @@ public class EncodingDetector implements solidstack.io.EncodingDetector
 		return CHARSET_UTF_32BE; // TODO Throw undetectable when length < 4
 	}
 
-	static private String toAscii( byte[] chars )
+	static public String toAscii( byte[] chars )
 	{
 		int len = chars.length;
 		int j = 0;

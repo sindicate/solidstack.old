@@ -2,6 +2,7 @@ package solidstack.httpserver;
 
 import solidstack.template.Template;
 import solidstack.template.TemplateLoader;
+import solidstack.template.TemplateNotFoundException;
 import solidstack.util.Pars;
 
 public class SltServlet implements Servlet
@@ -13,15 +14,23 @@ public class SltServlet implements Servlet
 		this.loader = loader;
 	}
 
-	public void call( RequestContext request, Pars params )
+	public void call( RequestContext context )
 	{
 		// TODO / should be allowed after fixing the other todo
-		String url = request.getRequest().getParameter( "path" );
-		if( url.startsWith( "/" ) )
-			url = url.substring( 1 );
+		String url = context.getRequest().getParameter( "path" );
+//		if( url.startsWith( "/" ) )
+//			url = url.substring( 1 );
 
-		Template template = this.loader.getTemplate( url );
-		template.apply( params, request.getResponse().getWriter() );
+		try
+		{
+			Template template = this.loader.getTemplate( url );
+			Pars pars = new Pars( "session", context.getSession(), "request", context.getRequest(), "args", context.getArgs() ); // TODO response
+			template.apply( pars, context.getResponse().getWriter() );
+		}
+		catch( TemplateNotFoundException e )
+		{
+			context.getResponse().setStatusCode( 404, "Not found" );
+		}
 
 //		url = url.replaceAll( "[\\\\/]", "." );
 //		url = url.replaceAll( "[\\.-]", "_" );
