@@ -89,6 +89,8 @@ public class Response
 			if( getHeader( "Content-Length" ) == null ) // TODO What about empty string?
 				setHeader0( "Transfer-Encoding", "chunked" );
 
+		// TODO status 404 and chunked encoding conflict each other
+
 		if( this.contentType != null )
 			if( this.charSet != null )
 				setHeader0( "Content-Type", this.contentType + "; charset=" + this.charSet );
@@ -177,5 +179,10 @@ public class Response
 		if( values.size() > 1 )
 			throw new IllegalStateException( "Found more than 1 value for the header " + name );
 		return values.get( 0 );
+	}
+
+	public void setCookie( String name, String value )
+	{
+		setHeader( "Set-Cookie", name + "=" + value );
 	}
 }

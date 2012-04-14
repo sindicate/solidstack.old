@@ -3,20 +3,67 @@ package solidstack.httpserver;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
+
+import solidstack.lang.SystemException;
+import solidstack.lang.ThreadInterrupted;
 
 
-public class Server
+public class Server extends Thread
 {
-	protected boolean nio = false;
+	private int port;
+	private ApplicationContext application; // TODO Make this a Map
+	private Thread thread;
 
-	public void start( ApplicationContext context, int port ) throws IOException
+	public Server( int port )
 	{
-		ServerSocket server = new ServerSocket( port );
-		while( true )
+		this.port = port;
+	}
+
+	public void addApplication( ApplicationContext application )
+	{
+		this.application = application;
+	}
+
+	@Override
+	public void run()
+	{
+		try
 		{
-			Socket socket = server.accept();
-			Handler handler = new Handler( socket, context );
-			handler.start();
+			ServerSocket server = new ServerSocket( this.port );
+			server.setSoTimeout( 2000 );
+			while( !Thread.interrupted() )
+			{
+				try
+				{
+					Socket socket = server.accept();
+					// TODO Threadpool
+					Handler handler = new Handler( socket, this.application );
+					handler.start();
+				}
+				catch( SocketTimeoutException e )
+				{
+					// Just to give the opportunity to check Thread.interrupted()
+				}
+			}
+			// TODO Clean up the threadpool, I think it should also use a threadgroup
+		}
+		catch( IOException e )
+		{
+			throw new SystemException( e );
+		}
+	}
+
+	public void interruptAndJoin()
+	{
+		interrupt();
+		try
+		{
+			join();
+		}
+		catch( InterruptedException e )
+		{
+			throw new ThreadInterrupted();
 		}
 	}
 }

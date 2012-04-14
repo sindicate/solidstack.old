@@ -12,7 +12,6 @@ public class ApplicationContext
 	protected List< ServletMapping > mappings = new ArrayList< ServletMapping >();
 	protected List< FilterMapping > filterMappings = new ArrayList< FilterMapping >();
 	protected Map< String, Class< Servlet > > jspCache = new HashMap< String, Class< Servlet > >();
-	protected String jspBase;
 
 	public void registerServlet( String pattern, Servlet servlet )
 	{
@@ -27,11 +26,6 @@ public class ApplicationContext
 	public void registerFilter( String pattern, Filter filter )
 	{
 		this.filterMappings.add( new FilterMapping( Pattern.compile( pattern ), filter ) );
-	}
-
-	public void setJspBase( String jspBase )
-	{
-		this.jspBase = jspBase;
 	}
 
 	public void dispatch( RequestContext context )
@@ -49,6 +43,16 @@ public class ApplicationContext
 			}
 		}
 
+		dispatch2( context, chain );
+	}
+
+	public void dispatchInternal( RequestContext context )
+	{
+		dispatch2( context, null );
+	}
+
+	protected void dispatch2( RequestContext context, FilterChain chain )
+	{
 		for( ServletMapping mapping : this.mappings )
 		{
 			Matcher matcher = mapping.pattern.matcher( context.getRequest().getUrl() );
@@ -68,7 +72,7 @@ public class ApplicationContext
 					chain.call( context );
 				}
 				else
-					mapping.servlet.call( context, null );
+					mapping.servlet.call( context );
 				return;
 			}
 		}

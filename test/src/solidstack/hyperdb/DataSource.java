@@ -27,12 +27,33 @@ public class DataSource
 	synchronized static public Connection getConnection()
 	{
 		if( !queue.isEmpty() )
-			return queue.removeFirst();
+		{
+			Connection connection = queue.removeFirst();
+			try
+			{
+				connection.createStatement().executeQuery( "SELECT * FROM DUAL" );
+				return connection;
+			}
+			catch( SQLException e )
+			{
+				try
+				{
+					connection.close();
+				}
+				catch( SQLException e1 )
+				{
+					// Ignore
+				}
+			}
+		}
 
 		try
 		{
 			System.out.println( "Getting new connection" );
-			return DriverManager.getConnection( "jdbc:oracle:thin:@192.168.0.109:1521:XE", "TAXI", "taxi" );
+
+
+//			return DriverManager.getConnection( "jdbc:oracle:thin:@172.31.1.26:1521:OLTPS1", "JONGSA", "56287" );
+			return DriverManager.getConnection( "jdbc:oracle:thin:@172.15.28.87:1521:ECHDWHP", "BCON_RAPPORTAGE", "BCON_RAPPORTAGE" );
 		}
 		catch( SQLException e )
 		{

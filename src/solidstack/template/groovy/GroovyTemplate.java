@@ -48,7 +48,7 @@ public class GroovyTemplate extends Template
 	public void apply( Map< String, Object > params, EncodingWriter writer )
 	{
 		Closure template = (Closure)this.closure.clone();
-		template.setDelegate( params );
+		template.setDelegate( new GroovyTemplateDelegate( this, params, writer ) );
 		ConvertingWriter out = new GroovyConvertingWriter( writer );
 		template.call( out );
 		try

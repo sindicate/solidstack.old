@@ -135,7 +135,7 @@ public class GroovyTemplateCompiler
 	{
 		// Compile to bytes
 		CompilationUnit unit = new CompilationUnit();
-		unit.addSource( context.getName(), context.getScript().toString() );
+		unit.addSource( context.getPath(), context.getScript().toString() );
 		unit.compile( Phases.CLASS_GENERATION );
 
 		// Results

@@ -141,25 +141,28 @@ public class TemplateLoader
 	 * @return The {@link Template}.
 	 */
 	// TODO Also cache that a template is not found?
+	// TODO Normalize the path, otherwise you may get two or more cached instances
 	public Template getTemplate( String path )
 	{
 		Loggers.loader.debug( "getTemplate [{}]", path );
-		Assert.isTrue( !path.startsWith( "/" ), "path should not start with a /" ); // FIXME When doing includes, / should be allowed for absolute paths
+		if( path.startsWith( "/" ) )
+			path = path.substring( 1 );
 		// FIXME So / becomes always relative from the search path. How can we override that? Adding the scheme?
 
 		synchronized( this.templates )
 		{
 			Template template = this.templates.get( path );
-			Resource resource = null;
 
-			// If reloading == true and resource is changed, clear current query
+			Resource resource = null;
+			long modified = 0;
 			if( this.reloading && template != null && template.getLastModified() > 0 )
 			{
-				resource = getResource( path + ".slt" ); // TODO Configurable, and maybe another default
-				if( resource.exists() && resource.getLastModified() > template.getLastModified() )
+				resource = template.getResource();
+				modified = resource.unwrap().getLastModified();
+				if( modified > template.getLastModified() )
 				{
-					Loggers.loader.info( "{} changed, reloading", resource );
 					template = null;
+					Loggers.loader.info( "{} changed, reloading", resource );
 				}
 			}
 
@@ -167,14 +170,18 @@ public class TemplateLoader
 			if( template == null )
 			{
 				if( resource == null )
-					resource = getResource( path + ".slt" );
+				{
+					resource = this.templatePath.resolve( path + ".slt" );
+					modified = resource.unwrap().getLastModified();
+					Loggers.loader.debug( "{}, lastModified: {} ({})", new Object[] { resource, new Date( modified ), modified } );
+				}
 
 				if( !resource.exists() )
 					throw new TemplateNotFoundException( resource.getNormalized() + " not found" );
 
 				template = new TemplateCompiler( this ).compile( resource, path ); // TODO Is this enough for a class name?
-				template.setName( path ); // Overwrite the name
-				template.setLastModified( resource.getLastModified() );
+				template.setResource( resource );
+				template.setLastModified( modified );
 				template.setLoader( this );
 				this.templates.put( path, template );
 			}
@@ -195,7 +202,7 @@ public class TemplateLoader
 		Assert.isTrue( !path.startsWith( "/" ), "path should not start with a /" ); // TODO When doing includes, / should be allowed for absolute paths
 
 		Template template = new TemplateCompiler( this ).compile( resource, path );
-		template.setName( path ); // Overwrite the name
+		template.setResource( resource );
 		template.setLastModified( 0 );
 		template.setLoader( this );
 
@@ -230,18 +237,5 @@ public class TemplateLoader
 		}
 
 		return null;
-	}
-
-	/**
-	 * Returns the {@link Resource} with the given path.
-	 *
-	 * @param path The path of the resource.
-	 * @return The {@link Resource}.
-	 */
-	private Resource getResource( String path )
-	{
-		Resource result = this.templatePath.resolve( path ).unwrap();
-		Loggers.loader.debug( "{}, lastModified: {} ({})", new Object[] { result, new Date( result.getLastModified() ), result.getLastModified() } );
-		return result;
 	}
 }
