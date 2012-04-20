@@ -16,7 +16,10 @@
 
 package solidstack.template;
 
-import solidstack.lang.SystemException;
+import solidstack.SystemException;
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyCodeSource;
+import groovy.lang.GroovyObject;
 
 /**
  * Generic utilities.
@@ -46,5 +49,18 @@ public class Util
 		{
 			throw new SystemException( e );
 		}
+	}
+
+	/**
+	 * Parses a class with the given {@link GroovyClassLoader}.
+	 * 
+	 * @param loader The {@link GroovyClassLoader} to use.
+	 * @param source The source of the class.
+	 * @return The class.
+	 */
+	@SuppressWarnings( "unchecked" )
+	static public Class< GroovyObject > parseClass( GroovyClassLoader loader, GroovyCodeSource source )
+	{
+		return loader.parseClass( source );
 	}
 }

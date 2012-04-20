@@ -17,14 +17,12 @@
 package solidstack.template;
 
 /**
- * The requested template is not found.
+ * The requested query is not found.
  * 
  * @author René M. de Bloois
  */
 public class TemplateNotFoundException extends RuntimeException
 {
-	private static final long serialVersionUID = 1L;
-
 	/**
 	 * Constructor.
 	 * 

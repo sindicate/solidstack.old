@@ -1,5 +1,5 @@
 /*--
- * Copyright 2010 René M. de Bloois
+ * Copyright 2006 René M. de Bloois
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,33 +14,22 @@
  * limitations under the License.
  */
 
-package solidstack.template;
-
+package solidstack.query;
 
 /**
- * Something has gone wrong with parsing the template.
+ * The requested query is not found.
  * 
  * @author René M. de Bloois
  */
-public class ParseException extends RuntimeException
+public class QueryNotFoundException extends RuntimeException
 {
-	private int lineNumber;
-
 	/**
 	 * Constructor.
 	 * 
 	 * @param message The message.
-	 * @param lineNumber The line number where the problem occurred.
 	 */
-	public ParseException( String message, int lineNumber )
+	public QueryNotFoundException( String message )
 	{
 		super( message );
-		this.lineNumber = lineNumber;
-	}
-
-	@Override
-	public String getMessage()
-	{
-		return super.getMessage() + ", at line " + this.lineNumber;
 	}
 }
