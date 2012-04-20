@@ -203,11 +203,11 @@ public class TemplateLoader
 
 		Template template = new TemplateCompiler( this ).compile( resource, path );
 		template.setResource( resource );
-		template.setLastModified( 0 );
+		template.setLastModified( 0 ); // TODO Get the lastModified from the resource
 		template.setLoader( this );
 
-		// TODO Reloading does not work, because the path has nothing to do with the resource
-		// TODO I think we need to store the URI in the template, if it has one
+		// TODO Fixed already?: Reloading does not work, because the path has nothing to do with the resource.
+		// TODO Fixed already?: I think we need to store the URI in the template, if it has one
 
 		synchronized( this.templates )
 		{

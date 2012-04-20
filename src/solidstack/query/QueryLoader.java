@@ -56,6 +56,7 @@ public class QueryLoader
 	 */
 	public void setTemplatePath( String path )
 	{
+		checkLock();
 		this.templateLoader.setTemplatePath( path );
 	}
 
@@ -98,4 +99,6 @@ public class QueryLoader
 		if( this.locked )
 			throw new IllegalStateException( "The TemplateLoader must be configured directly." );
 	}
+
+	// TODO Missing defineTemplate()
 }
