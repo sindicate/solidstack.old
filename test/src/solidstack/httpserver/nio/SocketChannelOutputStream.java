@@ -84,7 +84,7 @@ public class SocketChannelOutputStream extends OutputStream
 
 		try
 		{
-			logBuffer( this.buffer );
+//			logBuffer( this.buffer );
 			int written = this.channel.write( this.buffer );
 			System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") written #" + written + " bytes to channel (1)" );
 			while( this.buffer.hasRemaining() )
@@ -107,7 +107,7 @@ public class SocketChannelOutputStream extends OutputStream
 					throw new FatalSocketException( e );
 				}
 				System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") Waiting for write, ready" );
-				logBuffer( this.buffer );
+//				logBuffer( this.buffer );
 				written = this.channel.write( this.buffer );
 				System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") written #" + written + " bytes to channel (2)" );
 			}
