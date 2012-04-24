@@ -65,6 +65,7 @@ public class Handler implements Runnable
 	// TODO Check exception handling
 	public void run()
 	{
+		// TODO The handler needs to keep reading for the next request.
 		try
 		{
 			try
@@ -247,7 +248,7 @@ public class Handler implements Runnable
 	{
 		System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") Write ready, notify" );
 		Assert.notNull( this.thread == null );
-		synchronized( this.in )
+		synchronized( this.out )
 		{
 			this.out.notify();
 		}

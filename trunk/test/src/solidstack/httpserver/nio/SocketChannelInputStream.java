@@ -61,6 +61,7 @@ public class SocketChannelInputStream extends InputStream
 		return this.buffer.remaining();
 	}
 
+	// TODO What if it read too much? Like when 2 requests are chained. The handler needs to keep reading.
 	protected void readChannel()
 	{
 		Assert.isFalse( this.buffer.hasRemaining() );
