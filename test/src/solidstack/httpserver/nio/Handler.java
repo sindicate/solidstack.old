@@ -51,6 +51,7 @@ public class Handler implements Runnable
 	{
 //		this.server = server;
 		this.channel = channel;
+		this.key = key;
 		this.applicationContext = applicationContext;
 		this.in = new SocketChannelInputStream( channel, key, this );
 		this.out = new SocketChannelOutputStream( channel, key );
@@ -197,6 +198,18 @@ public class Handler implements Runnable
 				if( this.channel.isOpen() )
 					if( request.isConnectionClose() )
 						this.channel.close();
+
+				if( this.channel.isOpen() )
+				{
+					System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") Waiting for data" );
+					synchronized( this.key )
+					{
+						this.key.interestOps( this.key.interestOps() | SelectionKey.OP_READ );
+						this.key.selector().wakeup();
+					}
+				}
+				else
+					this.key.cancel();
 			}
 			catch( RuntimeException e )
 			{
@@ -210,6 +223,7 @@ public class Handler implements Runnable
 		}
 		finally
 		{
+			Handler.this.thread = null;
 			System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") thread ended" );
 		}
 	}

@@ -94,7 +94,7 @@ public class SocketChannelOutputStream extends OutputStream
 				{
 					this.key.interestOps( this.key.interestOps() | SelectionKey.OP_WRITE );
 				}
-//				this.key.selector().wakeup();
+				this.key.selector().wakeup();
 				try
 				{
 					synchronized( this )

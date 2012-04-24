@@ -79,7 +79,7 @@ public class SocketChannelInputStream extends InputStream
 				{
 					this.key.interestOps( this.key.interestOps() | SelectionKey.OP_READ );
 				}
-//				this.key.selector().wakeup();
+				this.key.selector().wakeup();
 				try
 				{
 					synchronized( this )
