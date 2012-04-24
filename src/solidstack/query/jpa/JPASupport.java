@@ -169,8 +169,8 @@ public class JPASupport
 		if( query.getLanguage() == Language.SQL )
 			if( resultClass != null )
 				result = entityManager.createNativeQuery( preparedSql.getSQL(), resultClass );
-		else
-			result = entityManager.createNativeQuery( preparedSql.getSQL() );
+			else
+				result = entityManager.createNativeQuery( preparedSql.getSQL() );
 		else if( query.getLanguage() == Language.JPQL )
 			if( resultClass != null )
 				result = entityManager.createQuery( preparedSql.getSQL(), resultClass );
