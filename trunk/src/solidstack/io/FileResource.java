@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.zip.GZIPInputStream;
 
 
 /**
@@ -99,7 +100,17 @@ public class FileResource extends Resource
 	@Override
 	public InputStream newInputStream() throws FileNotFoundException
 	{
-		return new FileInputStream( this.file );
+		InputStream result = new FileInputStream( this.file );
+		if( isGZip() ) // TODO Also for outputstream, and the other resources.
+			try
+			{
+				result = new GZIPInputStream( result );
+			}
+			catch( IOException e )
+			{
+				throw new FatalIOException( e );
+			}
+		return result;
 	}
 
 	@Override
