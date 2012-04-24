@@ -65,152 +65,163 @@ public class Handler implements Runnable
 	// TODO Check exception handling
 	public void run()
 	{
-		// TODO The handler needs to keep reading for the next request.
+		// TODO The handler needs to keep reading for the next request. Maybe it has read to much.
 		try
 		{
 			try
 			{
-				// TODO Use a PushbackInputStream
-				PushbackReader reader = new PushbackReader( new ReaderSourceReader( new BufferedReader( new InputStreamReader( this.in, "ISO-8859-1" ) ) ) );
-
-				Request request = new Request();
-
-				RequestTokenizer requestTokenizer = new RequestTokenizer( reader );
-				Token token = requestTokenizer.get();
-				request.setMethod( token.getValue() );
-
-				String url = requestTokenizer.get().getValue();
-				token = requestTokenizer.get();
-				if( !token.equals( "HTTP/1.1" ) )
-					throw new HttpException( "Only HTTP/1.1 requests are supported" );
-
-				System.out.println( "GET " + url + " HTTP/1.1" );
-
-				String parameters = null;
-				int pos = url.indexOf( '?' );
-				if( pos >= 0 )
+				while( true )
 				{
-					parameters = url.substring( pos + 1 );
-					url = url.substring( 0, pos );
+					// TODO Use a PushbackInputStream
+					PushbackReader reader = new PushbackReader( new ReaderSourceReader( new BufferedReader( new InputStreamReader( this.in, "ISO-8859-1" ) ) ) );
 
-					String[] pars = parameters.split( "&" );
-					for( String par : pars )
+					Request request = new Request();
+
+					RequestTokenizer requestTokenizer = new RequestTokenizer( reader );
+					Token token = requestTokenizer.get();
+					request.setMethod( token.getValue() );
+
+					String url = requestTokenizer.get().getValue();
+					token = requestTokenizer.get();
+					if( !token.equals( "HTTP/1.1" ) )
+						throw new HttpException( "Only HTTP/1.1 requests are supported" );
+
+					System.out.println( "GET " + url + " HTTP/1.1" );
+
+					String parameters = null;
+					int pos = url.indexOf( '?' );
+					if( pos >= 0 )
 					{
-						pos = par.indexOf( '=' );
-						if( pos >= 0 )
-							request.addParameter( par.substring( 0, pos ), par.substring( pos + 1 ) );
-						else
-							request.addParameter( par, null );
-					}
-				}
+						parameters = url.substring( pos + 1 );
+						url = url.substring( 0, pos );
 
-				// TODO Fragment too? Maybe use the URI class?
-
-				if( url.endsWith( "/" ) )
-					url = url.substring( 0, url.length() - 1 );
-				request.setUrl( url );
-				request.setQuery( parameters );
-
-				requestTokenizer.getNewline();
-
-				HttpHeaderTokenizer headerTokenizer = new HttpHeaderTokenizer( reader );
-				Token field = headerTokenizer.getField();
-				while( !field.isEndOfInput() )
-				{
-					Token value = headerTokenizer.getValue();
-					//			System.out.println( "    "+ field.getValue() + " = " + value.getValue() );
-					if( field.equals( "Cookie" ) ) // TODO Case insensitive?
-					{
-						String s = value.getValue();
-						int pos2 = s.indexOf( '=' );
-						if( pos2 >= 0 )
-							request.addCookie( s.substring( 0, pos2 ), s.substring( pos2 + 1 ) );
-						else
-							request.addHeader( field.getValue(), s );
-					}
-					else
-					{
-						request.addHeader( field.getValue(), value.getValue() );
-					}
-					field = headerTokenizer.getField();
-				}
-
-				String contentType = request.getHeader( "Content-Type" );
-				if( "application/x-www-form-urlencoded".equals( contentType ) )
-				{
-					String contentLength = request.getHeader( "Content-Length" );
-					if( contentLength != null )
-					{
-						int len = Integer.parseInt( contentLength );
-						UrlEncodedParser parser = new UrlEncodedParser( reader, len );
-						String parameter = parser.getParameter();
-						while( parameter != null )
+						String[] pars = parameters.split( "&" );
+						for( String par : pars )
 						{
-							String value = parser.getValue();
-							request.addParameter( parameter, value );
-							parameter = parser.getParameter();
+							pos = par.indexOf( '=' );
+							if( pos >= 0 )
+								request.addParameter( par.substring( 0, pos ), par.substring( pos + 1 ) );
+							else
+								request.addParameter( par, null );
 						}
 					}
-				}
 
-				OutputStream out = new CloseBlockingOutputStream( this.out );
-				Response response = new Response( request, this.out );
-				RequestContext context = new RequestContext( request, response, this.applicationContext );
-				try
-				{
-					this.applicationContext.dispatch( context );
-				}
-				catch( FatalSocketException e )
-				{
-					throw e;
-				}
-				catch( Exception e )
-				{
-					Throwable t = e;
-					if( t.getClass().equals( HttpException.class ) && t.getCause() != null )
-						t = t.getCause();
-					t.printStackTrace( System.out );
-					if( !response.isCommitted() )
+					// TODO Fragment too? Maybe use the URI class?
+
+					if( url.endsWith( "/" ) )
+						url = url.substring( 0, url.length() - 1 );
+					request.setUrl( url );
+					request.setQuery( parameters );
+
+					requestTokenizer.getNewline();
+
+					HttpHeaderTokenizer headerTokenizer = new HttpHeaderTokenizer( reader );
+					Token field = headerTokenizer.getField();
+					while( !field.isEndOfInput() )
 					{
-						response.reset();
-						response.setStatusCode( 500, "Internal Server Error" );
-						response.setContentType( "text/plain", "ISO-8859-1" );
-						PrintWriter writer = response.getPrintWriter( "ISO-8859-1" );
-						t.printStackTrace( writer );
-						writer.flush();
+						Token value = headerTokenizer.getValue();
+						//			System.out.println( "    "+ field.getValue() + " = " + value.getValue() );
+						if( field.equals( "Cookie" ) ) // TODO Case insensitive?
+						{
+							String s = value.getValue();
+							int pos2 = s.indexOf( '=' );
+							if( pos2 >= 0 )
+								request.addCookie( s.substring( 0, pos2 ), s.substring( pos2 + 1 ) );
+							else
+								request.addHeader( field.getValue(), s );
+						}
+						else
+						{
+							request.addHeader( field.getValue(), value.getValue() );
+						}
+						field = headerTokenizer.getField();
 					}
-					// TODO Is the socket going to be closed?
-				}
 
-				response.finish();
-
-				// TODO Detect Connection: close headers on the request & response
-				// TODO A GET request has no body, when a POST comes without content size, the connection should be closed.
-				// TODO What about socket.getKeepAlive() and the other properties?
-
-				String length = response.getHeader( "Content-Length" );
-				if( length == null )
-				{
-					String transfer = response.getHeader( "Transfer-Encoding" );
-					if( !"chunked".equals( transfer ) )
-						this.channel.close();
-				}
-
-				if( this.channel.isOpen() )
-					if( request.isConnectionClose() )
-						this.channel.close();
-
-				if( this.channel.isOpen() )
-				{
-					System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") Waiting for data" );
-					synchronized( this.key )
+					String contentType = request.getHeader( "Content-Type" );
+					if( "application/x-www-form-urlencoded".equals( contentType ) )
 					{
-						this.key.interestOps( this.key.interestOps() | SelectionKey.OP_READ );
-						this.key.selector().wakeup();
+						String contentLength = request.getHeader( "Content-Length" );
+						if( contentLength != null )
+						{
+							int len = Integer.parseInt( contentLength );
+							UrlEncodedParser parser = new UrlEncodedParser( reader, len );
+							String parameter = parser.getParameter();
+							while( parameter != null )
+							{
+								String value = parser.getValue();
+								request.addParameter( parameter, value );
+								parameter = parser.getParameter();
+							}
+						}
 					}
+
+					OutputStream out = new CloseBlockingOutputStream( this.out );
+					Response response = new Response( request, this.out );
+					RequestContext context = new RequestContext( request, response, this.applicationContext );
+					try
+					{
+						this.applicationContext.dispatch( context );
+					}
+					catch( FatalSocketException e )
+					{
+						throw e;
+					}
+					catch( Exception e )
+					{
+						Throwable t = e;
+						if( t.getClass().equals( HttpException.class ) && t.getCause() != null )
+							t = t.getCause();
+						t.printStackTrace( System.out );
+						if( !response.isCommitted() )
+						{
+							response.reset();
+							response.setStatusCode( 500, "Internal Server Error" );
+							response.setContentType( "text/plain", "ISO-8859-1" );
+							PrintWriter writer = response.getPrintWriter( "ISO-8859-1" );
+							t.printStackTrace( writer );
+							writer.flush();
+						}
+						// TODO Is the socket going to be closed?
+					}
+
+					response.finish();
+
+					// TODO Detect Connection: close headers on the request & response
+					// TODO A GET request has no body, when a POST comes without content size, the connection should be closed.
+					// TODO What about socket.getKeepAlive() and the other properties?
+
+					String length = response.getHeader( "Content-Length" );
+					if( length == null )
+					{
+						String transfer = response.getHeader( "Transfer-Encoding" );
+						if( !"chunked".equals( transfer ) )
+							this.channel.close();
+					}
+
+					if( this.channel.isOpen() )
+						if( request.isConnectionClose() )
+							this.channel.close();
+
+					if( this.channel.isOpen() )
+					{
+						if( this.in.available() == 0 )
+						{
+							System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") Waiting for data" );
+							synchronized( this.key )
+							{
+								this.key.interestOps( this.key.interestOps() | SelectionKey.OP_READ );
+								this.key.selector().wakeup();
+							}
+							return;
+						}
+					}
+					else
+						return;
+
+
+	//				else
+	//					this.key.cancel(); No need
 				}
-				else
-					this.key.cancel();
 			}
 			catch( RuntimeException e )
 			{
