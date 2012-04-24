@@ -18,6 +18,7 @@ public class RootServlet implements Servlet
 //			}
 //		}));
 
+		context.getResponse().setContentType( "text/html", null );
 		ResponseWriter writer = context.getResponse().getWriter();
 		writer.write( "<a href=\"/databases\">databases</a>\n" );
 	}
