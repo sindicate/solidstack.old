@@ -14,14 +14,12 @@ public class SocketChannelInputStream extends InputStream
 {
 	protected SocketChannel channel;
 	protected SelectionKey key;
-	protected Handler handler;
 	protected ByteBuffer buffer;
 
-	public SocketChannelInputStream( SocketChannel channel, SelectionKey key, Handler handler )
+	public SocketChannelInputStream( SocketChannel channel, SelectionKey key )
 	{
 		this.channel = channel;
 		this.key = key;
-		this.handler = handler;
 		this.buffer = ByteBuffer.allocate( 1024 );
 		this.buffer.flip();
 	}

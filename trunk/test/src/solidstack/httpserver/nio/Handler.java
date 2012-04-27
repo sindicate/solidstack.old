@@ -3,13 +3,12 @@ package solidstack.httpserver.nio;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.util.concurrent.Executor;
 
 import solidstack.httpserver.ApplicationContext;
-import solidstack.httpserver.CloseBlockingOutputStream;
 import solidstack.httpserver.FatalSocketException;
 import solidstack.httpserver.HttpException;
 import solidstack.httpserver.HttpHeaderTokenizer;
@@ -32,14 +31,13 @@ import solidstack.lang.SystemException;
  */
 public class Handler implements Runnable
 {
-//	private Server server;
 	private SocketChannel channel;
 	private SelectionKey key;
 	private ApplicationContext applicationContext;
 	private SocketChannelInputStream in;
 	private SocketChannelOutputStream out;
-	private Thread thread;
-//	static int counter;
+	private Executor executor;
+	volatile private boolean running;
 
 	/**
 	 * Constructor.
@@ -47,13 +45,14 @@ public class Handler implements Runnable
 	 * @param socket The incoming connection.
 	 * @param applicationContext The {@link ApplicationContext}.
 	 */
-	public Handler( SocketChannel channel, SelectionKey key, ApplicationContext applicationContext )
+	public Handler( SocketChannel channel, SelectionKey key, ApplicationContext applicationContext, Executor executor )
 	{
-//		this.server = server;
 		this.channel = channel;
 		this.key = key;
 		this.applicationContext = applicationContext;
-		this.in = new SocketChannelInputStream( channel, key, this );
+		this.executor = executor;
+
+		this.in = new SocketChannelInputStream( channel, key );
 		this.out = new SocketChannelOutputStream( channel, key );
 	}
 
@@ -65,7 +64,7 @@ public class Handler implements Runnable
 	// TODO Check exception handling
 	public void run()
 	{
-		// TODO The handler needs to keep reading for the next request. Maybe it has read to much.
+		boolean finished = false;
 		try
 		{
 			try
@@ -120,7 +119,6 @@ public class Handler implements Runnable
 					while( !field.isEndOfInput() )
 					{
 						Token value = headerTokenizer.getValue();
-						//			System.out.println( "    "+ field.getValue() + " = " + value.getValue() );
 						if( field.equals( "Cookie" ) ) // TODO Case insensitive?
 						{
 							String s = value.getValue();
@@ -155,8 +153,7 @@ public class Handler implements Runnable
 						}
 					}
 
-					OutputStream out = new CloseBlockingOutputStream( this.out );
-					Response response = new Response( request, this.out );
+					Response response = new Response( request, this.out ); // out is a SocketChannelOutputStream, close() does not close the SocketChannel
 					RequestContext context = new RequestContext( request, response, this.applicationContext );
 					try
 					{
@@ -212,53 +209,60 @@ public class Handler implements Runnable
 								this.key.interestOps( this.key.interestOps() | SelectionKey.OP_READ );
 								this.key.selector().wakeup();
 							}
+							finished = true;
 							return;
 						}
 					}
 					else
+					{
+						finished = true;
 						return;
-
-
-	//				else
-	//					this.key.cancel(); No need
+					}
 				}
 			}
-			catch( RuntimeException e )
+			finally
 			{
-				this.channel.close(); // TODO Is this good enough?
-				e.printStackTrace( System.out );
+				synchronized( this )
+				{
+					this.running = false;
+				}
+				if( !finished )
+				{
+					this.channel.close();
+				}
+				// TODO Synchronization
+				System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") thread ended" );
 			}
 		}
 		catch( IOException e )
 		{
 			throw new SystemException( e );
 		}
-		finally
-		{
-			Handler.this.thread = null;
-			System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") thread ended" );
-		}
 	}
 
 	public void dataReady()
 	{
+		// TODO Synchronization
 		System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") Data ready, notify" );
-		if( this.thread == null )
+		synchronized( this )
 		{
-			this.thread = new Thread( this );
-			System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") created/starting thread" );
-			this.thread.start();
-		}
-		synchronized( this.in )
-		{
-			this.in.notify();
+			if( !this.running )
+			{
+				this.executor.execute( this );
+				this.running = true;
+				System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") created/starting thread" );
+			}
+			synchronized( this.in )
+			{
+				this.in.notify();
+			}
 		}
 	}
 
 	public void writeReady()
 	{
 		System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") Write ready, notify" );
-		Assert.notNull( this.thread == null );
+		Assert.isTrue( this.running );
 		synchronized( this.out )
 		{
 			this.out.notify();

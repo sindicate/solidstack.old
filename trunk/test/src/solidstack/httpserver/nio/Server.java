@@ -8,6 +8,8 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import solidstack.httpserver.ApplicationContext;
 import solidstack.lang.SystemException;
@@ -17,7 +19,6 @@ public class Server extends Thread
 {
 	private int port;
 	private ApplicationContext application; // TODO Make this a Map
-//	private Thread thread;
 
 	public Server( int port )
 	{
@@ -32,6 +33,7 @@ public class Server extends Thread
 	@Override
 	public void run()
 	{
+		ExecutorService executor = Executors.newCachedThreadPool();
 		try
 		{
 			ServerSocketChannel server = ServerSocketChannel.open();
@@ -65,10 +67,10 @@ public class Server extends Thread
 
 							channel.configureBlocking( false );
 							key = channel.register( selector, SelectionKey.OP_READ );
-							Handler handler = new Handler( channel, key, this.application );
+							Handler handler = new Handler( channel, key, this.application, executor );
 							key.attach( handler );
 
-							System.out.println( "Channel (" + DebugId.getId( channel ) + ") atached handler" );
+							System.out.println( "Channel (" + DebugId.getId( channel ) + ") attached handler" );
 						}
 						else
 							System.out.println( "Lost accept" );
