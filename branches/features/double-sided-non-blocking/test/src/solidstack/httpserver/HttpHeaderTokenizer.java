@@ -16,8 +16,10 @@
 
 package solidstack.httpserver;
 
-import solidstack.io.PushbackReader;
-import solidstack.io.SourceReader;
+import java.io.IOException;
+import java.io.InputStream;
+
+import solidstack.io.FatalIOException;
 
 
 public class HttpHeaderTokenizer
@@ -25,7 +27,7 @@ public class HttpHeaderTokenizer
 	/**
 	 * The reader used to read from and push back characters.
 	 */
-	protected PushbackReader in;
+	protected InputStream in;
 
 
 	/**
@@ -33,7 +35,7 @@ public class HttpHeaderTokenizer
 	 *
 	 * @param in The input.
 	 */
-	public HttpHeaderTokenizer( PushbackReader in )
+	public HttpHeaderTokenizer( InputStream in )
 	{
 		this.in = in;
 	}
@@ -55,87 +57,102 @@ public class HttpHeaderTokenizer
 		return false;
 	}
 
+	public String getLine()
+	{
+		try
+		{
+			StringBuilder result = new StringBuilder();
+			while( true )
+			{
+				int ch = this.in.read();
+				if( ch == -1 )
+					throw new HttpException( "Unexpected end of line" );
+				if( ch == '\r' )
+					continue;
+				if( ch == '\n' )
+					return result.toString();
+				result.append( (char)ch );
+			}
+		}
+		catch( IOException e )
+		{
+			throw new FatalIOException( e );
+		}
+	}
+
 	public Token getField()
 	{
-		int ch = this.in.read();
-
-		// Ignore whitespace
-		while( isWhitespace( ch ) && ch != -1 )
-			ch = this.in.read();
-
-		// Empty line
-		if( ch == '\n' )
-			return new Token( null );
-
-		StringBuilder result = new StringBuilder();
-		while( ch != ':' && !isWhitespace( ch ) )
+		try
 		{
-			if( ch == -1 )
-				throw new HttpException( "Unexpected end of statement" );
+			int ch = this.in.read();
+
+			// Ignore whitespace
+			while( isWhitespace( ch ) && ch != -1 )
+				ch = this.in.read();
+
+			// Ignore carriage return
+			if( ch == '\r' )
+				ch = this.in.read();
+
+			// Empty line means end of input for the header
 			if( ch == '\n' )
-				throw new HttpException( "Unexpected end of line" );
-			result.append( (char)ch );
-			ch = this.in.read();
+				return new Token( null );
+
+			StringBuilder result = new StringBuilder();
+			while( ch != ':' && !isWhitespace( ch ) )
+			{
+				if( ch == -1 )
+					throw new HttpException( "Unexpected end of statement" );
+				if( ch == '\n' )
+					throw new HttpException( "Unexpected end of line" );
+				result.append( (char)ch );
+				ch = this.in.read();
+			}
+
+			// Ignore whitespace
+			while( isWhitespace( ch ) && ch != -1 )
+				ch = this.in.read();
+
+			if( ch != ':' )
+				throw new HttpException( "Expecting a :" );
+
+			// Return the result
+			if( result.length() == 0 )
+				throw new HttpException( "Empty header field" );
+
+			return new Token( result.toString() );
 		}
-
-		// Ignore whitespace
-		while( isWhitespace( ch ) && ch != -1 )
-			ch = this.in.read();
-
-		if( ch != ':' )
-			throw new HttpException( "Expecting a :" );
-
-		// Return the result
-		if( result.length() == 0 )
-			throw new HttpException( "Empty header field" );
-
-		return new Token( result.toString() );
+		catch( IOException e )
+		{
+			throw new FatalIOException( e );
+		}
 	}
 
 	public Token getValue()
 	{
-		// Read whitespace
-		int ch = this.in.read();
-		while( isWhitespace( ch ) )
-			ch = this.in.read();
-
-		// Read everything until end-of-line
-		StringBuilder result = new StringBuilder();
-		while( true )
+		try
 		{
-			if( ch == -1 )
-				throw new HttpException( "Unexpected end-of-input" );
-			if( ch == '\n' )
-			{
+			// Read whitespace
+			int ch = this.in.read();
+			while( isWhitespace( ch ) )
 				ch = this.in.read();
-				if( ch != ' ' && ch != '\t' )
-				{
-					this.in.push( ch );
+
+			// Read everything until end-of-line
+			StringBuilder result = new StringBuilder();
+			while( true )
+			{
+				if( ch == -1 )
+					throw new HttpException( "Unexpected end-of-input" );
+				if( ch == '\n' ) // TODO Multiline header field values (space or tab)
 					return new Token( result.toString() );
-				}
+				if( ch != '\r' ) // ignore carriage return
+					result.append( (char)ch );
+				ch = this.in.read();
 			}
-			result.append( (char)ch );
-			ch = this.in.read();
 		}
-	}
-
-	/**
-	 * Returns the current line number.
-	 *
-	 * @return The current line number.
-	 */
-	public int getLineNumber()
-	{
-		return this.in.getLineNumber();
-	}
-
-	/**
-	 * Returns the underlying reader. But only if the back buffer is empty, otherwise an IllegalStateException is thrown.
-	 *
-	 * @return The underlying reader.
-	 */
-	public SourceReader getReader()
-	{
-		return this.in.getReader();
+		catch( IOException e )
+		{
+			throw new FatalIOException( e );
+		}
 	}
 }

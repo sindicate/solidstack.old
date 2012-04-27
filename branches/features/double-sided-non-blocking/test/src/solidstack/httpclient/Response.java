@@ -1,17 +1,12 @@
 package solidstack.httpclient;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
 import solidstack.httpserver.HttpException;
 import solidstack.httpserver.HttpHeaderTokenizer;
-import solidstack.httpserver.RequestTokenizer;
 import solidstack.httpserver.Token;
-import solidstack.io.PushbackReader;
-import solidstack.io.ReaderSourceReader;
 import solidstack.lang.SystemException;
 
 public class Response
@@ -22,27 +17,26 @@ public class Response
 	{
 		this.in = in;
 
-		PushbackReader reader = new PushbackReader( new ReaderSourceReader( new BufferedReader( new InputStreamReader( in, "ISO-8859-1" ) ) ) );
-		RequestTokenizer requestTokenizer = new RequestTokenizer( reader );
+		HttpHeaderTokenizer tokenizer = new HttpHeaderTokenizer( in );
 
-		Token token = requestTokenizer.get();
-		if( !token.equals( "HTTP/1.1" ) )
+		String line = tokenizer.getLine();
+		String[] parts = line.split( "[ \t]+" );
+
+		if( !parts[ 0 ].equals( "HTTP/1.1" ) )
 			throw new HttpException( "Only HTTP/1.1 responses are supported" );
 
-		token = requestTokenizer.get(); // TODO Result
-		token = requestTokenizer.get(); // TODO OK
-		requestTokenizer.getNewline();
+//		token = requestTokenizer.get(); // TODO Result
+//		token = requestTokenizer.get(); // TODO OK
+//		requestTokenizer.getNewline();
 
-		HttpHeaderTokenizer headerTokenizer = new HttpHeaderTokenizer( reader );
-		Token field = headerTokenizer.getField();
+		Token field = tokenizer.getField();
 		while( !field.isEndOfInput() )
 		{
-			Token value = headerTokenizer.getValue();
+			Token value = tokenizer.getValue();
 			System.out.println( "    "+ field.getValue() + " = " + value.getValue() );
 			addHeader( field.getValue(), value.getValue() );
-			field = headerTokenizer.getField();
+			field = tokenizer.getField();
 		}
-		requestTokenizer.getNewline();
 
 		// TODO Detect Connection: close headers on the request & response
 		// TODO What about socket.getKeepAlive() and the other properties?
