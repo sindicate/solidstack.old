@@ -20,6 +20,16 @@ public class RootServlet implements Servlet
 
 		context.getResponse().setContentType( "text/html", null );
 		ResponseWriter writer = context.getResponse().getWriter();
+
+//		try
+//		{
+//			Thread.sleep( 500 );
+//		}
+//		catch( InterruptedException e )
+//		{
+//			throw new ThreadInterrupted();
+//		}
+
 		writer.write( "<a href=\"/databases\">databases</a>\n" );
 	}
 }
