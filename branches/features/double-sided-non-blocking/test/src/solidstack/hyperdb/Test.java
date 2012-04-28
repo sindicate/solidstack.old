@@ -1,10 +1,15 @@
 package solidstack.hyperdb;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import solidstack.httpclient.Client;
 import solidstack.httpclient.Request;
 import solidstack.httpclient.Response;
+import solidstack.httpclient.ResponseProcessor;
+import solidstack.io.FatalIOException;
 
 public class Test
 {
@@ -16,8 +21,6 @@ public class Test
 	static public void main( String[] args ) throws IOException, InterruptedException
 	{
 		Client client = new Client( "www.nu.nl" );
-		Request request = client.connect();
-		request.setPath( "/" );
 
 		//Host: www.nu.nl
 		//Connection: keep-alive
@@ -29,14 +32,48 @@ public class Test
 		//Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.3
 		//If-Modified-Since: Fri, 27 Apr 2012 17:52:18 GMT
 
+		Request request = new Request( "/buitenland/2798380/vrouw-liegt-zwangerschap-negenling.html" );
 		request.setHeader( "Host", "www.nu.nl" );
-//		request.setHeader( "User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.162 Safari/535.19" );
-//		request.setHeader( "Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" );
-//		request.setHeader( "Accept-Charset", "ISO-8859-1,utf-8;q=0.7,*;q=0.3" );
 
-		request.finish();
+		ResponseProcessor processor = new ResponseProcessor()
+		{
+			public void process( Response response )
+			{
+				System.out.println( response.getHttpVersion() + " " + response.getStatus() + " " + response.getReason() );
+				Map<String, String> headers = response.getHeaders();
+				for( Entry<String, String> entry : headers.entrySet() )
+					System.out.println( entry.getKey() + ": " + entry.getValue() );
+				System.out.println();
 
-		Response response = request.getResponse();
-		response.print();
+				InputStream in = response.getInputStream();
+				if( in == null )
+					return;
+				try
+				{
+//					FileOutputStream out = new FileOutputStream( "test.out" );
+//					try
+//					{
+						int i = in.read();
+						while( i >= 0 )
+						{
+//							out.write( i );
+							i = in.read();
+						}
+//					}
+//					finally
+//					{
+//						out.close();
+//					}
+				}
+				catch( IOException e )
+				{
+					throw new FatalIOException( e );
+				}
+			}
+		};
+
+		client.request( request, processor );
+		client.request( request, processor );
+		client.request( request, processor );
 	}
 }

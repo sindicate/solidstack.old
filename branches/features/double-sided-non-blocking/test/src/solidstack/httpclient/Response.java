@@ -2,67 +2,71 @@ package solidstack.httpclient;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.Map;
 
-import solidstack.httpserver.HttpException;
-import solidstack.httpserver.HttpHeaderTokenizer;
-import solidstack.httpserver.Token;
+import solidstack.httpserver.HttpBodyInputStream;
 import solidstack.lang.SystemException;
+
 
 public class Response
 {
+	private String httpVersion;
+	private int status;
+	private String reason;
+
 	private InputStream in;
+	private HttpBodyInputStream bodyIn;
+	private Map<String, String> headers = new HashMap<String, String>();
+	// TODO Multivalued headers
 
-	public Response( InputStream in ) throws UnsupportedEncodingException
+	public Response()
 	{
-		this.in = in;
-
-		HttpHeaderTokenizer tokenizer = new HttpHeaderTokenizer( in );
-
-		String line = tokenizer.getLine();
-		String[] parts = line.split( "[ \t]+" );
-
-		if( !parts[ 0 ].equals( "HTTP/1.1" ) )
-			throw new HttpException( "Only HTTP/1.1 responses are supported" );
-
-//		token = requestTokenizer.get(); // TODO Result
-//		token = requestTokenizer.get(); // TODO OK
-//		requestTokenizer.getNewline();
-
-		Token field = tokenizer.getField();
-		while( !field.isEndOfInput() )
-		{
-			Token value = tokenizer.getValue();
-			System.out.println( "    "+ field.getValue() + " = " + value.getValue() );
-			addHeader( field.getValue(), value.getValue() );
-			field = tokenizer.getField();
-		}
-
-		// TODO Detect Connection: close headers on the request & response
-		// TODO What about socket.getKeepAlive() and the other properties?
-
-//		String length = getHeader( "Content-Length" );
-//		if( length == null )
-//		{
-//			String transfer = response.getHeader( "Transfer-Encoding" );
-//			if( !"chunked".equals( transfer ) )
-//				this.socket.close();
-//		}
-//
-//		if( !this.socket.isClosed() )
-//			if( request.isConnectionClose() )
-//				this.socket.close();
-//		if( this.socket.isClosed() )
-//			return;
-//		if( !this.socket.isThreadPerConnection() )
-//			if( in.available() <= 0 )
-//				return;
 	}
 
-	private void addHeader( String value, String value2 )
+	public void setHttpVersion( String httpVersion )
 	{
-		// TODO Auto-generated method stub
+		this.httpVersion = httpVersion;
+	}
 
+	public String getHttpVersion()
+	{
+		return this.httpVersion;
+	}
+
+	public void setStatus( int status )
+	{
+		this.status = status;
+	}
+
+	public int getStatus()
+	{
+		return this.status;
+	}
+
+	public void setReason( String reason )
+	{
+		this.reason = reason;
+	}
+
+	public String getReason()
+	{
+		return this.reason;
+	}
+
+	public void addHeader( String name, String value )
+	{
+		this.headers.put( name, value );
+	}
+
+	public String getHeader( String name )
+	{
+		return this.headers.get( name ); // TODO Case insensitivity
+	}
+
+	public Map<String, String> getHeaders()
+	{
+		return this.headers;
 	}
 
 	public void print()
@@ -70,16 +74,26 @@ public class Response
 		byte[] buffer = new byte[ 4096 ];
 		try
 		{
-			int len = this.in.read( buffer );
+			int len = this.bodyIn.read( buffer );
 			while( len >= 0 )
 			{
 				System.out.write( buffer, 0, len );
-				len = this.in.read( buffer );
+				len = this.bodyIn.read( buffer );
 			}
 		}
 		catch( IOException e )
 		{
 			throw new SystemException( e );
 		}
+	}
+
+	public void setInputStream( InputStream in )
+	{
+		this.in = in;
+	}
+
+	public InputStream getInputStream()
+	{
+		return this.in;
 	}
 }
