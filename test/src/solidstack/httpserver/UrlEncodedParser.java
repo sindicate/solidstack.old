@@ -1,14 +1,17 @@
 package solidstack.httpserver;
 
-import solidstack.io.PushbackReader;
+import java.io.IOException;
+import java.io.InputStream;
+
+import solidstack.io.FatalIOException;
 
 public class UrlEncodedParser
 {
-	private PushbackReader in;
+	private InputStream in;
 	private int length;
 	private int pos;
 
-	public UrlEncodedParser( PushbackReader in, int length )
+	public UrlEncodedParser( InputStream in, int length )
 	{
 		this.in = in;
 		this.length = length;
@@ -25,7 +28,15 @@ public class UrlEncodedParser
 			if( this.pos >= this.length )
 				return result.toString();
 
-			int ch = this.in.read();
+			int ch;
+			try
+			{
+				ch = this.in.read();
+			}
+			catch( IOException e )
+			{
+				throw new FatalIOException( e );
+			}
 			this.pos++;
 			if( ch == '=' )
 				return result.toString();
@@ -45,7 +56,15 @@ public class UrlEncodedParser
 			if( this.pos >= this.length )
 				return result.toString();
 
-			int ch = this.in.read();
+			int ch;
+			try
+			{
+				ch = this.in.read();
+			}
+			catch( IOException e )
+			{
+				throw new FatalIOException( e );
+			}
 			this.pos++;
 			if( ch == '&' )
 				return result.toString();

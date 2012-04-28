@@ -37,6 +37,7 @@ public class HyperDBApplication extends ApplicationContext
 		registerServlet( "/databases/([^/]*)/connect", "database", new ConnectServlet() );
 		registerServlet( "/databases", new IncludeServlet( "/slt/databases" ) );
 
+		registerServlet( "/bi", new BiServlet() );
 		registerServlet( "", new RootServlet() );
 		registerServlet( "/slt(/.*)", "path", sltServlet );
 		registerServlet( ".*", new DefaultServlet() );

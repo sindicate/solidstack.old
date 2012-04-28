@@ -14,7 +14,6 @@ import solidstack.httpserver.HttpException;
 import solidstack.httpserver.HttpHeaderTokenizer;
 import solidstack.httpserver.Request;
 import solidstack.httpserver.RequestContext;
-import solidstack.httpserver.RequestTokenizer;
 import solidstack.httpserver.Response;
 import solidstack.httpserver.Token;
 import solidstack.httpserver.UrlEncodedParser;
@@ -76,13 +75,15 @@ public class Handler implements Runnable
 
 					Request request = new Request();
 
-					RequestTokenizer requestTokenizer = new RequestTokenizer( reader );
-					Token token = requestTokenizer.get();
-					request.setMethod( token.getValue() );
+					HttpHeaderTokenizer tokenizer = new HttpHeaderTokenizer( this.in );
 
-					String url = requestTokenizer.get().getValue();
-					token = requestTokenizer.get();
-					if( !token.equals( "HTTP/1.1" ) )
+					String line = tokenizer.getLine();
+					String[] parts = line.split( "[ \t]+" );
+
+					request.setMethod( parts[ 0 ] );
+
+					String url = parts[ 1 ];
+					if( !parts[ 2 ].equals( "HTTP/1.1" ) )
 						throw new HttpException( "Only HTTP/1.1 requests are supported" );
 
 					System.out.println( "GET " + url + " HTTP/1.1" );
@@ -112,13 +113,10 @@ public class Handler implements Runnable
 					request.setUrl( url );
 					request.setQuery( parameters );
 
-					requestTokenizer.getNewline();
-
-					HttpHeaderTokenizer headerTokenizer = new HttpHeaderTokenizer( reader );
-					Token field = headerTokenizer.getField();
+					Token field = tokenizer.getField();
 					while( !field.isEndOfInput() )
 					{
-						Token value = headerTokenizer.getValue();
+						Token value = tokenizer.getValue();
 						if( field.equals( "Cookie" ) ) // TODO Case insensitive?
 						{
 							String s = value.getValue();
@@ -132,7 +130,7 @@ public class Handler implements Runnable
 						{
 							request.addHeader( field.getValue(), value.getValue() );
 						}
-						field = headerTokenizer.getField();
+						field = tokenizer.getField();
 					}
 
 					String contentType = request.getHeader( "Content-Type" );
@@ -142,7 +140,7 @@ public class Handler implements Runnable
 						if( contentLength != null )
 						{
 							int len = Integer.parseInt( contentLength );
-							UrlEncodedParser parser = new UrlEncodedParser( reader, len );
+							UrlEncodedParser parser = new UrlEncodedParser( this.in, len );
 							String parameter = parser.getParameter();
 							while( parameter != null )
 							{
