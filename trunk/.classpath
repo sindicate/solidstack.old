@@ -16,6 +16,6 @@
 	<classpathentry kind="lib" path="lib/spring31/org.springframework.context-3.1.1.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/spring31/org.springframework.core-3.1.1.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/spring31/org.springframework.beans-3.1.1.RELEASE.jar"/>
-	<classpathentry kind="lib" path="D:/Users/rbloois/Desktop/Dropbox/oracle-jdbc/ojdbc6-11.2.0.3.jar"/>
+	<classpathentry kind="lib" path="G:/Users/Rene/Desktop/Dropbox/oracle-jdbc/ojdbc6-11.2.0.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
