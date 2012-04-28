@@ -1,0 +1,130 @@
+package solidstack.nio;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import solidstack.lang.SystemException;
+
+
+public class Dispatcher implements Runnable
+{
+//	private List<ServerSocketChannelHandler> queue = new ArrayList();
+	private Selector selector;
+
+	public Dispatcher() throws IOException
+	{
+		this.selector = Selector.open();
+	}
+
+	public void listen( int port, ServerSocketChannelHandler handler ) throws IOException
+	{
+		ServerSocketChannel server = ServerSocketChannel.open();
+		server.configureBlocking( false );
+		server.socket().bind( new InetSocketAddress( port ) );
+
+		SelectionKey key = server.register( this.selector, SelectionKey.OP_ACCEPT, handler );
+
+		handler.setServer( server );
+		handler.setKey( key );
+	}
+
+	public void run()
+	{
+		ExecutorService executor = Executors.newCachedThreadPool();
+		try
+		{
+			while( !Thread.interrupted() )
+			{
+				System.out.println( "Selecting from " + this.selector.keys().size() + " keys" );
+				int selected = this.selector.select();
+				System.out.println( "Selected " + selected + " keys" );
+
+				Set< SelectionKey > keys = this.selector.selectedKeys();
+				for( Iterator< SelectionKey > i = keys.iterator(); i.hasNext(); )
+				{
+					SelectionKey key = i.next(); // No need to synchronize on the key
+
+					if( !key.isValid() )
+						continue;
+
+					if( key.isAcceptable() )
+					{
+						ServerSocketChannel server = (ServerSocketChannel)key.channel();
+						SocketChannel channel = server.accept();
+						if( channel != null )
+						{
+							System.out.println( "Channel (" + DebugId.getId( channel ) + ") New channel" );
+
+							ServerSocketChannelHandler handler = (ServerSocketChannelHandler)key.attachment();
+
+							channel.configureBlocking( false );
+							key = channel.register( this.selector, SelectionKey.OP_READ );
+
+							SocketChannelHandler handler2 = handler.incoming( channel, key );
+							key.attach( handler2 );
+							executor.execute( handler2 );
+
+							System.out.println( "Channel (" + DebugId.getId( channel ) + ") attached handler" );
+						}
+						else
+							System.out.println( "Lost accept" );
+					}
+
+					if( key.isReadable() )
+					{
+						// TODO Detect close gives -1 on the read
+
+						final SocketChannel channel = (SocketChannel)key.channel();
+						System.out.println( "Channel (" + DebugId.getId( channel ) + ") Readable" );
+
+						synchronized( key )
+						{
+							key.interestOps( key.interestOps() ^ SelectionKey.OP_READ );
+						}
+
+						( (SocketChannelHandler)key.attachment() ).dataReady();
+					}
+
+					if( key.isWritable() )
+					{
+						final SocketChannel channel = (SocketChannel)key.channel();
+						System.out.println( "Channel (" + DebugId.getId( channel ) + ") Writable" );
+
+						synchronized( key )
+						{
+							key.interestOps( key.interestOps() ^ SelectionKey.OP_WRITE );
+						}
+
+						( (SocketChannelHandler)key.attachment() ).writeReady();
+					}
+
+					if( key.isConnectable() )
+					{
+						final SocketChannel channel = (SocketChannel)key.channel();
+						System.out.println( "Channel (" + DebugId.getId( channel ) + ") Connectable" );
+					}
+				}
+
+//				for( ServerSocketChannelHandler handler : this.queue )
+//				{
+//					SelectionKey key = handler.getServer().register( this.selector, SelectionKey.OP_ACCEPT, handler );
+//					handler.setKey( key );
+//				}
+
+				keys.clear();
+			}
+		}
+		catch( IOException e )
+		{
+			throw new SystemException( e );
+		}
+	}
+}

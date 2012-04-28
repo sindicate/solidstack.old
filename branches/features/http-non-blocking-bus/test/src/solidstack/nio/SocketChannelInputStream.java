@@ -1,4 +1,4 @@
-package solidstack.httpserver.nio;
+package solidstack.nio;
 
 import java.io.IOException;
 import java.io.InputStream;

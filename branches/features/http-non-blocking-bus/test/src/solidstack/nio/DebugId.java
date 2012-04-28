@@ -1,4 +1,4 @@
-package solidstack.httpserver.nio;
+package solidstack.nio;
 
 import java.util.Map;
 import java.util.WeakHashMap;
