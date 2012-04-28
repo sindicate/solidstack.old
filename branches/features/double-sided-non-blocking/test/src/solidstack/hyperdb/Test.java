@@ -6,9 +6,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import solidstack.httpclient.Client;
-import solidstack.httpclient.Request;
-import solidstack.httpclient.Response;
 import solidstack.httpclient.ResponseProcessor;
+import solidstack.httpserver.Request;
+import solidstack.httpserver.Response;
 import solidstack.io.FatalIOException;
 
 public class Test
@@ -20,6 +20,16 @@ public class Test
 
 	static public void main( String[] args ) throws IOException, InterruptedException
 	{
+//		SocketChannel channel = SocketChannel.open( new InetSocketAddress( "www.nu.nl", 80 ) );
+//		Assert.isTrue( channel.isConnected() );
+//		channel.configureBlocking( false );
+//		byte[] bytes = "Dit is een string".getBytes();
+//		ByteBuffer buffer = ByteBuffer.wrap( bytes );
+//		channel.write( buffer );
+//		channel.close();
+//
+//		Assert.fail();
+
 		Client client = new Client( "www.nu.nl" );
 
 		//Host: www.nu.nl
@@ -32,7 +42,7 @@ public class Test
 		//Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.3
 		//If-Modified-Since: Fri, 27 Apr 2012 17:52:18 GMT
 
-		Request request = new Request( "/buitenland/2798380/vrouw-liegt-zwangerschap-negenling.html" );
+		Request request = new Request( "/" );
 		request.setHeader( "Host", "www.nu.nl" );
 
 		ResponseProcessor processor = new ResponseProcessor()
