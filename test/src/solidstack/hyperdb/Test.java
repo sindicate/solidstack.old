@@ -6,9 +6,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import solidstack.httpclient.Client;
+import solidstack.httpclient.Request;
+import solidstack.httpclient.Response;
 import solidstack.httpclient.ResponseProcessor;
-import solidstack.httpserver.Request;
-import solidstack.httpserver.Response;
 import solidstack.io.FatalIOException;
 
 public class Test
