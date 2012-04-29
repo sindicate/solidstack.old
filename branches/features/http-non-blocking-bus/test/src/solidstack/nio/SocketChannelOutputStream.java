@@ -12,8 +12,8 @@ import solidstack.lang.Assert;
 // TODO Improve performance?
 public class SocketChannelOutputStream extends OutputStream
 {
-	protected SocketChannelHandler handler;
-	protected ByteBuffer buffer;
+	private SocketChannelHandler handler;
+	private ByteBuffer buffer;
 
 	public SocketChannelOutputStream( SocketChannelHandler handler )
 	{

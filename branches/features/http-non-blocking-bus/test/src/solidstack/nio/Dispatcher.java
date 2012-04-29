@@ -14,10 +14,11 @@ import java.util.concurrent.Executors;
 import solidstack.lang.SystemException;
 
 
-public class Dispatcher implements Runnable
+public class Dispatcher extends Thread
 {
 //	private List<ServerSocketChannelHandler> queue = new ArrayList();
 	private Selector selector;
+	private Object lock = new Object();
 
 	public Dispatcher() throws IOException
 	{
@@ -56,6 +57,22 @@ public class Dispatcher implements Runnable
 		key.selector().wakeup();
 	}
 
+	public SocketChannelHandler connect( String hostname, int port ) throws IOException
+	{
+		SocketChannel channel = SocketChannel.open( new InetSocketAddress( hostname, port ) );
+		channel.configureBlocking( false );
+		SelectionKey key;
+		synchronized( this.lock ) // Prevent register from blocking again
+		{
+			this.selector.wakeup();
+			key = channel.register( this.selector, 0 );
+		}
+		SocketChannelHandler handler = new ClientSocketChannelHandler( this, key );
+		key.attach( handler );
+		return handler;
+	}
+
+	@Override
 	public void run()
 	{
 		ExecutorService executor = Executors.newCachedThreadPool();
@@ -63,6 +80,11 @@ public class Dispatcher implements Runnable
 		{
 			while( !Thread.interrupted() )
 			{
+				synchronized( this.lock )
+				{
+					// Wait till the connect has done its registration TODO Is this the best way?
+				}
+
 				System.out.println( "Selecting from " + this.selector.keys().size() + " keys" );
 				int selected = this.selector.select();
 				System.out.println( "Selected " + selected + " keys" );
@@ -150,5 +172,9 @@ public class Dispatcher implements Runnable
 		{
 			throw new SystemException( e );
 		}
+
+		System.out.println( "Dispatcher ended, shutting down thread pool" );
+		executor.shutdownNow();
+		System.out.println( "Thread pool shut down" );
 	}
 }

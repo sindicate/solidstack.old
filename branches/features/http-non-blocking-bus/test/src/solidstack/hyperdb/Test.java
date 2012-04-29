@@ -5,11 +5,12 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import solidstack.httpclient.Client;
 import solidstack.httpclient.Request;
 import solidstack.httpclient.Response;
 import solidstack.httpclient.ResponseProcessor;
+import solidstack.httpclient.nio.Client;
 import solidstack.io.FatalIOException;
+import solidstack.nio.Dispatcher;
 
 public class Test
 {
@@ -30,7 +31,10 @@ public class Test
 //
 //		Assert.fail();
 
-		Client client = new Client( "www.nu.nl" );
+		Dispatcher dispatcher = new Dispatcher();
+		dispatcher.start();
+
+		Client client = new Client( "www.nu.nl", dispatcher );
 
 		//Host: www.nu.nl
 		//Connection: keep-alive
@@ -85,5 +89,9 @@ public class Test
 		client.request( request, processor );
 		client.request( request, processor );
 		client.request( request, processor );
+
+		System.out.println( "interrupting" );
+		dispatcher.interrupt();
+//		dispatcher.join();
 	}
 }

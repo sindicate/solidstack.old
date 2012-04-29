@@ -17,7 +17,7 @@ public class SocketChannelInputStream extends InputStream
 	public SocketChannelInputStream( SocketChannelHandler handler )
 	{
 		this.handler = handler;
-		this.buffer = ByteBuffer.allocate( 1024 );
+		this.buffer = ByteBuffer.allocate( 8192 );
 		this.buffer.flip();
 	}
 
@@ -31,7 +31,7 @@ public class SocketChannelInputStream extends InputStream
 			readChannel();
 		}
 
-		return this.buffer.get();
+		return (char)this.buffer.get();
 	}
 
 	@Override
@@ -92,11 +92,11 @@ public class SocketChannelInputStream extends InputStream
 
 			if( read == -1 )
 			{
-				channel.close(); // TODO Should cancel all keys
+				channel.close(); // TODO This should cancel all keys
 				this.handler = null;
 			}
-			else
-				this.buffer.flip();
+
+			this.buffer.flip();
 		}
 		catch( IOException e )
 		{

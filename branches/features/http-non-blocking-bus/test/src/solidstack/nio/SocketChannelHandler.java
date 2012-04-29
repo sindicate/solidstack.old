@@ -67,6 +67,27 @@ abstract public class SocketChannelHandler implements Runnable
 		return !this.running.compareAndSet( false, true );
 	}
 
+	public void dataIsReady()
+	{
+		synchronized( this.in )
+		{
+			this.in.notify();
+		}
+	}
+
+	public void writeIsReady()
+	{
+		synchronized( this.out )
+		{
+			this.out.notify();
+		}
+	}
+
+	public void close() throws IOException
+	{
+		getChannel().close();
+	}
+
 	abstract public void incoming() throws IOException;
 
 	public void run()
@@ -115,22 +136,6 @@ abstract public class SocketChannelHandler implements Runnable
 		catch( IOException e )
 		{
 			throw new FatalIOException( e );
-		}
-	}
-
-	public void dataIsReady()
-	{
-		synchronized( this.in )
-		{
-			this.in.notify();
-		}
-	}
-
-	public void writeIsReady()
-	{
-		synchronized( this.out )
-		{
-			this.out.notify();
 		}
 	}
 }
