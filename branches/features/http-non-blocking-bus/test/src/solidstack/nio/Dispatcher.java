@@ -27,16 +27,13 @@ public class Dispatcher extends Thread
 		this.selector = Selector.open();
 	}
 
-	public void listen( int port, ServerSocketChannelHandler handler ) throws IOException
+	public void listen( int port, SocketChannelHandlerFactory handlerFactory ) throws IOException
 	{
 		ServerSocketChannel server = ServerSocketChannel.open();
 		server.configureBlocking( false );
 		server.socket().bind( new InetSocketAddress( port ) );
 
-		SelectionKey key = server.register( this.selector, SelectionKey.OP_ACCEPT, handler );
-
-		handler.setServer( server );
-		handler.setKey( key );
+		SelectionKey key = server.register( this.selector, SelectionKey.OP_ACCEPT, handlerFactory );
 	}
 
 	public void read( SelectionKey key )
@@ -59,7 +56,7 @@ public class Dispatcher extends Thread
 		key.selector().wakeup();
 	}
 
-	public SocketChannelHandler connect( String hostname, int port ) throws IOException
+	public ServerSocketChannelHandler connect( String hostname, int port ) throws IOException
 	{
 		SocketChannel channel = SocketChannel.open( new InetSocketAddress( hostname, port ) );
 		channel.configureBlocking( false );
@@ -69,7 +66,22 @@ public class Dispatcher extends Thread
 			this.selector.wakeup();
 			key = channel.register( this.selector, 0 );
 		}
-		SocketChannelHandler handler = new ClientSocketChannelHandler( this, key );
+		ServerSocketChannelHandler handler = new ClientSocketChannelHandler( this, key );
+		key.attach( handler );
+		return handler;
+	}
+
+	public SocketChannelHandler connect( String hostname, int port, SocketChannelHandlerFactory handlerFactory ) throws IOException
+	{
+		SocketChannel channel = SocketChannel.open( new InetSocketAddress( hostname, port ) );
+		channel.configureBlocking( false );
+		SelectionKey key;
+		synchronized( this.lock ) // Prevent register from blocking again
+		{
+			this.selector.wakeup();
+			key = channel.register( this.selector, SelectionKey.OP_READ );
+		}
+		SocketChannelHandler handler = handlerFactory.createHandler( this, key );
 		key.attach( handler );
 		return handler;
 	}
@@ -129,13 +141,13 @@ public class Dispatcher extends Thread
 						{
 							System.out.println( "Channel (" + DebugId.getId( channel ) + ") New channel" );
 
-							ServerSocketChannelHandler handler = (ServerSocketChannelHandler)key.attachment();
+							SocketChannelHandlerFactory handlerFactory = (SocketChannelHandlerFactory)key.attachment();
 
 							channel.configureBlocking( false );
 							key = channel.register( this.selector, SelectionKey.OP_READ );
 
-							SocketChannelHandler handler2 = handler.incoming( this, key );
-							key.attach( handler2 );
+							SocketChannelHandler handler = handlerFactory.createHandler( this, key );
+							key.attach( handler );
 
 							System.out.println( "Channel (" + DebugId.getId( channel ) + ") attached handler" );
 						}
@@ -157,8 +169,12 @@ public class Dispatcher extends Thread
 
 						System.out.println( "Channel (" + DebugId.getId( channel ) + ") Data ready, notify" );
 						SocketChannelHandler handler = (SocketChannelHandler)key.attachment();
-						if( !handler.isRunningAndSet() )
-							this.executor.execute( handler ); // TODO Also for write
+						if( handler instanceof AsyncSocketChannelHandler )
+						{
+							AsyncSocketChannelHandler h = (AsyncSocketChannelHandler)handler;
+							if( !h.isRunningAndSet() )
+								this.executor.execute( h ); // TODO Also for write
+						}
 						handler.dataIsReady();
 					}
 
@@ -173,7 +189,7 @@ public class Dispatcher extends Thread
 						}
 
 						System.out.println( "Channel (" + DebugId.getId( channel ) + ") Write ready, notify" );
-						( (SocketChannelHandler)key.attachment() ).writeIsReady();
+						( (ServerSocketChannelHandler)key.attachment() ).writeIsReady();
 					}
 
 					if( key.isConnectable() )

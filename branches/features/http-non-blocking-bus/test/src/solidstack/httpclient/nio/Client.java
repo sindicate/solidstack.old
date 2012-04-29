@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.channels.SelectionKey;
 import java.util.List;
 import java.util.Map;
 
@@ -17,8 +18,10 @@ import solidstack.httpserver.HttpException;
 import solidstack.httpserver.HttpHeaderTokenizer;
 import solidstack.httpserver.Token;
 import solidstack.io.FatalIOException;
+import solidstack.nio.AsyncSocketChannelHandler;
 import solidstack.nio.Dispatcher;
 import solidstack.nio.SocketChannelHandler;
+import solidstack.nio.SocketChannelHandlerFactory;
 
 
 public class Client extends Thread
@@ -120,21 +123,16 @@ public class Client extends Thread
 //				return;
 	}
 
-	public void request( Request request, ResponseProcessor responseProcessor ) throws IOException
+	public void request( Request request, final ResponseProcessor responseProcessor ) throws IOException
 	{
-		SocketChannelHandler handler = this.dispatcher.connect( this.hostname, 80 );
-		try
+		SocketChannelHandler handler = this.dispatcher.connect( this.hostname, 80, new SocketChannelHandlerFactory()
 		{
-			sendRequest( request, handler.getOutputStream() );
-			Response response = receiveResponse( handler.getInputStream() );
-			InputStream in = response.getInputStream();
-			responseProcessor.process( response );
-			drain( in, System.out );
-		}
-		finally
-		{
-			handler.close();
-		}
+			public SocketChannelHandler createHandler( Dispatcher dispatcher, SelectionKey key )
+			{
+				return new MySocketChannelHandler( dispatcher, key, responseProcessor );
+			}
+		} );
+		sendRequest( request, handler.getOutputStream() );
 	}
 
 	private void drain( InputStream in, PrintStream out )
@@ -154,6 +152,33 @@ public class Client extends Thread
 		catch( IOException e )
 		{
 			throw new FatalIOException( e );
+		}
+	}
+
+	public class MySocketChannelHandler extends AsyncSocketChannelHandler // implements Runnable
+	{
+		private ResponseProcessor processor;
+
+		public MySocketChannelHandler( Dispatcher dispatcher, SelectionKey key, ResponseProcessor processor )
+		{
+			super( dispatcher, key );
+			this.processor = processor;
+		}
+
+		@Override
+		public void incoming() throws IOException
+		{
+			try
+			{
+				Response response = receiveResponse( getInputStream() );
+				InputStream in = response.getInputStream();
+				this.processor.process( response );
+				drain( in, System.out );
+			}
+			finally
+			{
+				close();
+			}
 		}
 	}
 }

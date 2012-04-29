@@ -3,6 +3,7 @@ package solidstack.nio;
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import solidstack.httpserver.ApplicationContext;
 import solidstack.io.FatalIOException;
@@ -13,23 +14,33 @@ import solidstack.io.FatalIOException;
  *
  * @author René M. de Bloois
  */
-abstract public class ServerSocketChannelHandler extends AsyncSocketChannelHandler
+abstract public class AsyncSocketChannelHandler extends SocketChannelHandler implements Runnable
 {
+	private AtomicBoolean running = new AtomicBoolean();
+
 	/**
 	 * Constructor.
 	 *
 	 * @param socket The incoming connection.
 	 * @param applicationContext The {@link ApplicationContext}.
 	 */
-	public ServerSocketChannelHandler( Dispatcher dispatcher, SelectionKey key )
+	public AsyncSocketChannelHandler( Dispatcher dispatcher, SelectionKey key )
 	{
 		super( dispatcher, key );
 	}
 
-	@Override
-	abstract public void incoming() throws IOException;
+	protected boolean isRunningAndSet()
+	{
+		return !this.running.compareAndSet( false, true );
+	}
 
-	@Override
+	protected void endOfRunning()
+	{
+		this.running.set( false );
+	}
+
+	abstract protected void incoming() throws IOException;
+
 	public void run()
 	{
 		SocketChannel channel = getChannel();
@@ -70,7 +81,7 @@ abstract public class ServerSocketChannelHandler extends AsyncSocketChannelHandl
 				else
 					System.out.println( "Channel (" + DebugId.getId( channel ) + ") thread complete" );
 
-				endOfRunning();
+				this.running.set( false );
 			}
 		}
 		catch( IOException e )

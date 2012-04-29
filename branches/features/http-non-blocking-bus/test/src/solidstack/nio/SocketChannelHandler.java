@@ -3,10 +3,8 @@ package solidstack.nio;
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import solidstack.httpserver.ApplicationContext;
-import solidstack.io.FatalIOException;
 
 
 /**
@@ -14,13 +12,12 @@ import solidstack.io.FatalIOException;
  *
  * @author René M. de Bloois
  */
-abstract public class SocketChannelHandler implements Runnable
+abstract public class SocketChannelHandler
 {
 	private Dispatcher dispatcher;
 	private SelectionKey key;
 	private SocketChannelInputStream in;
 	private SocketChannelOutputStream out;
-	private AtomicBoolean running = new AtomicBoolean();
 
 	/**
 	 * Constructor.
@@ -62,11 +59,6 @@ abstract public class SocketChannelHandler implements Runnable
 		return this.key;
 	}
 
-	public boolean isRunningAndSet()
-	{
-		return !this.running.compareAndSet( false, true );
-	}
-
 	public void dataIsReady()
 	{
 		synchronized( this.in )
@@ -86,56 +78,5 @@ abstract public class SocketChannelHandler implements Runnable
 	public void close() throws IOException
 	{
 		getChannel().close();
-	}
-
-	abstract public void incoming() throws IOException;
-
-	public void run()
-	{
-		SocketChannel channel = getChannel();
-		SelectionKey key = getKey();
-
-		boolean complete = false;
-		try
-		{
-			try
-			{
-				while( true )
-				{
-					incoming();
-
-					if( channel.isOpen() )
-					{
-						if( getInputStream().available() == 0 )
-						{
-							getDispatcher().read( key );
-							complete = true;
-							return;
-						}
-					}
-					else
-					{
-						complete = true;
-						return;
-					}
-				}
-			}
-			finally
-			{
-				if( !complete )
-				{
-					channel.close();
-					System.out.println( "Channel (" + DebugId.getId( channel ) + ") thread aborted" );
-				}
-				else
-					System.out.println( "Channel (" + DebugId.getId( channel ) + ") thread complete" );
-
-				this.running.set( false );
-			}
-		}
-		catch( IOException e )
-		{
-			throw new FatalIOException( e );
-		}
 	}
 }

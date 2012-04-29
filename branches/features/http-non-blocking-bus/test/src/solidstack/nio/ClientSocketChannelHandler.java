@@ -11,7 +11,7 @@ import solidstack.httpserver.ApplicationContext;
  *
  * @author René M. de Bloois
  */
-public class ClientSocketChannelHandler extends SocketChannelHandler
+public class ClientSocketChannelHandler extends ServerSocketChannelHandler
 {
 	/**
 	 * Constructor.

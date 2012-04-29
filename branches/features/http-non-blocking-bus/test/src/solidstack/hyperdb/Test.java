@@ -90,6 +90,8 @@ public class Test
 		client.request( request, processor );
 		client.request( request, processor );
 
+		Thread.sleep( 10000 );
+
 		System.out.println( "interrupting" );
 		dispatcher.shutdown();
 //		dispatcher.join();

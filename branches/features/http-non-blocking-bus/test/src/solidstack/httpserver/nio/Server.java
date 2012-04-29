@@ -16,7 +16,7 @@ import solidstack.httpserver.Token;
 import solidstack.httpserver.UrlEncodedParser;
 import solidstack.nio.Dispatcher;
 import solidstack.nio.ServerSocketChannelHandler;
-import solidstack.nio.SocketChannelHandler;
+import solidstack.nio.SocketChannelHandlerFactory;
 
 
 public class Server
@@ -30,7 +30,13 @@ public class Server
 		this.dispatcher = dispatcher;
 		this.port = port;
 
-		getDispatcher().listen( this.port, new MyServerSocketChannelHandler() );
+		getDispatcher().listen( this.port, new SocketChannelHandlerFactory()
+		{
+			public ServerSocketChannelHandler createHandler( Dispatcher dispatcher, SelectionKey key )
+			{
+				return new MySocketChannelHandler( dispatcher, key );
+			}
+		} );
 	}
 
 	public void setApplication( ApplicationContext application )
@@ -48,16 +54,7 @@ public class Server
 		return this.dispatcher;
 	}
 
-	public class MyServerSocketChannelHandler extends ServerSocketChannelHandler
-	{
-		@Override
-		public SocketChannelHandler incoming( Dispatcher dispatcher, SelectionKey key )
-		{
-			return new MySocketChannelHandler( dispatcher, key );
-		}
-	}
-
-	public class MySocketChannelHandler extends SocketChannelHandler // implements Runnable
+	public class MySocketChannelHandler extends ServerSocketChannelHandler // implements Runnable
 	{
 		public MySocketChannelHandler( Dispatcher dispatcher, SelectionKey key )
 		{
