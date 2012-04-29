@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import solidstack.lang.SystemException;
 
@@ -19,6 +20,7 @@ public class Dispatcher extends Thread
 //	private List<ServerSocketChannelHandler> queue = new ArrayList();
 	private Selector selector;
 	private Object lock = new Object();
+	private ExecutorService executor;
 
 	public Dispatcher() throws IOException
 	{
@@ -72,10 +74,32 @@ public class Dispatcher extends Thread
 		return handler;
 	}
 
+	private void shutdownThreadPool() throws InterruptedException
+	{
+		System.out.println( "Shutting down dispatcher" );
+		this.executor.shutdown();
+		if( this.executor.awaitTermination( 1, TimeUnit.HOURS ) )
+			System.out.println( "Thread pool shut down, interrupting dispatcher thread" );
+		else
+		{
+			System.out.println( "Thread pool not shut down, interrupting" );
+			this.executor.shutdownNow();
+			if( !this.executor.awaitTermination( 1, TimeUnit.HOURS ) )
+				System.out.println( "Thread pool could not be shut down" );
+		}
+	}
+
+	public void shutdown() throws InterruptedException
+	{
+		shutdownThreadPool();
+		interrupt();
+		join();
+	}
+
 	@Override
 	public void run()
 	{
-		ExecutorService executor = Executors.newCachedThreadPool();
+		this.executor = Executors.newCachedThreadPool();
 		try
 		{
 			while( !Thread.interrupted() )
@@ -134,7 +158,7 @@ public class Dispatcher extends Thread
 						System.out.println( "Channel (" + DebugId.getId( channel ) + ") Data ready, notify" );
 						SocketChannelHandler handler = (SocketChannelHandler)key.attachment();
 						if( !handler.isRunningAndSet() )
-							executor.execute( handler ); // TODO Also for write
+							this.executor.execute( handler ); // TODO Also for write
 						handler.dataIsReady();
 					}
 
@@ -173,8 +197,20 @@ public class Dispatcher extends Thread
 			throw new SystemException( e );
 		}
 
-		System.out.println( "Dispatcher ended, shutting down thread pool" );
-		executor.shutdownNow();
-		System.out.println( "Thread pool shut down" );
+		if( this.executor.isTerminated() )
+			System.out.println( "Dispatcher ended" );
+		else
+		{
+			System.out.println( "Dispatcher ended, shutting down thread pool" );
+			try
+			{
+				shutdownThreadPool();
+			}
+			catch( InterruptedException e )
+			{
+				throw new SystemException( e );
+			}
+			System.out.println( "Thread pool shut down" );
+		}
 	}
 }

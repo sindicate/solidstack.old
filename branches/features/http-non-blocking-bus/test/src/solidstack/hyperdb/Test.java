@@ -91,7 +91,7 @@ public class Test
 		client.request( request, processor );
 
 		System.out.println( "interrupting" );
-		dispatcher.interrupt();
+		dispatcher.shutdown();
 //		dispatcher.join();
 	}
 }
