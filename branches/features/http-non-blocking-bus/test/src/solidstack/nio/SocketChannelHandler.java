@@ -13,7 +13,7 @@ import solidstack.httpserver.ApplicationContext;
  */
 abstract public class SocketChannelHandler implements Runnable
 {
-	private SocketChannel channel;
+	private Dispatcher dispatcher;
 	private SelectionKey key;
 	private SocketChannelInputStream in;
 	private SocketChannelOutputStream out;
@@ -24,13 +24,13 @@ abstract public class SocketChannelHandler implements Runnable
 	 * @param socket The incoming connection.
 	 * @param applicationContext The {@link ApplicationContext}.
 	 */
-	public SocketChannelHandler( SocketChannel channel, SelectionKey key )
+	public SocketChannelHandler( Dispatcher dispatcher, SelectionKey key )
 	{
-		this.channel = channel;
+		this.dispatcher = dispatcher;
 		this.key = key;
 
-		this.in = new SocketChannelInputStream( channel, key );
-		this.out = new SocketChannelOutputStream( channel, key );
+		this.in = new SocketChannelInputStream( this );
+		this.out = new SocketChannelOutputStream( this );
 	}
 
 	public SocketChannelInputStream getInputStream()
@@ -43,9 +43,14 @@ abstract public class SocketChannelHandler implements Runnable
 		return this.out;
 	}
 
+	public Dispatcher getDispatcher()
+	{
+		return this.dispatcher;
+	}
+
 	public SocketChannel getChannel()
 	{
-		return this.channel;
+		return (SocketChannel)this.key.channel();
 	}
 
 	public SelectionKey getKey()
@@ -55,18 +60,16 @@ abstract public class SocketChannelHandler implements Runnable
 
 	abstract public void run();
 
-	public void dataReady()
+	public void dataIsReady()
 	{
-		System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") Data ready, notify" );
 		synchronized( this.in )
 		{
 			this.in.notify();
 		}
 	}
 
-	public void writeReady()
+	public void writeIsReady()
 	{
-		System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") Write ready, notify" );
 		synchronized( this.out )
 		{
 			this.out.notify();

@@ -36,6 +36,26 @@ public class Dispatcher implements Runnable
 		handler.setKey( key );
 	}
 
+	public void read( SelectionKey key )
+	{
+		System.out.println( "Channel (" + DebugId.getId( key.channel() ) + ") Waiting for data" );
+		synchronized( key )
+		{
+			key.interestOps( key.interestOps() | SelectionKey.OP_READ );
+		}
+		key.selector().wakeup();
+	}
+
+	public void write( SelectionKey key )
+	{
+		System.out.println( "Channel (" + DebugId.getId( key.channel() ) + ") Waiting for write" );
+		synchronized( key )
+		{
+			key.interestOps( key.interestOps() | SelectionKey.OP_WRITE );
+		}
+		key.selector().wakeup();
+	}
+
 	public void run()
 	{
 		ExecutorService executor = Executors.newCachedThreadPool();
@@ -68,9 +88,9 @@ public class Dispatcher implements Runnable
 							channel.configureBlocking( false );
 							key = channel.register( this.selector, SelectionKey.OP_READ );
 
-							SocketChannelHandler handler2 = handler.incoming( channel, key );
+							SocketChannelHandler handler2 = handler.incoming( this, key );
 							key.attach( handler2 );
-							executor.execute( handler2 );
+//							executor.execute( handler2 );
 
 							System.out.println( "Channel (" + DebugId.getId( channel ) + ") attached handler" );
 						}
@@ -90,7 +110,8 @@ public class Dispatcher implements Runnable
 							key.interestOps( key.interestOps() ^ SelectionKey.OP_READ );
 						}
 
-						( (SocketChannelHandler)key.attachment() ).dataReady();
+						System.out.println( "Channel (" + DebugId.getId( channel ) + ") Data ready, notify" );
+						( (SocketChannelHandler)key.attachment() ).dataIsReady();
 					}
 
 					if( key.isWritable() )
@@ -103,7 +124,8 @@ public class Dispatcher implements Runnable
 							key.interestOps( key.interestOps() ^ SelectionKey.OP_WRITE );
 						}
 
-						( (SocketChannelHandler)key.attachment() ).writeReady();
+						System.out.println( "Channel (" + DebugId.getId( channel ) + ") Write ready, notify" );
+						( (SocketChannelHandler)key.attachment() ).writeIsReady();
 					}
 
 					if( key.isConnectable() )

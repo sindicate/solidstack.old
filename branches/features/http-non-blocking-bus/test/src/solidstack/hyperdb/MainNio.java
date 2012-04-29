@@ -17,7 +17,7 @@ public class MainNio
 		Dispatcher selector = new Dispatcher();
 
 		Server server = new Server( selector, 80 );
-		server.addApplication( new HyperDBApplication() );
+		server.setApplication( new HyperDBApplication() );
 
 		selector.run();
 	}

@@ -2,7 +2,6 @@ package solidstack.nio;
 
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
 
 
 /**
@@ -30,5 +29,5 @@ abstract public class ServerSocketChannelHandler
 		this.key = key;
 	}
 
-	abstract public SocketChannelHandler incoming( SocketChannel channel, SelectionKey key2 );
+	abstract public SocketChannelHandler incoming( Dispatcher dispatcher, SelectionKey key );
 }

@@ -25,205 +25,220 @@ public class Server
 {
 	private int port;
 	private ApplicationContext application; // TODO Make this a Map
-	private Dispatcher selector;
+	private Dispatcher dispatcher;
 
-	public Server( Dispatcher selector, int port ) throws IOException
+	public Server( Dispatcher dispatcher, int port ) throws IOException
 	{
-		this.selector = selector;
+		this.dispatcher = dispatcher;
 		this.port = port;
 
-		ServerSocketChannelHandler handler = new ServerSocketChannelHandler()
-		{
-			@Override
-			public SocketChannelHandler incoming( SocketChannel channel, SelectionKey key )
-			{
-				return new SocketChannelHandler( channel, key )
-				{
-					@Override
-					public void run()
-					{
-						SocketChannel channel = getChannel();
-						SelectionKey key = getKey();
-
-						boolean finished = false;
-						try
-						{
-							try
-							{
-								while( true )
-								{
-									Request request = new Request();
-
-									HttpHeaderTokenizer tokenizer = new HttpHeaderTokenizer( getInputStream() );
-
-									String line = tokenizer.getLine();
-									String[] parts = line.split( "[ \t]+" );
-
-									request.setMethod( parts[ 0 ] );
-
-									String url = parts[ 1 ];
-									if( !parts[ 2 ].equals( "HTTP/1.1" ) )
-										throw new HttpException( "Only HTTP/1.1 requests are supported" );
-
-									System.out.println( "GET " + url + " HTTP/1.1" );
-
-									String parameters = null;
-									int pos = url.indexOf( '?' );
-									if( pos >= 0 )
-									{
-										parameters = url.substring( pos + 1 );
-										url = url.substring( 0, pos );
-
-										String[] pars = parameters.split( "&" );
-										for( String par : pars )
-										{
-											pos = par.indexOf( '=' );
-											if( pos >= 0 )
-												request.addParameter( par.substring( 0, pos ), par.substring( pos + 1 ) );
-											else
-												request.addParameter( par, null );
-										}
-									}
-
-									// TODO Fragment too? Maybe use the URI class?
-
-									if( url.endsWith( "/" ) )
-										url = url.substring( 0, url.length() - 1 );
-									request.setUrl( url );
-									request.setQuery( parameters );
-
-									Token field = tokenizer.getField();
-									while( !field.isEndOfInput() )
-									{
-										Token value = tokenizer.getValue();
-										if( field.equals( "Cookie" ) ) // TODO Case insensitive?
-										{
-											String s = value.getValue();
-											int pos2 = s.indexOf( '=' );
-											if( pos2 >= 0 )
-												request.addCookie( s.substring( 0, pos2 ), s.substring( pos2 + 1 ) );
-											else
-												request.addHeader( field.getValue(), s );
-										}
-										else
-										{
-											request.addHeader( field.getValue(), value.getValue() );
-										}
-										field = tokenizer.getField();
-									}
-
-									String contentType = request.getHeader( "Content-Type" );
-									if( "application/x-www-form-urlencoded".equals( contentType ) )
-									{
-										String contentLength = request.getHeader( "Content-Length" );
-										if( contentLength != null )
-										{
-											int len = Integer.parseInt( contentLength );
-											UrlEncodedParser parser = new UrlEncodedParser( getInputStream(), len );
-											String parameter = parser.getParameter();
-											while( parameter != null )
-											{
-												String value = parser.getValue();
-												request.addParameter( parameter, value );
-												parameter = parser.getParameter();
-											}
-										}
-									}
-
-									Response response = new Response( request, getOutputStream() ); // out is a SocketChannelOutputStream, close() does not close the SocketChannel
-									RequestContext context = new RequestContext( request, response, Server.this.application );
-									try
-									{
-										Server.this.application.dispatch( context );
-									}
-									catch( FatalSocketException e )
-									{
-										throw e;
-									}
-									catch( Exception e )
-									{
-										Throwable t = e;
-										if( t.getClass().equals( HttpException.class ) && t.getCause() != null )
-											t = t.getCause();
-										t.printStackTrace( System.out );
-										if( !response.isCommitted() )
-										{
-											response.reset();
-											response.setStatusCode( 500, "Internal Server Error" );
-											response.setContentType( "text/plain", "ISO-8859-1" );
-											PrintWriter writer = response.getPrintWriter( "ISO-8859-1" );
-											t.printStackTrace( writer );
-											writer.flush();
-										}
-										// TODO Is the socket going to be closed?
-									}
-
-									response.finish();
-
-									// TODO Detect Connection: close headers on the request & response
-									// TODO A GET request has no body, when a POST comes without content size, the connection should be closed.
-									// TODO What about socket.getKeepAlive() and the other properties?
-
-									String length = response.getHeader( "Content-Length" );
-									if( length == null )
-									{
-										String transfer = response.getHeader( "Transfer-Encoding" );
-										if( !"chunked".equals( transfer ) )
-											channel.close();
-									}
-
-									if( channel.isOpen() )
-										if( request.isConnectionClose() )
-											channel.close();
-
-									if( channel.isOpen() )
-									{
-										if( getInputStream().available() == 0 )
-										{
-											System.out.println( "Channel (" + DebugId.getId( channel ) + ") Waiting for data" );
-											synchronized( key )
-											{
-												key.interestOps( key.interestOps() | SelectionKey.OP_READ );
-												key.selector().wakeup();
-											}
-											finished = true;
-											return;
-										}
-									}
-									else
-									{
-										finished = true;
-										return;
-									}
-								}
-							}
-							finally
-							{
-//								synchronized( this )
-//								{
-//									this.running = false;
-//								}
-								if( !finished )
-								{
-									channel.close();
-								}
-								// TODO Synchronization
-								System.out.println( "Channel (" + DebugId.getId( channel ) + ") thread ended" );
-							}
-						}
-						catch( IOException e )
-						{
-							throw new FatalIOException( e );
-						}
-					}
-				};
-			}
-		};
-		this.selector.listen( this.port, handler );
+		getDispatcher().listen( this.port, new MyServerSocketChannelHandler() );
 	}
 
-	public void addApplication( ApplicationContext application )
+	public void setApplication( ApplicationContext application )
 	{
 		this.application = application;
+	}
+
+	public ApplicationContext getApplication()
+	{
+		return this.application;
+	}
+
+	public Dispatcher getDispatcher()
+	{
+		return this.dispatcher;
+	}
+
+	public class MyServerSocketChannelHandler extends ServerSocketChannelHandler
+	{
+		@Override
+		public SocketChannelHandler incoming( Dispatcher dispatcher, SelectionKey key )
+		{
+			return new MySocketChannelHandler( dispatcher, key );
+		}
+	}
+
+	public class MySocketChannelHandler extends SocketChannelHandler // implements Runnable
+	{
+		public MySocketChannelHandler( Dispatcher dispatcher, SelectionKey key )
+		{
+			super( dispatcher, key );
+		}
+
+		@Override
+		public void run()
+		{
+			SocketChannel channel = getChannel();
+			SelectionKey key = getKey();
+
+			boolean complete = false;
+			try
+			{
+				try
+				{
+					while( true )
+					{
+						Request request = new Request();
+
+						HttpHeaderTokenizer tokenizer = new HttpHeaderTokenizer( getInputStream() );
+
+						String line = tokenizer.getLine();
+						String[] parts = line.split( "[ \t]+" );
+
+						request.setMethod( parts[ 0 ] );
+
+						String url = parts[ 1 ];
+						if( !parts[ 2 ].equals( "HTTP/1.1" ) )
+							throw new HttpException( "Only HTTP/1.1 requests are supported" );
+
+						System.out.println( "GET " + url + " HTTP/1.1" );
+
+						String parameters = null;
+						int pos = url.indexOf( '?' );
+						if( pos >= 0 )
+						{
+							parameters = url.substring( pos + 1 );
+							url = url.substring( 0, pos );
+
+							String[] pars = parameters.split( "&" );
+							for( String par : pars )
+							{
+								pos = par.indexOf( '=' );
+								if( pos >= 0 )
+									request.addParameter( par.substring( 0, pos ), par.substring( pos + 1 ) );
+								else
+									request.addParameter( par, null );
+							}
+						}
+
+						// TODO Fragment too? Maybe use the URI class?
+
+						if( url.endsWith( "/" ) )
+							url = url.substring( 0, url.length() - 1 );
+						request.setUrl( url );
+						request.setQuery( parameters );
+
+						Token field = tokenizer.getField();
+						while( !field.isEndOfInput() )
+						{
+							Token value = tokenizer.getValue();
+							if( field.equals( "Cookie" ) ) // TODO Case insensitive?
+							{
+								String s = value.getValue();
+								int pos2 = s.indexOf( '=' );
+								if( pos2 >= 0 )
+									request.addCookie( s.substring( 0, pos2 ), s.substring( pos2 + 1 ) );
+								else
+									request.addHeader( field.getValue(), s );
+							}
+							else
+							{
+								request.addHeader( field.getValue(), value.getValue() );
+							}
+							field = tokenizer.getField();
+						}
+
+						String contentType = request.getHeader( "Content-Type" );
+						if( "application/x-www-form-urlencoded".equals( contentType ) )
+						{
+							String contentLength = request.getHeader( "Content-Length" );
+							if( contentLength != null )
+							{
+								int len = Integer.parseInt( contentLength );
+								UrlEncodedParser parser = new UrlEncodedParser( getInputStream(), len );
+								String parameter = parser.getParameter();
+								while( parameter != null )
+								{
+									String value = parser.getValue();
+									request.addParameter( parameter, value );
+									parameter = parser.getParameter();
+								}
+							}
+						}
+
+						Response response = new Response( request, getOutputStream() ); // out is a SocketChannelOutputStream, close() does not close the SocketChannel
+						RequestContext context = new RequestContext( request, response, getApplication() );
+						try
+						{
+							getApplication().dispatch( context );
+						}
+						catch( FatalSocketException e )
+						{
+							throw e;
+						}
+						catch( Exception e )
+						{
+							Throwable t = e;
+							if( t.getClass().equals( HttpException.class ) && t.getCause() != null )
+								t = t.getCause();
+							t.printStackTrace( System.out );
+							if( !response.isCommitted() )
+							{
+								response.reset();
+								response.setStatusCode( 500, "Internal Server Error" );
+								response.setContentType( "text/plain", "ISO-8859-1" );
+								PrintWriter writer = response.getPrintWriter( "ISO-8859-1" );
+								t.printStackTrace( writer );
+								writer.flush();
+							}
+							// TODO Is the socket going to be closed?
+						}
+
+						response.finish();
+
+						// TODO Detect Connection: close headers on the request & response
+						// TODO A GET request has no body, when a POST comes without content size, the connection should be closed.
+						// TODO What about socket.getKeepAlive() and the other properties?
+
+						String length = response.getHeader( "Content-Length" );
+						if( length == null )
+						{
+							String transfer = response.getHeader( "Transfer-Encoding" );
+							if( !"chunked".equals( transfer ) )
+								channel.close();
+						}
+
+						if( channel.isOpen() )
+							if( request.isConnectionClose() )
+								channel.close();
+
+						if( channel.isOpen() )
+						{
+							if( getInputStream().available() == 0 )
+							{
+								getDispatcher().read( key );
+								complete = true;
+								return;
+							}
+						}
+						else
+						{
+							complete = true;
+							return;
+						}
+					}
+				}
+				finally
+				{
+//					synchronized( this )
+//					{
+//						this.running = false;
+//					}
+					if( !complete )
+					{
+						channel.close();
+						System.out.println( "Channel (" + DebugId.getId( channel ) + ") thread aborted" );
+					}
+					else
+						System.out.println( "Channel (" + DebugId.getId( channel ) + ") thread complete" );
+					// TODO Synchronization
+				}
+			}
+			catch( IOException e )
+			{
+				throw new FatalIOException( e );
+			}
+		}
 	}
 }

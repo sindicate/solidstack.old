@@ -3,7 +3,6 @@ package solidstack.nio;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 import solidstack.httpserver.FatalSocketException;
@@ -12,14 +11,12 @@ import solidstack.lang.Assert;
 
 public class SocketChannelInputStream extends InputStream
 {
-	protected SocketChannel channel;
-	protected SelectionKey key;
-	protected ByteBuffer buffer;
+	private SocketChannelHandler handler;
+	private ByteBuffer buffer;
 
-	public SocketChannelInputStream( SocketChannel channel, SelectionKey key )
+	public SocketChannelInputStream( SocketChannelHandler handler )
 	{
-		this.channel = channel;
-		this.key = key;
+		this.handler = handler;
 		this.buffer = ByteBuffer.allocate( 1024 );
 		this.buffer.flip();
 	}
@@ -29,7 +26,7 @@ public class SocketChannelInputStream extends InputStream
 	{
 		if( !this.buffer.hasRemaining() )
 		{
-			if( this.channel == null )
+			if( this.handler == null )
 				return -1;
 			readChannel();
 		}
@@ -42,7 +39,7 @@ public class SocketChannelInputStream extends InputStream
 	{
 		if( !this.buffer.hasRemaining() )
 		{
-			if( this.channel == null )
+			if( this.handler == null )
 				return -1;
 			readChannel();
 		}
@@ -62,23 +59,21 @@ public class SocketChannelInputStream extends InputStream
 	// TODO What if it read too much? Like when 2 requests are chained. The handler needs to keep reading.
 	protected void readChannel()
 	{
+		SocketChannel channel = this.handler.getChannel();
+		int id = DebugId.getId( channel );
+
 		Assert.isFalse( this.buffer.hasRemaining() );
-		Assert.isTrue( this.channel.isOpen() );
+		Assert.isTrue( channel.isOpen() );
 
 		this.buffer.clear();
 
 		try
 		{
-			int read = this.channel.read( this.buffer );
-			System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") read #" + read + " bytes from channel" );
+			int read = channel.read( this.buffer );
+			System.out.println( "Channel (" + id + ") read #" + read + " bytes from channel (1)" );
 			while( read == 0 )
 			{
-				System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") Waiting for data" );
-				synchronized( this.key )
-				{
-					this.key.interestOps( this.key.interestOps() | SelectionKey.OP_READ );
-				}
-				this.key.selector().wakeup();
+				this.handler.getDispatcher().read( this.handler.getKey() );
 				try
 				{
 					synchronized( this )
@@ -90,17 +85,15 @@ public class SocketChannelInputStream extends InputStream
 				{
 					throw new FatalSocketException( e );
 				}
-				System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") Waiting for data, ready" );
 
-				read = this.channel.read( this.buffer );
-				System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") read #" + read + " bytes from channel" );
+				read = channel.read( this.buffer );
+				System.out.println( "Channel (" + id + ") read #" + read + " bytes from channel (2)" );
 			}
 
 			if( read == -1 )
 			{
-				this.key.cancel();
-				this.channel.close();
-				this.channel = null;
+				channel.close(); // TODO Should cancel all keys
+				this.handler = null;
 			}
 			else
 				this.buffer.flip();

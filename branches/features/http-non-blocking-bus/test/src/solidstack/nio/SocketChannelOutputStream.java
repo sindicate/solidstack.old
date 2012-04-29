@@ -3,7 +3,6 @@ package solidstack.nio;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 import solidstack.httpserver.FatalSocketException;
@@ -13,14 +12,12 @@ import solidstack.lang.Assert;
 // TODO Improve performance?
 public class SocketChannelOutputStream extends OutputStream
 {
-	protected SocketChannel channel;
-	protected SelectionKey key;
+	protected SocketChannelHandler handler;
 	protected ByteBuffer buffer;
 
-	public SocketChannelOutputStream( SocketChannel channel, SelectionKey key )
+	public SocketChannelOutputStream( SocketChannelHandler handler )
 	{
-		this.channel = channel;
-		this.key = key;
+		this.handler = handler;
 		this.buffer = ByteBuffer.allocate( 8192 );
 	}
 
@@ -78,23 +75,21 @@ public class SocketChannelOutputStream extends OutputStream
 
 	protected void writeChannel()
 	{
-		Assert.isTrue( this.channel.isOpen() && this.channel.isConnected() );
+		SocketChannel channel = this.handler.getChannel();
+		int id = DebugId.getId( channel );
+
+		Assert.isTrue( channel.isOpen() && channel.isConnected() );
 		this.buffer.flip();
 		Assert.isTrue( this.buffer.hasRemaining() );
 
 		try
 		{
 //			logBuffer( this.buffer );
-			int written = this.channel.write( this.buffer );
-			System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") written #" + written + " bytes to channel (1)" );
+			int written = channel.write( this.buffer );
+			System.out.println( "Channel (" + id + ") written #" + written + " bytes to channel (1)" );
 			while( this.buffer.hasRemaining() )
 			{
-				System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") Waiting for write" );
-				synchronized( this.key )
-				{
-					this.key.interestOps( this.key.interestOps() | SelectionKey.OP_WRITE );
-				}
-				this.key.selector().wakeup();
+				this.handler.getDispatcher().write( this.handler.getKey() );
 				try
 				{
 					synchronized( this )
@@ -106,10 +101,10 @@ public class SocketChannelOutputStream extends OutputStream
 				{
 					throw new FatalSocketException( e );
 				}
-				System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") Waiting for write, ready" );
+
 //				logBuffer( this.buffer );
-				written = this.channel.write( this.buffer );
-				System.out.println( "Channel (" + DebugId.getId( this.channel ) + ") written #" + written + " bytes to channel (2)" );
+				written = channel.write( this.buffer );
+				System.out.println( "Channel (" + id + ") written #" + written + " bytes to channel (2)" );
 			}
 
 			this.buffer.clear();
