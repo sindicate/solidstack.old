@@ -90,7 +90,6 @@ public class Dispatcher implements Runnable
 
 							SocketChannelHandler handler2 = handler.incoming( this, key );
 							key.attach( handler2 );
-//							executor.execute( handler2 );
 
 							System.out.println( "Channel (" + DebugId.getId( channel ) + ") attached handler" );
 						}
@@ -111,7 +110,10 @@ public class Dispatcher implements Runnable
 						}
 
 						System.out.println( "Channel (" + DebugId.getId( channel ) + ") Data ready, notify" );
-						( (SocketChannelHandler)key.attachment() ).dataIsReady();
+						SocketChannelHandler handler = (SocketChannelHandler)key.attachment();
+						if( !handler.isRunningAndSet() )
+							executor.execute( handler ); // TODO Also for write
+						handler.dataIsReady();
 					}
 
 					if( key.isWritable() )

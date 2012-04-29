@@ -78,7 +78,8 @@ public class SocketChannelOutputStream extends OutputStream
 		SocketChannel channel = this.handler.getChannel();
 		int id = DebugId.getId( channel );
 
-		Assert.isTrue( channel.isOpen() && channel.isConnected() );
+		Assert.isTrue( channel.isOpen() );
+		Assert.isTrue( channel.isConnected() );
 		this.buffer.flip();
 		Assert.isTrue( this.buffer.hasRemaining() );
 
