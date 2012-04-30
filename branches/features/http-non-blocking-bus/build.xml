@@ -129,7 +129,7 @@
 	</target>
 
 
-	<target name="jar" depends="compile">
+	<target name="jar" depends="buildtest">
 		<fail message="A *.txt file is missing">
 			<condition>
 				<resourcecount when="ne" count="2">
@@ -139,6 +139,7 @@
 		</fail>
 		<jarjar compress="yes" destfile="${dist.home}/solidstack.jar">
 			<zipfileset dir="${build.home}/classes" />
+			<zipfileset dir="${build.home}/testclasses" /> <!-- TODO This is only for test -->
 			<zipfileset dir="." includes="LICENSE.txt,NOTICE.txt,CHANGELOG.TXT" prefix="META-INF" />
 			<keep pattern="solidstack.**" />
 			<manifest>
