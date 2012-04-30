@@ -33,7 +33,8 @@ public class MiddleRootServlet implements Servlet
 		{
 			public void process( Response response )
 			{
-				System.out.println( response.getHttpVersion() + " " + response.getStatus() + " " + response.getReason() );
+				if( Dispatcher.debug )
+					System.out.println( response.getHttpVersion() + " " + response.getStatus() + " " + response.getReason() );
 
 				RequestContext c = context;
 				solidstack.httpserver.Response r = c.getResponse();
@@ -41,10 +42,12 @@ public class MiddleRootServlet implements Servlet
 				Map<String, String> headers = response.getHeaders();
 				for( Entry<String, String> entry : headers.entrySet() )
 				{
-					System.out.println( entry.getKey() + ": " + entry.getValue() );
+					if( Dispatcher.debug )
+						System.out.println( entry.getKey() + ": " + entry.getValue() );
 					r.setHeader( entry.getKey(), entry.getValue() );
 				}
-				System.out.println();
+				if( Dispatcher.debug )
+					System.out.println();
 
 				OutputStream out = r.getOutputStream();
 				InputStream in = response.getInputStream();

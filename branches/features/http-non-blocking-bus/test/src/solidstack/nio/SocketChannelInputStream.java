@@ -74,7 +74,8 @@ public class SocketChannelInputStream extends InputStream
 		try
 		{
 			int read = channel.read( this.buffer );
-			System.out.println( "Channel (" + id + ") read #" + read + " bytes from channel (1)" );
+			if( Dispatcher.debug )
+				System.out.println( "Channel (" + id + ") read #" + read + " bytes from channel (1)" );
 			while( read == 0 )
 			{
 				this.handler.getDispatcher().read( this.handler.getKey() );
@@ -91,7 +92,8 @@ public class SocketChannelInputStream extends InputStream
 				}
 
 				read = channel.read( this.buffer );
-				System.out.println( "Channel (" + id + ") read #" + read + " bytes from channel (2)" );
+				if( Dispatcher.debug )
+					System.out.println( "Channel (" + id + ") read #" + read + " bytes from channel (2)" );
 			}
 
 			if( read == -1 )

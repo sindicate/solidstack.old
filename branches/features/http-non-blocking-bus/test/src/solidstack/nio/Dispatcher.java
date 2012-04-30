@@ -8,8 +8,8 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import solidstack.lang.SystemException;
@@ -20,7 +20,8 @@ public class Dispatcher extends Thread
 //	private List<ServerSocketChannelHandler> queue = new ArrayList();
 	private Selector selector;
 	private Object lock = new Object();
-	private ExecutorService executor;
+	private ThreadPoolExecutor executor;
+	static boolean debug;
 
 	public Dispatcher() throws IOException
 	{
@@ -38,7 +39,8 @@ public class Dispatcher extends Thread
 
 	public void read( SelectionKey key )
 	{
-		System.out.println( "Channel (" + DebugId.getId( key.channel() ) + ") Waiting for data" );
+		if( debug )
+			System.out.println( "Channel (" + DebugId.getId( key.channel() ) + ") Waiting for data" );
 		synchronized( key )
 		{
 			key.interestOps( key.interestOps() | SelectionKey.OP_READ );
@@ -48,7 +50,8 @@ public class Dispatcher extends Thread
 
 	public void write( SelectionKey key )
 	{
-		System.out.println( "Channel (" + DebugId.getId( key.channel() ) + ") Waiting for write" );
+		if( debug )
+			System.out.println( "Channel (" + DebugId.getId( key.channel() ) + ") Waiting for write" );
 		synchronized( key )
 		{
 			key.interestOps( key.interestOps() | SelectionKey.OP_WRITE );
@@ -111,7 +114,9 @@ public class Dispatcher extends Thread
 	@Override
 	public void run()
 	{
-		this.executor = Executors.newCachedThreadPool();
+		long next = 0;
+
+		this.executor = (ThreadPoolExecutor)Executors.newCachedThreadPool();
 		try
 		{
 			while( !Thread.interrupted() )
@@ -121,9 +126,11 @@ public class Dispatcher extends Thread
 					// Wait till the connect has done its registration TODO Is this the best way?
 				}
 
-				System.out.println( "Selecting from " + this.selector.keys().size() + " keys" );
+				if( debug )
+					System.out.println( "Selecting from " + this.selector.keys().size() + " keys" );
 				int selected = this.selector.select();
-				System.out.println( "Selected " + selected + " keys" );
+				if( debug )
+					System.out.println( "Selected " + selected + " keys" );
 
 				Set< SelectionKey > keys = this.selector.selectedKeys();
 				for( Iterator< SelectionKey > i = keys.iterator(); i.hasNext(); )
@@ -139,7 +146,8 @@ public class Dispatcher extends Thread
 						SocketChannel channel = server.accept();
 						if( channel != null )
 						{
-							System.out.println( "Channel (" + DebugId.getId( channel ) + ") New channel" );
+							if( debug )
+								System.out.println( "Channel (" + DebugId.getId( channel ) + ") New channel" );
 
 							SocketChannelHandlerFactory handlerFactory = (SocketChannelHandlerFactory)key.attachment();
 
@@ -149,10 +157,12 @@ public class Dispatcher extends Thread
 							SocketChannelHandler handler = handlerFactory.createHandler( this, key );
 							key.attach( handler );
 
-							System.out.println( "Channel (" + DebugId.getId( channel ) + ") attached handler" );
+							if( debug )
+								System.out.println( "Channel (" + DebugId.getId( channel ) + ") attached handler" );
 						}
 						else
-							System.out.println( "Lost accept" );
+							if( debug )
+								System.out.println( "Lost accept" );
 					}
 
 					if( key.isReadable() )
@@ -160,20 +170,30 @@ public class Dispatcher extends Thread
 						// TODO Detect close gives -1 on the read
 
 						final SocketChannel channel = (SocketChannel)key.channel();
-						System.out.println( "Channel (" + DebugId.getId( channel ) + ") Readable" );
+						if( debug )
+							System.out.println( "Channel (" + DebugId.getId( channel ) + ") Readable" );
 
 						synchronized( key )
 						{
 							key.interestOps( key.interestOps() ^ SelectionKey.OP_READ );
 						}
 
-						System.out.println( "Channel (" + DebugId.getId( channel ) + ") Data ready, notify" );
+						if( debug )
+							System.out.println( "Channel (" + DebugId.getId( channel ) + ") Data ready, notify" );
 						SocketChannelHandler handler = (SocketChannelHandler)key.attachment();
 						if( handler instanceof AsyncSocketChannelHandler )
 						{
 							AsyncSocketChannelHandler h = (AsyncSocketChannelHandler)handler;
 							if( !h.isRunningAndSet() )
+							{
 								this.executor.execute( h ); // TODO Also for write
+								long now = System.currentTimeMillis();
+								if( now >= next )
+								{
+									System.out.println( "Active count: " + this.executor.getActiveCount() );
+									next = now + 1000;
+								}
+							}
 						}
 						handler.dataIsReady();
 					}
@@ -181,21 +201,24 @@ public class Dispatcher extends Thread
 					if( key.isWritable() )
 					{
 						final SocketChannel channel = (SocketChannel)key.channel();
-						System.out.println( "Channel (" + DebugId.getId( channel ) + ") Writable" );
+						if( debug )
+							System.out.println( "Channel (" + DebugId.getId( channel ) + ") Writable" );
 
 						synchronized( key )
 						{
 							key.interestOps( key.interestOps() ^ SelectionKey.OP_WRITE );
 						}
 
-						System.out.println( "Channel (" + DebugId.getId( channel ) + ") Write ready, notify" );
+						if( debug )
+							System.out.println( "Channel (" + DebugId.getId( channel ) + ") Write ready, notify" );
 						( (ServerSocketChannelHandler)key.attachment() ).writeIsReady();
 					}
 
 					if( key.isConnectable() )
 					{
 						final SocketChannel channel = (SocketChannel)key.channel();
-						System.out.println( "Channel (" + DebugId.getId( channel ) + ") Connectable" );
+						if( debug )
+							System.out.println( "Channel (" + DebugId.getId( channel ) + ") Connectable" );
 					}
 				}
 

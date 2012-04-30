@@ -24,6 +24,7 @@ public class Server
 	private int port;
 	private ApplicationContext application; // TODO Make this a Map
 	private Dispatcher dispatcher;
+	boolean debug;
 
 	public Server( Dispatcher dispatcher, int port ) throws IOException
 	{
@@ -80,7 +81,8 @@ public class Server
 			if( !parts[ 2 ].equals( "HTTP/1.1" ) )
 				throw new HttpException( "Only HTTP/1.1 requests are supported" );
 
-			System.out.println( "GET " + url + " HTTP/1.1" );
+			if( Server.this.debug )
+				System.out.println( "GET " + url + " HTTP/1.1" );
 
 			String parameters = null;
 			int pos = url.indexOf( '?' );

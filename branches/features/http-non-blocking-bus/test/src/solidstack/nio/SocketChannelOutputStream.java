@@ -87,7 +87,8 @@ public class SocketChannelOutputStream extends OutputStream
 		{
 //			logBuffer( this.buffer );
 			int written = channel.write( this.buffer );
-			System.out.println( "Channel (" + id + ") written #" + written + " bytes to channel (1)" );
+			if( Dispatcher.debug )
+				System.out.println( "Channel (" + id + ") written #" + written + " bytes to channel (1)" );
 			while( this.buffer.hasRemaining() )
 			{
 				this.handler.getDispatcher().write( this.handler.getKey() );
@@ -105,7 +106,8 @@ public class SocketChannelOutputStream extends OutputStream
 
 //				logBuffer( this.buffer );
 				written = channel.write( this.buffer );
-				System.out.println( "Channel (" + id + ") written #" + written + " bytes to channel (2)" );
+				if( Dispatcher.debug )
+					System.out.println( "Channel (" + id + ") written #" + written + " bytes to channel (2)" );
 			}
 
 			this.buffer.clear();

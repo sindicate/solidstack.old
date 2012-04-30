@@ -85,7 +85,7 @@ public class Client extends Thread
 				Response response = receiveResponse( getInputStream() );
 				InputStream in = response.getInputStream();
 				this.processor.process( response );
-				drain( in, System.out );
+				drain( in, null );
 
 				complete = true;
 			}

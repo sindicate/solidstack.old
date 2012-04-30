@@ -65,10 +65,12 @@ abstract public class ServerSocketChannelHandler extends AsyncSocketChannelHandl
 				if( !complete )
 				{
 					channel.close();
-					System.out.println( "Channel (" + DebugId.getId( channel ) + ") thread aborted" );
+					if( Dispatcher.debug )
+						System.out.println( "Channel (" + DebugId.getId( channel ) + ") thread aborted" );
 				}
 				else
-					System.out.println( "Channel (" + DebugId.getId( channel ) + ") thread complete" );
+					if( Dispatcher.debug )
+						System.out.println( "Channel (" + DebugId.getId( channel ) + ") thread complete" );
 
 				endOfRunning();
 			}
