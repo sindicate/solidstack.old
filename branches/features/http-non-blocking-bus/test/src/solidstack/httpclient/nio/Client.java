@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.channels.SelectionKey;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -28,11 +29,74 @@ public class Client extends Thread
 {
 	private Dispatcher dispatcher;
 	private String hostname;
+	private int port;
+	private List<SocketChannelHandler> pool = new ArrayList<SocketChannelHandler>();
 
-	public Client( String hostname, Dispatcher dispatcher ) throws IOException
+	public Client( String hostname, int port, Dispatcher dispatcher ) throws IOException
 	{
 		this.dispatcher = dispatcher;
 		this.hostname = hostname;
+		this.port = port;
+	}
+
+	public void request( Request request, final ResponseProcessor responseProcessor ) throws IOException
+	{
+		SocketChannelHandler handler = null;
+		synchronized( this.pool )
+		{
+			if( !this.pool.isEmpty() )
+				handler = this.pool.remove( this.pool.size() - 1 );
+		}
+		if( handler == null )
+			handler = this.dispatcher.connect( this.hostname, this.port, new SocketChannelHandlerFactory()
+			{
+				public SocketChannelHandler createHandler( Dispatcher dispatcher, SelectionKey key )
+				{
+					return new MySocketChannelHandler( dispatcher, key, responseProcessor );
+				}
+			} );
+		else
+			( (MySocketChannelHandler)handler ).setProcessor( responseProcessor );
+		sendRequest( request, handler.getOutputStream() );
+	}
+
+	// TODO Need timeout
+	public class MySocketChannelHandler extends AsyncSocketChannelHandler // implements Runnable
+	{
+		private ResponseProcessor processor;
+
+		public MySocketChannelHandler( Dispatcher dispatcher, SelectionKey key, ResponseProcessor processor )
+		{
+			super( dispatcher, key );
+			this.processor = processor;
+		}
+
+		public void setProcessor( ResponseProcessor processor )
+		{
+			this.processor = processor;
+		}
+
+		@Override
+		public void incoming() throws IOException
+		{
+			boolean complete = false;
+			try
+			{
+				Response response = receiveResponse( getInputStream() );
+				InputStream in = response.getInputStream();
+				this.processor.process( response );
+				drain( in, System.out );
+
+				complete = true;
+			}
+			finally
+			{
+				if( complete )
+					free( this );
+				else
+					close();
+			}
+		}
 	}
 
 	private void sendRequest( Request request, OutputStream out ) throws IOException
@@ -123,18 +187,6 @@ public class Client extends Thread
 //				return;
 	}
 
-	public void request( Request request, final ResponseProcessor responseProcessor ) throws IOException
-	{
-		SocketChannelHandler handler = this.dispatcher.connect( this.hostname, 80, new SocketChannelHandlerFactory()
-		{
-			public SocketChannelHandler createHandler( Dispatcher dispatcher, SelectionKey key )
-			{
-				return new MySocketChannelHandler( dispatcher, key, responseProcessor );
-			}
-		} );
-		sendRequest( request, handler.getOutputStream() );
-	}
-
 	private void drain( InputStream in, PrintStream out )
 	{
 		if( in == null )
@@ -155,30 +207,11 @@ public class Client extends Thread
 		}
 	}
 
-	public class MySocketChannelHandler extends AsyncSocketChannelHandler // implements Runnable
+	private void free( SocketChannelHandler handler )
 	{
-		private ResponseProcessor processor;
-
-		public MySocketChannelHandler( Dispatcher dispatcher, SelectionKey key, ResponseProcessor processor )
+		synchronized( this.pool )
 		{
-			super( dispatcher, key );
-			this.processor = processor;
-		}
-
-		@Override
-		public void incoming() throws IOException
-		{
-			try
-			{
-				Response response = receiveResponse( getInputStream() );
-				InputStream in = response.getInputStream();
-				this.processor.process( response );
-				drain( in, System.out );
-			}
-			finally
-			{
-				close();
-			}
+			this.pool.add( handler );
 		}
 	}
 }

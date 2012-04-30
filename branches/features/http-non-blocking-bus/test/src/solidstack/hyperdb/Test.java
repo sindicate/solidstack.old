@@ -34,7 +34,7 @@ public class Test
 		Dispatcher dispatcher = new Dispatcher();
 		dispatcher.start();
 
-		Client client = new Client( "www.nu.nl", dispatcher );
+		Client client = new Client( "www.nu.nl", 80, dispatcher );
 
 		//Host: www.nu.nl
 		//Connection: keep-alive

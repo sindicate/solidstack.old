@@ -24,11 +24,13 @@ public class SocketChannelInputStream extends InputStream
 	@Override
 	public int read() throws IOException
 	{
+		if( this.handler == null )
+			return -1;
 		if( !this.buffer.hasRemaining() )
 		{
-			if( this.handler == null )
-				return -1;
 			readChannel();
+			if( !this.buffer.hasRemaining() )
+				return -1;
 		}
 
 		return (char)this.buffer.get();
@@ -37,11 +39,13 @@ public class SocketChannelInputStream extends InputStream
 	@Override
 	public int read( byte[] b, int off, int len ) throws IOException
 	{
+		if( this.handler == null )
+			return -1;
 		if( !this.buffer.hasRemaining() )
 		{
-			if( this.handler == null )
-				return -1;
 			readChannel();
+			if( !this.buffer.hasRemaining() )
+				return -1;
 		}
 
 		if( len > this.buffer.remaining() )

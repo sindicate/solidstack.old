@@ -173,23 +173,26 @@ public class Server
 				// TODO Is the socket going to be closed?
 			}
 
-			response.finish();
-
-			// TODO Detect Connection: close headers on the request & response
-			// TODO A GET request has no body, when a POST comes without content size, the connection should be closed.
-			// TODO What about socket.getKeepAlive() and the other properties?
-
-			String length = response.getHeader( "Content-Length" );
-			if( length == null )
+			if( !context.isAsync() )
 			{
-				String transfer = response.getHeader( "Transfer-Encoding" );
-				if( !"chunked".equals( transfer ) )
-					channel.close();
-			}
+				response.finish();
 
-			if( channel.isOpen() )
-				if( request.isConnectionClose() )
-					channel.close();
+				// TODO Detect Connection: close headers on the request & response
+				// TODO A GET request has no body, when a POST comes without content size, the connection should be closed.
+				// TODO What about socket.getKeepAlive() and the other properties?
+
+				String length = response.getHeader( "Content-Length" );
+				if( length == null )
+				{
+					String transfer = response.getHeader( "Transfer-Encoding" );
+					if( !"chunked".equals( transfer ) )
+						channel.close();
+				}
+
+				if( channel.isOpen() )
+					if( request.isConnectionClose() )
+						channel.close();
+			}
 		}
 	}
 }

@@ -69,8 +69,9 @@ public class Response
 	{
 		if( this.committed )
 			throw new IllegalStateException( "Response is already committed" );
-		if( name.equals( "Content-Type" ) )
-			throw new IllegalArgumentException( "Content type should be set with setContentType()" );
+//		if( name.equals( "Content-Type" ) )
+//			throw new IllegalArgumentException( "Content type should be set with setContentType()" );
+		// TODO Interpret content-type, or not?
 		setHeader0( name, value );
 	}
 

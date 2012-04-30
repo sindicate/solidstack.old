@@ -9,6 +9,7 @@ public class RequestContext
 	protected Session session;
 	protected ApplicationContext applicationContext;
 	protected Map< String, Object > args;
+	protected boolean async;
 
 	// TODO Parameter order
 	public RequestContext( Request request, Response response, ApplicationContext applicationContext )
@@ -83,5 +84,15 @@ public class RequestContext
 //		response.reset(); Do not reset, we need the Set-Cookies
 		response.setStatusCode( 303, "Redirect" );
 		response.setHeader( "Location", path );
+	}
+
+	public void setAsync( boolean async )
+	{
+		this.async = async;
+	}
+
+	public boolean isAsync()
+	{
+		return this.async;
 	}
 }
