@@ -1,4 +1,4 @@
-package solidstack.nio;
+package solidstack.nio.test;
 
 import solidstack.httpserver.ApplicationContext;
 

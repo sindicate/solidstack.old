@@ -1,4 +1,4 @@
-package solidstack.nio;
+package solidstack.nio.test;
 
 import java.io.IOException;
 

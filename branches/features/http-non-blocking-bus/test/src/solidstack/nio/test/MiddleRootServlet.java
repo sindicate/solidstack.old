@@ -1,4 +1,4 @@
-package solidstack.nio;
+package solidstack.nio.test;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,6 +13,7 @@ import solidstack.httpclient.nio.Client;
 import solidstack.httpserver.RequestContext;
 import solidstack.httpserver.Servlet;
 import solidstack.lang.SystemException;
+import solidstack.nio.Dispatcher;
 
 
 public class MiddleRootServlet implements Servlet
@@ -86,6 +87,8 @@ public class MiddleRootServlet implements Servlet
 			}
 		};
 
+		context.setAsync( true );
+
 		try
 		{
 			this.client.request( request, processor );
@@ -94,7 +97,5 @@ public class MiddleRootServlet implements Servlet
 		{
 			throw new SystemException( e );
 		}
-
-		context.setAsync( true );
 	}
 }

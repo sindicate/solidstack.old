@@ -12,7 +12,7 @@ import solidstack.httpserver.ApplicationContext;
  *
  * @author René M. de Bloois
  */
-abstract public class SocketChannelHandler
+public class SocketChannelHandler
 {
 	private Dispatcher dispatcher;
 	private SelectionKey key;
@@ -25,13 +25,17 @@ abstract public class SocketChannelHandler
 	 * @param socket The incoming connection.
 	 * @param applicationContext The {@link ApplicationContext}.
 	 */
-	public SocketChannelHandler( Dispatcher dispatcher, SelectionKey key )
+	public SocketChannelHandler( Dispatcher dispatcher )
 	{
 		this.dispatcher = dispatcher;
-		this.key = key;
 
 		this.in = new SocketChannelInputStream( this );
 		this.out = new SocketChannelOutputStream( this );
+	}
+
+	public void setKey( SelectionKey key )
+	{
+		this.key = key;
 	}
 
 	public SocketChannelInputStream getInputStream()

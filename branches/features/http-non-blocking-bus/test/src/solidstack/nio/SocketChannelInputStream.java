@@ -78,7 +78,7 @@ public class SocketChannelInputStream extends InputStream
 				System.out.println( "Channel (" + id + ") read #" + read + " bytes from channel (1)" );
 			while( read == 0 )
 			{
-				this.handler.getDispatcher().read( this.handler.getKey() );
+				this.handler.getDispatcher().listenRead( this.handler.getKey() );
 				try
 				{
 					synchronized( this )

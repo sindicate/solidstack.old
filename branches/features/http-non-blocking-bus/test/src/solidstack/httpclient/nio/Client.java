@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.channels.SelectionKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,8 +20,8 @@ import solidstack.httpserver.Token;
 import solidstack.io.FatalIOException;
 import solidstack.nio.AsyncSocketChannelHandler;
 import solidstack.nio.Dispatcher;
+import solidstack.nio.ReadListener;
 import solidstack.nio.SocketChannelHandler;
-import solidstack.nio.SocketChannelHandlerFactory;
 
 
 public class Client extends Thread
@@ -42,47 +41,39 @@ public class Client extends Thread
 	public void request( Request request, final ResponseProcessor responseProcessor ) throws IOException
 	{
 		SocketChannelHandler handler = null;
+
 		synchronized( this.pool )
 		{
 			if( !this.pool.isEmpty() )
 				handler = this.pool.remove( this.pool.size() - 1 );
 		}
+
+		ReadListener listener = new MyConnectionListener( responseProcessor );
+
 		if( handler == null )
-			handler = this.dispatcher.connect( this.hostname, this.port, new SocketChannelHandlerFactory()
-			{
-				public SocketChannelHandler createHandler( Dispatcher dispatcher, SelectionKey key )
-				{
-					return new MySocketChannelHandler( dispatcher, key, responseProcessor );
-				}
-			} );
+			handler = this.dispatcher.connectAsync( this.hostname, this.port, listener );
 		else
-			( (MySocketChannelHandler)handler ).setProcessor( responseProcessor );
+			( (AsyncSocketChannelHandler)handler ).setListener( listener ); // TODO This is not ok for pipelining
+
 		sendRequest( request, handler.getOutputStream() );
 	}
 
-	// TODO Need timeout
-	public class MySocketChannelHandler extends AsyncSocketChannelHandler // implements Runnable
+	// TODO Add to timeout manager
+	public class MyConnectionListener implements ReadListener
 	{
 		private ResponseProcessor processor;
 
-		public MySocketChannelHandler( Dispatcher dispatcher, SelectionKey key, ResponseProcessor processor )
-		{
-			super( dispatcher, key );
-			this.processor = processor;
-		}
-
-		public void setProcessor( ResponseProcessor processor )
+		public MyConnectionListener( ResponseProcessor processor )
 		{
 			this.processor = processor;
 		}
 
-		@Override
-		public void incoming() throws IOException
+		public void incoming( AsyncSocketChannelHandler handler ) throws IOException
 		{
 			boolean complete = false;
 			try
 			{
-				Response response = receiveResponse( getInputStream() );
+				Response response = receiveResponse( handler.getInputStream() );
 				InputStream in = response.getInputStream();
 				this.processor.process( response );
 				drain( in, null );
@@ -92,9 +83,9 @@ public class Client extends Thread
 			finally
 			{
 				if( complete )
-					free( this );
+					free( handler );
 				else
-					close();
+					handler.close();
 			}
 		}
 	}

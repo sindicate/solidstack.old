@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import solidstack.lang.Assert;
 import solidstack.lang.SystemException;
 
 
@@ -21,23 +22,23 @@ public class Dispatcher extends Thread
 	private Selector selector;
 	private Object lock = new Object();
 	private ThreadPoolExecutor executor;
-	static boolean debug;
+	static final public boolean debug = true;
 
 	public Dispatcher() throws IOException
 	{
 		this.selector = Selector.open();
 	}
 
-	public void listen( int port, SocketChannelHandlerFactory handlerFactory ) throws IOException
+	public void listen( int port, ReadListener listener ) throws IOException
 	{
 		ServerSocketChannel server = ServerSocketChannel.open();
 		server.configureBlocking( false );
-		server.socket().bind( new InetSocketAddress( port ) );
+		server.socket().bind( new InetSocketAddress( port ) ); // TODO Bind to specific network interface
 
-		SelectionKey key = server.register( this.selector, SelectionKey.OP_ACCEPT, handlerFactory );
+		server.register( this.selector, SelectionKey.OP_ACCEPT, listener );
 	}
 
-	public void read( SelectionKey key )
+	public void listenRead( SelectionKey key )
 	{
 		if( debug )
 			System.out.println( "Channel (" + DebugId.getId( key.channel() ) + ") Waiting for data" );
@@ -48,7 +49,7 @@ public class Dispatcher extends Thread
 		key.selector().wakeup();
 	}
 
-	public void write( SelectionKey key )
+	public void listenWrite( SelectionKey key )
 	{
 		if( debug )
 			System.out.println( "Channel (" + DebugId.getId( key.channel() ) + ") Waiting for write" );
@@ -59,22 +60,17 @@ public class Dispatcher extends Thread
 		key.selector().wakeup();
 	}
 
-	public ServerSocketChannelHandler connect( String hostname, int port ) throws IOException
+	public SocketChannelHandler connect( String hostname, int port ) throws IOException
 	{
-		SocketChannel channel = SocketChannel.open( new InetSocketAddress( hostname, port ) );
-		channel.configureBlocking( false );
-		SelectionKey key;
-		synchronized( this.lock ) // Prevent register from blocking again
-		{
-			this.selector.wakeup();
-			key = channel.register( this.selector, 0 );
-		}
-		ServerSocketChannelHandler handler = new ClientSocketChannelHandler( this, key );
-		key.attach( handler );
-		return handler;
+		return connect( hostname, port, new SocketChannelHandler( this ) );
 	}
 
-	public SocketChannelHandler connect( String hostname, int port, SocketChannelHandlerFactory handlerFactory ) throws IOException
+	public SocketChannelHandler connectAsync( String hostname, int port, ReadListener listener ) throws IOException
+	{
+		return connect( hostname, port, new AsyncSocketChannelHandler( this, listener ) );
+	}
+
+	private SocketChannelHandler connect( String hostname, int port, SocketChannelHandler handler ) throws IOException
 	{
 		SocketChannel channel = SocketChannel.open( new InetSocketAddress( hostname, port ) );
 		channel.configureBlocking( false );
@@ -84,7 +80,7 @@ public class Dispatcher extends Thread
 			this.selector.wakeup();
 			key = channel.register( this.selector, SelectionKey.OP_READ );
 		}
-		SocketChannelHandler handler = handlerFactory.createHandler( this, key );
+		handler.setKey( key );
 		key.attach( handler );
 		return handler;
 	}
@@ -124,6 +120,7 @@ public class Dispatcher extends Thread
 				synchronized( this.lock )
 				{
 					// Wait till the connect has done its registration TODO Is this the best way?
+					// TODO Make sure this is not optimized away
 				}
 
 				if( debug )
@@ -149,16 +146,11 @@ public class Dispatcher extends Thread
 							if( debug )
 								System.out.println( "Channel (" + DebugId.getId( channel ) + ") New channel" );
 
-							SocketChannelHandlerFactory handlerFactory = (SocketChannelHandlerFactory)key.attachment();
-
 							channel.configureBlocking( false );
 							key = channel.register( this.selector, SelectionKey.OP_READ );
 
-							SocketChannelHandler handler = handlerFactory.createHandler( this, key );
+							SocketChannelHandler handler = new ServerSocketChannelHandler( this, key, (ReadListener)key.attachment() );
 							key.attach( handler );
-
-							if( debug )
-								System.out.println( "Channel (" + DebugId.getId( channel ) + ") attached handler" );
 						}
 						else
 							if( debug )
@@ -180,6 +172,7 @@ public class Dispatcher extends Thread
 
 						if( debug )
 							System.out.println( "Channel (" + DebugId.getId( channel ) + ") Data ready, notify" );
+
 						SocketChannelHandler handler = (SocketChannelHandler)key.attachment();
 						if( handler instanceof AsyncSocketChannelHandler )
 						{
@@ -211,7 +204,9 @@ public class Dispatcher extends Thread
 
 						if( debug )
 							System.out.println( "Channel (" + DebugId.getId( channel ) + ") Write ready, notify" );
-						( (ServerSocketChannelHandler)key.attachment() ).writeIsReady();
+
+						SocketChannelHandler handler = (SocketChannelHandler)key.attachment();
+						handler.writeIsReady();
 					}
 
 					if( key.isConnectable() )
@@ -219,14 +214,10 @@ public class Dispatcher extends Thread
 						final SocketChannel channel = (SocketChannel)key.channel();
 						if( debug )
 							System.out.println( "Channel (" + DebugId.getId( channel ) + ") Connectable" );
+
+						Assert.fail( "Shouldn't come here" );
 					}
 				}
-
-//				for( ServerSocketChannelHandler handler : this.queue )
-//				{
-//					SelectionKey key = handler.getServer().register( this.selector, SelectionKey.OP_ACCEPT, handler );
-//					handler.setKey( key );
-//				}
 
 				keys.clear();
 			}

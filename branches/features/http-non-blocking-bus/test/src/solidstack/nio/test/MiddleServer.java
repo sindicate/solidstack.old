@@ -1,8 +1,9 @@
-package solidstack.nio;
+package solidstack.nio.test;
 
 import java.io.IOException;
 
 import solidstack.httpserver.nio.Server;
+import solidstack.nio.Dispatcher;
 
 
 public class MiddleServer

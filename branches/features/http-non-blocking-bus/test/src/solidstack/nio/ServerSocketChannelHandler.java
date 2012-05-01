@@ -13,7 +13,7 @@ import solidstack.io.FatalIOException;
  *
  * @author René M. de Bloois
  */
-abstract public class ServerSocketChannelHandler extends AsyncSocketChannelHandler
+public class ServerSocketChannelHandler extends AsyncSocketChannelHandler
 {
 	/**
 	 * Constructor.
@@ -21,13 +21,12 @@ abstract public class ServerSocketChannelHandler extends AsyncSocketChannelHandl
 	 * @param socket The incoming connection.
 	 * @param applicationContext The {@link ApplicationContext}.
 	 */
-	public ServerSocketChannelHandler( Dispatcher dispatcher, SelectionKey key )
+	public ServerSocketChannelHandler( Dispatcher dispatcher, SelectionKey key, ReadListener listener )
 	{
-		super( dispatcher, key );
-	}
+		super( dispatcher, listener );
 
-	@Override
-	abstract public void incoming() throws IOException;
+		setKey( key );
+	}
 
 	@Override
 	public void run()
@@ -42,13 +41,13 @@ abstract public class ServerSocketChannelHandler extends AsyncSocketChannelHandl
 			{
 				while( true )
 				{
-					incoming();
+					getListener().incoming( this );
 
 					if( channel.isOpen() )
 					{
 						if( getInputStream().available() == 0 )
 						{
-							getDispatcher().read( key );
+							getDispatcher().listenRead( key );
 							complete = true;
 							return;
 						}

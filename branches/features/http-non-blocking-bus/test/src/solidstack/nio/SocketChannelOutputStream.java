@@ -91,7 +91,7 @@ public class SocketChannelOutputStream extends OutputStream
 				System.out.println( "Channel (" + id + ") written #" + written + " bytes to channel (1)" );
 			while( this.buffer.hasRemaining() )
 			{
-				this.handler.getDispatcher().write( this.handler.getKey() );
+				this.handler.getDispatcher().listenWrite( this.handler.getKey() );
 				try
 				{
 					synchronized( this )

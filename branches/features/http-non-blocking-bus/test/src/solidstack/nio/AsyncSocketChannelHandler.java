@@ -14,8 +14,9 @@ import solidstack.io.FatalIOException;
  *
  * @author René M. de Bloois
  */
-abstract public class AsyncSocketChannelHandler extends SocketChannelHandler implements Runnable
+public class AsyncSocketChannelHandler extends SocketChannelHandler implements Runnable
 {
+	private ReadListener listener;
 	private AtomicBoolean running = new AtomicBoolean();
 
 	/**
@@ -24,9 +25,21 @@ abstract public class AsyncSocketChannelHandler extends SocketChannelHandler imp
 	 * @param socket The incoming connection.
 	 * @param applicationContext The {@link ApplicationContext}.
 	 */
-	public AsyncSocketChannelHandler( Dispatcher dispatcher, SelectionKey key )
+	public AsyncSocketChannelHandler( Dispatcher dispatcher, ReadListener listener )
 	{
-		super( dispatcher, key );
+		super( dispatcher );
+
+		this.listener = listener;
+	}
+
+	public void setListener( ReadListener listener )
+	{
+		this.listener = listener;
+	}
+
+	protected ReadListener getListener()
+	{
+		return this.listener;
 	}
 
 	protected boolean isRunningAndSet()
@@ -38,8 +51,6 @@ abstract public class AsyncSocketChannelHandler extends SocketChannelHandler imp
 	{
 		this.running.set( false );
 	}
-
-	abstract protected void incoming() throws IOException;
 
 	public void run()
 	{
@@ -53,13 +64,13 @@ abstract public class AsyncSocketChannelHandler extends SocketChannelHandler imp
 			{
 				while( true )
 				{
-					incoming();
+					getListener().incoming( this );
 
 					if( channel.isOpen() )
 					{
 						if( getInputStream().available() == 0 )
 						{
-							getDispatcher().read( key );
+							getDispatcher().listenRead( key );
 							complete = true;
 							return;
 						}

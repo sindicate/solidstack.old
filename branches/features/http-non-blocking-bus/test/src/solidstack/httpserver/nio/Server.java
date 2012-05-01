@@ -14,9 +14,9 @@ import solidstack.httpserver.RequestContext;
 import solidstack.httpserver.Response;
 import solidstack.httpserver.Token;
 import solidstack.httpserver.UrlEncodedParser;
+import solidstack.nio.AsyncSocketChannelHandler;
 import solidstack.nio.Dispatcher;
-import solidstack.nio.ServerSocketChannelHandler;
-import solidstack.nio.SocketChannelHandlerFactory;
+import solidstack.nio.ReadListener;
 
 
 public class Server
@@ -31,13 +31,7 @@ public class Server
 		this.dispatcher = dispatcher;
 		this.port = port;
 
-		getDispatcher().listen( this.port, new SocketChannelHandlerFactory()
-		{
-			public ServerSocketChannelHandler createHandler( Dispatcher dispatcher, SelectionKey key )
-			{
-				return new MySocketChannelHandler( dispatcher, key );
-			}
-		} );
+		dispatcher.listen( this.port, new MyConnectionListener() );
 	}
 
 	public void setApplication( ApplicationContext application )
@@ -55,22 +49,16 @@ public class Server
 		return this.dispatcher;
 	}
 
-	public class MySocketChannelHandler extends ServerSocketChannelHandler // implements Runnable
+	public class MyConnectionListener implements ReadListener
 	{
-		public MySocketChannelHandler( Dispatcher dispatcher, SelectionKey key )
+		public void incoming( AsyncSocketChannelHandler handler ) throws IOException
 		{
-			super( dispatcher, key );
-		}
-
-		@Override
-		public void incoming() throws IOException
-		{
-			SocketChannel channel = getChannel();
-			SelectionKey key = getKey();
+			SocketChannel channel = handler.getChannel();
+			SelectionKey key = handler.getKey();
 
 			Request request = new Request();
 
-			HttpHeaderTokenizer tokenizer = new HttpHeaderTokenizer( getInputStream() );
+			HttpHeaderTokenizer tokenizer = new HttpHeaderTokenizer( handler.getInputStream() );
 
 			String line = tokenizer.getLine();
 			String[] parts = line.split( "[ \t]+" );
@@ -136,7 +124,7 @@ public class Server
 				if( contentLength != null )
 				{
 					int len = Integer.parseInt( contentLength );
-					UrlEncodedParser parser = new UrlEncodedParser( getInputStream(), len );
+					UrlEncodedParser parser = new UrlEncodedParser( handler.getInputStream(), len );
 					String parameter = parser.getParameter();
 					while( parameter != null )
 					{
@@ -147,7 +135,7 @@ public class Server
 				}
 			}
 
-			Response response = new Response( request, getOutputStream() ); // out is a SocketChannelOutputStream, close() does not close the SocketChannel
+			Response response = new Response( request, handler.getOutputStream() ); // out is a SocketChannelOutputStream, close() does not close the SocketChannel
 			RequestContext context = new RequestContext( request, response, getApplication() );
 			try
 			{
@@ -194,6 +182,10 @@ public class Server
 				if( channel.isOpen() )
 					if( request.isConnectionClose() )
 						channel.close();
+			}
+			else
+			{
+				// TODO Add to timeout manager
 			}
 		}
 	}
