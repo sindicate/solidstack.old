@@ -14,6 +14,7 @@ import solidstack.httpserver.ApplicationContext;
  */
 public class SocketChannelHandler
 {
+	private int id;
 	private Dispatcher dispatcher;
 	private SelectionKey key;
 	private SocketChannelInputStream in;
@@ -31,6 +32,13 @@ public class SocketChannelHandler
 
 		this.in = new SocketChannelInputStream( this );
 		this.out = new SocketChannelOutputStream( this );
+
+		this.id = DebugId.getId( this );
+	}
+
+	public int getId()
+	{
+		return this.id;
 	}
 
 	public void setKey( SelectionKey key )

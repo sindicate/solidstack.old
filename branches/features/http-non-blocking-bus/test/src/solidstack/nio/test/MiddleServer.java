@@ -16,6 +16,8 @@ public class MiddleServer
 	 */
 	public static void main( String[] args ) throws IOException
 	{
+		System.setProperty( "logback.configurationFile", "solidstack/nio/test/logback-middle.xml" );
+
 		dispatcher = new Dispatcher();
 
 		Server server = new Server( dispatcher, 8002 );

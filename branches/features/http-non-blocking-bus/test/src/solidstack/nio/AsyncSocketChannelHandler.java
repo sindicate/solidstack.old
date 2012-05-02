@@ -1,12 +1,11 @@
 package solidstack.nio;
 
-import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import solidstack.httpserver.ApplicationContext;
-import solidstack.io.FatalIOException;
+import solidstack.lang.Assert;
 
 
 /**
@@ -29,6 +28,7 @@ public class AsyncSocketChannelHandler extends SocketChannelHandler implements R
 	{
 		super( dispatcher );
 
+		Assert.notNull( listener );
 		this.listener = listener;
 	}
 
@@ -52,14 +52,23 @@ public class AsyncSocketChannelHandler extends SocketChannelHandler implements R
 		this.running.set( false );
 	}
 
+	@Override
+	public void dataIsReady()
+	{
+		if( !isRunningAndSet() )
+			getDispatcher().execute( this ); // TODO Also for write
+
+		super.dataIsReady();
+	}
+
 	public void run()
 	{
-		SocketChannel channel = getChannel();
-		SelectionKey key = getKey();
-
 		boolean complete = false;
 		try
 		{
+			SocketChannel channel = getChannel();
+			SelectionKey key = getKey();
+
 			try
 			{
 				while( true )
@@ -87,19 +96,19 @@ public class AsyncSocketChannelHandler extends SocketChannelHandler implements R
 				if( !complete )
 				{
 					channel.close();
-					if( Dispatcher.debug )
-						System.out.println( "Channel (" + DebugId.getId( channel ) + ") thread aborted" );
+					if( Loggers.nio.isDebugEnabled() )
+						Loggers.nio.trace( "Channel ({}) task aborted", DebugId.getId( channel ) );
 				}
 				else
-					if( Dispatcher.debug )
-						System.out.println( "Channel (" + DebugId.getId( channel ) + ") thread complete" );
+					if( Loggers.nio.isDebugEnabled() )
+						Loggers.nio.trace( "Channel ({}) task complete", DebugId.getId( channel ) );
 
-				this.running.set( false );
+				endOfRunning();
 			}
 		}
-		catch( IOException e )
+		catch( Throwable t ) // TODO Exception, not Throwable
 		{
-			throw new FatalIOException( e );
+			Loggers.nio.debug( "Unhandled exception", t );
 		}
 	}
 }

@@ -87,15 +87,16 @@ public class SocketChannelOutputStream extends OutputStream
 		{
 //			logBuffer( this.buffer );
 			int written = channel.write( this.buffer );
-			if( Dispatcher.debug )
-				System.out.println( "Channel (" + id + ") written #" + written + " bytes to channel (1)" );
+			if( Loggers.nio.isTraceEnabled() )
+				Loggers.nio.trace( "Channel ({}) written #{} bytes from channel (1)", id, written );
 			while( this.buffer.hasRemaining() )
 			{
-				this.handler.getDispatcher().listenWrite( this.handler.getKey() );
 				try
 				{
 					synchronized( this )
 					{
+						// Prevent losing a notify: listenWriter() must be called within the synchronized block
+						this.handler.getDispatcher().listenWrite( this.handler.getKey() );
 						wait();
 					}
 				}
@@ -106,8 +107,8 @@ public class SocketChannelOutputStream extends OutputStream
 
 //				logBuffer( this.buffer );
 				written = channel.write( this.buffer );
-				if( Dispatcher.debug )
-					System.out.println( "Channel (" + id + ") written #" + written + " bytes to channel (2)" );
+				if( Loggers.nio.isTraceEnabled() )
+					Loggers.nio.trace( "Channel ({}) written #{} bytes from channel (2)", id, written );
 			}
 
 			this.buffer.clear();

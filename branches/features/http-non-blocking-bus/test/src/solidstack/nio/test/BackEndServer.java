@@ -14,6 +14,8 @@ public class BackEndServer
 	 */
 	public static void main( String[] args ) throws IOException
 	{
+		System.setProperty( "logback.configurationFile", "solidstack/nio/test/logback-backend.xml" );
+
 		Dispatcher selector = new Dispatcher();
 
 		Server server = new Server( selector, 8001 );

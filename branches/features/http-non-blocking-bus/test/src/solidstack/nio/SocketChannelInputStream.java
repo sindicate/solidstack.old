@@ -74,15 +74,16 @@ public class SocketChannelInputStream extends InputStream
 		try
 		{
 			int read = channel.read( this.buffer );
-			if( Dispatcher.debug )
-				System.out.println( "Channel (" + id + ") read #" + read + " bytes from channel (1)" );
+			if( Loggers.nio.isTraceEnabled() )
+				Loggers.nio.trace( "Channel ({}) read #{} bytes from channel (1)", id, read );
 			while( read == 0 )
 			{
-				this.handler.getDispatcher().listenRead( this.handler.getKey() );
 				try
 				{
 					synchronized( this )
 					{
+						// Prevent losing a notify: listenRead() must be called within the synchronized block
+						this.handler.getDispatcher().listenRead( this.handler.getKey() );
 						wait();
 					}
 				}
@@ -92,8 +93,8 @@ public class SocketChannelInputStream extends InputStream
 				}
 
 				read = channel.read( this.buffer );
-				if( Dispatcher.debug )
-					System.out.println( "Channel (" + id + ") read #" + read + " bytes from channel (2)" );
+				if( Loggers.nio.isTraceEnabled() )
+					Loggers.nio.trace( "Channel ({}) read #{} bytes from channel (2)", id, read );
 			}
 
 			if( read == -1 )

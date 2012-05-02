@@ -1,11 +1,9 @@
 package solidstack.nio;
 
-import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 import solidstack.httpserver.ApplicationContext;
-import solidstack.io.FatalIOException;
 
 
 /**
@@ -64,19 +62,19 @@ public class ServerSocketChannelHandler extends AsyncSocketChannelHandler
 				if( !complete )
 				{
 					channel.close();
-					if( Dispatcher.debug )
-						System.out.println( "Channel (" + DebugId.getId( channel ) + ") thread aborted" );
+					if( Loggers.nio.isDebugEnabled() )
+						Loggers.nio.trace( "Channel ({}) task aborted", DebugId.getId( channel ) );
 				}
 				else
-					if( Dispatcher.debug )
-						System.out.println( "Channel (" + DebugId.getId( channel ) + ") thread complete" );
+					if( Loggers.nio.isDebugEnabled() )
+						Loggers.nio.trace( "Channel ({}) task complete", DebugId.getId( channel ) );
 
 				endOfRunning();
 			}
 		}
-		catch( IOException e )
+		catch( Throwable t ) // TODO Exception, not Throwable
 		{
-			throw new FatalIOException( e );
+			Loggers.nio.debug( "Unhandled exception", t );
 		}
 	}
 }
