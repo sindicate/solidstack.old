@@ -61,6 +61,7 @@ public class Dispatcher extends Thread
 
 		synchronized( key )
 		{
+			// TODO Only set and wakeup when not set already
 			key.interestOps( key.interestOps() | SelectionKey.OP_READ );
 		}
 		key.selector().wakeup();
@@ -73,6 +74,7 @@ public class Dispatcher extends Thread
 
 		synchronized( key )
 		{
+			// TODO Only set and wakeup when not set already
 			key.interestOps( key.interestOps() | SelectionKey.OP_WRITE );
 		}
 		key.selector().wakeup();

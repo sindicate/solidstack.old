@@ -1,6 +1,7 @@
 package solidstack.httpserver.nio;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
@@ -24,7 +25,7 @@ public class Server
 	private int port;
 	private ApplicationContext application; // TODO Make this a Map
 	private Dispatcher dispatcher;
-	boolean debug;
+//	boolean debug;
 
 	public Server( Dispatcher dispatcher, int port ) throws IOException
 	{
@@ -69,8 +70,8 @@ public class Server
 			if( !parts[ 2 ].equals( "HTTP/1.1" ) )
 				throw new HttpException( "Only HTTP/1.1 requests are supported" );
 
-			if( Server.this.debug )
-				System.out.println( "GET " + url + " HTTP/1.1" );
+//			if( Server.this.debug )
+//				System.out.println( "GET " + url + " HTTP/1.1" );
 
 			String parameters = null;
 			int pos = url.indexOf( '?' );
@@ -135,7 +136,9 @@ public class Server
 				}
 			}
 
-			Response response = new Response( request, handler.getOutputStream() ); // out is a SocketChannelOutputStream, close() does not close the SocketChannel
+			OutputStream out = handler.getOutputStream();
+//			out = new CloseBlockingOutputStream( out );
+			Response response = new Response( request, out );
 			RequestContext context = new RequestContext( request, response, getApplication() );
 			try
 			{

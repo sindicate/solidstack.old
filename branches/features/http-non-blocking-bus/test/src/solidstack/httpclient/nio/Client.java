@@ -18,6 +18,7 @@ import solidstack.httpserver.HttpException;
 import solidstack.httpserver.HttpHeaderTokenizer;
 import solidstack.httpserver.Token;
 import solidstack.io.FatalIOException;
+import solidstack.lang.Assert;
 import solidstack.nio.AsyncSocketChannelHandler;
 import solidstack.nio.Dispatcher;
 import solidstack.nio.ReadListener;
@@ -55,6 +56,7 @@ public class Client extends Thread
 		else
 			( (AsyncSocketChannelHandler)handler ).setListener( listener ); // TODO This is not ok for pipelining
 
+		Assert.isTrue( handler.busy.compareAndSet( false, true ) );
 		sendRequest( request, handler.getOutputStream() );
 	}
 
@@ -76,8 +78,10 @@ public class Client extends Thread
 				Response response = receiveResponse( handler.getInputStream() );
 				InputStream in = response.getInputStream();
 				this.processor.process( response );
+				this.processor = null;
 				drain( in, null );
 
+				Assert.isTrue( handler.busy.compareAndSet( true, false ) );
 				complete = true;
 			}
 			finally

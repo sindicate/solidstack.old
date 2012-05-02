@@ -57,6 +57,7 @@ public class SocketChannelOutputStream extends OutputStream
 	public void close() throws IOException
 	{
 		flush();
+//		this.handler.close();
 	}
 
 	protected void logBuffer( ByteBuffer buffer )
@@ -78,7 +79,7 @@ public class SocketChannelOutputStream extends OutputStream
 		SocketChannel channel = this.handler.getChannel();
 		int id = DebugId.getId( channel );
 
-		Assert.isTrue( channel.isOpen() );
+		Assert.isTrue( channel.isOpen(), "Channel is closed" );
 		Assert.isTrue( channel.isConnected() );
 		this.buffer.flip();
 		Assert.isTrue( this.buffer.hasRemaining() );
@@ -88,7 +89,7 @@ public class SocketChannelOutputStream extends OutputStream
 //			logBuffer( this.buffer );
 			int written = channel.write( this.buffer );
 			if( Loggers.nio.isTraceEnabled() )
-				Loggers.nio.trace( "Channel ({}) written #{} bytes from channel (1)", id, written );
+				Loggers.nio.trace( "Channel ({}) written #{} bytes to channel (1)", id, written );
 			while( this.buffer.hasRemaining() )
 			{
 				try
@@ -108,7 +109,7 @@ public class SocketChannelOutputStream extends OutputStream
 //				logBuffer( this.buffer );
 				written = channel.write( this.buffer );
 				if( Loggers.nio.isTraceEnabled() )
-					Loggers.nio.trace( "Channel ({}) written #{} bytes from channel (2)", id, written );
+					Loggers.nio.trace( "Channel ({}) written #{} bytes to channel (2)", id, written );
 			}
 
 			this.buffer.clear();

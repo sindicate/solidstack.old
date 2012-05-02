@@ -3,6 +3,7 @@ package solidstack.nio;
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import solidstack.httpserver.ApplicationContext;
 
@@ -19,6 +20,7 @@ public class SocketChannelHandler
 	private SelectionKey key;
 	private SocketChannelInputStream in;
 	private SocketChannelOutputStream out;
+	public AtomicBoolean busy = new AtomicBoolean();
 
 	/**
 	 * Constructor.

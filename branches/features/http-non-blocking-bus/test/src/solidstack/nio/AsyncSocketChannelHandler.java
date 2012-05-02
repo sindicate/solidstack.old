@@ -55,10 +55,11 @@ public class AsyncSocketChannelHandler extends SocketChannelHandler implements R
 	@Override
 	public void dataIsReady()
 	{
+		// Not running -> not waiting, no notify needed
 		if( !isRunningAndSet() )
 			getDispatcher().execute( this ); // TODO Also for write
-
-		super.dataIsReady();
+		else
+			super.dataIsReady();
 	}
 
 	public void run()
@@ -83,6 +84,7 @@ public class AsyncSocketChannelHandler extends SocketChannelHandler implements R
 							complete = true;
 							return;
 						}
+						Assert.fail( "Shouldn't come here (yet): available = " + getInputStream().available() );
 					}
 					else
 					{
