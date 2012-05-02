@@ -7,6 +7,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 import solidstack.httpserver.ApplicationContext;
+import solidstack.httpserver.CloseBlockingOutputStream;
 import solidstack.httpserver.FatalSocketException;
 import solidstack.httpserver.HttpException;
 import solidstack.httpserver.HttpHeaderTokenizer;
@@ -137,7 +138,7 @@ public class Server
 			}
 
 			OutputStream out = handler.getOutputStream();
-//			out = new CloseBlockingOutputStream( out );
+			out = new CloseBlockingOutputStream( out );
 			Response response = new Response( request, out );
 			RequestContext context = new RequestContext( request, response, getApplication() );
 			try

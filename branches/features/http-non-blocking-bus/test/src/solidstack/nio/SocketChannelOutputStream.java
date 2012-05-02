@@ -57,7 +57,7 @@ public class SocketChannelOutputStream extends OutputStream
 	public void close() throws IOException
 	{
 		flush();
-//		this.handler.close();
+		this.handler.close();
 	}
 
 	protected void logBuffer( ByteBuffer buffer )

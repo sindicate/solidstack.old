@@ -80,8 +80,8 @@ public class MiddleRootServlet implements Servlet
 				}
 				finally
 				{
-//					if( !complete )
-//						r.getOutputStream().close();
+					if( !complete )
+						r.getOutputStream().close();
 				}
 
 //				// TODO Detect Connection: close headers on the request & response
