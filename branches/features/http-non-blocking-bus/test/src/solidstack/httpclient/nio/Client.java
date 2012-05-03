@@ -39,7 +39,7 @@ public class Client extends Thread
 		this.port = port;
 	}
 
-	public void request( Request request, final ResponseProcessor responseProcessor ) throws IOException
+	public void request( Request request, final ResponseProcessor processor ) throws IOException
 	{
 		SocketChannelHandler handler = null;
 
@@ -49,7 +49,7 @@ public class Client extends Thread
 				handler = this.pool.remove( this.pool.size() - 1 );
 		}
 
-		ReadListener listener = new MyConnectionListener( responseProcessor );
+		ReadListener listener = new MyConnectionListener( processor );
 
 		if( handler == null )
 			handler = this.dispatcher.connectAsync( this.hostname, this.port, listener );
@@ -58,6 +58,8 @@ public class Client extends Thread
 
 		Assert.isTrue( handler.busy.compareAndSet( false, true ) );
 		sendRequest( request, handler.getOutputStream() );
+
+		this.dispatcher.addTimeout( processor, 10000 );
 	}
 
 	// TODO Add to timeout manager

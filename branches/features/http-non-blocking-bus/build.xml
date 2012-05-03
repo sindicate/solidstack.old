@@ -235,6 +235,11 @@
 
 
 	<target name="build" depends="jar" description="Do an (incremental) build">
+		<copy todir="${dist.home}">
+			<fileset dir="" includes="*.cmd" />
+			<fileset dir="lib" includes="*.jar" />
+			<fileset dir="test/lib" includes="*.jar" />
+		</copy>
 	</target>
 
 

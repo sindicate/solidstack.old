@@ -7,12 +7,15 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import solidstack.httpclient.ResponseProcessor;
 import solidstack.lang.Assert;
 import solidstack.lang.SystemException;
 
@@ -25,6 +28,8 @@ public class Dispatcher extends Thread
 	private ThreadPoolExecutor executor;
 	private long next;
 //	static final public boolean debug = true;
+	private List<Timeout> timeouts = new ArrayList<Timeout>();
+	private long nextTimeout;
 
 	public Dispatcher() throws IOException
 	{
@@ -105,6 +110,14 @@ public class Dispatcher extends Thread
 		return handler;
 	}
 
+	public void addTimeout( ResponseProcessor processor, int timeout )
+	{
+		synchronized( this.timeouts )
+		{
+			this.timeouts.add( new Timeout( processor, System.currentTimeMillis() + timeout ) );
+		}
+	}
+
 	private void shutdownThreadPool() throws InterruptedException
 	{
 		Loggers.nio.info( "Shutting down dispatcher" );
@@ -143,7 +156,7 @@ public class Dispatcher extends Thread
 
 				if( Loggers.nio.isTraceEnabled() )
 					Loggers.nio.trace( "Selecting from {} keys", this.selector.keys().size() );
-				int selected = this.selector.select();
+				int selected = this.selector.select( 10000 );
 				Loggers.nio.trace( "Selected {} keys", selected );
 
 				Set< SelectionKey > keys = this.selector.selectedKeys();
@@ -226,6 +239,33 @@ public class Dispatcher extends Thread
 				}
 
 				keys.clear();
+
+				long now = System.currentTimeMillis();
+				if( now >= this.nextTimeout )
+				{
+					this.nextTimeout = now + 10000;
+
+					Loggers.nio.trace( "Processing timeouts" );
+
+					List<Timeout> timedouts = new ArrayList<Timeout>();
+					synchronized( this.timeouts )
+					{
+						for( Iterator<Timeout> i = this.timeouts.iterator(); i.hasNext(); )
+						{
+							Timeout timeout = i.next();
+							if( timeout.getTimeout() <= now )
+							{
+								timedouts.add( timeout );
+								i.remove();
+							}
+						}
+					}
+
+					for( Timeout timeout : timedouts )
+					{
+						timeout.getProcessor().timeout();
+					}
+				}
 			}
 		}
 		catch( IOException e )

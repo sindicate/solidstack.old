@@ -15,6 +15,8 @@ import solidstack.httpserver.RequestContext;
 import solidstack.httpserver.Servlet;
 import solidstack.lang.Assert;
 import solidstack.lang.SystemException;
+import solidstack.lang.ThreadInterrupted;
+import solidstack.nio.Loggers;
 
 
 public class MiddleRootServlet implements Servlet
@@ -28,8 +30,20 @@ public class MiddleRootServlet implements Servlet
 
 	public void call( final RequestContext context )
 	{
-		Request request = new Request( "/" );
-//		request.setHeader( "Host", "www.nu.nl" );
+		String sleep = context.getRequest().getParameter( "sleep" );
+		if( sleep != null )
+		{
+			try
+			{
+				Thread.sleep( Integer.parseInt( sleep ) );
+			}
+			catch( InterruptedException e )
+			{
+				throw new ThreadInterrupted();
+			}
+		}
+
+		sleep = context.getRequest().getParameter( "backendsleep" );
 
 		ResponseProcessor processor = new ResponseProcessor()
 		{
@@ -100,9 +114,25 @@ public class MiddleRootServlet implements Servlet
 //					if( request.isConnectionClose() )
 //						channel.close();
 			}
+
+			public void timeout()
+			{
+				if( !this.started.get() )
+				{
+					RequestContext c = context;
+					solidstack.httpserver.Response r = c.getResponse();
+
+					r.setStatusCode( 504, "Gateway Timeout" );
+					r.finish();
+
+					Loggers.nio.debug( "Request timed out" );
+				}
+			}
 		};
 
 		context.setAsync( true );
+
+		Request request = new Request( "/" + ( sleep != null ? "?sleep=" + sleep : "" ) );
 
 		try
 		{
