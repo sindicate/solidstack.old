@@ -16,6 +16,7 @@ import solidstack.httpserver.RequestContext;
 import solidstack.httpserver.Response;
 import solidstack.httpserver.Token;
 import solidstack.httpserver.UrlEncodedParser;
+import solidstack.lang.SystemException;
 import solidstack.nio.AsyncSocketChannelHandler;
 import solidstack.nio.Dispatcher;
 import solidstack.nio.ReadListener;
@@ -154,7 +155,7 @@ public class Server
 				Throwable t = e;
 				if( t.getClass().equals( HttpException.class ) && t.getCause() != null )
 					t = t.getCause();
-				t.printStackTrace( System.out );
+//				t.printStackTrace( System.out );
 				if( !response.isCommitted() )
 				{
 					response.reset();
@@ -164,6 +165,11 @@ public class Server
 					t.printStackTrace( writer );
 					writer.flush();
 				}
+				if( e instanceof IOException )
+					throw (IOException)e;
+				if( e instanceof RuntimeException )
+					throw (RuntimeException)e;
+				throw new SystemException( e );
 				// TODO Is the socket going to be closed?
 			}
 

@@ -20,7 +20,9 @@ import solidstack.httpserver.Token;
 import solidstack.io.FatalIOException;
 import solidstack.lang.Assert;
 import solidstack.nio.AsyncSocketChannelHandler;
+import solidstack.nio.DebugId;
 import solidstack.nio.Dispatcher;
+import solidstack.nio.Loggers;
 import solidstack.nio.ReadListener;
 import solidstack.nio.SocketChannelHandler;
 
@@ -52,9 +54,15 @@ public class Client extends Thread
 		ReadListener listener = new MyConnectionListener( processor );
 
 		if( handler == null )
+		{
 			handler = this.dispatcher.connectAsync( this.hostname, this.port, listener );
+			Loggers.nio.trace( "Channel ({}) New" , DebugId.getId( handler.getChannel() ) );
+		}
 		else
+		{
 			( (AsyncSocketChannelHandler)handler ).setListener( listener ); // TODO This is not ok for pipelining
+			Loggers.nio.trace( "Channel ({}) From pool", DebugId.getId( handler.getChannel() ) );
+		}
 
 		Assert.isTrue( handler.busy.compareAndSet( false, true ) );
 		sendRequest( request, handler.getOutputStream() );
@@ -89,7 +97,7 @@ public class Client extends Thread
 			finally
 			{
 				if( complete )
-					free( handler );
+					free( handler ); // FIXME This may come before the sendRequest is finished
 				else
 					handler.close();
 			}

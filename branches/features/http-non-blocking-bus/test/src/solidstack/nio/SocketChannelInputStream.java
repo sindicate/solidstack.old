@@ -60,6 +60,12 @@ public class SocketChannelInputStream extends InputStream
 		return this.buffer.remaining();
 	}
 
+	static protected void logBuffer( int id, ByteBuffer buffer )
+	{
+		byte[] bytes = buffer.array();
+		Loggers.nio.trace( "Channel (" + id + ") " + new String( bytes, 0, buffer.limit() ) );
+	}
+
 	// TODO What if it read too much? Like when 2 requests are chained. The handler needs to keep reading.
 	protected void readChannel()
 	{
@@ -97,13 +103,15 @@ public class SocketChannelInputStream extends InputStream
 					Loggers.nio.trace( "Channel ({}) read #{} bytes from channel (2)", id, read );
 			}
 
+			this.buffer.flip();
+
 			if( read == -1 )
 			{
 				channel.close(); // TODO This should cancel all keys
 				this.handler = null;
 			}
-
-			this.buffer.flip();
+			else
+				logBuffer( id, this.buffer );
 		}
 		catch( IOException e )
 		{

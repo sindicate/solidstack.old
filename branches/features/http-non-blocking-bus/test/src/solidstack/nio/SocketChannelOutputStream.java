@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import solidstack.httpserver.FatalSocketException;
 import solidstack.lang.Assert;
@@ -14,6 +15,7 @@ public class SocketChannelOutputStream extends OutputStream
 {
 	private SocketChannelHandler handler;
 	private ByteBuffer buffer;
+	private AtomicBoolean block = new AtomicBoolean();
 
 	public SocketChannelOutputStream( SocketChannelHandler handler )
 	{
@@ -24,15 +26,21 @@ public class SocketChannelOutputStream extends OutputStream
 	@Override
 	public void write( int b )
 	{
+		Assert.isTrue( this.block.compareAndSet( false, true ) );
+
 		Assert.isTrue( this.buffer.hasRemaining() );
 		this.buffer.put( (byte)b );
 		if( !this.buffer.hasRemaining() )
 			writeChannel();
+
+		this.block.set( false );
 	}
 
 	@Override
 	public void write( byte[] b, int off, int len )
 	{
+		Assert.isTrue( this.block.compareAndSet( false, true ) );
+
 		while( len > 0 )
 		{
 			int l = len;
@@ -44,13 +52,19 @@ public class SocketChannelOutputStream extends OutputStream
 			if( !this.buffer.hasRemaining() )
 				writeChannel();
 		}
+
+		this.block.set( false );
 	}
 
 	@Override
 	public void flush() throws IOException
 	{
+		Assert.isTrue( this.block.compareAndSet( false, true ) );
+
 		if( this.buffer.position() > 0 )
 			writeChannel();
+
+		this.block.set( false );
 	}
 
 	@Override
@@ -60,18 +74,19 @@ public class SocketChannelOutputStream extends OutputStream
 		this.handler.close();
 	}
 
-	protected void logBuffer( ByteBuffer buffer )
+	static protected void logBuffer( int id, ByteBuffer buffer )
 	{
+//		StringBuilder log = new StringBuilder();
 		byte[] bytes = buffer.array();
-		int end = buffer.limit();
-		for( int i = 0; i < end; i++ )
-		{
-			String s = Integer.toHexString( bytes[ i ] );
-			s = "00" + s;
-			s = s.substring( s.length() - 2 );
-			System.out.print( s + " " );
-		}
-		System.out.println();
+//		int end = buffer.limit();
+//		for( int i = 0; i < end; i++ )
+//		{
+//			String s = "00" + Integer.toHexString( bytes[ i ] );
+//			log.append( s.substring( s.length() - 2 ) );
+//			log.append( ' ' );
+//		}
+//		Loggers.nio.trace( log.toString() );
+		Loggers.nio.trace( "Channel (" + id + ") " + new String( bytes, 0, buffer.limit() ) );
 	}
 
 	protected void writeChannel()
@@ -86,7 +101,7 @@ public class SocketChannelOutputStream extends OutputStream
 
 		try
 		{
-//			logBuffer( this.buffer );
+			logBuffer( id, this.buffer );
 			int written = channel.write( this.buffer );
 			if( Loggers.nio.isTraceEnabled() )
 				Loggers.nio.trace( "Channel ({}) written #{} bytes to channel (1)", id, written );
@@ -106,7 +121,7 @@ public class SocketChannelOutputStream extends OutputStream
 					throw new FatalSocketException( e );
 				}
 
-//				logBuffer( this.buffer );
+				logBuffer( id, this.buffer );
 				written = channel.write( this.buffer );
 				if( Loggers.nio.isTraceEnabled() )
 					Loggers.nio.trace( "Channel ({}) written #{} bytes to channel (2)", id, written );

@@ -84,6 +84,11 @@ public class Test
 					throw new FatalIOException( e );
 				}
 			}
+
+			public void timeout()
+			{
+				System.out.println( "Request timed out" );
+			}
 		};
 
 		client.request( request, processor );

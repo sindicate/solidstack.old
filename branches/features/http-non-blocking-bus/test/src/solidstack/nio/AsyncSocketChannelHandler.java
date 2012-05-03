@@ -84,7 +84,7 @@ public class AsyncSocketChannelHandler extends SocketChannelHandler implements R
 							complete = true;
 							return;
 						}
-						Assert.fail( "Shouldn't come here (yet): available = " + getInputStream().available() );
+						Assert.fail( "Channel (" + DebugId.getId( channel ) + ") Shouldn't come here (yet): available = " + getInputStream().available() );
 					}
 					else
 					{

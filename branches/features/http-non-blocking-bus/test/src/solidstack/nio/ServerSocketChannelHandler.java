@@ -74,7 +74,7 @@ public class ServerSocketChannelHandler extends AsyncSocketChannelHandler
 		}
 		catch( Throwable t ) // TODO Exception, not Throwable
 		{
-			Loggers.nio.debug( "Unhandled exception", t );
+			Loggers.nio.debug( "Channel ({}) Unhandled exception", DebugId.getId( channel ), t );
 		}
 	}
 }
