@@ -1,15 +1,14 @@
 package solidstack.nio;
 
-import solidstack.httpclient.ResponseProcessor;
 
 public class Timeout
 {
-	private ResponseProcessor processor;
+	private ReadListener listener;
 	private long timeout;
 
-	public Timeout( ResponseProcessor processor, long timeout )
+	public Timeout( ReadListener listener, long timeout )
 	{
-		this.processor = processor;
+		this.listener = listener;
 		this.timeout = timeout;
 	}
 
@@ -18,8 +17,8 @@ public class Timeout
 		return this.timeout;
 	}
 
-	public ResponseProcessor getProcessor()
+	public ReadListener getListener()
 	{
-		return this.processor;
+		return this.listener;
 	}
 }

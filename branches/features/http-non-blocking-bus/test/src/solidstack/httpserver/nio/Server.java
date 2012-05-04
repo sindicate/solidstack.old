@@ -198,5 +198,10 @@ public class Server
 				// TODO Add to timeout manager
 			}
 		}
+
+		public void timeout() throws IOException
+		{
+			throw new UnsupportedOperationException();
+		}
 	}
 }

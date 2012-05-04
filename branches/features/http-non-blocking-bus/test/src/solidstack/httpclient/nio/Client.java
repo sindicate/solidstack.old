@@ -7,6 +7,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import solidstack.httpclient.ChunkedInputStream;
 import solidstack.httpclient.Request;
@@ -29,7 +30,7 @@ import solidstack.nio.SocketChannelHandler;
 
 public class Client extends Thread
 {
-	private Dispatcher dispatcher;
+	Dispatcher dispatcher;
 	private String hostname;
 	private int port;
 	private List<SocketChannelHandler> pool = new ArrayList<SocketChannelHandler>();
@@ -43,41 +44,49 @@ public class Client extends Thread
 
 	public void request( Request request, final ResponseProcessor processor ) throws IOException
 	{
-		SocketChannelHandler handler = null;
+		AsyncSocketChannelHandler handler = null;
 
 		synchronized( this.pool )
 		{
 			if( !this.pool.isEmpty() )
-				handler = this.pool.remove( this.pool.size() - 1 );
+				handler = (AsyncSocketChannelHandler)this.pool.remove( this.pool.size() - 1 );
 		}
 
-		ReadListener listener = new MyConnectionListener( processor );
+		MyConnectionListener listener = new MyConnectionListener( processor, handler );
 
 		if( handler == null )
 		{
-			handler = this.dispatcher.connectAsync( this.hostname, this.port, listener );
+			handler = this.dispatcher.connectAsync( this.hostname, this.port );
 			Loggers.nio.trace( "Channel ({}) New" , DebugId.getId( handler.getChannel() ) );
+			handler.setListener( listener );
 		}
 		else
 		{
-			( (AsyncSocketChannelHandler)handler ).setListener( listener ); // TODO This is not ok for pipelining
+			handler.setListener( listener ); // TODO This is not ok for pipelining
 			Loggers.nio.trace( "Channel ({}) From pool", DebugId.getId( handler.getChannel() ) );
 		}
+
+		// FIXME Also remove the timeout when finished
+		this.dispatcher.addTimeout( listener, 10000 );
 
 		Assert.isTrue( handler.busy.compareAndSet( false, true ) );
 		sendRequest( request, handler.getOutputStream() );
 
-		this.dispatcher.addTimeout( processor, 10000 );
+		if( listener.latch.decrementAndGet() == 0 )
+			free( handler );
 	}
 
 	// TODO Add to timeout manager
 	public class MyConnectionListener implements ReadListener
 	{
-		private ResponseProcessor processor;
+		volatile private ResponseProcessor processor; // TODO Make this final
+		private AsyncSocketChannelHandler handler;
+		AtomicInteger latch = new AtomicInteger( 2 );
 
-		public MyConnectionListener( ResponseProcessor processor )
+		public MyConnectionListener( ResponseProcessor processor, AsyncSocketChannelHandler handler )
 		{
 			this.processor = processor;
+			this.handler = handler;
 		}
 
 		public void incoming( AsyncSocketChannelHandler handler ) throws IOException
@@ -91,15 +100,30 @@ public class Client extends Thread
 				this.processor = null;
 				drain( in, null );
 
+				// TODO Is this the right spot? How to coordinate this with the timeout event?
+				Client.this.dispatcher.removeTimeout( this );
+
 				Assert.isTrue( handler.busy.compareAndSet( true, false ) );
 				complete = true;
 			}
 			finally
 			{
 				if( complete )
-					free( handler ); // FIXME This may come before the sendRequest is finished
+				{
+					if( this.latch.decrementAndGet() == 0 )
+						free( handler );
+				}
 				else
 					handler.close();
+			}
+		}
+
+		public void timeout() throws IOException
+		{
+			if( this.processor != null )
+			{
+				this.processor.timeout();
+				this.handler.close();
 			}
 		}
 	}
@@ -124,7 +148,7 @@ public class Client extends Thread
 		writer.flush();
 	}
 
-	private Response receiveResponse( InputStream in )
+	Response receiveResponse( InputStream in )
 	{
 		Response result = new Response();
 
@@ -192,7 +216,7 @@ public class Client extends Thread
 //				return;
 	}
 
-	private void drain( InputStream in, PrintStream out )
+	void drain( InputStream in, PrintStream out )
 	{
 		if( in == null )
 			return;
@@ -212,7 +236,7 @@ public class Client extends Thread
 		}
 	}
 
-	private void free( SocketChannelHandler handler )
+	void free( SocketChannelHandler handler )
 	{
 		synchronized( this.pool )
 		{

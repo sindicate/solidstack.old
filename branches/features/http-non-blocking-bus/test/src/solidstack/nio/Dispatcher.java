@@ -8,14 +8,15 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import solidstack.httpclient.ResponseProcessor;
 import solidstack.lang.Assert;
 import solidstack.lang.SystemException;
 
@@ -28,7 +29,8 @@ public class Dispatcher extends Thread
 	private ThreadPoolExecutor executor;
 	private long next;
 //	static final public boolean debug = true;
-	private List<Timeout> timeouts = new ArrayList<Timeout>();
+	// TODO Build the timeouts on the keys?
+	private Map<ReadListener, Timeout> timeouts = new HashMap<ReadListener, Timeout>(); // TODO Use DelayQueue or other form of concurrent datastructure
 	private long nextTimeout;
 
 	public Dispatcher() throws IOException
@@ -39,15 +41,6 @@ public class Dispatcher extends Thread
 	public void execute( Runnable command )
 	{
 		this.executor.execute( command );
-		if( Loggers.nio.isDebugEnabled() )
-		{
-			long now = System.currentTimeMillis();
-			if( now >= this.next )
-			{
-				Loggers.nio.debug( "Active count: {}", this.executor.getActiveCount() );
-				this.next = now + 1000;
-			}
-		}
 	}
 
 	public void listen( int port, ReadListener listener ) throws IOException
@@ -90,9 +83,9 @@ public class Dispatcher extends Thread
 		return connect( hostname, port, new SocketChannelHandler( this ) );
 	}
 
-	public SocketChannelHandler connectAsync( String hostname, int port, ReadListener listener ) throws IOException
+	public AsyncSocketChannelHandler connectAsync( String hostname, int port ) throws IOException
 	{
-		return connect( hostname, port, new AsyncSocketChannelHandler( this, listener ) );
+		return (AsyncSocketChannelHandler)connect( hostname, port, new AsyncSocketChannelHandler( this ) );
 	}
 
 	private SocketChannelHandler connect( String hostname, int port, SocketChannelHandler handler ) throws IOException
@@ -110,11 +103,19 @@ public class Dispatcher extends Thread
 		return handler;
 	}
 
-	public void addTimeout( ResponseProcessor processor, int timeout )
+	public void addTimeout( ReadListener listener, int timeout )
 	{
 		synchronized( this.timeouts )
 		{
-			this.timeouts.add( new Timeout( processor, System.currentTimeMillis() + timeout ) );
+			this.timeouts.put( listener, new Timeout( listener, System.currentTimeMillis() + timeout ) );
+		}
+	}
+
+	public void removeTimeout( ReadListener listener )
+	{
+		synchronized( this.timeouts )
+		{
+			this.timeouts.remove( listener );
 		}
 	}
 
@@ -183,7 +184,8 @@ public class Dispatcher extends Thread
 								channel.configureBlocking( false );
 								key = channel.register( this.selector, SelectionKey.OP_READ );
 
-								SocketChannelHandler handler = new ServerSocketChannelHandler( this, key, listener );
+								ServerSocketChannelHandler handler = new ServerSocketChannelHandler( this, key );
+								handler.setListener( listener );
 								key.attach( handler );
 							}
 							else
@@ -241,6 +243,14 @@ public class Dispatcher extends Thread
 				keys.clear();
 
 				long now = System.currentTimeMillis();
+
+				if( Loggers.nio.isDebugEnabled() )
+					if( now >= this.next )
+					{
+						Loggers.nio.debug( "Active count/keys: {}/{}", this.executor.getActiveCount(), this.selector.keys().size() );
+						this.next = now + 1000;
+					}
+
 				if( now >= this.nextTimeout )
 				{
 					this.nextTimeout = now + 10000;
@@ -250,7 +260,7 @@ public class Dispatcher extends Thread
 					List<Timeout> timedouts = new ArrayList<Timeout>();
 					synchronized( this.timeouts )
 					{
-						for( Iterator<Timeout> i = this.timeouts.iterator(); i.hasNext(); )
+						for( Iterator<Timeout> i = this.timeouts.values().iterator(); i.hasNext(); )
 						{
 							Timeout timeout = i.next();
 							if( timeout.getTimeout() <= now )
@@ -262,9 +272,7 @@ public class Dispatcher extends Thread
 					}
 
 					for( Timeout timeout : timedouts )
-					{
-						timeout.getProcessor().timeout();
-					}
+						timeout.getListener().timeout();
 				}
 			}
 		}

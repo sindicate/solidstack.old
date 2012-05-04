@@ -19,9 +19,9 @@ public class ServerSocketChannelHandler extends AsyncSocketChannelHandler
 	 * @param socket The incoming connection.
 	 * @param applicationContext The {@link ApplicationContext}.
 	 */
-	public ServerSocketChannelHandler( Dispatcher dispatcher, SelectionKey key, ReadListener listener )
+	public ServerSocketChannelHandler( Dispatcher dispatcher, SelectionKey key )
 	{
-		super( dispatcher, listener );
+		super( dispatcher );
 
 		setKey( key );
 	}

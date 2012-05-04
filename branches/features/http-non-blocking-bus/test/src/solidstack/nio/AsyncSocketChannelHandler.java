@@ -24,12 +24,9 @@ public class AsyncSocketChannelHandler extends SocketChannelHandler implements R
 	 * @param socket The incoming connection.
 	 * @param applicationContext The {@link ApplicationContext}.
 	 */
-	public AsyncSocketChannelHandler( Dispatcher dispatcher, ReadListener listener )
+	public AsyncSocketChannelHandler( Dispatcher dispatcher )
 	{
 		super( dispatcher );
-
-		Assert.notNull( listener );
-		this.listener = listener;
 	}
 
 	public void setListener( ReadListener listener )
