@@ -99,6 +99,7 @@ public class Response
 				setHeader0( "Content-Type", this.contentType );
 
 //		System.out.println( "Response:" );
+		// FIXME Do not use a Writer (internally to ResponseWriter. FlushBlockingOutputStream does not work because of it.
 		ResponseWriter writer = new ResponseWriter( new FlushBlockingOutputStream( out ), "ISO-8859-1" );
 		writer.write( "HTTP/1.1 " );
 		writer.write( Integer.toString( this.statusCode ) );

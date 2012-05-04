@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import solidstack.httpserver.FatalSocketException;
 import solidstack.lang.Assert;
@@ -15,7 +15,8 @@ public class SocketChannelOutputStream extends OutputStream
 {
 	private SocketChannelHandler handler;
 	private ByteBuffer buffer;
-	private AtomicBoolean block = new AtomicBoolean();
+//	private AtomicBoolean block = new AtomicBoolean();
+	private AtomicReference<Thread> block = new AtomicReference<Thread>();
 
 	public SocketChannelOutputStream( SocketChannelHandler handler )
 	{
@@ -26,20 +27,20 @@ public class SocketChannelOutputStream extends OutputStream
 	@Override
 	public void write( int b )
 	{
-		Assert.isTrue( this.block.compareAndSet( false, true ) );
+		Assert.isTrue( this.block.compareAndSet( null, Thread.currentThread() ), this.block.get().getName() );
 
 		Assert.isTrue( this.buffer.hasRemaining() );
 		this.buffer.put( (byte)b );
 		if( !this.buffer.hasRemaining() )
 			writeChannel();
 
-		this.block.set( false );
+		this.block.set( null );
 	}
 
 	@Override
 	public void write( byte[] b, int off, int len )
 	{
-		Assert.isTrue( this.block.compareAndSet( false, true ) );
+		Assert.isTrue( this.block.compareAndSet( null, Thread.currentThread() ), this.block.get().getName() );
 
 		while( len > 0 )
 		{
@@ -53,18 +54,18 @@ public class SocketChannelOutputStream extends OutputStream
 				writeChannel();
 		}
 
-		this.block.set( false );
+		this.block.set( null );
 	}
 
 	@Override
 	public void flush() throws IOException
 	{
-		Assert.isTrue( this.block.compareAndSet( false, true ) );
+		Assert.isTrue( this.block.compareAndSet( null, Thread.currentThread() ), this.block.get().getName() );
 
 		if( this.buffer.position() > 0 )
 			writeChannel();
 
-		this.block.set( false );
+		this.block.set( null );
 	}
 
 	@Override
