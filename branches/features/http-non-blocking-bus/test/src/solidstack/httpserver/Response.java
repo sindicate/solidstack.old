@@ -1,5 +1,6 @@
 package solidstack.httpserver;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -7,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import solidstack.io.FatalIOException;
 import solidstack.lang.Assert;
 
 
@@ -19,7 +21,6 @@ public class Response
 	protected ResponseWriter writer;
 	protected PrintWriter printWriter;
 	protected Map< String, List< String > > headers = new HashMap< String, List<String> >();
-	protected boolean committed;
 	protected int statusCode = 200;
 	protected String statusMessage = "OK";
 	protected String contentType;
@@ -67,7 +68,7 @@ public class Response
 
 	public void setHeader( String name, String value )
 	{
-		if( this.committed )
+		if( this.out.committed )
 			throw new IllegalStateException( "Response is already committed" );
 //		if( name.equals( "Content-Type" ) )
 //			throw new IllegalArgumentException( "Content type should be set with setContentType()" );
@@ -99,28 +100,50 @@ public class Response
 				setHeader0( "Content-Type", this.contentType );
 
 //		System.out.println( "Response:" );
-		// FIXME Do not use a Writer (internally to ResponseWriter. FlushBlockingOutputStream does not work because of it.
-		ResponseWriter writer = new ResponseWriter( new FlushBlockingOutputStream( out ), "ISO-8859-1" );
-		writer.write( "HTTP/1.1 " );
-		writer.write( Integer.toString( this.statusCode ) );
-		writer.write( " " );
-		writer.write( this.statusMessage );
-		writer.write( '\r' );
-		writer.write( '\n' );
-		for( Map.Entry< String, List< String > > entry : this.headers.entrySet() )
-			for( String value : entry.getValue() )
-			{
-				writer.write( entry.getKey() );
-				writer.write( ": " );
-				writer.write( value );
-				writer.write( '\r' );
-				writer.write( '\n' );
-//				System.out.println( "    " + entry.getKey() + " = " + value );
-			}
-		writer.write( '\r' );
-		writer.write( '\n' );
-		writer.flush();
-		this.committed = true;
+//		ResponseWriter writer = new ResponseWriter( out, "ISO-8859-1" );
+//		writer.write( "HTTP/1.1 " );
+		byte[] newline = new byte[] { '\r', '\n' };
+		byte[] colon = new byte[] { ':', ' ' }; // TODO Constants
+		try
+		{
+			out.write( "HTTP/1.1 ".getBytes() ); // TODO Constants
+			out.write( Integer.toString( this.statusCode ).getBytes() );
+			out.write( ' ' );
+			out.write( this.statusMessage.getBytes() );
+			out.write( newline );
+			for( Map.Entry< String, List< String > > entry : this.headers.entrySet() )
+				for( String value : entry.getValue() )
+				{
+					out.write( entry.getKey().getBytes() );
+					out.write( colon );
+					out.write( value.getBytes() );
+					out.write( newline );
+				}
+			out.write( newline );
+		}
+		catch( IOException e )
+		{
+			throw new FatalIOException( e );
+		}
+//		writer.write( Integer.toString( this.statusCode ) );
+//		writer.write( " " );
+//		writer.write( this.statusMessage );
+//		writer.write( '\r' );
+//		writer.write( '\n' );
+//		for( Map.Entry< String, List< String > > entry : this.headers.entrySet() )
+//			for( String value : entry.getValue() )
+//			{
+//				writer.write( entry.getKey() );
+//				writer.write( ": " );
+//				writer.write( value );
+//				writer.write( '\r' );
+//				writer.write( '\n' );
+////				System.out.println( "    " + entry.getKey() + " = " + value );
+//			}
+//		writer.write( '\r' );
+//		writer.write( '\n' );
+//		writer.flush();
+//		this.committed = true;
 
 		// TODO Are these header names case sensitive or not? And the values like 'chunked'?
 		if( "chunked".equals( getHeader( "Transfer-Encoding" ) ) )
@@ -129,12 +152,12 @@ public class Response
 
 	public boolean isCommitted()
 	{
-		return this.committed;
+		return this.out.committed;
 	}
 
 	public void setStatusCode( int code, String message )
 	{
-		if( this.committed )
+		if( this.out.committed )
 			throw new IllegalStateException( "Response is already committed" );
 		this.statusCode = code;
 		this.statusMessage = message;
@@ -142,7 +165,7 @@ public class Response
 
 	public void reset()
 	{
-		if( this.committed )
+		if( this.out.committed )
 			throw new IllegalStateException( "Response is already committed" );
 		getOutputStream().clear();
 		this.writer = null;
@@ -166,7 +189,7 @@ public class Response
 
 	public void setContentType( String contentType, String charSet )
 	{
-		if( this.committed )
+		if( this.out.committed )
 			throw new IllegalStateException( "Response is already committed" );
 		this.contentType = contentType;
 		this.charSet = charSet;

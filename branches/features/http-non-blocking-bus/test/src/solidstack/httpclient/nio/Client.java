@@ -130,6 +130,7 @@ public class Client extends Thread
 
 	private void sendRequest( Request request, OutputStream out ) throws IOException
 	{
+		// TODO Don't use the writer and don't flush
 		RequestWriter writer = new RequestWriter( out, "ISO-8859-1" );
 		writer.write( "GET " );
 		String path = request.getPath();

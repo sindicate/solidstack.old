@@ -76,6 +76,7 @@ public class Client extends Thread
 
 	public void sendRequest( Request request, OutputStream out )
 	{
+		// TODO Don't use the writer and don't flush
 		RequestWriter writer = new RequestWriter( out, "ISO-8859-1" );
 		writer.write( "GET " );
 		String path = request.getPath();
