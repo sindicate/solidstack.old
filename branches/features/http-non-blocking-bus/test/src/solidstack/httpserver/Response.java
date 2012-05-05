@@ -83,6 +83,10 @@ public class Response
 		this.headers.put( name, values );
 	}
 
+	static public final byte[] HTTP = "HTTP/1.1 ".getBytes();
+	static public final byte[] NEWLINE = new byte[] { '\r', '\n' };
+	static public final byte[] COLON = new byte[] { ':', ' ' };
+
 	public void writeHeader( OutputStream out )
 	{
 		if( this.request.isConnectionClose() )
@@ -99,51 +103,27 @@ public class Response
 			else
 				setHeader0( "Content-Type", this.contentType );
 
-//		System.out.println( "Response:" );
-//		ResponseWriter writer = new ResponseWriter( out, "ISO-8859-1" );
-//		writer.write( "HTTP/1.1 " );
-		byte[] newline = new byte[] { '\r', '\n' };
-		byte[] colon = new byte[] { ':', ' ' }; // TODO Constants
 		try
 		{
-			out.write( "HTTP/1.1 ".getBytes() ); // TODO Constants
+			out.write( HTTP );
 			out.write( Integer.toString( this.statusCode ).getBytes() );
 			out.write( ' ' );
 			out.write( this.statusMessage.getBytes() );
-			out.write( newline );
+			out.write( NEWLINE );
 			for( Map.Entry< String, List< String > > entry : this.headers.entrySet() )
 				for( String value : entry.getValue() )
 				{
 					out.write( entry.getKey().getBytes() );
-					out.write( colon );
+					out.write( COLON );
 					out.write( value.getBytes() );
-					out.write( newline );
+					out.write( NEWLINE );
 				}
-			out.write( newline );
+			out.write( NEWLINE );
 		}
 		catch( IOException e )
 		{
 			throw new FatalIOException( e );
 		}
-//		writer.write( Integer.toString( this.statusCode ) );
-//		writer.write( " " );
-//		writer.write( this.statusMessage );
-//		writer.write( '\r' );
-//		writer.write( '\n' );
-//		for( Map.Entry< String, List< String > > entry : this.headers.entrySet() )
-//			for( String value : entry.getValue() )
-//			{
-//				writer.write( entry.getKey() );
-//				writer.write( ": " );
-//				writer.write( value );
-//				writer.write( '\r' );
-//				writer.write( '\n' );
-////				System.out.println( "    " + entry.getKey() + " = " + value );
-//			}
-//		writer.write( '\r' );
-//		writer.write( '\n' );
-//		writer.flush();
-//		this.committed = true;
 
 		// TODO Are these header names case sensitive or not? And the values like 'chunked'?
 		if( "chunked".equals( getHeader( "Transfer-Encoding" ) ) )

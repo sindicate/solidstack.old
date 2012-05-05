@@ -105,7 +105,7 @@ public class SocketChannelOutputStream extends OutputStream
 
 		try
 		{
-			logBuffer( id, this.buffer );
+//			logBuffer( id, this.buffer );
 			int written = channel.write( this.buffer );
 			if( Loggers.nio.isTraceEnabled() )
 				Loggers.nio.trace( "Channel ({}) written #{} bytes to channel (1)", id, written );
@@ -125,7 +125,7 @@ public class SocketChannelOutputStream extends OutputStream
 					throw new FatalSocketException( e );
 				}
 
-				logBuffer( id, this.buffer );
+//				logBuffer( id, this.buffer );
 				written = channel.write( this.buffer );
 				if( Loggers.nio.isTraceEnabled() )
 					Loggers.nio.trace( "Channel ({}) written #{} bytes to channel (2)", id, written );

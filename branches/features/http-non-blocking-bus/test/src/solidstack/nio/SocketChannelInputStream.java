@@ -60,6 +60,8 @@ public class SocketChannelInputStream extends InputStream
 		return this.buffer.remaining();
 	}
 
+	// TODO Implement close()?
+
 	static protected void logBuffer( int id, ByteBuffer buffer )
 	{
 		byte[] bytes = buffer.array();
@@ -110,8 +112,8 @@ public class SocketChannelInputStream extends InputStream
 				channel.close(); // TODO This should cancel all keys
 				this.handler = null;
 			}
-			else
-				logBuffer( id, this.buffer );
+//			else
+//				logBuffer( id, this.buffer );
 		}
 		catch( IOException e )
 		{

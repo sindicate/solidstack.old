@@ -17,8 +17,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import solidstack.io.FatalIOException;
 import solidstack.lang.Assert;
 import solidstack.lang.SystemException;
+import solidstack.lang.ThreadInterrupted;
 
 
 public class Dispatcher extends Thread
@@ -33,9 +35,16 @@ public class Dispatcher extends Thread
 	private Map<ReadListener, Timeout> timeouts = new HashMap<ReadListener, Timeout>(); // TODO Use DelayQueue or other form of concurrent datastructure
 	private long nextTimeout;
 
-	public Dispatcher() throws IOException
+	public Dispatcher()
 	{
-		this.selector = Selector.open();
+		try
+		{
+			this.selector = Selector.open();
+		}
+		catch( IOException e )
+		{
+			throw new FatalIOException( e );
+		}
 	}
 
 	public void execute( Runnable command )
@@ -83,24 +92,31 @@ public class Dispatcher extends Thread
 		return connect( hostname, port, new SocketChannelHandler( this ) );
 	}
 
-	public AsyncSocketChannelHandler connectAsync( String hostname, int port ) throws IOException
+	public AsyncSocketChannelHandler connectAsync( String hostname, int port )
 	{
 		return (AsyncSocketChannelHandler)connect( hostname, port, new AsyncSocketChannelHandler( this ) );
 	}
 
-	private SocketChannelHandler connect( String hostname, int port, SocketChannelHandler handler ) throws IOException
+	private SocketChannelHandler connect( String hostname, int port, SocketChannelHandler handler )
 	{
-		SocketChannel channel = SocketChannel.open( new InetSocketAddress( hostname, port ) );
-		channel.configureBlocking( false );
-		SelectionKey key;
-		synchronized( this.lock ) // Prevent register from blocking again
+		try
 		{
-			this.selector.wakeup();
-			key = channel.register( this.selector, SelectionKey.OP_READ );
+			SocketChannel channel = SocketChannel.open( new InetSocketAddress( hostname, port ) );
+			channel.configureBlocking( false );
+			SelectionKey key;
+			synchronized( this.lock ) // Prevent register from blocking again
+			{
+				this.selector.wakeup();
+				key = channel.register( this.selector, SelectionKey.OP_READ );
+			}
+			handler.setKey( key );
+			key.attach( handler );
+			return handler;
 		}
-		handler.setKey( key );
-		key.attach( handler );
-		return handler;
+		catch( IOException e )
+		{
+			throw new FatalIOException( e );
+		}
 	}
 
 	public void addTimeout( ReadListener listener, int timeout )
@@ -134,11 +150,18 @@ public class Dispatcher extends Thread
 		}
 	}
 
-	public void shutdown() throws InterruptedException
+	public void shutdown()
 	{
-		shutdownThreadPool();
-		interrupt();
-		join();
+		try
+		{
+			shutdownThreadPool();
+			interrupt();
+			join();
+		}
+		catch( InterruptedException e )
+		{
+			throw new ThreadInterrupted();
+		}
 	}
 
 	@Override

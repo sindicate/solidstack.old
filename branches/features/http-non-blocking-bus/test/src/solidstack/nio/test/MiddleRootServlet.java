@@ -134,13 +134,6 @@ public class MiddleRootServlet implements Servlet
 
 		Request request = new Request( "/" + ( sleep != null ? "?sleep=" + sleep : "" ) );
 
-		try
-		{
-			this.client.request( request, processor );
-		}
-		catch( IOException e )
-		{
-			throw new SystemException( e );
-		}
+		this.client.request( request, processor );
 	}
 }

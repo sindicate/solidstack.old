@@ -11,7 +11,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import solidstack.httpclient.ChunkedInputStream;
 import solidstack.httpclient.Request;
-import solidstack.httpclient.RequestWriter;
 import solidstack.httpclient.Response;
 import solidstack.httpclient.ResponseProcessor;
 import solidstack.httpserver.HttpBodyInputStream;
@@ -28,21 +27,27 @@ import solidstack.nio.ReadListener;
 import solidstack.nio.SocketChannelHandler;
 
 
-public class Client extends Thread
+public class Client
 {
 	Dispatcher dispatcher;
 	private String hostname;
 	private int port;
 	private List<SocketChannelHandler> pool = new ArrayList<SocketChannelHandler>();
+	int sockets;
 
-	public Client( String hostname, int port, Dispatcher dispatcher ) throws IOException
+	public Client( String hostname, int port, Dispatcher dispatcher )
 	{
 		this.dispatcher = dispatcher;
 		this.hostname = hostname;
 		this.port = port;
 	}
 
-	public void request( Request request, final ResponseProcessor processor ) throws IOException
+	public int getSocketCount()
+	{
+		return this.sockets;
+	}
+
+	public void request( Request request, final ResponseProcessor processor )
 	{
 		AsyncSocketChannelHandler handler = null;
 
@@ -57,6 +62,7 @@ public class Client extends Thread
 		if( handler == null )
 		{
 			handler = this.dispatcher.connectAsync( this.hostname, this.port );
+			this.sockets ++;
 			Loggers.nio.trace( "Channel ({}) New" , DebugId.getId( handler.getChannel() ) );
 			handler.setListener( listener );
 		}
@@ -66,7 +72,6 @@ public class Client extends Thread
 			Loggers.nio.trace( "Channel ({}) From pool", DebugId.getId( handler.getChannel() ) );
 		}
 
-		// FIXME Also remove the timeout when finished
 		this.dispatcher.addTimeout( listener, 10000 );
 
 		Assert.isTrue( handler.busy.compareAndSet( false, true ) );
@@ -114,7 +119,10 @@ public class Client extends Thread
 						free( handler );
 				}
 				else
+				{
 					handler.close();
+					Client.this.sockets --;
+				}
 			}
 		}
 
@@ -124,29 +132,42 @@ public class Client extends Thread
 			{
 				this.processor.timeout();
 				this.handler.close();
+				Client.this.sockets --;
 			}
 		}
 	}
 
-	private void sendRequest( Request request, OutputStream out ) throws IOException
+	static private final byte[] GET = "GET ".getBytes();
+	static private final byte[] HTTP = " HTTP/1.1\r\n".getBytes();
+	static private final byte[] NEWLINE = "\r\n".getBytes();
+	static private final byte[] COLON = ": ".getBytes();
+
+	private void sendRequest( Request request, OutputStream out )
 	{
-		// TODO Don't use the writer and don't flush
-		RequestWriter writer = new RequestWriter( out, "ISO-8859-1" );
-		writer.write( "GET " );
-		String path = request.getPath();
-		writer.write( path.length() > 0 ? path : "/" );
-		writer.write( " HTTP/1.1\r\n" );
-		for( Map.Entry< String, List< String > > entry : request.getHeaders().entrySet() )
-			for( String value : entry.getValue() )
-			{
-				writer.write( entry.getKey() );
-				writer.write( ": " );
-				writer.write( value );
-				writer.write( "\r\n" );
-//				System.out.println( "    " + entry.getKey() + " = " + value );
-			}
-		writer.write( "\r\n" );
-		writer.flush();
+		try
+		{
+			out.write( GET );
+			String path = request.getPath();
+			if( path.length() > 0 )
+				out.write( path.getBytes() );
+			else
+				out.write( '/' );
+			out.write( HTTP );
+			for( Map.Entry< String, List< String > > entry : request.getHeaders().entrySet() )
+				for( String value : entry.getValue() )
+				{
+					out.write( entry.getKey().getBytes() );
+					out.write( COLON );
+					out.write( value.getBytes() );
+					out.write( NEWLINE );
+				}
+			out.write( NEWLINE );
+			out.flush(); // TODO Flush/close or what?
+		}
+		catch( IOException e )
+		{
+			throw new FatalIOException( e );
+		}
 	}
 
 	Response receiveResponse( InputStream in )
