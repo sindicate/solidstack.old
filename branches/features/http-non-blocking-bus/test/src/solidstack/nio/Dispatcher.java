@@ -231,6 +231,9 @@ public class Dispatcher extends Thread
 //							continue;
 //						}
 
+						if( key.isValid() )
+							Assert.isTrue( key.channel().isOpen() );
+
 						if( key.isAcceptable() )
 						{
 							ServerSocketChannel server = (ServerSocketChannel)key.channel();
@@ -340,6 +343,24 @@ public class Dispatcher extends Thread
 
 					for( HandlerPool pool : this.pools )
 						pool.timeout();
+
+//					// TODO This should not be needed
+//					Set<SelectionKey> keys2 = this.selector.keys();
+//					Set<SelectableChannel> test = new HashSet<SelectableChannel>();
+//					synchronized( keys2 ) // TODO Also synchronize on the selector?
+//					{
+//						for( SelectionKey key : keys2 )
+//						{
+//							test.add( key.channel() );
+//							if( key.channel() instanceof SocketChannel )
+//								Assert.isTrue( ( (SocketChannel)key.channel() ).isConnected() );
+//							if( !key.isValid() )
+//								if( key.attachment() instanceof SocketChannelHandler )
+//									( (SocketChannelHandler)key.attachment() ).lost();
+//						}
+//
+//						Assert.isTrue( test.size() == keys2.size() );
+//					}
 				}
 			}
 		}

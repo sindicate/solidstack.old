@@ -37,13 +37,13 @@ public class ServerSocketChannelHandler extends AsyncSocketChannelHandler
 			{
 				while( true )
 				{
+					// TODO Try catch/finally?
 					getListener().incoming( this );
 
 					if( isOpen() )
 					{
 						if( getInputStream().available() == 0 )
 						{
-							getDispatcher().listenRead( key );
 							complete = true;
 							return;
 						}
@@ -62,12 +62,15 @@ public class ServerSocketChannelHandler extends AsyncSocketChannelHandler
 					close();
 					if( Loggers.nio.isDebugEnabled() )
 						Loggers.nio.trace( "Channel ({}) task aborted", getId() );
+					endOfRunning();
 				}
 				else
+				{
 					if( Loggers.nio.isDebugEnabled() )
 						Loggers.nio.trace( "Channel ({}) task complete", getId() );
-
-				endOfRunning();
+					endOfRunning();
+					getDispatcher().listenRead( key ); // TODO The socket needs to be reading, otherwise client disconnects do not come through
+				}
 			}
 		}
 		catch( Throwable t ) // TODO Exception, not Throwable

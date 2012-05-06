@@ -56,7 +56,7 @@ public class Client
 		if( handler == null )
 		{
 			handler = this.dispatcher.connectAsync( this.hostname, this.port );
-			this.pool.add();
+			this.pool.addHandler( handler );
 			handler.setPool( this.pool );
 			Loggers.nio.trace( "Channel ({}) New" , handler.getId() );
 		}
@@ -117,7 +117,6 @@ public class Client
 				else
 				{
 					handler.close();
-					Client.this.pool.remove();
 				}
 			}
 		}
@@ -128,7 +127,6 @@ public class Client
 			{
 				this.processor.timeout();
 				this.handler.close();
-				Client.this.pool.remove();
 			}
 		}
 	}

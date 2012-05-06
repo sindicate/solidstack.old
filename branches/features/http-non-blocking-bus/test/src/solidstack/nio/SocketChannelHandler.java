@@ -107,6 +107,13 @@ public class SocketChannelHandler
 			this.pool.channelClosed( this );
 	}
 
+	public void lost()
+	{
+		close0();
+		if( this.pool != null )
+			this.pool.channelLost( this );
+	}
+
 	public void close0()
 	{
 		this.key.cancel();

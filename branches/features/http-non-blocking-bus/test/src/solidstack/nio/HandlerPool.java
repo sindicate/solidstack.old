@@ -4,72 +4,77 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import solidstack.lang.Assert;
+
+
 public class HandlerPool
 {
 	private List<SocketChannelHandler> pool = new LinkedList<SocketChannelHandler>();
-	private int total;
+	private List<SocketChannelHandler> all = new LinkedList<SocketChannelHandler>();
+//	private List<SocketChannelHandler> allall = new LinkedList<SocketChannelHandler>();
 
-	public SocketChannelHandler getHandler()
+	synchronized public SocketChannelHandler getHandler()
 	{
-		synchronized( this.pool )
-		{
-			if( this.pool.isEmpty() )
-				return null;
-			return this.pool.remove( this.pool.size() - 1 );
-		}
+		if( this.pool.isEmpty() )
+			return null;
+		return this.pool.remove( this.pool.size() - 1 );
 	}
 
-	public void putHandler( SocketChannelHandler handler )
+	synchronized public void putHandler( SocketChannelHandler handler )
 	{
+		Assert.isTrue( this.all.contains( handler ) );
 		handler.addedToPool( System.currentTimeMillis() );
-		synchronized( this.pool )
-		{
-			this.pool.add( handler );
-		}
+		this.pool.add( handler );
 	}
 
-	public void add()
+	synchronized public void addHandler( SocketChannelHandler handler )
 	{
-		this.total++;
+		this.all.add( handler );
+//		this.allall.add( handler );
 	}
 
-	public void remove()
+	synchronized public void channelClosed( SocketChannelHandler handler )
 	{
-		this.total--;
+//		Assert.isTrue( this.pool.remove( handler ) );
+		this.pool.remove( handler );
 	}
 
-	public void channelClosed( SocketChannelHandler handler )
+	synchronized public void channelLost( SocketChannelHandler handler )
 	{
-		synchronized( this.pool )
-		{
-			this.pool.remove( handler );
-			remove();
-		}
+//		Assert.isFalse( this.all.remove( handler ) );
+		this.all.remove( handler );
 	}
 
-	public int size()
+	synchronized public int size()
 	{
 		return this.pool.size();
 	}
 
-	public int total()
+	synchronized public int total()
 	{
-		return this.total;
+		return this.all.size();
 	}
 
-	public void timeout()
+//	synchronized public int connected()
+//	{
+//		int result = 0;
+//		for( SocketChannelHandler handler : this.allall )
+//			if( handler.isOpen() )
+//				result ++;
+//		return result;
+//	}
+
+	synchronized public void timeout()
 	{
 		long now = System.currentTimeMillis();
-		synchronized( this.pool )
+		for( Iterator<SocketChannelHandler> i = this.pool.iterator(); i.hasNext(); )
 		{
-			for( Iterator<SocketChannelHandler> i = this.pool.iterator(); i.hasNext(); )
+			SocketChannelHandler handler = i.next();
+			if( handler.addedToPool() + 10000 <= now )
 			{
-				SocketChannelHandler handler = i.next();
-				if( handler.addedToPool() + 10000 <= now )
-				{
-					handler.poolTimeout();
-					i.remove();
-				}
+				Assert.isTrue( this.all.remove( handler ) );
+				handler.poolTimeout();
+				i.remove();
 			}
 		}
 	}

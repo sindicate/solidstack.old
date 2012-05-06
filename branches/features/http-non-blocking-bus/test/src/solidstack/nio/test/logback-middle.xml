@@ -3,7 +3,7 @@
 <configuration>
 
 	<appender name="file" class="ch.qos.logback.core.FileAppender">
-		<file>middle.log</file>
+		<file>/log/middle.log</file>
 		<encoder>
 			<pattern>%d{HH:mm:ss.SSS} %-20thread %-5level %-20logger{20} - %msg\n</pattern>
 		</encoder>
