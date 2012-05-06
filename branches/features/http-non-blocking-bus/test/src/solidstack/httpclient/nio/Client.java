@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -21,9 +20,9 @@ import solidstack.io.FatalIOException;
 import solidstack.lang.Assert;
 import solidstack.nio.AsyncSocketChannelHandler;
 import solidstack.nio.Dispatcher;
+import solidstack.nio.HandlerPool;
 import solidstack.nio.Loggers;
 import solidstack.nio.ReadListener;
-import solidstack.nio.SocketChannelHandler;
 
 
 public class Client
@@ -31,8 +30,8 @@ public class Client
 	Dispatcher dispatcher;
 	private String hostname;
 	private int port;
-	private List<SocketChannelHandler> pool = new LinkedList<SocketChannelHandler>();
-	int sockets;
+	private HandlerPool pool;
+//	int sockets;
 
 	// TODO Maximum number of connections
 	// TODO Non blocking request when waiting on a connections?
@@ -41,37 +40,33 @@ public class Client
 		this.dispatcher = dispatcher;
 		this.hostname = hostname;
 		this.port = port;
+
+		this.pool = new HandlerPool();
+		dispatcher.addHandlerPool( this.pool ); // TODO Need Client.close() which removes this pool from the dispatcher
 	}
 
 	public int[] getSocketCount()
 	{
-		return new int[] { this.sockets, this.pool.size() };
+		return new int[] { this.pool.total(), this.pool.size() };
 	}
 
 	public void request( Request request, final ResponseProcessor processor )
 	{
-		AsyncSocketChannelHandler handler = null;
-
-		synchronized( this.pool )
-		{
-			if( !this.pool.isEmpty() )
-				handler = (AsyncSocketChannelHandler)this.pool.remove( this.pool.size() - 1 );
-		}
-
-		MyConnectionListener listener = new MyConnectionListener( processor, handler );
-
+		AsyncSocketChannelHandler handler = (AsyncSocketChannelHandler)this.pool.getHandler();
 		if( handler == null )
 		{
 			handler = this.dispatcher.connectAsync( this.hostname, this.port );
-			this.sockets ++;
+			this.pool.add();
+			handler.setPool( this.pool );
 			Loggers.nio.trace( "Channel ({}) New" , handler.getId() );
-			handler.setListener( listener );
 		}
 		else
 		{
-			handler.setListener( listener ); // TODO This is not ok for pipelining
 			Loggers.nio.trace( "Channel ({}) From pool", handler.getId() );
 		}
+
+		MyConnectionListener listener = new MyConnectionListener( processor, handler );
+		handler.setListener( listener );
 
 		this.dispatcher.addTimeout( listener, System.currentTimeMillis() + 10000 );
 
@@ -79,7 +74,7 @@ public class Client
 		sendRequest( request, handler.getOutputStream() );
 
 		if( listener.latch.decrementAndGet() == 0 )
-			free( handler );
+			this.pool.putHandler( handler );
 	}
 
 	// TODO Add to timeout manager
@@ -117,12 +112,12 @@ public class Client
 				if( complete )
 				{
 					if( this.latch.decrementAndGet() == 0 )
-						free( handler );
+						Client.this.pool.putHandler( handler );
 				}
 				else
 				{
 					handler.close();
-					Client.this.sockets --;
+					Client.this.pool.remove();
 				}
 			}
 		}
@@ -133,7 +128,7 @@ public class Client
 			{
 				this.processor.timeout();
 				this.handler.close();
-				Client.this.sockets --;
+				Client.this.pool.remove();
 			}
 		}
 	}
@@ -256,14 +251,6 @@ public class Client
 		catch( IOException e )
 		{
 			throw new FatalIOException( e );
-		}
-	}
-
-	void free( SocketChannelHandler handler )
-	{
-		synchronized( this.pool )
-		{
-			this.pool.add( handler );
 		}
 	}
 }

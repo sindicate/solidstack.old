@@ -6,6 +6,7 @@ import java.nio.channels.SocketChannel;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import solidstack.httpserver.ApplicationContext;
+import solidstack.io.FatalIOException;
 
 
 /**
@@ -20,6 +21,9 @@ public class SocketChannelHandler
 	private SelectionKey key;
 	private SocketChannelInputStream in;
 	private SocketChannelOutputStream out;
+
+	private HandlerPool pool;
+	private long addedToPool;
 
 	public AtomicBoolean busy = new AtomicBoolean();
 
@@ -96,13 +100,47 @@ public class SocketChannelHandler
 		return this.key.channel().isOpen();
 	}
 
-	public void close() throws IOException
+	public void close()
+	{
+		close0();
+		if( this.pool != null )
+			this.pool.channelClosed( this );
+	}
+
+	public void close0()
 	{
 		this.key.cancel();
 		if( isOpen() )
 		{
 			Loggers.nio.trace( "Channel ({}) Closed", getId() );
-			this.key.channel().close();
+			try
+			{
+				this.key.channel().close();
+			}
+			catch( IOException e )
+			{
+				throw new FatalIOException( e );
+			}
 		}
+	}
+
+	public void setPool( HandlerPool pool )
+	{
+		this.pool = pool;
+	}
+
+	public long addedToPool()
+	{
+		return this.addedToPool;
+	}
+
+	public void addedToPool( long millis )
+	{
+		this.addedToPool = millis;
+	}
+
+	public void poolTimeout()
+	{
+		close0();
 	}
 }

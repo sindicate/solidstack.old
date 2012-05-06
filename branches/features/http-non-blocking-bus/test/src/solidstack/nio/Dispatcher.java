@@ -34,6 +34,8 @@ public class Dispatcher extends Thread
 	private Map<ReadListener, Timeout> timeouts = new LinkedHashMap<ReadListener, Timeout>(); // TODO Use DelayQueue or other form of concurrent datastructure
 	private long nextTimeout;
 
+	private List<HandlerPool> pools = new ArrayList<HandlerPool>();
+
 	private long nextLogging;
 
 	public Dispatcher()
@@ -158,6 +160,14 @@ public class Dispatcher extends Thread
 		}
 	}
 
+	public void addHandlerPool( HandlerPool pool )
+	{
+		synchronized( this.pools )
+		{
+			this.pools.add( pool );
+		}
+	}
+
 	private void shutdownThreadPool() throws InterruptedException
 	{
 		Loggers.nio.info( "Shutting down dispatcher" );
@@ -211,12 +221,15 @@ public class Dispatcher extends Thread
 				{
 					try
 					{
-						if( !key.isValid() )
-						{
-							SocketChannelHandler handler = (SocketChannelHandler)key.attachment();
-							handler.close();
-							continue;
-						}
+//						if( !key.isValid() )
+//						{
+//							if( key.attachment() instanceof SocketChannelHandler )
+//							{
+//								SocketChannelHandler handler = (SocketChannelHandler)key.attachment();
+//								handler.close(); // TODO Signal the pool
+//							}
+//							continue;
+//						}
 
 						if( key.isAcceptable() )
 						{
@@ -283,8 +296,11 @@ public class Dispatcher extends Thread
 					}
 					catch( CancelledKeyException e )
 					{
-						SocketChannelHandler handler = (SocketChannelHandler)key.attachment();
-						handler.close();
+						if( key.attachment() instanceof SocketChannelHandler )
+						{
+							SocketChannelHandler handler = (SocketChannelHandler)key.attachment();
+							handler.close(); // TODO Signal the pool
+						}
 					}
 				}
 
@@ -321,6 +337,9 @@ public class Dispatcher extends Thread
 
 					for( Timeout timeout : timedouts )
 						timeout.getListener().timeout();
+
+					for( HandlerPool pool : this.pools )
+						pool.timeout();
 				}
 			}
 		}
