@@ -109,7 +109,7 @@ public class SocketChannelInputStream extends InputStream
 
 			if( read == -1 )
 			{
-				channel.close(); // TODO This should cancel all keys
+				this.handler.close(); // TODO This should cancel all keys
 				this.handler = null;
 			}
 //			else

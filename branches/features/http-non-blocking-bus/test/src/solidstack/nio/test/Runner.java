@@ -6,6 +6,7 @@ import solidstack.httpclient.ResponseProcessor;
 import solidstack.httpclient.nio.Client;
 import solidstack.io.FatalIOException;
 import solidstack.nio.Dispatcher;
+import solidstack.nio.Loggers;
 
 public class Runner
 {
@@ -48,13 +49,13 @@ public class Runner
 						Runner.this.completed ++;
 					else
 						Runner.this.failed ++;
-	//				System.out.println( "Response" );
 				}
 			} );
 		}
 		catch( FatalIOException e )
 		{
 			this.failed ++;
+			Loggers.nio.debug( "", e );
 		}
 
 		this.started ++;
@@ -64,7 +65,8 @@ public class Runner
 		{
 			this.last += 1000;
 
-			System.out.println( "Complete: " + this.completed + ", failed: " + this.failed + ", timeout: " + this.timedOut + ", sockets: " + this.client.getSocketCount() );
+			int[] sockets = this.client.getSocketCount();
+			System.out.println( "Complete: " + this.completed + ", failed: " + this.failed + ", timeout: " + this.timedOut + ", sockets: " + sockets[ 0 ] + ", pooled: " + sockets[ 1 ] );
 		}
 	}
 }

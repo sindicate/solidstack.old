@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,7 +20,6 @@ import solidstack.httpserver.Token;
 import solidstack.io.FatalIOException;
 import solidstack.lang.Assert;
 import solidstack.nio.AsyncSocketChannelHandler;
-import solidstack.nio.DebugId;
 import solidstack.nio.Dispatcher;
 import solidstack.nio.Loggers;
 import solidstack.nio.ReadListener;
@@ -32,9 +31,11 @@ public class Client
 	Dispatcher dispatcher;
 	private String hostname;
 	private int port;
-	private List<SocketChannelHandler> pool = new ArrayList<SocketChannelHandler>();
+	private List<SocketChannelHandler> pool = new LinkedList<SocketChannelHandler>();
 	int sockets;
 
+	// TODO Maximum number of connections
+	// TODO Non blocking request when waiting on a connections?
 	public Client( String hostname, int port, Dispatcher dispatcher )
 	{
 		this.dispatcher = dispatcher;
@@ -42,9 +43,9 @@ public class Client
 		this.port = port;
 	}
 
-	public int getSocketCount()
+	public int[] getSocketCount()
 	{
-		return this.sockets;
+		return new int[] { this.sockets, this.pool.size() };
 	}
 
 	public void request( Request request, final ResponseProcessor processor )
@@ -63,16 +64,16 @@ public class Client
 		{
 			handler = this.dispatcher.connectAsync( this.hostname, this.port );
 			this.sockets ++;
-			Loggers.nio.trace( "Channel ({}) New" , DebugId.getId( handler.getChannel() ) );
+			Loggers.nio.trace( "Channel ({}) New" , handler.getId() );
 			handler.setListener( listener );
 		}
 		else
 		{
 			handler.setListener( listener ); // TODO This is not ok for pipelining
-			Loggers.nio.trace( "Channel ({}) From pool", DebugId.getId( handler.getChannel() ) );
+			Loggers.nio.trace( "Channel ({}) From pool", handler.getId() );
 		}
 
-		this.dispatcher.addTimeout( listener, 10000 );
+		this.dispatcher.addTimeout( listener, System.currentTimeMillis() + 10000 );
 
 		Assert.isTrue( handler.busy.compareAndSet( false, true ) );
 		sendRequest( request, handler.getOutputStream() );

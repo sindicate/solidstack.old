@@ -1,7 +1,6 @@
 package solidstack.nio;
 
 import java.nio.channels.SelectionKey;
-import java.nio.channels.SocketChannel;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import solidstack.httpserver.ApplicationContext;
@@ -64,7 +63,6 @@ public class AsyncSocketChannelHandler extends SocketChannelHandler implements R
 		boolean complete = false;
 		try
 		{
-			SocketChannel channel = getChannel();
 			SelectionKey key = getKey();
 
 			try
@@ -73,7 +71,7 @@ public class AsyncSocketChannelHandler extends SocketChannelHandler implements R
 				{
 					getListener().incoming( this );
 
-					if( channel.isOpen() )
+					if( isOpen() )
 					{
 						if( getInputStream().available() == 0 )
 						{
@@ -81,7 +79,7 @@ public class AsyncSocketChannelHandler extends SocketChannelHandler implements R
 							complete = true;
 							return;
 						}
-						Assert.fail( "Channel (" + DebugId.getId( channel ) + ") Shouldn't come here (yet): available = " + getInputStream().available() );
+						Assert.fail( "Channel (" + getId() + ") Shouldn't come here (yet): available = " + getInputStream().available() );
 					}
 					else
 					{
@@ -94,13 +92,13 @@ public class AsyncSocketChannelHandler extends SocketChannelHandler implements R
 			{
 				if( !complete )
 				{
-					channel.close();
+					close();
 					if( Loggers.nio.isDebugEnabled() )
-						Loggers.nio.trace( "Channel ({}) task aborted", DebugId.getId( channel ) );
+						Loggers.nio.trace( "Channel ({}) task aborted", getId() );
 				}
 				else
 					if( Loggers.nio.isDebugEnabled() )
-						Loggers.nio.trace( "Channel ({}) task complete", DebugId.getId( channel ) );
+						Loggers.nio.trace( "Channel ({}) task complete", getId() );
 
 				endOfRunning();
 			}

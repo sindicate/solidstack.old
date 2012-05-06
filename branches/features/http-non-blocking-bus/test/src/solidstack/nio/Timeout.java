@@ -4,17 +4,17 @@ package solidstack.nio;
 public class Timeout
 {
 	private ReadListener listener;
-	private long timeout;
+	private long when;
 
-	public Timeout( ReadListener listener, long timeout )
+	public Timeout( ReadListener listener, long when )
 	{
 		this.listener = listener;
-		this.timeout = timeout;
+		this.when = when;
 	}
 
-	public long getTimeout()
+	public long getWhen()
 	{
-		return this.timeout;
+		return this.when;
 	}
 
 	public ReadListener getListener()

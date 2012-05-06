@@ -53,7 +53,7 @@ public class Generator
 			int diff = need - done;
 
 			for( int i = 0; i < diff; i++ )
-				this.runner.trigger();
+				this.runner.trigger(); // FIXME Need ThreadPool
 
 			done += diff;
 			if( done >= 1000 )

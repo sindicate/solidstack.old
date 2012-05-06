@@ -20,6 +20,7 @@ public class SocketChannelHandler
 	private SelectionKey key;
 	private SocketChannelInputStream in;
 	private SocketChannelOutputStream out;
+
 	public AtomicBoolean busy = new AtomicBoolean();
 
 	/**
@@ -35,7 +36,7 @@ public class SocketChannelHandler
 		this.in = new SocketChannelInputStream( this );
 		this.out = new SocketChannelOutputStream( this );
 
-		this.id = DebugId.getId( this );
+		this.id = -1;
 	}
 
 	public int getId()
@@ -43,9 +44,10 @@ public class SocketChannelHandler
 		return this.id;
 	}
 
-	public void setKey( SelectionKey key )
+	void setKey( SelectionKey key )
 	{
 		this.key = key;
+		this.id = DebugId.getId( key.channel() );
 	}
 
 	public SocketChannelInputStream getInputStream()
@@ -63,12 +65,12 @@ public class SocketChannelHandler
 		return this.dispatcher;
 	}
 
-	public SocketChannel getChannel()
+	SocketChannel getChannel()
 	{
 		return (SocketChannel)this.key.channel();
 	}
 
-	public SelectionKey getKey()
+	SelectionKey getKey()
 	{
 		return this.key;
 	}
@@ -89,8 +91,18 @@ public class SocketChannelHandler
 		}
 	}
 
+	public boolean isOpen()
+	{
+		return this.key.channel().isOpen();
+	}
+
 	public void close() throws IOException
 	{
-		getChannel().close();
+		this.key.cancel();
+		if( isOpen() )
+		{
+			Loggers.nio.trace( "Channel ({}) Closed", getId() );
+			this.key.channel().close();
+		}
 	}
 }

@@ -1,7 +1,6 @@
 package solidstack.nio;
 
 import java.nio.channels.SelectionKey;
-import java.nio.channels.SocketChannel;
 
 import solidstack.httpserver.ApplicationContext;
 
@@ -29,7 +28,6 @@ public class ServerSocketChannelHandler extends AsyncSocketChannelHandler
 	@Override
 	public void run()
 	{
-		SocketChannel channel = getChannel();
 		SelectionKey key = getKey();
 
 		boolean complete = false;
@@ -41,7 +39,7 @@ public class ServerSocketChannelHandler extends AsyncSocketChannelHandler
 				{
 					getListener().incoming( this );
 
-					if( channel.isOpen() )
+					if( isOpen() )
 					{
 						if( getInputStream().available() == 0 )
 						{
@@ -61,20 +59,20 @@ public class ServerSocketChannelHandler extends AsyncSocketChannelHandler
 			{
 				if( !complete )
 				{
-					channel.close();
+					close();
 					if( Loggers.nio.isDebugEnabled() )
-						Loggers.nio.trace( "Channel ({}) task aborted", DebugId.getId( channel ) );
+						Loggers.nio.trace( "Channel ({}) task aborted", getId() );
 				}
 				else
 					if( Loggers.nio.isDebugEnabled() )
-						Loggers.nio.trace( "Channel ({}) task complete", DebugId.getId( channel ) );
+						Loggers.nio.trace( "Channel ({}) task complete", getId() );
 
 				endOfRunning();
 			}
 		}
 		catch( Throwable t ) // TODO Exception, not Throwable
 		{
-			Loggers.nio.debug( "Channel ({}) Unhandled exception", DebugId.getId( channel ), t );
+			Loggers.nio.debug( "Channel ({}) Unhandled exception", getId(), t );
 		}
 	}
 }

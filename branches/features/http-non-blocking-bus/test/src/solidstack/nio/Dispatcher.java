@@ -8,8 +8,8 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,24 +19,28 @@ import java.util.concurrent.TimeUnit;
 
 import solidstack.io.FatalIOException;
 import solidstack.lang.Assert;
-import solidstack.lang.SystemException;
 import solidstack.lang.ThreadInterrupted;
 
 
 public class Dispatcher extends Thread
 {
-//	private List<ServerSocketChannelHandler> queue = new ArrayList();
+	static private int threadId;
+
 	private Selector selector;
-	private Object lock = new Object();
+	private Object lock = new Object(); // Used to sequence socket creation and registration
 	private ThreadPoolExecutor executor;
-	private long next;
-//	static final public boolean debug = true;
+
 	// TODO Build the timeouts on the keys?
-	private Map<ReadListener, Timeout> timeouts = new HashMap<ReadListener, Timeout>(); // TODO Use DelayQueue or other form of concurrent datastructure
+	private Map<ReadListener, Timeout> timeouts = new LinkedHashMap<ReadListener, Timeout>(); // TODO Use DelayQueue or other form of concurrent datastructure
 	private long nextTimeout;
+
+	private long nextLogging;
 
 	public Dispatcher()
 	{
+		super( "Dispatcher-" + nextId() );
+		setPriority( NORM_PRIORITY + 1 );
+
 		try
 		{
 			this.selector = Selector.open();
@@ -45,20 +49,36 @@ public class Dispatcher extends Thread
 		{
 			throw new FatalIOException( e );
 		}
+		this.executor = (ThreadPoolExecutor)Executors.newCachedThreadPool();
+	}
+
+	synchronized static private int nextId()
+	{
+		return ++threadId;
 	}
 
 	public void execute( Runnable command )
 	{
+		// The DefaultThreadFactory will set the priority to NORM_PRIORITY, so no inheritance of the heightened priority of the dispatcher thread.
 		this.executor.execute( command );
 	}
 
-	public void listen( int port, ReadListener listener ) throws IOException
+	public void listen( InetSocketAddress address, ReadListener listener ) throws IOException
+	{
+		listen( address, 50, listener );
+	}
+
+	public void listen( InetSocketAddress address, int backlog, ReadListener listener ) throws IOException
 	{
 		ServerSocketChannel server = ServerSocketChannel.open();
 		server.configureBlocking( false );
-		server.socket().bind( new InetSocketAddress( port ) ); // TODO Bind to specific network interface
+		server.socket().bind( address, backlog );
 
-		server.register( this.selector, SelectionKey.OP_ACCEPT, listener );
+		synchronized( this.lock ) // Prevent register from blocking again
+		{
+			this.selector.wakeup();
+			server.register( this.selector, SelectionKey.OP_ACCEPT, listener );
+		}
 	}
 
 	public void listenRead( SelectionKey key )
@@ -89,15 +109,19 @@ public class Dispatcher extends Thread
 
 	public SocketChannelHandler connect( String hostname, int port ) throws IOException
 	{
-		return connect( hostname, port, new SocketChannelHandler( this ) );
+		SocketChannelHandler handler = new SocketChannelHandler( this );
+		connect( hostname, port, handler );
+		return handler;
 	}
 
 	public AsyncSocketChannelHandler connectAsync( String hostname, int port )
 	{
-		return (AsyncSocketChannelHandler)connect( hostname, port, new AsyncSocketChannelHandler( this ) );
+		AsyncSocketChannelHandler handler = new AsyncSocketChannelHandler( this );
+		connect( hostname, port, handler );
+		return handler;
 	}
 
-	private SocketChannelHandler connect( String hostname, int port, SocketChannelHandler handler )
+	private void connect( String hostname, int port, SocketChannelHandler handler )
 	{
 		try
 		{
@@ -111,7 +135,6 @@ public class Dispatcher extends Thread
 			}
 			handler.setKey( key );
 			key.attach( handler );
-			return handler;
 		}
 		catch( IOException e )
 		{
@@ -119,11 +142,11 @@ public class Dispatcher extends Thread
 		}
 	}
 
-	public void addTimeout( ReadListener listener, int timeout )
+	public void addTimeout( ReadListener listener, long when )
 	{
 		synchronized( this.timeouts )
 		{
-			this.timeouts.put( listener, new Timeout( listener, System.currentTimeMillis() + timeout ) );
+			this.timeouts.put( listener, new Timeout( listener, when ) );
 		}
 	}
 
@@ -167,7 +190,7 @@ public class Dispatcher extends Thread
 	@Override
 	public void run()
 	{
-		this.executor = (ThreadPoolExecutor)Executors.newCachedThreadPool();
+		Loggers.nio.info( "Dispatcher thread priority: {}", getPriority() );
 		try
 		{
 			while( !Thread.interrupted() )
@@ -184,14 +207,16 @@ public class Dispatcher extends Thread
 				Loggers.nio.trace( "Selected {} keys", selected );
 
 				Set< SelectionKey > keys = this.selector.selectedKeys();
-				for( Iterator< SelectionKey > i = keys.iterator(); i.hasNext(); )
+				for( SelectionKey key : keys )
 				{
-					SelectionKey key = i.next(); // No need to synchronize on the key
-
 					try
 					{
 						if( !key.isValid() )
+						{
+							SocketChannelHandler handler = (SocketChannelHandler)key.attachment();
+							handler.close();
 							continue;
+						}
 
 						if( key.isAcceptable() )
 						{
@@ -212,8 +237,7 @@ public class Dispatcher extends Thread
 								key.attach( handler );
 							}
 							else
-								if( Loggers.nio.isTraceEnabled() )
-									Loggers.nio.trace( "Lost accept" );
+								Loggers.nio.trace( "Lost accept" );
 						}
 
 						if( key.isReadable() )
@@ -259,7 +283,8 @@ public class Dispatcher extends Thread
 					}
 					catch( CancelledKeyException e )
 					{
-						// Ignore
+						SocketChannelHandler handler = (SocketChannelHandler)key.attachment();
+						handler.close();
 					}
 				}
 
@@ -268,10 +293,10 @@ public class Dispatcher extends Thread
 				long now = System.currentTimeMillis();
 
 				if( Loggers.nio.isDebugEnabled() )
-					if( now >= this.next )
+					if( now >= this.nextLogging )
 					{
 						Loggers.nio.debug( "Active count/keys: {}/{}", this.executor.getActiveCount(), this.selector.keys().size() );
-						this.next = now + 1000;
+						this.nextLogging = now + 1000;
 					}
 
 				if( now >= this.nextTimeout )
@@ -286,7 +311,7 @@ public class Dispatcher extends Thread
 						for( Iterator<Timeout> i = this.timeouts.values().iterator(); i.hasNext(); )
 						{
 							Timeout timeout = i.next();
-							if( timeout.getTimeout() <= now )
+							if( timeout.getWhen() <= now )
 							{
 								timedouts.add( timeout );
 								i.remove();
@@ -301,7 +326,7 @@ public class Dispatcher extends Thread
 		}
 		catch( IOException e )
 		{
-			throw new SystemException( e );
+			throw new FatalIOException( e );
 		}
 
 		if( this.executor.isTerminated() )
@@ -315,7 +340,7 @@ public class Dispatcher extends Thread
 			}
 			catch( InterruptedException e )
 			{
-				throw new SystemException( e );
+				throw new ThreadInterrupted();
 			}
 			Loggers.nio.info( "Thread pool shut down" );
 		}

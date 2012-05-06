@@ -3,8 +3,7 @@ package solidstack.httpserver.nio;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.SocketChannel;
+import java.net.InetSocketAddress;
 
 import solidstack.httpserver.ApplicationContext;
 import solidstack.httpserver.CloseBlockingOutputStream;
@@ -34,7 +33,7 @@ public class Server
 		this.dispatcher = dispatcher;
 		this.port = port;
 
-		dispatcher.listen( this.port, new MyConnectionListener() );
+		dispatcher.listen( new InetSocketAddress( port ), new MyConnectionListener() );
 	}
 
 	public void setApplication( ApplicationContext application )
@@ -56,9 +55,6 @@ public class Server
 	{
 		public void incoming( AsyncSocketChannelHandler handler ) throws IOException
 		{
-			SocketChannel channel = handler.getChannel();
-			SelectionKey key = handler.getKey();
-
 			Request request = new Request();
 
 			HttpHeaderTokenizer tokenizer = new HttpHeaderTokenizer( handler.getInputStream() );
@@ -186,12 +182,11 @@ public class Server
 				{
 					String transfer = response.getHeader( "Transfer-Encoding" );
 					if( !"chunked".equals( transfer ) )
-						channel.close();
+						handler.close();
 				}
 
-				if( channel.isOpen() )
-					if( request.isConnectionClose() )
-						channel.close();
+				if( request.isConnectionClose() )
+					handler.close();
 			}
 			else
 			{
