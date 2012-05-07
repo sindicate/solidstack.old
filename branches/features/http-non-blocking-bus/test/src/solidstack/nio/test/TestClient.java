@@ -16,7 +16,8 @@ public class TestClient
 		Runner runner = new Runner( dispatcher );
 
 		generator.setReceiver( runner );
-		generator.setRate( 600 );
+		generator.setRate( 1200 );
+		generator.setRamp( 60 );
 		generator.run();
 	}
 }

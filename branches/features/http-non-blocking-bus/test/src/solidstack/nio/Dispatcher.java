@@ -86,7 +86,7 @@ public class Dispatcher extends Thread
 	public void listenRead( SelectionKey key )
 	{
 		if( Loggers.nio.isTraceEnabled() )
-			Loggers.nio.trace( "Channel ({}) Waiting for read", DebugId.getId( key.channel() ) );
+			Loggers.nio.trace( "Channel ({}) Listening to read", DebugId.getId( key.channel() ) );
 
 		synchronized( key )
 		{
@@ -99,7 +99,7 @@ public class Dispatcher extends Thread
 	public void listenWrite( SelectionKey key )
 	{
 		if( Loggers.nio.isTraceEnabled() )
-			Loggers.nio.trace( "Channel ({}) Waiting for write", DebugId.getId( key.channel() ) );
+			Loggers.nio.trace( "Channel ({}) Listening to write", DebugId.getId( key.channel() ) );
 
 		synchronized( key )
 		{
@@ -210,6 +210,15 @@ public class Dispatcher extends Thread
 					// Wait till the connect has done its registration TODO Is this the best way?
 					// TODO Make sure this is not optimized away
 				}
+
+//				try
+//				{
+//					Thread.sleep( 100 );
+//				}
+//				catch( InterruptedException e )
+//				{
+//					throw new ThreadInterrupted();
+//				}
 
 				if( Loggers.nio.isTraceEnabled() )
 					Loggers.nio.trace( "Selecting from {} keys", this.selector.keys().size() );

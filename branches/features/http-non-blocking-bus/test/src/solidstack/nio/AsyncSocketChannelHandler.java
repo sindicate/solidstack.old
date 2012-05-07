@@ -53,13 +53,20 @@ public class AsyncSocketChannelHandler extends SocketChannelHandler implements R
 	{
 		// Not running -> not waiting, no notify needed
 		if( !isRunningAndSet() )
+		{
 			getDispatcher().execute( this ); // TODO Also for write
+			Loggers.nio.trace( "Channel ({}) Started thread", getId() );
+		}
 		else
+		{
 			super.dataIsReady();
+			Loggers.nio.trace( "Channel ({}) Signalled inputstream", getId() );
+		}
 	}
 
 	public void run()
 	{
+		Loggers.nio.trace( "Channel ({}) Thread started", getId() );
 		boolean complete = false;
 		try
 		{
@@ -92,20 +99,23 @@ public class AsyncSocketChannelHandler extends SocketChannelHandler implements R
 			{
 				if( !complete )
 				{
-					close();
+					close(); // FIXME This is to soon. The handler is still marked as running.
 					if( Loggers.nio.isDebugEnabled() )
 						Loggers.nio.trace( "Channel ({}) task aborted", getId() );
 				}
 				else
 					if( Loggers.nio.isDebugEnabled() )
 						Loggers.nio.trace( "Channel ({}) task complete", getId() );
-
-				endOfRunning();
 			}
 		}
 		catch( Throwable t ) // TODO Exception, not Throwable
 		{
 			Loggers.nio.debug( "Unhandled exception", t );
+		}
+		finally
+		{
+			endOfRunning(); // FIXME Also do this for the ServerSocketChannelHandler
+			Loggers.nio.trace( "Channel ({}) Thread ended", getId() );
 		}
 	}
 }

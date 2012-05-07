@@ -131,6 +131,12 @@ public class SocketChannelHandler
 		}
 	}
 
+	public void timeout()
+	{
+		Loggers.nio.trace( "Channel ({}) Timeout", getId() );
+		close();
+	}
+
 	public void setPool( HandlerPool pool )
 	{
 		this.pool = pool;

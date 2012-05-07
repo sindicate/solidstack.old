@@ -92,6 +92,7 @@ public class SocketChannelInputStream extends InputStream
 					{
 						// Prevent losing a notify: listenRead() must be called within the synchronized block
 						this.handler.getDispatcher().listenRead( this.handler.getKey() );
+						Loggers.nio.trace( "Channel ({}) Input stream calls wait()", id, read );
 						wait();
 					}
 				}

@@ -126,7 +126,7 @@ public class Client
 			if( this.processor != null )
 			{
 				this.processor.timeout();
-				this.handler.close();
+				this.handler.timeout();
 			}
 		}
 	}

@@ -36,6 +36,7 @@ public class HandlerPool
 	synchronized public void channelClosed( SocketChannelHandler handler )
 	{
 //		Assert.isTrue( this.pool.remove( handler ) );
+		this.all.remove( handler );
 		this.pool.remove( handler );
 	}
 
@@ -43,6 +44,7 @@ public class HandlerPool
 	{
 //		Assert.isFalse( this.all.remove( handler ) );
 		this.all.remove( handler );
+		this.pool.remove( handler );
 	}
 
 	synchronized public int size()
@@ -70,7 +72,7 @@ public class HandlerPool
 		for( Iterator<SocketChannelHandler> i = this.pool.iterator(); i.hasNext(); )
 		{
 			SocketChannelHandler handler = i.next();
-			if( handler.addedToPool() + 10000 <= now )
+			if( handler.addedToPool() + 60000 <= now )
 			{
 				Assert.isTrue( this.all.remove( handler ) );
 				handler.poolTimeout();
