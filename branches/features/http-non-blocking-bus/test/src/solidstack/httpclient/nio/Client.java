@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import solidstack.httpclient.ChunkedInputStream;
 import solidstack.httpclient.Request;
@@ -17,11 +16,9 @@ import solidstack.httpserver.HttpException;
 import solidstack.httpserver.HttpHeaderTokenizer;
 import solidstack.httpserver.Token;
 import solidstack.io.FatalIOException;
-import solidstack.lang.Assert;
 import solidstack.nio.AsyncSocketChannelHandler;
 import solidstack.nio.Dispatcher;
 import solidstack.nio.HandlerPool;
-import solidstack.nio.Loggers;
 import solidstack.nio.ReadListener;
 
 
@@ -30,7 +27,7 @@ public class Client
 	Dispatcher dispatcher;
 	private String hostname;
 	private int port;
-	private HandlerPool pool;
+	HandlerPool pool;
 //	int sockets;
 
 	// TODO Maximum number of connections
@@ -58,23 +55,21 @@ public class Client
 			handler = this.dispatcher.connectAsync( this.hostname, this.port );
 			this.pool.addHandler( handler );
 			handler.setPool( this.pool );
-			Loggers.nio.trace( "Channel ({}) New" , handler.getId() );
 		}
-		else
-		{
-			Loggers.nio.trace( "Channel ({}) From pool", handler.getId() );
-		}
+
+		handler.doubleAcquire();
 
 		MyConnectionListener listener = new MyConnectionListener( processor, handler );
 		handler.setListener( listener );
 
 		this.dispatcher.addTimeout( listener, System.currentTimeMillis() + 10000 );
 
-		Assert.isTrue( handler.busy.compareAndSet( false, true ) );
+//		Assert.isTrue( handler.busy.compareAndSet( false, true ) );
 		sendRequest( request, handler.getOutputStream() );
 
-		if( listener.latch.decrementAndGet() == 0 )
-			this.pool.putHandler( handler );
+		handler.release();
+//		if( listener.latch.decrementAndGet() == 0 )
+//			this.pool.putHandler( handler );
 	}
 
 	// TODO Add to timeout manager
@@ -82,7 +77,7 @@ public class Client
 	{
 		volatile private ResponseProcessor processor; // TODO Make this final
 		private AsyncSocketChannelHandler handler;
-		AtomicInteger latch = new AtomicInteger( 2 );
+//		AtomicInteger latch = new AtomicInteger( 2 );
 
 		public MyConnectionListener( ResponseProcessor processor, AsyncSocketChannelHandler handler )
 		{
@@ -92,33 +87,16 @@ public class Client
 
 		public void incoming( AsyncSocketChannelHandler handler ) throws IOException
 		{
-			boolean complete = false;
-			try
-			{
-				Response response = receiveResponse( handler.getInputStream() );
-				InputStream in = response.getInputStream();
-				this.processor.process( response );
-				this.processor = null;
-				drain( in, null );
+			Response response = receiveResponse( handler.getInputStream() );
+			InputStream in = response.getInputStream();
+			this.processor.process( response );
+			this.processor = null;
+			drain( in, null );
 
-				// TODO Is this the right spot? How to coordinate this with the timeout event?
-				Client.this.dispatcher.removeTimeout( this );
+			// TODO Is this the right spot? How to coordinate this with the timeout event?
+			Client.this.dispatcher.removeTimeout( this );
 
-				Assert.isTrue( handler.busy.compareAndSet( true, false ) );
-				complete = true;
-			}
-			finally
-			{
-				if( complete )
-				{
-					if( this.latch.decrementAndGet() == 0 )
-						Client.this.pool.putHandler( handler );
-				}
-				else
-				{
-					handler.close();
-				}
-			}
+//			Assert.isTrue( handler.busy.compareAndSet( true, false ) );
 		}
 
 		public void timeout() throws IOException

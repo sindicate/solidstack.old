@@ -3,9 +3,7 @@ package solidstack.nio;
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import solidstack.httpserver.ApplicationContext;
 import solidstack.io.FatalIOException;
 
 
@@ -16,23 +14,17 @@ import solidstack.io.FatalIOException;
  */
 public class SocketChannelHandler
 {
-	private int id;
 	private Dispatcher dispatcher;
 	private SelectionKey key;
 	private SocketChannelInputStream in;
 	private SocketChannelOutputStream out;
 
 	private HandlerPool pool;
-	private long addedToPool;
+	private long lastPooled;
 
-	public AtomicBoolean busy = new AtomicBoolean();
+	private int debugId;
 
-	/**
-	 * Constructor.
-	 *
-	 * @param socket The incoming connection.
-	 * @param applicationContext The {@link ApplicationContext}.
-	 */
+
 	public SocketChannelHandler( Dispatcher dispatcher )
 	{
 		this.dispatcher = dispatcher;
@@ -40,18 +32,23 @@ public class SocketChannelHandler
 		this.in = new SocketChannelInputStream( this );
 		this.out = new SocketChannelOutputStream( this );
 
-		this.id = -1;
-	}
-
-	public int getId()
-	{
-		return this.id;
+		this.debugId = -1;
 	}
 
 	void setKey( SelectionKey key )
 	{
 		this.key = key;
-		this.id = DebugId.getId( key.channel() );
+		this.debugId = DebugId.getId( key.channel() );
+	}
+
+	public void setPool( HandlerPool pool )
+	{
+		this.pool = pool;
+	}
+
+	int getDebugId()
+	{
+		return this.debugId;
 	}
 
 	public SocketChannelInputStream getInputStream()
@@ -79,7 +76,7 @@ public class SocketChannelHandler
 		return this.key;
 	}
 
-	public void dataIsReady()
+	void dataIsReady()
 	{
 		synchronized( this.in )
 		{
@@ -87,7 +84,7 @@ public class SocketChannelHandler
 		}
 	}
 
-	public void writeIsReady()
+	void writeIsReady()
 	{
 		synchronized( this.out )
 		{
@@ -107,19 +104,31 @@ public class SocketChannelHandler
 			this.pool.channelClosed( this );
 	}
 
-	public void lost()
+	void lost()
 	{
 		close0();
 		if( this.pool != null )
 			this.pool.channelLost( this );
 	}
 
-	public void close0()
+	void poolTimeout()
+	{
+		close0();
+	}
+
+	// TODO Make this package private
+	public void timeout()
+	{
+		Loggers.nio.trace( "Channel ({}) Timeout", getDebugId() );
+		close();
+	}
+
+	private void close0()
 	{
 		this.key.cancel();
 		if( isOpen() )
 		{
-			Loggers.nio.trace( "Channel ({}) Closed", getId() );
+			Loggers.nio.trace( "Channel ({}) Closed", getDebugId() );
 			try
 			{
 				this.key.channel().close();
@@ -131,29 +140,14 @@ public class SocketChannelHandler
 		}
 	}
 
-	public void timeout()
+	long lastPooled()
 	{
-		Loggers.nio.trace( "Channel ({}) Timeout", getId() );
-		close();
+		return this.lastPooled;
 	}
 
-	public void setPool( HandlerPool pool )
+	void returnToPool()
 	{
-		this.pool = pool;
-	}
-
-	public long addedToPool()
-	{
-		return this.addedToPool;
-	}
-
-	public void addedToPool( long millis )
-	{
-		this.addedToPool = millis;
-	}
-
-	public void poolTimeout()
-	{
-		close0();
+		this.pool.putHandler( this );
+		this.lastPooled = System.currentTimeMillis();
 	}
 }

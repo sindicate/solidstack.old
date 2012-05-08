@@ -61,13 +61,13 @@ public class ServerSocketChannelHandler extends AsyncSocketChannelHandler
 				{
 					close();
 					if( Loggers.nio.isDebugEnabled() )
-						Loggers.nio.trace( "Channel ({}) task aborted", getId() );
+						Loggers.nio.trace( "Channel ({}) task aborted", getDebugId() );
 					endOfRunning();
 				}
 				else
 				{
 					if( Loggers.nio.isDebugEnabled() )
-						Loggers.nio.trace( "Channel ({}) task complete", getId() );
+						Loggers.nio.trace( "Channel ({}) task complete", getDebugId() );
 					endOfRunning();
 					getDispatcher().listenRead( key ); // TODO The socket needs to be reading, otherwise client disconnects do not come through
 				}
@@ -75,7 +75,7 @@ public class ServerSocketChannelHandler extends AsyncSocketChannelHandler
 		}
 		catch( Throwable t ) // TODO Exception, not Throwable
 		{
-			Loggers.nio.debug( "Channel ({}) Unhandled exception", getId(), t );
+			Loggers.nio.debug( "Channel ({}) Unhandled exception", getDebugId(), t );
 		}
 	}
 }

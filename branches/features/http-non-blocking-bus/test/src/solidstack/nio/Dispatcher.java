@@ -113,6 +113,7 @@ public class Dispatcher extends Thread
 	{
 		SocketChannelHandler handler = new SocketChannelHandler( this );
 		connect( hostname, port, handler );
+		Loggers.nio.trace( "Channel ({}) New" , handler.getDebugId() );
 		return handler;
 	}
 
@@ -120,6 +121,7 @@ public class Dispatcher extends Thread
 	{
 		AsyncSocketChannelHandler handler = new AsyncSocketChannelHandler( this );
 		connect( hostname, port, handler );
+		Loggers.nio.trace( "Channel ({}) New" , handler.getDebugId() );
 		return handler;
 	}
 

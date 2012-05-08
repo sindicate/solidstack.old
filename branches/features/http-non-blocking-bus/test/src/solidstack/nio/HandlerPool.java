@@ -17,13 +17,15 @@ public class HandlerPool
 	{
 		if( this.pool.isEmpty() )
 			return null;
-		return this.pool.remove( this.pool.size() - 1 );
+		SocketChannelHandler handler = this.pool.remove( this.pool.size() - 1 );
+		Loggers.nio.trace( "Channel ({}) From pool", handler.getDebugId() );
+		return handler;
 	}
 
+	// Only called by returnToPool()
 	synchronized public void putHandler( SocketChannelHandler handler )
 	{
 		Assert.isTrue( this.all.contains( handler ) );
-		handler.addedToPool( System.currentTimeMillis() );
 		this.pool.add( handler );
 	}
 
@@ -72,7 +74,7 @@ public class HandlerPool
 		for( Iterator<SocketChannelHandler> i = this.pool.iterator(); i.hasNext(); )
 		{
 			SocketChannelHandler handler = i.next();
-			if( handler.addedToPool() + 60000 <= now )
+			if( handler.lastPooled() + 60000 <= now )
 			{
 				Assert.isTrue( this.all.remove( handler ) );
 				handler.poolTimeout();

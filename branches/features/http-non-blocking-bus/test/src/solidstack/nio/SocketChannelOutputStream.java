@@ -28,7 +28,7 @@ public class SocketChannelOutputStream extends OutputStream
 	public void write( int b )
 	{
 		if( !this.block.compareAndSet( null, Thread.currentThread() ) )
-			Assert.fail( "Channel (" + this.handler.getId() + ") " + this.block.get().getName() );
+			Assert.fail( "Channel (" + this.handler.getDebugId() + ") " + this.block.get().getName() );
 
 		Assert.isTrue( this.buffer.hasRemaining() );
 		this.buffer.put( (byte)b );
@@ -42,7 +42,7 @@ public class SocketChannelOutputStream extends OutputStream
 	public void write( byte[] b, int off, int len )
 	{
 		if( !this.block.compareAndSet( null, Thread.currentThread() ) )
-			Assert.fail( "Channel (" + this.handler.getId() + ") " + this.block.get().getName() );
+			Assert.fail( "Channel (" + this.handler.getDebugId() + ") " + this.block.get().getName() );
 
 		while( len > 0 )
 		{
@@ -63,7 +63,7 @@ public class SocketChannelOutputStream extends OutputStream
 	public void flush() throws IOException
 	{
 		if( !this.block.compareAndSet( null, Thread.currentThread() ) )
-			Assert.fail( "Channel (" + this.handler.getId() + ") " + this.block.get().getName() );
+			Assert.fail( "Channel (" + this.handler.getDebugId() + ") " + this.block.get().getName() );
 
 		if( this.buffer.position() > 0 )
 			writeChannel();
