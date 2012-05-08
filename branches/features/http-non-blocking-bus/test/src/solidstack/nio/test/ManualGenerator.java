@@ -1,12 +1,16 @@
 package solidstack.nio.test;
 
-import solidstack.lang.ThreadInterrupted;
+import java.io.IOException;
+import java.io.InputStream;
 
-public class Generator
+import solidstack.io.FatalIOException;
+import solidstack.lang.ThreadInterrupted;
+import solidstack.nio.Loggers;
+
+public class ManualGenerator
 {
 	private Runner runner;
 	private int rate;
-	private int ramp = 30000;
 
 	public void setReceiver( Runner runner )
 	{
@@ -16,11 +20,6 @@ public class Generator
 	public void setRate( int rate )
 	{
 		this.rate = rate;
-	}
-
-	public void setRamp( int seconds )
-	{
-		this.ramp = seconds * 1000;
 	}
 
 	private void sleep( long millis )
@@ -37,16 +36,41 @@ public class Generator
 
 	public void run()
 	{
-		int rate = 1;
+		InputStream in = System.in;
+
+		int rate = this.rate;
 		long start = System.currentTimeMillis();
 		long base = start;
 		int done = 0;
 		int sleep = 1000 / rate;
 		if( sleep < 10 ) sleep = 10;
-		long last = start;
 		while( true )
 		{
 			sleep( sleep );
+
+			try
+			{
+				while( in.available() > 0 )
+				{
+					int ch = in.read();
+					if( ch == 'a' )
+					{
+						rate += 100;
+						Loggers.nio.debug( "Rate: {}", rate );
+						System.out.println( "Rate: " + rate );
+					}
+					else if( ch == 'b' )
+					{
+						rate -= 100;
+						Loggers.nio.debug( "Rate: {}", rate );
+						System.out.println( "Rate: " + rate );
+					}
+				}
+			}
+			catch( IOException e )
+			{
+				throw new FatalIOException( e );
+			}
 
 			long now = System.currentTimeMillis();
 			int need = (int)( ( now - base ) * rate / 1000 );
@@ -61,16 +85,6 @@ public class Generator
 				base = now;
 				done = 0;
 			}
-
-			long running = now - start;
-			if( running < this.ramp )
-			{
-				rate = (int)( this.rate * running / this.ramp );
-				sleep = 1000 / rate;
-				if( sleep < 10 ) sleep = 10;
-			}
-			else
-				rate = this.rate;
 
 //			if( now - last >= 1000 )
 //			{

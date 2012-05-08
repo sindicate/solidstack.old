@@ -25,8 +25,8 @@ public class Runner
 	public Runner( Dispatcher dispatcher )
 	{
 		this.dispatcher = dispatcher;
-		this.client = new Client( "localhost", 8001, dispatcher );
-		this.request = new Request( "/" );
+		this.client = new Client( "192.168.0.107", 8001, dispatcher );
+		this.request = new Request( "/?sleep=500" );
 //		this.request.setHeader( "Host", "www.nu.nl" );
 	}
 

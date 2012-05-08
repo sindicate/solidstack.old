@@ -11,13 +11,14 @@ public class TestClient
 		Dispatcher dispatcher = new Dispatcher();
 		dispatcher.start();
 
-		Generator generator = new Generator();
+//		RampGenerator generator = new RampGenerator();
+		ManualGenerator generator = new ManualGenerator();
 
 		Runner runner = new Runner( dispatcher );
 
 		generator.setReceiver( runner );
-		generator.setRate( 2400 );
-		generator.setRamp( 60 );
+		generator.setRate( 100 );
+//		generator.setRamp( 60 );
 		generator.run();
 	}
 }
