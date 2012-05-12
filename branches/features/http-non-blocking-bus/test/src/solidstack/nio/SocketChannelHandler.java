@@ -82,6 +82,7 @@ public class SocketChannelHandler
 		{
 			this.in.notify();
 		}
+		Loggers.nio.trace( "Channel ({}) Signalled inputstream", getDebugId() );
 	}
 
 	void writeIsReady()
@@ -90,6 +91,7 @@ public class SocketChannelHandler
 		{
 			this.out.notify();
 		}
+		Loggers.nio.trace( "Channel ({}) Signalled outputstream", getDebugId() );
 	}
 
 	public boolean isOpen()
@@ -147,7 +149,11 @@ public class SocketChannelHandler
 
 	void returnToPool()
 	{
-		this.pool.putHandler( this );
-		this.lastPooled = System.currentTimeMillis();
+		if( this.pool != null )
+		{
+			this.pool.putHandler( this );
+			this.lastPooled = System.currentTimeMillis();
+		}
+		this.dispatcher.listenRead( this.key ); // TODO The socket needs to be reading, otherwise client disconnects do not come through
 	}
 }

@@ -26,56 +26,67 @@ public class ServerSocketChannelHandler extends AsyncSocketChannelHandler
 	}
 
 	@Override
-	public void run()
+	public void dataIsReady()
 	{
-		SelectionKey key = getKey();
-
-		boolean complete = false;
-		try
+		// Not running -> not waiting -> no notify needed
+		if( !isRunningAndSet() )
 		{
-			try
-			{
-				while( true )
-				{
-					// TODO Try catch/finally?
-					getListener().incoming( this );
+			acquire();
+			getDispatcher().execute( this ); // TODO Also for write
+			Loggers.nio.trace( "Channel ({}) Started thread", getDebugId() );
+			return;
+		}
 
-					if( isOpen() )
-					{
-						if( getInputStream().available() == 0 )
-						{
-							complete = true;
-							return;
-						}
-					}
-					else
-					{
-						complete = true;
-						return;
-					}
-				}
-			}
-			finally
-			{
-				if( !complete )
-				{
-					close();
-					if( Loggers.nio.isDebugEnabled() )
-						Loggers.nio.trace( "Channel ({}) task aborted", getDebugId() );
-					endOfRunning();
-				}
-				else
-				{
-					if( Loggers.nio.isDebugEnabled() )
-						Loggers.nio.trace( "Channel ({}) task complete", getDebugId() );
-					endOfRunning();
-					getDispatcher().listenRead( key ); // TODO The socket needs to be reading, otherwise client disconnects do not come through
-				}
-			}
-		}
-		catch( Throwable t ) // TODO Exception, not Throwable
-		{
-			Loggers.nio.debug( "Channel ({}) Unhandled exception", getDebugId(), t );
-		}
+		super.dataIsReady();
 	}
+
+//	@Override
+//	public void run()
+//	{
+//		boolean complete = false;
+//		try
+//		{
+//			Loggers.nio.trace( "Channel ({}) Task started", getDebugId() );
+//
+//			SelectionKey key = getKey();
+//			while( true )
+//			{
+//				// TODO Try catch/finally?
+//				getListener().incoming( this );
+//
+//				if( isOpen() )
+//				{
+//					if( getInputStream().available() == 0 )
+//					{
+//						complete = true;
+//						return;
+//					}
+//					Assert.fail( "Channel (" + getDebugId() + ") Shouldn't come here (yet): available = " + getInputStream().available() );
+//				}
+//				else
+//				{
+//					complete = true;
+//					return;
+//				}
+//			}
+//		}
+//		catch( Exception e )
+//		{
+//			Loggers.nio.debug( "Channel ({}) Unhandled exception", getDebugId(), e );
+//		}
+//		finally
+//		{
+//			endOfRunning();
+//			if( !complete )
+//			{
+//				close();
+//				Loggers.nio.trace( "Channel ({}) Thread aborted", getDebugId() );
+//			}
+//			else
+//			{
+//				release(); // After endOfRunning()
+//				Loggers.nio.trace( "Channel ({}) Thread complete", getDebugId() );
+//			}
+//		}
+//	}
 }

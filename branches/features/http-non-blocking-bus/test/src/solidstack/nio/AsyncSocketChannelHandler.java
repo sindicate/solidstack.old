@@ -50,10 +50,14 @@ public class AsyncSocketChannelHandler extends SocketChannelHandler implements R
 		this.running.set( false );
 	}
 
+	public void acquire()
+	{
+		Assert.isTrue( this.latch.compareAndSet( 0, 1 ) );
+	}
+
 	public void doubleAcquire()
 	{
 		Assert.isTrue( this.latch.compareAndSet( 0, 2 ) );
-		this.latch.set( 2 );
 	}
 
 	public void release()
@@ -62,23 +66,22 @@ public class AsyncSocketChannelHandler extends SocketChannelHandler implements R
 		if( l == 0 )
 			returnToPool();
 		else
-			Assert.isTrue( l == 1 );
+			if( l != 1 )
+				Assert.fail( "Expected 1, was " + l );
 	}
 
 	@Override
 	public void dataIsReady()
 	{
-		// Not running -> not waiting, no notify needed
+		// Not running -> not waiting -> no notify needed
 		if( !isRunningAndSet() )
 		{
 			getDispatcher().execute( this ); // TODO Also for write
 			Loggers.nio.trace( "Channel ({}) Started thread", getDebugId() );
+			return;
 		}
-		else
-		{
-			super.dataIsReady();
-			Loggers.nio.trace( "Channel ({}) Signalled inputstream", getDebugId() );
-		}
+
+		super.dataIsReady();
 	}
 
 	public void run()
@@ -86,7 +89,7 @@ public class AsyncSocketChannelHandler extends SocketChannelHandler implements R
 		boolean complete = false;
 		try
 		{
-			Loggers.nio.trace( "Channel ({}) Thread started", getDebugId() );
+			Loggers.nio.trace( "Channel ({}) Task started", getDebugId() );
 
 			SelectionKey key = getKey();
 			while( true )
@@ -97,7 +100,6 @@ public class AsyncSocketChannelHandler extends SocketChannelHandler implements R
 				{
 					if( getInputStream().available() == 0 )
 					{
-						getDispatcher().listenRead( key );
 						complete = true;
 						return;
 					}
@@ -110,13 +112,13 @@ public class AsyncSocketChannelHandler extends SocketChannelHandler implements R
 				}
 			}
 		}
-		catch( Throwable t ) // TODO Exception, not Throwable
+		catch( Exception e )
 		{
-			Loggers.nio.debug( "Unhandled exception", t );
+			Loggers.nio.debug( "Channel ({}) Unhandled exception", getDebugId(), e );
 		}
 		finally
 		{
-			endOfRunning(); // FIXME Also do this for the ServerSocketChannelHandler
+			endOfRunning();
 			if( !complete )
 			{
 				close();

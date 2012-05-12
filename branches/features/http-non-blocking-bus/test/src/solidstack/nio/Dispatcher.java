@@ -26,6 +26,8 @@ public class Dispatcher extends Thread
 {
 	static private int threadId;
 
+	private int maxConnections = 100;
+
 	private Selector selector;
 	private Object lock = new Object(); // Used to sequence socket creation and registration
 	private ThreadPoolExecutor executor;
@@ -52,6 +54,11 @@ public class Dispatcher extends Thread
 			throw new FatalIOException( e );
 		}
 		this.executor = (ThreadPoolExecutor)Executors.newCachedThreadPool();
+	}
+
+	public void setMaxConnections( int maxConnections )
+	{
+		this.maxConnections = maxConnections;
 	}
 
 	synchronized static private int nextId()
@@ -85,28 +92,44 @@ public class Dispatcher extends Thread
 
 	public void listenRead( SelectionKey key )
 	{
-		if( Loggers.nio.isTraceEnabled() )
-			Loggers.nio.trace( "Channel ({}) Listening to read", DebugId.getId( key.channel() ) );
-
+		boolean yes = false;
 		synchronized( key )
 		{
-			// TODO Only set and wakeup when not set already
-			key.interestOps( key.interestOps() | SelectionKey.OP_READ );
+			int i = key.interestOps();
+			if( ( i & SelectionKey.OP_READ ) == 0 )
+			{
+				key.interestOps( i | SelectionKey.OP_READ );
+				yes = true;
+			}
 		}
-		key.selector().wakeup();
+
+		if( yes )
+		{
+			key.selector().wakeup();
+			if( Loggers.nio.isTraceEnabled() )
+				Loggers.nio.trace( "Channel ({}) Listening to read", DebugId.getId( key.channel() ) );
+		}
 	}
 
 	public void listenWrite( SelectionKey key )
 	{
-		if( Loggers.nio.isTraceEnabled() )
-			Loggers.nio.trace( "Channel ({}) Listening to write", DebugId.getId( key.channel() ) );
-
+		boolean yes = false;
 		synchronized( key )
 		{
-			// TODO Only set and wakeup when not set already
-			key.interestOps( key.interestOps() | SelectionKey.OP_WRITE );
+			int i = key.interestOps();
+			if( ( i & SelectionKey.OP_WRITE ) == 0 )
+			{
+				key.interestOps( i | SelectionKey.OP_WRITE );
+				yes = true;
+			}
 		}
-		key.selector().wakeup();
+
+		if( yes )
+		{
+			key.selector().wakeup();
+			if( Loggers.nio.isTraceEnabled() )
+				Loggers.nio.trace( "Channel ({}) Listening to write", DebugId.getId( key.channel() ) );
+		}
 	}
 
 	public SocketChannelHandler connect( String hostname, int port ) throws IOException
@@ -228,6 +251,7 @@ public class Dispatcher extends Thread
 				Loggers.nio.trace( "Selected {} keys", selected );
 
 				Set< SelectionKey > keys = this.selector.selectedKeys();
+				boolean canAccept = this.selector.keys().size() < this.maxConnections;
 				for( SelectionKey key : keys )
 				{
 					try
@@ -246,26 +270,29 @@ public class Dispatcher extends Thread
 							Assert.isTrue( key.channel().isOpen() );
 
 						if( key.isAcceptable() )
-						{
-							ServerSocketChannel server = (ServerSocketChannel)key.channel();
-							SocketChannel channel = server.accept();
-							if( channel != null )
+							if( canAccept )
 							{
-								if( Loggers.nio.isTraceEnabled() )
-									Loggers.nio.trace( "Channel ({}) New channel", DebugId.getId( channel ) );
+								ServerSocketChannel server = (ServerSocketChannel)key.channel();
+								SocketChannel channel = server.accept();
+								if( channel != null )
+								{
+									ReadListener listener = (ReadListener)key.attachment();
 
-								ReadListener listener = (ReadListener)key.attachment();
+									channel.configureBlocking( false );
+									key = channel.register( this.selector, 0 /* SelectionKey.OP_READ */ ); // TODO Maybe the handler should do that
 
-								channel.configureBlocking( false );
-								key = channel.register( this.selector, SelectionKey.OP_READ );
+									ServerSocketChannelHandler handler = new ServerSocketChannelHandler( this, key );
+									handler.setListener( listener );
+									key.attach( handler );
 
-								ServerSocketChannelHandler handler = new ServerSocketChannelHandler( this, key );
-								handler.setListener( listener );
-								key.attach( handler );
+									Loggers.nio.trace( "Channel ({}) New channel, Readable", handler.getDebugId() );
+									handler.dataIsReady();
+								}
+								else
+									Loggers.nio.trace( "Lost accept" );
 							}
 							else
-								Loggers.nio.trace( "Lost accept" );
-						}
+								Loggers.nio.trace( "Max connections reached, can't accept" );
 
 						if( key.isReadable() )
 						{
