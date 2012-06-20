@@ -19,7 +19,8 @@ package solidstack.io;
 
 
 /**
- * Something has gone wrong during reading of the source.
+ * Represents a problem in the source file. A stack trace is not required. The failure, file name and
+ * line number are enough to identify corrective actions.
  *
  * @author René M. de Bloois
  */

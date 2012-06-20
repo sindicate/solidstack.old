@@ -21,9 +21,11 @@ public class TableServlet implements Servlet
 		String table = context.getRequest().getParameter( "table" );
 
 		Connections connections = (Connections)context.getSession().getAttribute( "connections" );
-		Connection connection = connections.getConnection( database, user );
+		ConnectionHolder holder = connections.getConnection( database, user );
+		Connection connection = holder.getConnection();
+		char identifierQuote = holder.getDatabase().getIdentifierQuote();
 
-		table = '\"' + schema + "\".\"" + table + '\"'; // TODO SQL Escaping
+		table = identifierQuote + schema + identifierQuote + "." + identifierQuote + table + identifierQuote; // TODO SQL Escaping
 
 		try
 		{

@@ -2,11 +2,13 @@
 <%@ template import="solidstack.hyperdb.*" %>
 <%
 include( template: "/template", title: "Schemas", body: {
-	def database = request.getParameter( "database" )
+	def databaseName = request.getParameter( "database" )
 	def user = request.getParameter( "user" )
 	def connections = session.getAttribute( "connections" )
-	def connection = connections.getConnection( database, user )
-	def schemas = Database.getSchemas( connection ).values();
+	def connectionHolder = connections.getConnection( databaseName, user )
+	def connection = connectionHolder.connection
+	def database = connectionHolder.database
+	def schemas = database.getSchemas( connection ).values();
 %>
 		<table id="tables">
 			<tr><th>Schema</th><th># tables</th><th># views</th></tr>

@@ -13,7 +13,6 @@ public class Server extends Thread
 {
 	private int port;
 	private ApplicationContext application; // TODO Make this a Map
-	private Thread thread;
 
 	public Server( int port )
 	{
