@@ -10,7 +10,7 @@ public class Config
 	static
 	{
 		databases = new LinkedHashMap<String, Database>();
-		databases.put( "TAXI", new Database( "TAXI", "jdbc:oracle:thin:@192.168.0.109:1521:XE" ) );
+//		databases.put( "TAXI", new Database( "TAXI", "jdbc:oracle:thin:@192.168.0.109:1521:XE" ) );
 	}
 
 	static public Map< String, Database > getDatabases()
