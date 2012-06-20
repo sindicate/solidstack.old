@@ -13,6 +13,7 @@ public class SessionFilter implements Filter
 	{
 		// TODO Synchronization
 		String sessionId = context.getRequest().getCookie( "SESSIONID" );
+		Loggers.httpServer.debug( "session: {}", sessionId );
 		Session session = null;
 		if( sessionId != null )
 			session = this.sessions.get( sessionId );
@@ -24,6 +25,7 @@ public class SessionFilter implements Filter
 			context.setSession( session );
 			sessionId = Integer.toString( ++this.sessionid );
 			this.sessions.put( sessionId, session );
+			Loggers.httpServer.debug( "setCookie: session: {}", sessionId );
 			context.getResponse().setCookie( "SESSIONID", sessionId );
 		}
 		chain.call( context );

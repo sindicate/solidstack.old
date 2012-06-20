@@ -1,5 +1,6 @@
 package solidstack.httpserver;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -7,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import solidstack.io.FatalIOException;
 import solidstack.lang.Assert;
 
 
@@ -19,7 +21,6 @@ public class Response
 	protected ResponseWriter writer;
 	protected PrintWriter printWriter;
 	protected Map< String, List< String > > headers = new HashMap< String, List<String> >();
-	protected boolean committed;
 	protected int statusCode = 200;
 	protected String statusMessage = "OK";
 	protected String contentType;
@@ -67,10 +68,11 @@ public class Response
 
 	public void setHeader( String name, String value )
 	{
-		if( this.committed )
+		if( this.out.committed )
 			throw new IllegalStateException( "Response is already committed" );
-		if( name.equals( "Content-Type" ) )
-			throw new IllegalArgumentException( "Content type should be set with setContentType()" );
+//		if( name.equals( "Content-Type" ) )
+//			throw new IllegalArgumentException( "Content type should be set with setContentType()" );
+		// TODO Interpret content-type, or not?
 		setHeader0( name, value );
 	}
 
@@ -80,6 +82,10 @@ public class Response
 		values.add( value );
 		this.headers.put( name, values );
 	}
+
+	static public final byte[] HTTP = "HTTP/1.1 ".getBytes();
+	static public final byte[] NEWLINE = new byte[] { '\r', '\n' };
+	static public final byte[] COLON = new byte[] { ':', ' ' };
 
 	public void writeHeader( OutputStream out )
 	{
@@ -97,28 +103,27 @@ public class Response
 			else
 				setHeader0( "Content-Type", this.contentType );
 
-//		System.out.println( "Response:" );
-		ResponseWriter writer = new ResponseWriter( new FlushBlockingOutputStream( out ), "ISO-8859-1" );
-		writer.write( "HTTP/1.1 " );
-		writer.write( Integer.toString( this.statusCode ) );
-		writer.write( " " );
-		writer.write( this.statusMessage );
-		writer.write( '\r' );
-		writer.write( '\n' );
-		for( Map.Entry< String, List< String > > entry : this.headers.entrySet() )
-			for( String value : entry.getValue() )
-			{
-				writer.write( entry.getKey() );
-				writer.write( ": " );
-				writer.write( value );
-				writer.write( '\r' );
-				writer.write( '\n' );
-//				System.out.println( "    " + entry.getKey() + " = " + value );
-			}
-		writer.write( '\r' );
-		writer.write( '\n' );
-		writer.flush();
-		this.committed = true;
+		try
+		{
+			out.write( HTTP );
+			out.write( Integer.toString( this.statusCode ).getBytes() );
+			out.write( ' ' );
+			out.write( this.statusMessage.getBytes() );
+			out.write( NEWLINE );
+			for( Map.Entry< String, List< String > > entry : this.headers.entrySet() )
+				for( String value : entry.getValue() )
+				{
+					out.write( entry.getKey().getBytes() );
+					out.write( COLON );
+					out.write( value.getBytes() );
+					out.write( NEWLINE );
+				}
+			out.write( NEWLINE );
+		}
+		catch( IOException e )
+		{
+			throw new FatalIOException( e );
+		}
 
 		// TODO Are these header names case sensitive or not? And the values like 'chunked'?
 		if( "chunked".equals( getHeader( "Transfer-Encoding" ) ) )
@@ -127,12 +132,12 @@ public class Response
 
 	public boolean isCommitted()
 	{
-		return this.committed;
+		return this.out.committed;
 	}
 
 	public void setStatusCode( int code, String message )
 	{
-		if( this.committed )
+		if( this.out.committed )
 			throw new IllegalStateException( "Response is already committed" );
 		this.statusCode = code;
 		this.statusMessage = message;
@@ -140,7 +145,7 @@ public class Response
 
 	public void reset()
 	{
-		if( this.committed )
+		if( this.out.committed )
 			throw new IllegalStateException( "Response is already committed" );
 		getOutputStream().clear();
 		this.writer = null;
@@ -164,7 +169,7 @@ public class Response
 
 	public void setContentType( String contentType, String charSet )
 	{
-		if( this.committed )
+		if( this.out.committed )
 			throw new IllegalStateException( "Response is already committed" );
 		this.contentType = contentType;
 		this.charSet = charSet;

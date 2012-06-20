@@ -12,6 +12,7 @@ public class ResponseOutputStream extends OutputStream
 	protected Response response;
 	protected byte[] buffer = new byte[ 8192 ];
 	protected int pos;
+	protected boolean committed;
 
 	public ResponseOutputStream()
 	{
@@ -29,7 +30,7 @@ public class ResponseOutputStream extends OutputStream
 	{
 		try
 		{
-			if( this.response.isCommitted() )
+			if( this.committed )
 			{
 //				System.out.write( b, off, len );
 				this.out.write( b, off, len );
@@ -41,6 +42,7 @@ public class ResponseOutputStream extends OutputStream
 				this.out.write( this.buffer, 0, this.pos );
 //				System.out.write( b, off, len );
 				this.out.write( b, off, len );
+				this.committed = true;
 			}
 			else
 			{
@@ -59,7 +61,7 @@ public class ResponseOutputStream extends OutputStream
 	{
 		try
 		{
-			if( this.response.isCommitted() )
+			if( this.committed )
 			{
 //				System.out.write( b );
 				this.out.write( b );
@@ -71,6 +73,7 @@ public class ResponseOutputStream extends OutputStream
 				this.out.write( this.buffer, 0, this.pos );
 //				System.out.write( b );
 				this.out.write( b );
+				this.committed = true;
 			}
 			else
 			{
@@ -89,7 +92,7 @@ public class ResponseOutputStream extends OutputStream
 	{
 		try
 		{
-			if( this.response.isCommitted() )
+			if( this.committed )
 			{
 //				System.out.write( b );
 				this.out.write( b );
@@ -101,6 +104,7 @@ public class ResponseOutputStream extends OutputStream
 				this.out.write( this.buffer, 0, this.pos );
 //				System.out.write( b );
 				this.out.write( b );
+				this.committed = true;
 			}
 			else
 			{
@@ -117,7 +121,7 @@ public class ResponseOutputStream extends OutputStream
 	@Override
 	public void close()
 	{
-		flush();
+		commit();
 		try
 		{
 			this.out.close();
@@ -128,21 +132,32 @@ public class ResponseOutputStream extends OutputStream
 		}
 	}
 
-	@Override
-	public void flush()
+	private void commit()
 	{
 		try
 		{
-			if( this.response.isCommitted() )
-				this.out.flush();
-			else
+			if( !this.committed )
 			{
 				this.response.writeHeader( this.out );
-//				System.out.write( this.buffer, 0, this.pos );
 				// The outputstream may be changed at this point
 				this.out.write( this.buffer, 0, this.pos );
-				this.out.flush();
+				this.committed = true;
 			}
+		}
+		catch( IOException e )
+		{
+			throw new HttpException( e );
+		}
+	}
+
+	@Override
+	public void flush()
+	{
+		if( !this.committed )
+			commit();
+		try
+		{
+			this.out.flush();
 		}
 		catch( IOException e )
 		{
@@ -152,7 +167,7 @@ public class ResponseOutputStream extends OutputStream
 
 	public void clear()
 	{
-		Assert.isFalse( this.response.isCommitted() );
+		Assert.isFalse( this.committed );
 		this.pos = 0;
 	}
 }

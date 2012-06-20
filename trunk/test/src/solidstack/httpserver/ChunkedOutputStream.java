@@ -6,7 +6,7 @@ import java.io.OutputStream;
 
 /**
  * Converts a byte stream into a stream that complies with HTTP's chunked Transfer-Encoding.
- * 
+ *
  * @author René M. de Bloois
  */
 public class ChunkedOutputStream extends OutputStream
@@ -19,7 +19,7 @@ public class ChunkedOutputStream extends OutputStream
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param out The real {@link OutputStream}.
 	 */
 	public ChunkedOutputStream( OutputStream out )
@@ -55,7 +55,7 @@ public class ChunkedOutputStream extends OutputStream
 	@Override
 	public void flush() throws IOException
 	{
-		this.out.flush();
+		// Sorry, flush ain't working on a chunked outputstream
 	}
 
 	@Override
