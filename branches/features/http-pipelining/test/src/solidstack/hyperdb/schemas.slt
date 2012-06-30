@@ -1,0 +1,39 @@
+<%@ template version="1.0" language="groovy" contentType="text/html; charset=UTF-8" %>
+<%@ template import="solidstack.hyperdb.*" %>
+<%
+include( template: "/template", title: "Schemas", body: {
+	def databaseName = request.getParameter( "database" )
+	def user = request.getParameter( "user" )
+	def connections = session.getAttribute( "connections" )
+	def connectionHolder = connections.getConnection( databaseName, user )
+	def connection = connectionHolder.connection
+	def database = connectionHolder.database
+	def schemas = database.getSchemas( connection ).values();
+%>
+		<table id="tables">
+			<tr><th>Schema</th><th># tables</th><th># views</th></tr>
+<%		for( def schema : schemas ) { %>
+			<tr><td>${schema.name}</td><td>${schema.tableCount}</td><td>${schema.viewCount}</td></tr>
+<%		} %>
+		</table>
+<% } ) %>
+		<script>
+			function dataRowClick()
+			{
+				var schema = this.parentElement.cells[ 0 ].innerText
+				window.location = "schemas/" + schema + "/" + ( this.cellIndex == 1 ? "tables" : "views" )
+				return false
+			}
+			
+			walker( document.body,
+				function( node )
+				{
+					if( node instanceof HTMLTableRowElement )
+					{
+						node.cells[ 1 ].onclick = dataRowClick
+						node.cells[ 2 ].onclick = dataRowClick
+					}
+					return true
+				}
+			)
+		</script>
