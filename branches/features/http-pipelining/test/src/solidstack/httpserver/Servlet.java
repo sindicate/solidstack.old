@@ -3,5 +3,5 @@ package solidstack.httpserver;
 
 public interface Servlet
 {
-	void call( RequestContext context );
+	Response call( RequestContext context );
 }

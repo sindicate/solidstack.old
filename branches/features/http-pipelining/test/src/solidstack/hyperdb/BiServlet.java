@@ -1,13 +1,18 @@
 package solidstack.hyperdb;
 
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+
 import solidstack.httpserver.RequestContext;
-import solidstack.httpserver.ResponseWriter;
+import solidstack.httpserver.Response;
+import solidstack.httpserver.ResponseOutputStream;
 import solidstack.httpserver.Servlet;
 
 
 public class BiServlet implements Servlet
 {
-	public void call( RequestContext context )
+	public Response call( RequestContext context )
 	{
 //		new TemplateServlet().call( context, new Parameters( params ).put( "title", null ).put( "body", new Servlet()
 //		{
@@ -18,18 +23,16 @@ public class BiServlet implements Servlet
 //			}
 //		}));
 
-		context.getResponse().setContentType( "text/html", null );
-		ResponseWriter writer = context.getResponse().getWriter();
-
-//		try
-//		{
-//			Thread.sleep( 500 );
-//		}
-//		catch( InterruptedException e )
-//		{
-//			throw new ThreadInterrupted();
-//		}
-
-		writer.write( "<a href=\"/databases\">databases</a>\n" );
+		return new Response()
+		{
+			@Override
+			public void write( ResponseOutputStream out ) throws IOException
+			{
+				out.setContentType( "text/html", null );
+				Writer writer = new OutputStreamWriter( out );
+				writer.write( "<a href=\"/databases\">databases</a>\n" );
+				writer.flush();
+			}
+		};
 	}
 }

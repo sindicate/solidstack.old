@@ -1,5 +1,6 @@
 package solidstack.hyperdb;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -7,13 +8,15 @@ import java.sql.Statement;
 
 import solidstack.httpserver.HttpException;
 import solidstack.httpserver.RequestContext;
+import solidstack.httpserver.Response;
+import solidstack.httpserver.ResponseOutputStream;
 import solidstack.httpserver.Servlet;
 import solidstack.lang.Assert;
 
 
 public class TableRecordCountServlet implements Servlet
 {
-	public void call( RequestContext context )
+	public Response call( RequestContext context )
 	{
 		boolean complete = false;
 		try
@@ -31,8 +34,16 @@ public class TableRecordCountServlet implements Servlet
 					final ResultSet result1 = statement.executeQuery( "SELECT COUNT(*) FROM " + table );
 					Assert.isTrue( result1.next() );
 					final Object object = result1.getObject( 1 );
-					context.getResponse().getWriter().write( object );
+					Response response = new Response()
+					{
+						@Override
+						public void write( ResponseOutputStream out ) throws IOException
+						{
+							out.write( object.toString().getBytes() );
+						}
+					};
 					complete = true;
+					return response;
 				}
 				finally
 				{
@@ -52,7 +63,16 @@ public class TableRecordCountServlet implements Servlet
 		finally
 		{
 			if( !complete )
-				context.getResponse().getWriter().write( "#ERROR#" );
+			{
+				return new Response()
+				{
+					@Override
+					public void write( ResponseOutputStream out ) throws IOException
+					{
+						out.write( "#ERROR#".getBytes() ); // TODO Make constant
+					}
+				};
+			}
 		}
 
 //		try

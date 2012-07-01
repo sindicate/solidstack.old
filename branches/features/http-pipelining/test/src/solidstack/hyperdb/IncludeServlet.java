@@ -1,6 +1,7 @@
 package solidstack.hyperdb;
 
 import solidstack.httpserver.RequestContext;
+import solidstack.httpserver.Response;
 import solidstack.httpserver.Servlet;
 
 public class IncludeServlet implements Servlet
@@ -12,8 +13,8 @@ public class IncludeServlet implements Servlet
 		this.path = path;
 	}
 
-	public void call( RequestContext context )
+	public Response call( RequestContext context )
 	{
-		context.include( this.path );
+		return context.include( this.path );
 	}
 }

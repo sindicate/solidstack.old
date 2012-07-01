@@ -28,7 +28,7 @@ public class ApplicationContext
 		this.filterMappings.add( new FilterMapping( Pattern.compile( pattern ), filter ) );
 	}
 
-	public void dispatch( RequestContext context )
+	public Response dispatch( RequestContext context )
 	{
 		FilterChain chain = null;
 
@@ -43,15 +43,15 @@ public class ApplicationContext
 			}
 		}
 
-		dispatch2( context, chain );
+		return dispatch2( context, chain );
 	}
 
-	public void dispatchInternal( RequestContext context )
+	public Response dispatchInternal( RequestContext context )
 	{
-		dispatch2( context, null );
+		return dispatch2( context, null );
 	}
 
-	protected void dispatch2( RequestContext context, FilterChain chain )
+	protected Response dispatch2( RequestContext context, FilterChain chain )
 	{
 		for( ServletMapping mapping : this.mappings )
 		{
@@ -69,15 +69,13 @@ public class ApplicationContext
 				if( chain != null )
 				{
 					chain.set( mapping.servlet  );
-					chain.call( context );
+					return chain.call( context );
 				}
-				else
-					mapping.servlet.call( context );
-				return;
+				return mapping.servlet.call( context );
 			}
 		}
 
-		context.getResponse().setStatusCode( 404, "Not Found" );
+		return new StatusResponse( 404, "Not found" );
 	}
 
 //	public void callJsp( String name, RequestContext context )

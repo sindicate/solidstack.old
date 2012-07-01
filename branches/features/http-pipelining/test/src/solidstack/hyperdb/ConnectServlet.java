@@ -1,20 +1,19 @@
 package solidstack.hyperdb;
 
+import solidstack.httpserver.RedirectResponse;
 import solidstack.httpserver.Request;
 import solidstack.httpserver.RequestContext;
+import solidstack.httpserver.Response;
 import solidstack.httpserver.Servlet;
 import solidstack.httpserver.Session;
 
 public class ConnectServlet implements Servlet
 {
-	public void call( RequestContext context )
+	public Response call( RequestContext context )
 	{
 		Request request = context.getRequest();
 		if( request.getMethod().equals( "GET" ) )
-		{
-			context.include( "/slt/connect" );
-			return;
-		}
+			return context.include( "/slt/connect" );
 
 		String databaseName = request.getParameter( "database" );
 		String username = request.getParameter( "username" );
@@ -31,6 +30,6 @@ public class ConnectServlet implements Servlet
 		}
 		connections.connect( database, username, password );
 
-		context.redirect( "/databases/" + databaseName + '/' + username + "/schemas" );
+		return new RedirectResponse( "/databases/" + databaseName + '/' + username + "/schemas" );
 	}
 }

@@ -2,7 +2,7 @@ package solidstack.httpserver;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 
@@ -125,13 +125,16 @@ public class Handler extends Thread
 						}
 					}
 
-					OutputStream out = this.socket.getOutputStream();
-					out = new CloseBlockingOutputStream( out );
-					Response response = new Response( request, out );
-					RequestContext context = new RequestContext( request, response, this.applicationContext );
+//					OutputStream out = this.socket.getOutputStream();
+//					out = new CloseBlockingOutputStream( out );
+//					Response response = new Response( request, out );
+					RequestContext context = new RequestContext( request, this.applicationContext );
+					ResponseOutputStream out = new ResponseOutputStream( this.socket.getOutputStream(), request.isConnectionClose() );
 					try
 					{
-						this.applicationContext.dispatch( context );
+						// TODO 2 try catches, one for read one for write
+						Response response = this.applicationContext.dispatch( context );
+						response.write( out );
 					}
 					catch( FatalSocketException e )
 					{
@@ -143,28 +146,28 @@ public class Handler extends Thread
 						if( t.getClass().equals( HttpException.class ) && t.getCause() != null )
 							t = t.getCause();
 						t.printStackTrace( System.out );
-						if( !response.isCommitted() )
+						if( !out.isCommitted() )
 						{
-							response.reset();
-							response.setStatusCode( 500, "Internal Server Error" );
-							response.setContentType( "text/plain", "ISO-8859-1" );
-							PrintWriter writer = response.getPrintWriter( "ISO-8859-1" );
+							out.clear();
+							out.setStatusCode( 500, "Internal Server Error" );
+							out.setContentType( "text/plain", "ISO-8859-1" );
+							PrintWriter writer = new PrintWriter( new OutputStreamWriter( out, "ISO-8859-1" ) );
 							t.printStackTrace( writer );
 							writer.flush();
 						}
 						// TODO Is the socket going to be closed?
 					}
 
-					response.finish();
+					out.close();
 
 					// TODO Detect Connection: close headers on the request & response
 					// TODO A GET request has no body, when a POST comes without content size, the connection should be closed.
 					// TODO What about socket.getKeepAlive() and the other properties?
 
-					String length = response.getHeader( "Content-Length" );
+					String length = out.getHeader( "Content-Length" );
 					if( length == null )
 					{
-						String transfer = response.getHeader( "Transfer-Encoding" );
+						String transfer = out.getHeader( "Transfer-Encoding" );
 						if( !"chunked".equals( transfer ) )
 							this.socket.close();
 					}

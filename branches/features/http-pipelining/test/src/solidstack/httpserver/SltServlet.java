@@ -1,5 +1,7 @@
 package solidstack.httpserver;
 
+import java.io.OutputStreamWriter;
+
 import solidstack.template.Template;
 import solidstack.template.TemplateLoader;
 import solidstack.template.TemplateNotFoundException;
@@ -14,7 +16,7 @@ public class SltServlet implements Servlet
 		this.loader = loader;
 	}
 
-	public void call( RequestContext context )
+	public Response call( RequestContext context )
 	{
 		// TODO / should be allowed after fixing the other todo
 		String url = context.getRequest().getParameter( "path" );
@@ -23,13 +25,21 @@ public class SltServlet implements Servlet
 
 		try
 		{
-			Template template = this.loader.getTemplate( url );
-			Pars pars = new Pars( "session", context.getSession(), "request", context.getRequest(), "args", context.getArgs() ); // TODO response
-			template.apply( pars, context.getResponse().getWriter() );
+			final Template template = this.loader.getTemplate( url );
+			final Pars pars = new Pars( "session", context.getSession(), "request", context.getRequest(), "args", context.getArgs() ); // TODO response
+			return new Response()
+			{
+				@Override
+				public void write( ResponseOutputStream out )
+				{
+					// TODO Charset
+					template.apply( pars, new OutputStreamWriter( out ) );
+				}
+			};
 		}
 		catch( TemplateNotFoundException e )
 		{
-			context.getResponse().setStatusCode( 404, "Not found" );
+			return new StatusResponse( 404, "Not found" );
 		}
 
 //		url = url.replaceAll( "[\\\\/]", "." );
