@@ -1,29 +1,37 @@
 package solidstack.httpserver;
 
+import java.io.IOException;
+
 public class CompressionFilter implements Filter
 {
-	public void call( RequestContext context, FilterChain chain )
+	public Response call( RequestContext context, FilterChain chain )
 	{
-		context.getResponse().setHeader( "Content-Encoding", "gzip" );
-		GZipResponse gzipResponse = new GZipResponse( context.getResponse() );
-		try
+		final Response response = chain.call( context );
+		return new Response()
 		{
-			chain.call( new RequestContext( context.getRequest(), gzipResponse, context.applicationContext ) );
-			gzipResponse.finish();
-		}
-		catch( FatalSocketException e )
-		{
-			throw e;
-		}
-		catch( RuntimeException e )
-		{
-			gzipResponse.finish();
-			throw e;
-		}
-		catch( Error e )
-		{
-			gzipResponse.finish();
-			throw e;
-		}
+			@Override
+			public void write( ResponseOutputStream out ) throws IOException
+			{
+				out.setHeader( "Content-Encoding", "gzip" );
+				out = new GZipResponseOutputStream( out );
+				response.write( out );
+				out.close();
+			}
+		};
+
+//		catch( FatalSocketException e )
+//		{
+//			throw e;
+//		}
+//		catch( RuntimeException e )
+//		{
+//			gzipResponse.finish();
+//			throw e;
+//		}
+//		catch( Error e )
+//		{
+//			gzipResponse.finish();
+//			throw e;
+//		}
 	}
 }

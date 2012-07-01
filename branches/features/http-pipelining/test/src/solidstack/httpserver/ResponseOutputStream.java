@@ -25,10 +25,10 @@ public class ResponseOutputStream extends OutputStream
 	protected int statusCode = 200;
 	protected String statusMessage = "OK";
 
-//	public ResponseOutputStream()
-//	{
-//
-//	}
+	public ResponseOutputStream()
+	{
+
+	}
 
 	public ResponseOutputStream( OutputStream out, boolean connectionClose )
 	{

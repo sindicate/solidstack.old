@@ -5,15 +5,15 @@ import java.util.zip.GZIPOutputStream;
 
 public class GZipResponseOutputStream extends ResponseOutputStream
 {
-	protected Response response;
+	protected ResponseOutputStream response;
 	protected GZIPOutputStream out;
 
-	public GZipResponseOutputStream( Response response )
+	public GZipResponseOutputStream( ResponseOutputStream out )
 	{
-		this.response = response;
+		this.response = out;
 		try
 		{
-			this.out = new GZIPOutputStream( response.getOutputStream() );
+			this.out = new GZIPOutputStream( out );
 		}
 		catch( IOException e )
 		{
@@ -89,10 +89,10 @@ public class GZipResponseOutputStream extends ResponseOutputStream
 	@Override
 	public void clear()
 	{
-		this.response.getOutputStream().clear();
+		this.response.clear();
 		try
 		{
-			this.out = new GZIPOutputStream( this.response.getOutputStream() );
+			this.out = new GZIPOutputStream( this.response );
 		}
 		catch( IOException e )
 		{
