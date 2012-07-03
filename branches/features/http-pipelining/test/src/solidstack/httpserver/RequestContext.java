@@ -8,7 +8,6 @@ public class RequestContext
 	protected Session session;
 	protected ApplicationContext applicationContext;
 	protected Map< String, Object > args;
-	protected boolean async;
 
 	// TODO Parameter order
 	public RequestContext( Request request, ApplicationContext applicationContext )
@@ -68,15 +67,5 @@ public class RequestContext
 	public Session getSession()
 	{
 		return this.session;
-	}
-
-	public void setAsync( boolean async )
-	{
-		this.async = async;
-	}
-
-	public boolean isAsync()
-	{
-		return this.async;
 	}
 }
