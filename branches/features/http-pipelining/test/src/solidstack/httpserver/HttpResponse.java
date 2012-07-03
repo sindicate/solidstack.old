@@ -1,34 +1,29 @@
 package solidstack.httpserver;
 
+import java.io.OutputStream;
 
 
 
-abstract public class HttpResponse
+
+abstract public class HttpResponse extends Response
 {
+	private boolean connectionClose;
+
+	@Override
+	public void write( OutputStream out )
+	{
+		ResponseOutputStream out2 = new ResponseOutputStream( out, this.connectionClose );
+		write( out2 );
+		out2.close();
+	}
+
 	abstract public void write( ResponseOutputStream out );
 
-//	static protected int count = 1;
+	public void setConnectionClose( boolean connectionClose )
+	{
+		this.connectionClose = connectionClose;
+	}
 
-//	protected Request request;
-//	protected ResponseOutputStream out;
-//	protected ResponseWriter writer;
-//	protected Map< String, List< String > > headers = new HashMap< String, List<String> >();
-//
-//	protected Response()
-//	{
-//	}
-//
-//	public Response( Request request, OutputStream out )
-//	{
-//		this.request = request;
-//		this.out = new ResponseOutputStream( this, out );
-//	}
-//
-//	public ResponseOutputStream getOutputStream()
-//	{
-//		return this.out;
-//	}
-//
 //	public ResponseWriter getWriter()
 //	{
 //		if( this.writer != null )
@@ -54,10 +49,6 @@ abstract public class HttpResponse
 //		return new PrintWriter( getWriter( encoding ) );
 //	}
 //
-//	static public final byte[] HTTP = "HTTP/1.1 ".getBytes();
-//	static public final byte[] NEWLINE = new byte[] { '\r', '\n' };
-//	static public final byte[] COLON = new byte[] { ':', ' ' };
-//
 //	public void reset()
 //	{
 //		if( this.out.committed )
@@ -67,29 +58,5 @@ abstract public class HttpResponse
 //		this.statusCode = 200;
 //		this.statusMessage = "OK";
 //		this.headers.clear();
-//	}
-//
-//	public void flush()
-//	{
-//		if( this.writer != null )
-//			this.writer.flush();
-//		getOutputStream().flush();
-//	}
-//
-//	public void finish()
-//	{
-//		flush();
-//		getOutputStream().close();
-//	}
-//
-//	public String getHeader( String name )
-//	{
-//		List< String > values = this.headers.get( name );
-//		if( values == null )
-//			return null;
-//		Assert.isTrue( !values.isEmpty() );
-//		if( values.size() > 1 )
-//			throw new IllegalStateException( "Found more than 1 value for the header " + name );
-//		return values.get( 0 );
 //	}
 }

@@ -44,6 +44,7 @@ public class ChunkedOutputStream extends OutputStream
 	{
 		if( len == 0 )
 			return;
+//		Loggers.httpServer.trace( "Writing chunk size = {}", len );
 		this.out.write( Integer.toHexString( len ).getBytes() ); // TODO Give a CharSet here?
 		this.out.write( '\r' );
 		this.out.write( '\n' );
@@ -63,6 +64,7 @@ public class ChunkedOutputStream extends OutputStream
 	{
 		if( this.closed )
 			return;
+//		Loggers.httpServer.trace( "Writing last empty chunk" );
 		this.out.write( '0' );
 		this.out.write( '\r' );
 		this.out.write( '\n' );
