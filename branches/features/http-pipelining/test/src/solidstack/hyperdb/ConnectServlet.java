@@ -3,13 +3,13 @@ package solidstack.hyperdb;
 import solidstack.httpserver.RedirectResponse;
 import solidstack.httpserver.Request;
 import solidstack.httpserver.RequestContext;
-import solidstack.httpserver.Response;
+import solidstack.httpserver.HttpResponse;
 import solidstack.httpserver.Servlet;
 import solidstack.httpserver.Session;
 
 public class ConnectServlet implements Servlet
 {
-	public Response call( RequestContext context )
+	public HttpResponse call( RequestContext context )
 	{
 		Request request = context.getRequest();
 		if( request.getMethod().equals( "GET" ) )

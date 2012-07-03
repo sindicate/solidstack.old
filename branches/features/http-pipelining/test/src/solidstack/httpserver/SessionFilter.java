@@ -1,6 +1,5 @@
 package solidstack.httpserver;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,7 +9,7 @@ public class SessionFilter implements Filter
 	private int sessionid;
 	private Map< String, Session > sessions = new HashMap<String, Session>();
 
-	public Response call( RequestContext context, FilterChain chain )
+	public HttpResponse call( RequestContext context, FilterChain chain )
 	{
 		// TODO Synchronization
 		String sessionId = context.getRequest().getCookie( "SESSIONID" );
@@ -32,11 +31,11 @@ public class SessionFilter implements Filter
 		this.sessions.put( newSessionId, session );
 		Loggers.httpServer.debug( "setCookie: session: {}", newSessionId );
 
-		final Response response = chain.call( context );
-		return new Response()
+		final HttpResponse response = chain.call( context );
+		return new HttpResponse()
 		{
 			@Override
-			public void write( ResponseOutputStream out ) throws IOException
+			public void write( ResponseOutputStream out )
 			{
 				out.setCookie( "SESSIONID", newSessionId );
 				response.write( out );

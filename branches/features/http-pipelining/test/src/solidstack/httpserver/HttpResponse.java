@@ -1,12 +1,11 @@
 package solidstack.httpserver;
 
-import java.io.IOException;
 
 
 
-abstract public class Response
+abstract public class HttpResponse
 {
-	abstract public void write( ResponseOutputStream out ) throws IOException;
+	abstract public void write( ResponseOutputStream out );
 
 //	static protected int count = 1;
 

@@ -28,7 +28,7 @@ public class ApplicationContext
 		this.filterMappings.add( new FilterMapping( Pattern.compile( pattern ), filter ) );
 	}
 
-	public Response dispatch( RequestContext context )
+	public HttpResponse dispatch( RequestContext context )
 	{
 		FilterChain chain = null;
 
@@ -46,12 +46,12 @@ public class ApplicationContext
 		return dispatch2( context, chain );
 	}
 
-	public Response dispatchInternal( RequestContext context )
+	public HttpResponse dispatchInternal( RequestContext context )
 	{
 		return dispatch2( context, null );
 	}
 
-	protected Response dispatch2( RequestContext context, FilterChain chain )
+	protected HttpResponse dispatch2( RequestContext context, FilterChain chain )
 	{
 		for( ServletMapping mapping : this.mappings )
 		{

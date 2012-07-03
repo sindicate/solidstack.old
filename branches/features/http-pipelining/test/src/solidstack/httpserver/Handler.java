@@ -133,7 +133,7 @@ public class Handler extends Thread
 					try
 					{
 						// TODO 2 try catches, one for read one for write
-						Response response = this.applicationContext.dispatch( context );
+						HttpResponse response = this.applicationContext.dispatch( context );
 						response.write( out );
 					}
 					catch( FatalSocketException e )

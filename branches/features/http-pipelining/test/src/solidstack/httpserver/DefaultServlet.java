@@ -6,7 +6,7 @@ import java.io.InputStream;
 
 public class DefaultServlet implements Servlet
 {
-	public Response call( RequestContext context )
+	public HttpResponse call( RequestContext context )
 	{
 //		Response response = context.getResponse();
 
@@ -26,7 +26,7 @@ public class DefaultServlet implements Servlet
 				e = url.substring( pos + 1 );
 		final String extension = e;
 
-		return new Response()
+		return new HttpResponse()
 		{
 			@Override
 			public void write( ResponseOutputStream out )

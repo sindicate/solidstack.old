@@ -1,14 +1,13 @@
 package solidstack.hyperdb;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 import solidstack.httpserver.HttpException;
+import solidstack.httpserver.HttpResponse;
 import solidstack.httpserver.RequestContext;
-import solidstack.httpserver.Response;
 import solidstack.httpserver.ResponseOutputStream;
 import solidstack.httpserver.Servlet;
 import solidstack.lang.Assert;
@@ -16,15 +15,15 @@ import solidstack.util.Pars;
 
 public class ViewServlet implements Servlet
 {
-	public Response call( final RequestContext context )
+	public HttpResponse call( final RequestContext context )
 	{
 		String schema = context.getRequest().getParameter( "schema" );
 		final String view = '\"' + schema + "\".\"" + context.getRequest().getParameter( "view" ) + '\"'; // TODO SQL Escaping
 
-		return new Response()
+		return new HttpResponse()
 		{
 			@Override
-			public void write( ResponseOutputStream out ) throws IOException
+			public void write( ResponseOutputStream out )
 			{
 				Connection connection = DataSource.getConnection();
 				try

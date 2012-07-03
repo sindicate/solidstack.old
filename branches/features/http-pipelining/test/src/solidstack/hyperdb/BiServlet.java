@@ -4,15 +4,16 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
+import solidstack.httpserver.HttpResponse;
 import solidstack.httpserver.RequestContext;
-import solidstack.httpserver.Response;
 import solidstack.httpserver.ResponseOutputStream;
 import solidstack.httpserver.Servlet;
+import solidstack.io.FatalIOException;
 
 
 public class BiServlet implements Servlet
 {
-	public Response call( RequestContext context )
+	public HttpResponse call( RequestContext context )
 	{
 //		new TemplateServlet().call( context, new Parameters( params ).put( "title", null ).put( "body", new Servlet()
 //		{
@@ -23,15 +24,22 @@ public class BiServlet implements Servlet
 //			}
 //		}));
 
-		return new Response()
+		return new HttpResponse()
 		{
 			@Override
-			public void write( ResponseOutputStream out ) throws IOException
+			public void write( ResponseOutputStream out )
 			{
 				out.setContentType( "text/html", null );
 				Writer writer = new OutputStreamWriter( out );
-				writer.write( "<a href=\"/databases\">databases</a>\n" );
-				writer.flush();
+				try
+				{
+					writer.write( "<a href=\"/databases\">databases</a>\n" );
+					writer.flush();
+				}
+				catch( IOException e )
+				{
+					throw new FatalIOException( e );
+				}
 			}
 		};
 	}

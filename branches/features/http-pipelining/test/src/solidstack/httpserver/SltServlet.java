@@ -16,7 +16,7 @@ public class SltServlet implements Servlet
 		this.loader = loader;
 	}
 
-	public Response call( RequestContext context )
+	public HttpResponse call( RequestContext context )
 	{
 		// TODO / should be allowed after fixing the other todo
 		String url = context.getRequest().getParameter( "path" );
@@ -27,7 +27,7 @@ public class SltServlet implements Servlet
 		{
 			final Template template = this.loader.getTemplate( url );
 			final Pars pars = new Pars( "session", context.getSession(), "request", context.getRequest(), "args", context.getArgs() ); // TODO response
-			return new Response()
+			return new HttpResponse()
 			{
 				@Override
 				public void write( ResponseOutputStream out )

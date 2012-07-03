@@ -1,6 +1,6 @@
 package solidstack.httpserver;
 
-public class StatusResponse extends Response
+public class StatusResponse extends HttpResponse
 {
 	private int statusCode = 200;
 	private String statusMessage = "OK";

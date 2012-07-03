@@ -21,7 +21,7 @@ public class FilterChain
 		this.servlet = servlet;
 	}
 
-	public Response call( RequestContext context )
+	public HttpResponse call( RequestContext context )
 	{
 		Assert.notNull( this.servlet );
 		if( this.filters.isEmpty() )

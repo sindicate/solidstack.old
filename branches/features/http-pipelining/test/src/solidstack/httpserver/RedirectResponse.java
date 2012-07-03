@@ -1,8 +1,7 @@
 package solidstack.httpserver;
 
-import java.io.IOException;
 
-public class RedirectResponse extends Response
+public class RedirectResponse extends HttpResponse
 {
 	private String location;
 
@@ -12,7 +11,7 @@ public class RedirectResponse extends Response
 	}
 
 	@Override
-	public void write( ResponseOutputStream out ) throws IOException
+	public void write( ResponseOutputStream out )
 	{
 //		response.reset(); Do not reset, we need the Set-Cookies
 		out.setStatusCode( 303, "Redirect" );

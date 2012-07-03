@@ -48,13 +48,13 @@ public class RequestContext
 		return this.args;
 	}
 
-	public Response include( String path, Map< String, Object > args )
+	public HttpResponse include( String path, Map< String, Object > args )
 	{
 		RequestContext context = new RequestContext( this, path, args );
 		return getApplication().dispatchInternal( context );
 	}
 
-	public Response include( String path )
+	public HttpResponse include( String path )
 	{
 		return include( path, null );
 	}
