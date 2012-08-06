@@ -229,7 +229,7 @@
 		<property name="sonar.tests" value="list of test source directories separated by a comma" />
 		<property name="sonar.libraries" value="list of paths to libraries separated by a comma (These libraries are for example used by the Sonar Findbugs plugin)" />
  		-->
-		<sonar:sonar key="solidstack:solidstack" version="1.9.1-beta" xmlns:sonar="antlib:org.sonar.ant" />
+		<sonar:sonar key="solidstack:solidstack" version="1.9.2-beta" xmlns:sonar="antlib:org.sonar.ant" />
 	</target>
 
 
