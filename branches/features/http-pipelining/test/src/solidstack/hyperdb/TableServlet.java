@@ -45,7 +45,9 @@ public class TableServlet implements Servlet
 
 						final ResultSet result2 = statement.executeQuery( "SELECT * FROM " + theTable );
 
-						context.include( "/slt/table", new Pars( "title", "table " + theTable, "table", theTable, "result", result2, "count", object ) );
+						HttpResponse response = context.include( "/slt/table", new Pars( "title", "table " + theTable, "table", theTable, "result", result2, "count", object ) );
+						// TODO Whats with the needInput()?
+						response.write( out );
 					}
 					finally
 					{

@@ -93,6 +93,7 @@ public class Handler extends Thread
 						//			System.out.println( "    "+ field.getValue() + " = " + value.getValue() );
 						if( field.equals( "Cookie" ) ) // TODO Case insensitive?
 						{
+							// TODO This is a ; separated string of multiple cookies with possibly equal names.
 							String s = value.getValue();
 							int pos2 = s.indexOf( '=' );
 							if( pos2 >= 0 )

@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class SessionFilter implements Filter
 {
-	private int sessionid;
+	private volatile int sessionid;
 	private Map< String, Session > sessions = new HashMap<String, Session>();
 
 	public HttpResponse call( RequestContext context, FilterChain chain )
@@ -29,7 +29,6 @@ public class SessionFilter implements Filter
 		context.setSession( session );
 		final String newSessionId = Integer.toString( ++this.sessionid );
 		this.sessions.put( newSessionId, session );
-		Loggers.httpServer.debug( "setCookie: session: {}", newSessionId );
 
 		final HttpResponse response = chain.call( context );
 		return new HttpResponse()
@@ -37,6 +36,7 @@ public class SessionFilter implements Filter
 			@Override
 			public void write( ResponseOutputStream out )
 			{
+				Loggers.httpServer.debug( "setCookie: session: {}", newSessionId );
 				out.setCookie( "SESSIONID", newSessionId );
 				response.write( out );
 			}

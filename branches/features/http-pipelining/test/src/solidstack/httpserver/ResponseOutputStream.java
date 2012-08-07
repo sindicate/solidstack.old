@@ -233,7 +233,8 @@ public class ResponseOutputStream extends OutputStream
 
 	public void setCookie( String name, String value )
 	{
-		setHeader( "Set-Cookie", name + "=" + value );
+		// TODO The path should be configurable
+		setHeader( "Set-Cookie", name + "=" + value + "; Path=/" );
 	}
 
 	static public final byte[] HTTP = "HTTP/1.1 ".getBytes();
