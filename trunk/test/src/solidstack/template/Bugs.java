@@ -16,6 +16,9 @@
 
 package solidstack.template;
 
+import java.io.IOException;
+import java.util.ArrayList;
+
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -46,7 +49,7 @@ public class Bugs
 		TemplateLoader templates = new TemplateLoader();
 		templates.setTemplatePath( "classpath:/solidstack/template" );
 
-		Template template = templates.getTemplate( "jochen1" );
+		Template template = templates.getTemplate( "car1" );
 		String result = template.apply( new Pars( "scriptType", "scriptType", "organisation", "organisation" ) );
 		Assert.assertEquals( result, "-- ##########################################################################################################\n" +
 				"-- ## Reference Data scriptType script\n" +
@@ -57,5 +60,64 @@ public class Bugs
 				" \n" +
 				" \n" +
 				"--WARNING: This script does not contain a COMMIT statement.\n" );
+	}
+
+	@Test
+	public void testJochen2() throws IOException
+	{
+		TemplateLoader templates = new TemplateLoader();
+		templates.setTemplatePath( "classpath:/solidstack/template" );
+
+		Template template = templates.getTemplate( "car2.sql" );
+
+		ArrayList<Test2> records = new ArrayList<Test2>();
+		for( int i = 0; i < 10; i++ )
+			records.add( new Test2( "operator" + i, "segment" + i, "area" + i ) );
+		String result = template.apply( new Pars( "records", records ) );
+
+		// TODO Put the result in a file.
+		Assert.assertEquals( result, "\n" +
+				"-- Revised:\n" +
+				"\n" +
+				"SELECT *\n" +
+				"FROM TABLE \n" +
+				"WHERE ( FIELD1, FIELD2, FIELD3 ) IN ( ( 'operator0', 'segment0', 'area0' ), ( 'operator1', 'segment1', 'area1' ), ( 'operator2', 'segment2', 'area2' ), ( 'operator3', 'segment3', 'area3' ), ( 'operator4', 'segment4', 'area4' ) )\n" +
+				"OR ( FIELD1, FIELD2, FIELD3 ) IN ( ( 'operator5', 'segment5', 'area5' ), ( 'operator6', 'segment6', 'area6' ), ( 'operator7', 'segment7', 'area7' ), ( 'operator8', 'segment8', 'area8' ), ( 'operator9', 'segment9', 'area9' ) )\n" +
+				";\n" +
+				"\n" +
+				"-- Original:\n" +
+				"\n" +
+				"SELECT * \n" +
+				"FROM TABLE \n" +
+				"WHERE FIELD1||<##>||FIELD2||<##>||FIELD3 IN \n" +
+				"(\n" +
+				"	'operator0<##>segment0<##>area0' \n" +
+				",	'operator1<##>segment1<##>area1' \n" +
+				",	'operator2<##>segment2<##>area2' \n" +
+				",	'operator3<##>segment3<##>area3' \n" +
+				",	'operator4<##>segment4<##>area4' \n" +
+				")\n" +
+				"OR FIELD1||<##>||FIELD2||<##>||FIELD3 IN \n" +
+				"(\n" +
+				"	'operator5<##>segment5<##>area5' \n" +
+				",	'operator6<##>segment6<##>area6' \n" +
+				",	'operator7<##>segment7<##>area7' \n" +
+				",	'operator8<##>segment8<##>area8' \n" +
+				",	'operator9<##>segment9<##>area9' \n" +
+				")\n" +
+				";\n" );
+	}
+
+	static public class Test2
+	{
+		public String field1;
+		public String field2;
+		public String field3;
+		public Test2( String field1, String field2, String field3 )
+		{
+			this.field1 = field1;
+			this.field2 = field2;
+			this.field3 = field3;
+		}
 	}
 }
