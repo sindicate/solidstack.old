@@ -112,7 +112,7 @@ public class MySQLDatabase extends Database
 				statement.setString( 1, schemaName );
 				ResultSet result = statement.executeQuery();
 				while( result.next() )
-					views.add( new View( result.getString( 1 ) ) );
+					views.add( new View( null, result.getString( 1 ) ) ); // TODO schema name, or do it like getTables() does
 			}
 			finally
 			{

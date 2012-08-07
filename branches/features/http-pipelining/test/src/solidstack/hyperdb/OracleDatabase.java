@@ -107,7 +107,7 @@ public class OracleDatabase extends Database
 				statement.setString( 1, schemaName );
 				ResultSet result = statement.executeQuery();
 				while( result.next() )
-					views.add( new View( result.getString( 1 ) ) );
+					views.add( new View( schemaName, result.getString( 1 ) ) );
 			}
 			finally
 			{
