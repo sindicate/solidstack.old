@@ -3,10 +3,13 @@ package solidstack.httpserver;
 import java.io.IOException;
 import java.util.zip.GZIPOutputStream;
 
+
+// TODO It overrides OutputStream, shouldn't we throw IOExceptions?
 public class GZipResponseOutputStream extends ResponseOutputStream
 {
 	protected ResponseOutputStream response;
 	protected GZIPOutputStream out;
+
 
 	public GZipResponseOutputStream( ResponseOutputStream out )
 	{
@@ -98,5 +101,47 @@ public class GZipResponseOutputStream extends ResponseOutputStream
 		{
 			throw new HttpException( e );
 		}
+	}
+
+	@Override
+	public boolean isCommitted()
+	{
+		return this.response.isCommitted();
+	}
+
+	@Override
+	public void setStatusCode( int code, String message )
+	{
+		this.response.setStatusCode( code, message );
+	}
+
+	@Override
+	public void setContentType( String contentType, String charSet )
+	{
+		this.response.setContentType( contentType, charSet );
+	}
+
+	@Override
+	public void setHeader( String name, String value )
+	{
+		this.response.setHeader( name, value );
+	}
+
+	@Override
+	protected void setHeader0( String name, String value )
+	{
+		this.response.setHeader0( name, value );
+	}
+
+	@Override
+	public String getHeader( String name )
+	{
+		return this.response.getHeader( name );
+	}
+
+	@Override
+	public void setCookie( String name, String value )
+	{
+		this.response.setCookie( name, value );
 	}
 }

@@ -1,6 +1,7 @@
 package solidstack.httpserver;
 
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 
 import solidstack.template.Template;
 import solidstack.template.TemplateLoader;
@@ -32,8 +33,27 @@ public class SltServlet implements Servlet
 				@Override
 				public void write( ResponseOutputStream out )
 				{
-					// TODO Charset
-					template.apply( pars, new OutputStreamWriter( out ) );
+					String contentType = template.getContentType();
+					String charSet = null;
+					if( contentType != null )
+					{
+						// TODO How can we send the charset if no content type is set?
+						charSet = template.getCharSet();
+						if( charSet != null )
+							contentType += "; charset=" + charSet;
+						out.setHeader( "Content-Type", contentType );
+					}
+					if( charSet != null )
+						try
+						{
+							template.apply( pars, new OutputStreamWriter( out, charSet ) );
+						}
+						catch( UnsupportedEncodingException e )
+						{
+							throw new HttpException( e );
+						}
+					else
+						template.apply( pars, new OutputStreamWriter( out ) );
 				}
 			};
 		}

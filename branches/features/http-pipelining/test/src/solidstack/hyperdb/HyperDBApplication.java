@@ -1,6 +1,7 @@
 package solidstack.hyperdb;
 
 import solidstack.httpserver.ApplicationContext;
+import solidstack.httpserver.CompressionFilter;
 import solidstack.httpserver.DefaultServlet;
 import solidstack.httpserver.Servlet;
 import solidstack.httpserver.SessionFilter;
@@ -43,6 +44,6 @@ public class HyperDBApplication extends ApplicationContext
 		registerServlet( ".*", new DefaultServlet() );
 
 		registerFilter( ".*", new SessionFilter() );
-//		context.registerFilter( ".*", new CompressionFilter() );
+		registerFilter( ".*", new CompressionFilter() );
 	}
 }

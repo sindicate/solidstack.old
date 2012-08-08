@@ -11,6 +11,7 @@ import solidstack.io.FatalIOException;
 import solidstack.lang.Assert;
 
 
+// TODO It overrides OutputStream, shouldn't we throw IOExceptions?
 public class ResponseOutputStream extends OutputStream
 {
 	protected OutputStream out;
