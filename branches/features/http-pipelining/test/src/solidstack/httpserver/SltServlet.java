@@ -34,15 +34,10 @@ public class SltServlet implements Servlet
 				public void write( ResponseOutputStream out )
 				{
 					String contentType = template.getContentType();
-					String charSet = null;
-					if( contentType != null )
-					{
-						// TODO How can we send the charset if no content type is set?
-						charSet = template.getCharSet();
-						if( charSet != null )
-							contentType += "; charset=" + charSet;
-						out.setHeader( "Content-Type", contentType );
-					}
+					String charSet = template.getCharSet();
+					out.setContentType( contentType, charSet );
+
+					// Actually, when content type is not set, the char set is not added to the response. But then again, it is set, so we must use it.
 					if( charSet != null )
 						try
 						{

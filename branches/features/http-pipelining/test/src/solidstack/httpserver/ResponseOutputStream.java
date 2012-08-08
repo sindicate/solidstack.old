@@ -254,6 +254,7 @@ public class ResponseOutputStream extends OutputStream
 
 		// TODO status 404 and chunked encoding conflict each other
 
+		// TODO How can we send the charset if no content type is set?
 		if( this.contentType != null )
 			if( this.charSet != null )
 				setHeader0( "Content-Type", this.contentType + "; charset=" + this.charSet );

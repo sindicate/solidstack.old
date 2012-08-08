@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
+import solidstack.httpserver.HttpException;
 import solidstack.httpserver.HttpResponse;
 import solidstack.httpserver.RequestContext;
 import solidstack.httpserver.ResponseOutputStream;
 import solidstack.httpserver.Servlet;
-import solidstack.io.FatalIOException;
 
 
 public class RootServlet implements Servlet
@@ -29,16 +29,16 @@ public class RootServlet implements Servlet
 			@Override
 			public void write( ResponseOutputStream out )
 			{
-				out.setContentType( "text/html", null );
-				Writer writer = new OutputStreamWriter( out );
+				out.setContentType( "text/html", "UTF-8" );
 				try
 				{
+					Writer writer = new OutputStreamWriter( out, "UTF-8" );
 					writer.write( "<a href=\"/databases\">databases</a>\n" );
 					writer.flush();
 				}
 				catch( IOException e )
 				{
-					throw new FatalIOException( e );
+					throw new HttpException( e );
 				}
 			}
 		};

@@ -15,6 +15,7 @@ public class DefaultServlet implements Servlet
 			url = url.substring( 1 );
 
 		// TODO Should we open in the response?
+		// TODO Introduce a ResourceLoader. One that can also be used by the TemplateLoader.
 		final InputStream in = DefaultServlet.class.getClassLoader().getResourceAsStream( url );
 		if( in == null )
 			return new StatusResponse( 404, "Not found" );
@@ -46,6 +47,7 @@ public class DefaultServlet implements Servlet
 				{
 					try
 					{
+						// TODO Make the buffer size configurable
 						byte[] buffer = new byte[ 4096 ];
 						int len = in.read( buffer );
 						while( len >= 0 )
