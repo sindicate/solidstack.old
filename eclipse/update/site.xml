@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/solidstack_1.2.0.jar" id="solidstack" version="1.2.0"/>
+   <feature url="features/solidstack.template_1.2.0.jar" id="solidstack.template" version="1.2.0">
+      <category name="solidstack"/>
+   </feature>
+   <category-def name="solidstack" label="SolidStack"/>
 </site>
