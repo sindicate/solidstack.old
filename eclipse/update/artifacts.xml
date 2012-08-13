@@ -3,14 +3,20 @@
 <repository name='Update Site' type='org.eclipse.equinox.p2.artifact.repository.simpleRepository' version='1.0.0'>
   <properties size='2'>
     <property name='p2.compressed' value='false'/>
-    <property name='p2.timestamp' value='1291757704221'/>
+    <property name='p2.timestamp' value='1344892784340'/>
   </properties>
   <mappings size='3'>
     <rule filter='(&amp; (classifier=osgi.bundle))' output='${repoUrl}/plugins/${id}_${version}.jar'/>
     <rule filter='(&amp; (classifier=binary))' output='${repoUrl}/binary/${id}_${version}'/>
     <rule filter='(&amp; (classifier=org.eclipse.update.feature))' output='${repoUrl}/features/${id}_${version}.jar'/>
   </mappings>
-  <artifacts size='6'>
+  <artifacts size='8'>
+    <artifact classifier='osgi.bundle' id='solidstack.template.editor' version='1.2.0'>
+      <properties size='2'>
+        <property name='artifact.size' value='4096'/>
+        <property name='download.size' value='23074'/>
+      </properties>
+    </artifact>
     <artifact classifier='org.eclipse.update.feature' id='ronnie.gosh' version='1.0.2'>
       <properties size='2'>
         <property name='artifact.size' value='726'/>
@@ -34,6 +40,12 @@
       <properties size='2'>
         <property name='artifact.size' value='4096'/>
         <property name='download.size' value='23093'/>
+      </properties>
+    </artifact>
+    <artifact classifier='org.eclipse.update.feature' id='solidstack' version='1.2.0'>
+      <properties size='2'>
+        <property name='download.contentType' value='application/zip'/>
+        <property name='download.size' value='429'/>
       </properties>
     </artifact>
     <artifact classifier='osgi.bundle' id='ronnie.gosh.editors.template' version='1.1.0'>

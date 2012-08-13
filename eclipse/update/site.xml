@@ -1,13 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/ronnie.gosh_1.0.2.jar" id="ronnie.gosh" version="1.0.2">
-      <category name="gosh.support"/>
-   </feature>
-   <feature url="features/ronnie.gosh_1.1.0.jar" id="ronnie.gosh" version="1.1.0">
-      <category name="gosh.support"/>
-   </feature>
-   <feature url="features/ronnie.gosh_1.1.1.jar" id="ronnie.gosh" version="1.1.1">
-      <category name="gosh.support"/>
-   </feature>
-   <category-def name="gosh.support" label="GoSH Support"/>
+   <feature url="features/solidstack_1.2.0.jar" id="solidstack" version="1.2.0"/>
 </site>
