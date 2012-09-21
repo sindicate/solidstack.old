@@ -1,0 +1,20 @@
+<%@ template version="1.0" language="groovy" contentType="text/html; charset=UTF-8" %>
+<%@ template import="solidstack.hyperdb.*" %>
+<%
+include( template: "/template", title: "Tables", body: {
+	def databaseName = request.getParameter( "database" )
+	def user = request.getParameter( "user" )
+	def schema = request.getParameter( "schema" )
+	def connections = session.getAttribute( "connections" )
+	def connectionHolder = connections.getConnection( databaseName, user )
+	def connection = connectionHolder.connection
+	def database = connectionHolder.database
+	def tables = database.getTables( connection, schema )
+%>
+		<table id="tables">
+			<tr><th>Schema</th><th>Table</th><th>approx # records</th></tr>
+<%		for( Table table : tables ) { %>
+			<tr><td>${table.schema}</td><td><a href="../${table.schema}/tables/${table.name}">${table.name}</a></td><td>${table.records}</td></tr>
+<%		} %>
+		</table>
+<% } ) %>
