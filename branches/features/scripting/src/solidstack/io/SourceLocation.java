@@ -75,6 +75,8 @@ public class SourceLocation
 	@Override
 	public String toString()
 	{
-		return "line " + this.lineNumber + " of file " + this.resource;
+		if( this.resource != null )
+			return "line " + this.lineNumber + " of file " + this.resource;
+		return "line " + this.lineNumber;
 	}
 }
