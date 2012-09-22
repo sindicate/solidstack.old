@@ -16,10 +16,13 @@
 
 package solidstack.script;
 
+import java.math.BigDecimal;
+
 import solidstack.io.PushbackReader;
 import solidstack.io.SourceException;
 import solidstack.io.SourceLocation;
 import solidstack.io.SourceReader;
+import solidstack.script.ScriptTokenizer.Token.TYPE;
 
 
 /**
@@ -65,6 +68,7 @@ public class ScriptTokenizer
 			int ch = this.in.read();
 			if( ch == -1 )
 				return Token.EOF;
+
 			switch( ch )
 			{
 				// Whitespace
@@ -73,6 +77,7 @@ public class ScriptTokenizer
 				case '\n':
 				case '\r':
 					continue;
+
 				case 'a': case 'b': case 'c': case 'd': case 'e':
 				case 'f': case 'g': case 'h': case 'i': case 'j':
 				case 'k': case 'l': case 'm': case 'n': case 'o':
@@ -87,6 +92,52 @@ public class ScriptTokenizer
 					this.in.push( ch );
 					// TODO Internalize identifier tokens
 					return new Token( Token.TYPE.IDENTIFIER, result.toString() );
+
+				case '0': case '1': case '2': case '3': case '4':
+				case '5': case '6': case '7': case '8': case '9':
+					while( ch >= '0' && ch <= '9' )
+					{
+						result.append( (char)ch );
+						ch = this.in.read();
+					}
+					if( ch == '.' )
+					{
+						result.append( (char)ch );
+						ch = this.in.read();
+						if( !( ch >= '0' && ch <= '9' ) )
+							throw new SourceException( "Invalid number", this.in.getLocation() );
+						while( ch >= '0' && ch <= '9' )
+						{
+							result.append( (char)ch );
+							ch = this.in.read();
+						}
+					}
+					if( ch == 'E' || ch == 'e' )
+					{
+						result.append( (char)ch );
+						ch = this.in.read();
+						if( ch == '+' || ch == '-' )
+						{
+							result.append( (char)ch );
+							ch = this.in.read();
+						}
+						if( !( ch >= '0' && ch <= '9' ) )
+							throw new SourceException( "Invalid number", this.in.getLocation() );
+						while( ch >= '0' && ch <= '9' )
+						{
+							result.append( (char)ch );
+							ch = this.in.read();
+						}
+					}
+					this.in.push( ch );
+					return new Token( TYPE.NUMBER, new BigDecimal( result.toString() ) );
+
+				case '+':
+				case '-':
+				case '*':
+				case '/':
+					return new Token( Token.TYPE.OPERATOR, String.valueOf( (char)ch ) );
+
 				default:
 					throw new SourceException( "Unexpected character '" + (char)ch + "'", this.in.getLocation() );
 			}
@@ -132,7 +183,7 @@ public class ScriptTokenizer
 	// TODO Maybe we should remove this token class, and introduce the even mechanism like in JSONParser.
 	static public class Token
 	{
-		static public enum TYPE { IDENTIFIER, NULL, EOF }
+		static public enum TYPE { IDENTIFIER, NUMBER, OPERATOR, NULL, EOF }
 
 		static final protected Token NULL = new Token( TYPE.NULL );
 		static final protected Token EOF = new Token( TYPE.EOF );

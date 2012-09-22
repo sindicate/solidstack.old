@@ -7,11 +7,11 @@ import solidstack.io.ReaderSourceReader;
 
 public class Script
 {
-	private Identifier identifier;
+	private Expression expression;
 
-	public Script( Identifier identifier )
+	public Script( Expression expression )
 	{
-		this.identifier = identifier;
+		this.expression = expression;
 	}
 
 	// TODO Add location
@@ -19,12 +19,12 @@ public class Script
 	{
 		ScriptTokenizer t = new ScriptTokenizer( new ReaderSourceReader( new StringReader( script ) ) );
 		ScriptParser p = new ScriptParser( t );
-		Identifier result = p.parse();
+		Expression result = p.parse();
 		return new Script( result );
 	}
 
 	public Object execute( Map<String, Object> context )
 	{
-		return context.get( this.identifier.getName() );
+		return this.expression.evaluate( context );
 	}
 }
