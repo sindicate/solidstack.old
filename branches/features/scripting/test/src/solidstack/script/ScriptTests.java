@@ -50,4 +50,47 @@ public class ScriptTests
 		result = script.execute( context );
 		Assert.assertEquals( result, new BigDecimal( 6 ) );
 	}
+
+	@Test
+	static public void test4()
+	{
+		Map<String, Object> context = new HashMap<String, Object>();
+
+		int val = 1;
+		Assert.assertEquals( val > 0 ? 2 : 3 + 1, 2 );
+		Assert.assertEquals( 1 + 1 > 0 ? 2 : 3 + 1, 2 );
+		Assert.assertEquals( 1 > 0 ? 2 : 1 > 0 ? 3 : 4, 2 );
+
+		Script script = Script.compile( "1 ? 2 : 3 + 1" );
+		Object result = script.execute( context );
+		Assert.assertEquals( result, new BigDecimal( 2 ) );
+
+		script = Script.compile( "1 + 1 ? 2 : 3 + 1" );
+		result = script.execute( context );
+		Assert.assertEquals( result, new BigDecimal( 2 ) );
+
+		script = Script.compile( "1 ? 1 ? 2 : 3 : 4" );
+		result = script.execute( context );
+		Assert.assertEquals( result, new BigDecimal( 2 ) );
+
+		script = Script.compile( "1 ? 0 ? 2 : 3 : 4" );
+		result = script.execute( context );
+		Assert.assertEquals( result, new BigDecimal( 3 ) );
+
+		script = Script.compile( "0 ? 0 ? 2 : 3 : 4" );
+		result = script.execute( context );
+		Assert.assertEquals( result, new BigDecimal( 4 ) );
+
+//		script = Script.compile( "1 ? 2 : 1 ? 3 : 4" );
+//		result = script.execute( context );
+//		Assert.assertEquals( result, new BigDecimal( 2 ) );
+//
+//		script = Script.compile( "0 ? 2 : 1 ? 3 : 4" );
+//		result = script.execute( context );
+//		Assert.assertEquals( result, new BigDecimal( 3 ) );
+//
+//		script = Script.compile( "0 ? 2 : 0 ? 3 : 4" );
+//		result = script.execute( context );
+//		Assert.assertEquals( result, new BigDecimal( 4 ) );
+	}
 }

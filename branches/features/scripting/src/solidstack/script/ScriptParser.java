@@ -16,7 +16,7 @@ public class ScriptParser
 		this.tokenizer = t;
 	}
 
-	public Expression parse()
+	public Expression parse( boolean ternairyIf )
 	{
 		Expression result = null;
 
@@ -36,13 +36,31 @@ public class ScriptParser
 			else if( token.getType() == TYPE.OPERATOR )
 			{
 				Assert.isTrue( result != null );
-				Expression right = parseOne();
-				if( result instanceof Operation )
-					result = ( (Operation)result ).append( (String)token.getValue(), right );
+				if( token.getValue().equals( "?" ) )
+				{
+					Expression first = parse( true );
+//					token = this.tokenizer.get();
+//					Assert.isTrue( token.getType() == TYPE.OPERATOR );
+//					Assert.isTrue( token.getValue().equals( ":" ) );
+					Expression second = parseOne();
+					if( result instanceof Operation )
+						result = ( (Operation)result ).append( (String)token.getValue(), first, second );
+					else
+						result = new Operation( result, first, second );
+				}
 				else
-					result = new Operation( (String)token.getValue(), result, right );
+				{
+					if( ternairyIf && token.getValue().equals( ":" ) )
+						return result;
+					Assert.isFalse( token.getValue().equals( ":" ) );
+					Expression right = parseOne();
+					if( result instanceof Operation )
+						result = ( (Operation)result ).append( (String)token.getValue(), right );
+					else
+						result = new Operation( (String)token.getValue(), result, right );
+				}
 			}
-			else if( token.getType() == TYPE.EOF )
+			else if( !ternairyIf && token.getType() == TYPE.EOF )
 			{
 				return result;
 			}

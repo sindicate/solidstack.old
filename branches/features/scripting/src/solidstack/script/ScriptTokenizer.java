@@ -136,6 +136,8 @@ public class ScriptTokenizer
 				case '-':
 				case '*':
 				case '/':
+				case '?':
+				case ':':
 					return new Token( Token.TYPE.OPERATOR, String.valueOf( (char)ch ) );
 
 				default:
