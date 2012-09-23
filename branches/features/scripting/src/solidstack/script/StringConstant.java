@@ -1,13 +1,12 @@
 package solidstack.script;
 
-import java.math.BigDecimal;
 import java.util.Map;
 
-public class Number extends Expression
+public class StringConstant extends Expression
 {
-	private BigDecimal value;
+	private String value;
 
-	public Number( BigDecimal value )
+	public StringConstant( String value )
 	{
 		this.value = value;
 	}

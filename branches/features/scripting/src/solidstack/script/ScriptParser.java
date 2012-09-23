@@ -23,27 +23,16 @@ public class ScriptParser
 		while( true )
 		{
 			Token token = this.tokenizer.get();
-			if( token.getType() == TYPE.IDENTIFIER )
-			{
-				Assert.isTrue( result == null );
-				result = new Identifier( (String)token.getValue() );
-			}
-			else if( token.getType() == TYPE.NUMBER )
-			{
-				Assert.isTrue( result == null );
-				result = new Number( (BigDecimal)token.getValue() );
-			}
-			else if( token.eq( stop ) )
+			if( token.eq( stop ) )
 				return result;
-			else if( token.getType() == TYPE.OPERATOR )
+			if( stop == null && token.getType() == TYPE.EOF )
+				return result;
+			if( token.getType() == TYPE.OPERATOR )
 			{
 				Assert.isTrue( result != null );
 				if( token.getValue().equals( "?" ) )
 				{
 					Expression first = parse( ":" );
-//					token = this.tokenizer.get();
-//					Assert.isTrue( token.getType() == TYPE.OPERATOR );
-//					Assert.isTrue( token.getValue().equals( ":" ) );
 					Expression second = parseOne();
 					if( result instanceof Operation )
 						result = ( (Operation)result ).append( first, second );
@@ -55,16 +44,10 @@ public class ScriptParser
 					Assert.isFalse( token.getValue().equals( ":" ) );
 					Expression right = parseOne();
 					if( result instanceof Operation )
-						result = ( (Operation)result ).append( (String)token.getValue(), right );
+						result = ( (Operation)result ).append( token.getValue(), right );
 					else
-						result = new Operation( (String)token.getValue(), result, right );
+						result = new Operation( token.getValue(), result, right );
 				}
-			}
-//			else if( token.getValue().equals( stop ) )
-//				return result;
-			else if( stop == null && token.getType() == TYPE.EOF )
-			{
-				return result;
 			}
 			else
 				throw new SourceException( "Unexpected token '" + token + "'", this.tokenizer.getLocation() );
@@ -75,9 +58,11 @@ public class ScriptParser
 	{
 		Token token = this.tokenizer.get();
 		if( token.getType() == TYPE.IDENTIFIER )
-			return new Identifier( (String)token.getValue() );
+			return new Identifier( token.getValue() );
 		if( token.getType() == TYPE.NUMBER )
-			return new Number( (BigDecimal)token.getValue() );
+			return new Number( new BigDecimal( token.getValue() ) );
+		if( token.getType() == TYPE.STRING )
+			return new StringConstant( token.getValue() );
 		if( token == Token.PAREN_OPEN )
 			return new Parenthesis( parse( ")" ) );
 		throw new SourceException( "Unexpected token '" + token + "'", this.tokenizer.getLocation() );

@@ -27,12 +27,12 @@ public class Operation extends Expression
 //		precedences.put( "p++", 2 ); // postfix increment
 //		precedences.put( "p--", 2 ); // postfix decrement
 //
-//		precedences.put( "u++", 3 ); // pre- or postfix increment
-//		precedences.put( "u--", 3 ); // pre- or postfix decrement
-//		precedences.put( "u+", 3 ); // unary plus
-//		precedences.put( "u-", 3 ); // unary minus
-//		precedences.put( "u~", 3 ); // bitwise NOT
-//		precedences.put( "u!", 3 ); // boolean NOT
+//		precedences.put( "++u", 3 ); // prefix increment
+//		precedences.put( "--u", 3 ); // prefix decrement
+//		precedences.put( "+u", 3 ); // unary plus
+//		precedences.put( "-u", 3 ); // unary minus
+//		precedences.put( "~", 3 ); // bitwise NOT
+//		precedences.put( "!", 3 ); // boolean NOT
 //		precedences.put( "(type)", 3 ); // type cast
 ////		precedences.put( "new", 3 ); // object creation
 
@@ -113,9 +113,14 @@ public class Operation extends Expression
 
 		if( this.operation.equals( "+" ) )
 		{
-			Assert.isInstanceOf( left, BigDecimal.class );
-			Assert.isInstanceOf( right, BigDecimal.class );
-			return ( (BigDecimal)left ).add( (BigDecimal)right );
+			if( left instanceof BigDecimal )
+			{
+				Assert.isInstanceOf( right, BigDecimal.class );
+				return ( (BigDecimal)left ).add( (BigDecimal)right );
+			}
+			Assert.isInstanceOf( left, String.class );
+			Assert.isInstanceOf( right, String.class );
+			return (String)left + (String)right;
 		}
 
 		if( this.operation.equals( "*" ) )

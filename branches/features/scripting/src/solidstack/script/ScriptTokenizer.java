@@ -16,8 +16,6 @@
 
 package solidstack.script;
 
-import java.math.BigDecimal;
-
 import solidstack.io.PushbackReader;
 import solidstack.io.SourceException;
 import solidstack.io.SourceLocation;
@@ -93,6 +91,46 @@ public class ScriptTokenizer
 					// TODO Internalize identifier tokens
 					return new Token( Token.TYPE.IDENTIFIER, result.toString() );
 
+				case '"':
+					while( true )
+					{
+						ch = this.in.read();
+						if( ch == -1 )
+							throw new SourceException( "Missing \"", this.in.getLocation() );
+						if( ch == '"' )
+							return new Token( TYPE.STRING, result.toString() );
+						if( ch == '\\' )
+						{
+							ch = this.in.read();
+							if( ch == -1 )
+								throw new SourceException( "Incomplete escape sequence", this.in.getLocation() );
+							switch( ch )
+							{
+								case 'b': ch = '\b'; break;
+								case 'f': ch = '\f'; break;
+								case 'n': ch = '\n'; break;
+								case 'r': ch = '\r'; break;
+								case 't': ch = '\t'; break;
+								case '\"': break;
+								case '\\': break;
+								case 'u':
+									char[] codePoint = new char[ 4 ];
+									for( int i = 0; i < 4; i++ )
+									{
+										ch = this.in.read();
+										codePoint[ i ] = (char)ch;
+										if( !( ch >= '0' && ch <= '9' ) )
+											throw new SourceException( "Illegal escape sequence: \\u" + String.valueOf( codePoint, 0, i + 1 ), this.in.getLocation() );
+									}
+									ch = Integer.valueOf( String.valueOf( codePoint ), 16 );
+									break;
+								default:
+									throw new SourceException( "Illegal escape sequence: \\" + ( ch >= 0 ? (char)ch : "" ), this.in.getLocation() );
+							}
+						}
+						result.append( (char)ch );
+					}
+
 				case '0': case '1': case '2': case '3': case '4':
 				case '5': case '6': case '7': case '8': case '9':
 					while( ch >= '0' && ch <= '9' )
@@ -130,7 +168,7 @@ public class ScriptTokenizer
 						}
 					}
 					this.in.push( ch );
-					return new Token( TYPE.NUMBER, new BigDecimal( result.toString() ) );
+					return new Token( TYPE.NUMBER, result.toString() );
 
 				case '*':
 				case '/':
@@ -191,7 +229,7 @@ public class ScriptTokenizer
 	// TODO Maybe we should remove this token class, and introduce the even mechanism like in JSONParser.
 	static public class Token
 	{
-		static public enum TYPE { IDENTIFIER, NUMBER, OPERATOR, PAREN_OPEN, PAREN_CLOSE, NULL, EOF }
+		static public enum TYPE { IDENTIFIER, NUMBER, STRING, OPERATOR, PAREN_OPEN, PAREN_CLOSE, NULL, EOF }
 
 		static final protected Token PAREN_OPEN = new Token( TYPE.PAREN_OPEN, "(" );
 		static final protected Token PAREN_CLOSE = new Token( TYPE.PAREN_CLOSE, ")" );
@@ -206,7 +244,7 @@ public class ScriptTokenizer
 		/**
 		 * The value of the token.
 		 */
-		private Object value;
+		private String value;
 
 		/**
 		 * Constructs a new token.
@@ -218,7 +256,7 @@ public class ScriptTokenizer
 			this.type = type;
 		}
 
-		protected Token( TYPE type, Object value )
+		protected Token( TYPE type, String value )
 		{
 			this.type = type;
 			this.value = value;
@@ -234,7 +272,7 @@ public class ScriptTokenizer
 		 *
 		 * @return The value of token.
 		 */
-		public Object getValue()
+		public String getValue()
 		{
 			if( this.type == TYPE.NULL )
 				return null;

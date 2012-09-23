@@ -110,4 +110,11 @@ public class ScriptTests
 		test( "1 + ( a = 1 ) + a", context, new BigDecimal( 3 ) );
 		Assert.assertEquals( context.get( "a" ), new BigDecimal( 1 ) );
 	}
+
+	@Test
+	static public void test6()
+	{
+		test( "\"test\"", "test" );
+		test( "\"test\" + \"test\"", "testtest" );
+	}
 }
