@@ -141,6 +141,11 @@ public class ScriptTokenizer
 				case '=':
 					return new Token( Token.TYPE.OPERATOR, String.valueOf( (char)ch ) );
 
+				case '(':
+					return Token.PAREN_OPEN;
+				case ')':
+					return Token.PAREN_CLOSE;
+
 				default:
 					throw new SourceException( "Unexpected character '" + (char)ch + "'", this.in.getLocation() );
 			}
@@ -186,8 +191,10 @@ public class ScriptTokenizer
 	// TODO Maybe we should remove this token class, and introduce the even mechanism like in JSONParser.
 	static public class Token
 	{
-		static public enum TYPE { IDENTIFIER, NUMBER, OPERATOR, NULL, EOF }
+		static public enum TYPE { IDENTIFIER, NUMBER, OPERATOR, PAREN_OPEN, PAREN_CLOSE, NULL, EOF }
 
+		static final protected Token PAREN_OPEN = new Token( TYPE.PAREN_OPEN, "(" );
+		static final protected Token PAREN_CLOSE = new Token( TYPE.PAREN_CLOSE, ")" );
 		static final protected Token NULL = new Token( TYPE.NULL );
 		static final protected Token EOF = new Token( TYPE.EOF );
 
@@ -244,6 +251,13 @@ public class ScriptTokenizer
 			if( this.type == TYPE.EOF )
 				return "EOF";
 			return this.type.toString(); // TODO Is this correct?
+		}
+
+		public boolean eq( String s )
+		{
+			if( this.value == null )
+				return false;
+			return this.value.equals( s );
 		}
 	}
 

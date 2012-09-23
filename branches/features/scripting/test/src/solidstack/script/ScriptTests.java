@@ -38,6 +38,9 @@ public class ScriptTests
 		test( "2 * 1 + 1", new BigDecimal( 3 ) );
 		test( "1 + 1 + 1", new BigDecimal( 3 ) );
 		test( "1 + 2 * 2 + 1", new BigDecimal( 6 ) );
+		test( "( 1 + 2 ) * 2 + 1", new BigDecimal( 7 ) );
+		test( "1 + 2 * ( 2 + 1 )", new BigDecimal( 7 ) );
+		test( "( 1 + 2 ) * ( 2 + 1 )", new BigDecimal( 9 ) );
 	}
 
 	static private void test( String expression, Object expected )
@@ -65,16 +68,28 @@ public class ScriptTests
 		Assert.assertEquals( val > 0 ? 2 : val > 0 ? 3 : 4, 2 );
 
 		test( "1 ? 2 : 3 + 1", new BigDecimal( 2 ) );
+		test( "( 1 ? 2 : 3 ) + 1", new BigDecimal( 3 ) );
 		test( "1 + 1 ? 2 : 3 + 1", new BigDecimal( 2 ) );
+		test( "1 + ( 1 ? 2 : 3 ) + 1", new BigDecimal( 4 ) );
+		test( "1 + ( 1 ? 2 : 3 + 1 )", new BigDecimal( 3 ) );
+		test( "( 1 + 1 ? 2 : 3 ) + 1", new BigDecimal( 3 ) );
 		test( "0 ? 2 : 3 + 4 * 5", new BigDecimal( 23 ) );
+		test( "0 ? 2 : ( 3 + 4 ) * 5", new BigDecimal( 35 ) );
+		test( "( 0 ? 2 : 3 ) + 4 * 5", new BigDecimal( 23 ) );
+		test( "( ( 0 ? 2 : 3 ) + 4 ) * 5", new BigDecimal( 35 ) );
 		test( "1 ? 1 ? 2 : 3 : 4", new BigDecimal( 2 ) );
 		test( "1 ? 0 ? 2 : 3 : 4", new BigDecimal( 3 ) );
 		test( "0 ? 0 ? 2 : 3 : 4", new BigDecimal( 4 ) );
 		test( "1 ? 2 : 1 ? 3 : 4", new BigDecimal( 2 ) );
+		test( "( 1 ? 2 : 1 ) ? 3 : 4", new BigDecimal( 3 ) );
 		test( "0 ? 2 : 1 ? 3 : 4", new BigDecimal( 3 ) );
 		test( "0 ? 2 : 0 ? 3 : 4", new BigDecimal( 4 ) );
 		test( "1 ? 2 : 3 + 4 ? 5 : 6", new BigDecimal( 2 ) );
+		test( "( 1 ? 2 : 3 ) + 4 ? 5 : 6", new BigDecimal( 5 ) );
+		test( "1 ? 2 : 3 + ( 4 ? 5 : 6 )", new BigDecimal( 2 ) );
+		test( "( 1 ? 2 : 3 ) + ( 4 ? 5 : 6 )", new BigDecimal( 7 ) );
 		test( "0 ? 2 : 3 + 4 ? 5 : 6", new BigDecimal( 5 ) );
+		test( "0 ? 2 : 3 + ( 4 ? 5 : 6 )", new BigDecimal( 8 ) );
 	}
 
 	@Test
@@ -84,8 +99,15 @@ public class ScriptTests
 
 		test( "a = 1", context, new BigDecimal( 1 ) );
 		Assert.assertEquals( context.get( "a" ), new BigDecimal( 1 ) );
+
 		test( "a = b = 1", context, new BigDecimal( 1 ) );
 		Assert.assertEquals( context.get( "a" ), new BigDecimal( 1 ) );
 		Assert.assertEquals( context.get( "b" ), new BigDecimal( 1 ) );
+
+		test( "1 + ( a = 1 )", context, new BigDecimal( 2 ) );
+		Assert.assertEquals( context.get( "a" ), new BigDecimal( 1 ) );
+
+		test( "1 + ( a = 1 ) + a", context, new BigDecimal( 3 ) );
+		Assert.assertEquals( context.get( "a" ), new BigDecimal( 1 ) );
 	}
 }

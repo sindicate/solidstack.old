@@ -16,9 +16,9 @@ public class ScriptParser
 		this.tokenizer = t;
 	}
 
-	public Expression parse( boolean ternairyIf )
+	public Expression parse( String stop )
 	{
-		Expression result = null;
+		Expression result = parseOne();
 
 		while( true )
 		{
@@ -33,12 +33,14 @@ public class ScriptParser
 				Assert.isTrue( result == null );
 				result = new Number( (BigDecimal)token.getValue() );
 			}
+			else if( token.eq( stop ) )
+				return result;
 			else if( token.getType() == TYPE.OPERATOR )
 			{
 				Assert.isTrue( result != null );
 				if( token.getValue().equals( "?" ) )
 				{
-					Expression first = parse( true );
+					Expression first = parse( ":" );
 //					token = this.tokenizer.get();
 //					Assert.isTrue( token.getType() == TYPE.OPERATOR );
 //					Assert.isTrue( token.getValue().equals( ":" ) );
@@ -50,8 +52,6 @@ public class ScriptParser
 				}
 				else
 				{
-					if( ternairyIf && token.getValue().equals( ":" ) )
-						return result;
 					Assert.isFalse( token.getValue().equals( ":" ) );
 					Expression right = parseOne();
 					if( result instanceof Operation )
@@ -60,7 +60,9 @@ public class ScriptParser
 						result = new Operation( (String)token.getValue(), result, right );
 				}
 			}
-			else if( !ternairyIf && token.getType() == TYPE.EOF )
+//			else if( token.getValue().equals( stop ) )
+//				return result;
+			else if( stop == null && token.getType() == TYPE.EOF )
 			{
 				return result;
 			}
@@ -73,13 +75,11 @@ public class ScriptParser
 	{
 		Token token = this.tokenizer.get();
 		if( token.getType() == TYPE.IDENTIFIER )
-		{
 			return new Identifier( (String)token.getValue() );
-		}
-		else if( token.getType() == TYPE.NUMBER )
-		{
+		if( token.getType() == TYPE.NUMBER )
 			return new Number( (BigDecimal)token.getValue() );
-		}
+		if( token == Token.PAREN_OPEN )
+			return new Parenthesis( parse( ")" ) );
 		throw new SourceException( "Unexpected token '" + token + "'", this.tokenizer.getLocation() );
 	}
 }
