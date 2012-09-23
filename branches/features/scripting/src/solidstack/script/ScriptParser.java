@@ -76,6 +76,8 @@ public class ScriptParser
 				return new BooleanConstant( false );
 			if( name.equals( "true" ) )
 				return new BooleanConstant( true );
+			if( name.equals( "null" ) )
+				return new NullConstant();
 			return new Identifier( token.getValue() );
 		}
 		if( token.getType() == TYPE.NUMBER )

@@ -13,7 +13,7 @@ public class NumberConstant extends Expression
 	}
 
 	@Override
-	public Object evaluate( Map<String, Object> context )
+	public BigDecimal evaluate( Map<String, Object> context )
 	{
 		return this.value;
 	}

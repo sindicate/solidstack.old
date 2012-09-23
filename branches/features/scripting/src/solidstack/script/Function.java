@@ -48,7 +48,7 @@ public class Function extends Expression
 			Assert.isInstanceOf( object, String.class );
 			return ( (String)object ).toUpperCase();
 		}
-		if( this.name.equals( "print" ) )
+		if( this.name.equals( "println" ) )
 		{
 			Assert.isTrue( this.parameters.size() == 1 );
 			Object object = this.parameters.get( 0 ).evaluate( context );
@@ -56,6 +56,13 @@ public class Function extends Expression
 			String print = (String)object;
 			System.out.println( print );
 			return print;
+		}
+		if( this.name.equals( "length" ) )
+		{
+			Assert.isTrue( this.parameters.size() == 1 );
+			Object object = this.parameters.get( 0 ).evaluate( context );
+			Assert.isInstanceOf( object, String.class );
+			return ( (String)object ).length();
 		}
 		Assert.fail( "Unknown function " + this.name );
 		return null;

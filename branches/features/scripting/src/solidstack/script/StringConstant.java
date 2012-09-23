@@ -12,7 +12,7 @@ public class StringConstant extends Expression
 	}
 
 	@Override
-	public Object evaluate( Map<String, Object> context )
+	public String evaluate( Map<String, Object> context )
 	{
 		return this.value;
 	}

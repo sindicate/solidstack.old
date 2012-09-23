@@ -113,6 +113,8 @@ public class Operation extends Expression
 
 		if( this.operation.equals( "==" ) )
 		{
+			if( left == null )
+				return right == null;
 			return left.equals( right );
 		}
 

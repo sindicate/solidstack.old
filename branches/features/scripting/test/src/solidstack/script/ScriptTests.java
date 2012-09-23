@@ -128,8 +128,9 @@ public class ScriptTests
 		test( "substr( \"sinterklaas\", 1 + 2 * 1, 9 - 1 - 1 )", "terk" );
 		test( "substr( \"sinterklaas\", 6 )", "klaas" );
 		test( "upper( \"sinterklaas\" )", "SINTERKLAAS" );
-		test( "print( \"Hello World!\" )", "Hello World!" );
-		test( "print( upper( \"Hello World!\" ) )", "HELLO WORLD!" );
+		test( "println( \"Hello World!\" )", "Hello World!" );
+		test( "println( upper( \"Hello World!\" ) )", "HELLO WORLD!" );
+		test( "length( \"sinterklaas\" )", 11 );
 	}
 
 	@Test
@@ -144,5 +145,14 @@ public class ScriptTests
 		test( "1 == 1 == true", true );
 		test( "true == 1 == 1", false );
 		test( "true == ( 1 == 1 )", true );
+	}
+
+	@Test
+	static public void test9()
+	{
+		test( "null", null );
+		test( "null == null", true );
+		test( "1 == null", false );
+		test( "\"test\" == null", false );
 	}
 }
