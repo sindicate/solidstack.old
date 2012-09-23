@@ -3,11 +3,11 @@ package solidstack.script;
 import java.math.BigDecimal;
 import java.util.Map;
 
-public class Number extends Expression
+public class NumberConstant extends Expression
 {
 	private BigDecimal value;
 
-	public Number( BigDecimal value )
+	public NumberConstant( BigDecimal value )
 	{
 		this.value = value;
 	}
@@ -18,8 +18,8 @@ public class Number extends Expression
 		return this.value;
 	}
 
-	public Number negate()
+	public NumberConstant negate()
 	{
-		return new Number( this.value.negate() );
+		return new NumberConstant( this.value.negate() );
 	}
 }

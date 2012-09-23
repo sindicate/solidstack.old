@@ -1,6 +1,8 @@
 package solidstack.script;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import solidstack.io.SourceException;
 import solidstack.lang.Assert;
@@ -16,29 +18,33 @@ public class ScriptParser
 		this.tokenizer = t;
 	}
 
-	public Expression parse( String stop )
+	public Expression parse( String stop, String stop2 )
 	{
 		Expression result = parseOne();
 
 		while( true )
 		{
 			Token token = this.tokenizer.get();
-			if( token.eq( stop ) )
+			if( token.eq( stop ) || token.eq( stop2 ) )
 				return result;
 			if( stop == null && token.getType() == TYPE.EOF )
 				return result;
 			if( token.getType() == TYPE.PAREN_OPEN )
 			{
 				Assert.isTrue( result instanceof Identifier );
-				Expression parameter = parse( ")" );
-				result = new Function( ( (Identifier)result ).getName(), parameter );
+				List<Expression> parameters = new ArrayList<Expression>();
+				do
+					parameters.add( parse( ",", ")" ) );
+				while( this.tokenizer.lastToken().getType() == TYPE.COMMA );
+				Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.PAREN_CLOSE );
+				result = new Function( ( (Identifier)result ).getName(), parameters );
 			}
 			else if( token.getType() == TYPE.OPERATION )
 			{
 				Assert.isTrue( result != null );
 				if( token.getValue().equals( "?" ) )
 				{
-					Expression first = parse( ":" );
+					Expression first = parse( ":", null );
 					Expression second = parseOne();
 					if( result instanceof Operation )
 						result = ( (Operation)result ).append( first, second );
@@ -64,24 +70,31 @@ public class ScriptParser
 	{
 		Token token = this.tokenizer.get();
 		if( token.getType() == TYPE.IDENTIFIER )
+		{
+			String name = token.getValue();
+			if( name.equals( "false" ) )
+				return new BooleanConstant( false );
+			if( name.equals( "true" ) )
+				return new BooleanConstant( true );
 			return new Identifier( token.getValue() );
+		}
 		if( token.getType() == TYPE.NUMBER )
-			return new Number( new BigDecimal( token.getValue() ) );
+			return new NumberConstant( new BigDecimal( token.getValue() ) );
 		if( token.getType() == TYPE.STRING )
 			return new StringConstant( token.getValue() );
 		if( token == Token.PAREN_OPEN )
-			return new Parenthesis( parse( ")" ) );
+			return new Parenthesis( parse( ")", null ) );
 		if( token.getType() == TYPE.OPERATION )
 			if( token.getValue().equals( "-" ) )
 			{
 				Expression result = parseOne();
-				Assert.isInstanceOf( result, Number.class );
-				return ( (Number)result ).negate();
+				Assert.isInstanceOf( result, NumberConstant.class );
+				return ( (NumberConstant)result ).negate();
 			}
 			else if( token.getValue().equals( "+" ) )
 			{
 				Expression result = parseOne();
-				Assert.isInstanceOf( result, Number.class );
+				Assert.isInstanceOf( result, NumberConstant.class );
 				return result;
 			}
 		throw new SourceException( "Unexpected token '" + token + "'", this.tokenizer.getLocation() );

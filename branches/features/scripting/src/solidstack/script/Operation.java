@@ -53,7 +53,7 @@ public class Operation extends Expression
 //		precedences.put( ">=", 7 ); // greater than or equal
 //		precedences.put( "instanceof", 7 ); // reference test
 //
-//		precedences.put( "==", 8 ); // equal to
+		precedences.put( "==", 8 ); // equal to
 //		precedences.put( "!=", 8 ); // not equal to
 //
 //		precedences.put( "&", 9 ); // bitwise AND
@@ -111,6 +111,11 @@ public class Operation extends Expression
 
 		Object left = this.left.evaluate( context );
 
+		if( this.operation.equals( "==" ) )
+		{
+			return left.equals( right );
+		}
+
 		if( this.operation.equals( "+" ) )
 		{
 			if( left instanceof BigDecimal )
@@ -140,10 +145,17 @@ public class Operation extends Expression
 		if( this.operation.equals( "?" ) )
 		{
 			Object middle = this.middle.evaluate( context );
-			Assert.isInstanceOf( left, BigDecimal.class );
+			boolean condition;
+			if( left instanceof BigDecimal )
+				condition = ( (BigDecimal)left ).compareTo( new BigDecimal( 0 ) ) != 0;
+			else
+			{
+				Assert.isInstanceOf( left, Boolean.class );
+				condition = (Boolean)left;
+			}
 			Assert.isInstanceOf( middle, BigDecimal.class );
 			Assert.isInstanceOf( right, BigDecimal.class );
-			if( ( (BigDecimal)left ).compareTo( new BigDecimal( 0 ) ) != 0 )
+			if( condition )
 				return middle;
 			return right;
 		}

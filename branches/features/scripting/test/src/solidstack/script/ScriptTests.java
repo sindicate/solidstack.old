@@ -123,6 +123,26 @@ public class ScriptTests
 	{
 		test( "abs( +1 )", new BigDecimal( 1 ) );
 		test( "abs( -1 )", new BigDecimal( 1 ) );
-		test( "abs( 1 - 2 )", new BigDecimal( 1 ) );
+		test( "abs( 1 + -2 )", new BigDecimal( 1 ) );
+
+		test( "substr( \"sinterklaas\", 1 + 2 * 1, 9 - 1 - 1 )", "terk" );
+		test( "substr( \"sinterklaas\", 6 )", "klaas" );
+		test( "upper( \"sinterklaas\" )", "SINTERKLAAS" );
+		test( "print( \"Hello World!\" )", "Hello World!" );
+		test( "print( upper( \"Hello World!\" ) )", "HELLO WORLD!" );
+	}
+
+	@Test
+	static public void test8()
+	{
+		test( "1 == 1", true );
+		test( "1 == 0", false );
+		test( "1 + 1 == 2 ? 2 : 3", new BigDecimal( 2 ) );
+
+		test( "true", true );
+		test( "false", false );
+		test( "1 == 1 == true", true );
+		test( "true == 1 == 1", false );
+		test( "true == ( 1 == 1 )", true );
 	}
 }

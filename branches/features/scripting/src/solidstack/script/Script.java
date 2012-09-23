@@ -19,7 +19,7 @@ public class Script
 	{
 		ScriptTokenizer t = new ScriptTokenizer( new ReaderSourceReader( new StringReader( script ) ) );
 		ScriptParser p = new ScriptParser( t );
-		Expression result = p.parse( null );
+		Expression result = p.parse( null, null );
 		return new Script( result );
 	}
 
