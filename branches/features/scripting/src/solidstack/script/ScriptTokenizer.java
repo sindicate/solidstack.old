@@ -177,7 +177,7 @@ public class ScriptTokenizer
 				case '?':
 				case ':':
 				case '=':
-					return new Token( Token.TYPE.OPERATOR, String.valueOf( (char)ch ) );
+					return new Token( Token.TYPE.OPERATION, String.valueOf( (char)ch ) );
 
 				case '(':
 					return Token.PAREN_OPEN;
@@ -229,7 +229,7 @@ public class ScriptTokenizer
 	// TODO Maybe we should remove this token class, and introduce the even mechanism like in JSONParser.
 	static public class Token
 	{
-		static public enum TYPE { IDENTIFIER, NUMBER, STRING, OPERATOR, PAREN_OPEN, PAREN_CLOSE, NULL, EOF }
+		static public enum TYPE { IDENTIFIER, NUMBER, STRING, OPERATION, PAREN_OPEN, PAREN_CLOSE, NULL, EOF }
 
 		static final protected Token PAREN_OPEN = new Token( TYPE.PAREN_OPEN, "(" );
 		static final protected Token PAREN_CLOSE = new Token( TYPE.PAREN_CLOSE, ")" );

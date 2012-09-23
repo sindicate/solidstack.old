@@ -17,4 +17,9 @@ public class Number extends Expression
 	{
 		return this.value;
 	}
+
+	public Number negate()
+	{
+		return new Number( this.value.negate() );
+	}
 }

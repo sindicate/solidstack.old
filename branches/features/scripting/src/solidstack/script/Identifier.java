@@ -15,7 +15,7 @@ public class Identifier extends Expression
 		this.name = name;
 	}
 
-	public Object getName()
+	public String getName()
 	{
 		return this.name;
 	}

@@ -117,4 +117,12 @@ public class ScriptTests
 		test( "\"test\"", "test" );
 		test( "\"test\" + \"test\"", "testtest" );
 	}
+
+	@Test
+	static public void test7()
+	{
+		test( "abs( +1 )", new BigDecimal( 1 ) );
+		test( "abs( -1 )", new BigDecimal( 1 ) );
+		test( "abs( 1 - 2 )", new BigDecimal( 1 ) );
+	}
 }

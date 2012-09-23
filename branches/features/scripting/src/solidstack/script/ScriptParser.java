@@ -27,7 +27,13 @@ public class ScriptParser
 				return result;
 			if( stop == null && token.getType() == TYPE.EOF )
 				return result;
-			if( token.getType() == TYPE.OPERATOR )
+			if( token.getType() == TYPE.PAREN_OPEN )
+			{
+				Assert.isTrue( result instanceof Identifier );
+				Expression parameter = parse( ")" );
+				result = new Function( ( (Identifier)result ).getName(), parameter );
+			}
+			else if( token.getType() == TYPE.OPERATION )
 			{
 				Assert.isTrue( result != null );
 				if( token.getValue().equals( "?" ) )
@@ -65,6 +71,19 @@ public class ScriptParser
 			return new StringConstant( token.getValue() );
 		if( token == Token.PAREN_OPEN )
 			return new Parenthesis( parse( ")" ) );
+		if( token.getType() == TYPE.OPERATION )
+			if( token.getValue().equals( "-" ) )
+			{
+				Expression result = parseOne();
+				Assert.isInstanceOf( result, Number.class );
+				return ( (Number)result ).negate();
+			}
+			else if( token.getValue().equals( "+" ) )
+			{
+				Expression result = parseOne();
+				Assert.isInstanceOf( result, Number.class );
+				return result;
+			}
 		throw new SourceException( "Unexpected token '" + token + "'", this.tokenizer.getLocation() );
 	}
 }

@@ -123,6 +123,13 @@ public class Operation extends Expression
 			return (String)left + (String)right;
 		}
 
+		if( this.operation.equals( "-" ) )
+		{
+			Assert.isInstanceOf( left, BigDecimal.class );
+			Assert.isInstanceOf( right, BigDecimal.class );
+			return ( (BigDecimal)left ).subtract( (BigDecimal)right );
+		}
+
 		if( this.operation.equals( "*" ) )
 		{
 			Assert.isInstanceOf( left, BigDecimal.class );
