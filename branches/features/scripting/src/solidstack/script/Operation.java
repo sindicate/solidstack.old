@@ -1,6 +1,7 @@
 package solidstack.script;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.Map;
 
 import solidstack.lang.Assert;
@@ -8,10 +9,79 @@ import solidstack.lang.Assert;
 
 public class Operation extends Expression
 {
+	static protected final HashMap<String, Integer> precedences;
+
 	private String operation;
 	private Expression left;
+	private Expression middle;
 	private Expression right;
-	private Expression right2;
+
+	static
+	{
+		precedences = new HashMap<String, Integer>();
+
+//		precedences.put( "[", 1 ); // array index
+//		precedences.put( "(", 1 ); // method call
+//		precedences.put( ".", 1 ); // member access
+//
+//		precedences.put( "p++", 2 ); // postfix increment
+//		precedences.put( "p--", 2 ); // postfix decrement
+//
+//		precedences.put( "u++", 3 ); // pre- or postfix increment
+//		precedences.put( "u--", 3 ); // pre- or postfix decrement
+//		precedences.put( "u+", 3 ); // unary plus
+//		precedences.put( "u-", 3 ); // unary minus
+//		precedences.put( "u~", 3 ); // bitwise NOT
+//		precedences.put( "u!", 3 ); // boolean NOT
+//		precedences.put( "(type)", 3 ); // type cast
+////		precedences.put( "new", 3 ); // object creation
+
+		precedences.put( "*", 4 ); // multiplication
+		precedences.put( "/", 4 ); // division
+		precedences.put( "%", 4 ); // remainder
+
+		precedences.put( "+", 5 ); // addition
+		precedences.put( "-", 5 ); // subtraction
+
+//		precedences.put( "<<", 6 ); // signed bit shift left
+//		precedences.put( ">>", 6 ); // signed bit shift right
+//		precedences.put( ">>>", 6 ); // unsigned bit shift right
+//
+//		precedences.put( "<", 7 ); // less than
+//		precedences.put( ">", 7 ); // greater than
+//		precedences.put( "<=", 7 ); // less than or equal
+//		precedences.put( ">=", 7 ); // greater than or equal
+//		precedences.put( "instanceof", 7 ); // reference test
+//
+//		precedences.put( "==", 8 ); // equal to
+//		precedences.put( "!=", 8 ); // not equal to
+//
+//		precedences.put( "&", 9 ); // bitwise AND
+//
+//		precedences.put( "^", 10 ); // bitwise XOR
+//
+//		precedences.put( "|", 11 ); // bitwise OR
+//
+//		precedences.put( "&&", 12 ); // boolean AND
+//
+//		precedences.put( "||", 13 ); // boolean OR
+
+		precedences.put( "?", 14 ); // conditional
+		precedences.put( ":", 14 ); // conditional
+
+		precedences.put( "=", 15 ); // assignment
+//		precedences.put( "*=", 15 ); // assignment
+//		precedences.put( "/=", 15 ); // assignment
+//		precedences.put( "+=", 15 ); // assignment
+//		precedences.put( "-=", 15 ); // assignment
+//		precedences.put( "%=", 15 ); // assignment
+//		precedences.put( "<<=", 15 ); // assignment
+//		precedences.put( ">>=", 15 ); // assignment
+//		precedences.put( ">>>=", 15 ); // assignment
+//		precedences.put( "&=", 15 ); // assignment
+//		precedences.put( "^=", 15 ); // assignment
+//		precedences.put( "|=", 15 ); // assignment
+	}
 
 	public Operation( String operation, Expression left, Expression right )
 	{
@@ -20,19 +90,26 @@ public class Operation extends Expression
 		this.right = right;
 	}
 
-	public Operation( Expression left, Expression right, Expression right2 )
+	public Operation( Expression left, Expression middle, Expression right )
 	{
 		this.operation = "?";
 		this.left = left;
+		this.middle = middle;
 		this.right = right;
-		this.right2 = right2;
 	}
 
 	@Override
 	public Object evaluate( Map<String, Object> context )
 	{
-		Object left = this.left.evaluate( context );
 		Object right = this.right.evaluate( context );
+
+		if( this.operation.equals( "=" ) )
+		{
+			Assert.isInstanceOf( right, BigDecimal.class );
+			return this.left.assign( context, right );
+		}
+
+		Object left = this.left.evaluate( context );
 
 		if( this.operation.equals( "+" ) )
 		{
@@ -50,39 +127,54 @@ public class Operation extends Expression
 
 		if( this.operation.equals( "?" ) )
 		{
-			Object right2 = this.right2.evaluate( context );
+			Object middle = this.middle.evaluate( context );
 			Assert.isInstanceOf( left, BigDecimal.class );
+			Assert.isInstanceOf( middle, BigDecimal.class );
 			Assert.isInstanceOf( right, BigDecimal.class );
-			Assert.isInstanceOf( right2, BigDecimal.class );
 			if( ( (BigDecimal)left ).compareTo( new BigDecimal( 0 ) ) != 0 )
-				return right;
-			return right2;
+				return middle;
+			return right;
 		}
 
 		Assert.fail( "Unknown operation " + this.operation );
 		return null;
 	}
 
-	public Operation append( String operation, Expression right )
+	public Operation append( String operation, Expression expression )
 	{
-		if( this.operation.equals( "+" ) )
-			if( operation.equals( "*" ) )
-			{
-				this.right = new Operation( operation, this.right, right );
-				return this;
-			}
+		int prec = precedences.get( operation );
+		Assert.isTrue( prec > 0 );
 
-		if( this.operation.equals( "?" ) )
-		{
-			this.right2 = new Operation( operation, this.right2, right );
-			return this;
-		}
+		int myprec = precedences.get( this.operation );
+		Assert.isTrue( myprec > 0 );
 
-		return new Operation( operation, this, right );
+		if( myprec < prec || myprec == prec && myprec < 14 )
+			return new Operation( operation, this, expression );
+
+		if( this.right instanceof Operation )
+			this.right = ( (Operation)this.right ).append( operation, expression );
+		else
+			this.right = new Operation( operation, this.right, expression );
+		return this;
 	}
 
-	public Expression append( String operation, Expression first, Expression second )
+	// Append ?
+	public Expression append( Expression first, Expression second )
 	{
-		return new Operation( this, first, second );
+		int prec = precedences.get( "?" );
+		Assert.isTrue( prec > 0 );
+
+		int myprec = precedences.get( this.operation );
+		Assert.isTrue( myprec > 0 );
+
+		if( myprec < prec )
+			return new Operation( this, first, second );
+
+		 // Only happens when appending ? to = or another ?
+		if( this.right instanceof Operation )
+			this.right = ( (Operation)this.right ).append( first, second );
+		else
+			this.right = new Operation( this.right, first, second );
+		return this;
 	}
 }

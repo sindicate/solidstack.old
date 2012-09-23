@@ -44,7 +44,7 @@ public class ScriptParser
 //					Assert.isTrue( token.getValue().equals( ":" ) );
 					Expression second = parseOne();
 					if( result instanceof Operation )
-						result = ( (Operation)result ).append( (String)token.getValue(), first, second );
+						result = ( (Operation)result ).append( first, second );
 					else
 						result = new Operation( result, first, second );
 				}

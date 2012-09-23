@@ -132,12 +132,13 @@ public class ScriptTokenizer
 					this.in.push( ch );
 					return new Token( TYPE.NUMBER, new BigDecimal( result.toString() ) );
 
-				case '+':
-				case '-':
 				case '*':
 				case '/':
+				case '+':
+				case '-':
 				case '?':
 				case ':':
+				case '=':
 					return new Token( Token.TYPE.OPERATOR, String.valueOf( (char)ch ) );
 
 				default:

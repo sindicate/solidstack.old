@@ -31,4 +31,11 @@ public class Identifier extends Expression
 		Assert.fail( "Unexpected type " + result.getClass().getName() );
 		return null;
 	}
+
+	@Override
+	public Object assign( Map<String, Object> context, Object value )
+	{
+		context.put( this.name, value );
+		return value;
+	}
 }
