@@ -1,18 +1,51 @@
 package solidstack.script;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
 import solidstack.lang.Assert;
+import solidstack.script.functions.Abs;
+import solidstack.script.functions.Length;
+import solidstack.script.functions.Println;
+import solidstack.script.functions.Substr;
+import solidstack.script.functions.Upper;
 
 
 public class Function extends Expression
 {
 	private String name;
-	private List<Expression> parameters;
+	protected List<Expression> parameters;
 
-	public Function( String name, List<Expression> parameters )
+	static Function function( String name, List<Expression> parameters )
+	{
+		switch( name.charAt( 0 ) )
+		{
+			case 'a':
+				if( name.equals( "abs" ) )
+					return new Abs( name, parameters );
+				break;
+			case 'l':
+				if( name.equals( "length" ) )
+					return new Length( name, parameters );
+				break;
+			case 'p':
+				if( name.equals( "println" ) )
+					return new Println( name, parameters );
+				break;
+			case 's':
+				if( name.equals( "substr" ) )
+					return new Substr( name, parameters );
+				break;
+			case 'u':
+				if( name.equals( "upper" ) )
+					return new Upper( name, parameters );
+				break;
+		}
+		Assert.fail( "Unknown function " + name );
+		return null;
+	}
+
+	protected Function( String name, List<Expression> parameters )
 	{
 		this.name = name;
 		this.parameters = parameters;
@@ -21,49 +54,6 @@ public class Function extends Expression
 	@Override
 	public Object evaluate( Map<String, Object> context )
 	{
-		if( this.name.equals( "abs" ) )
-		{
-			Assert.isTrue( this.parameters.size() == 1 );
-			Object object = this.parameters.get( 0 ).evaluate( context );
-			Assert.isInstanceOf( object, BigDecimal.class );
-			return ( (BigDecimal)object ).abs();
-		}
-		if( this.name.equals( "substr" ) )
-		{
-			Object object = this.parameters.get( 0 ).evaluate( context );
-			Object start = this.parameters.get( 1 ).evaluate( context );
-			Assert.isInstanceOf( object, String.class );
-			Assert.isInstanceOf( start, BigDecimal.class );
-			if( this.parameters.size() == 2 )
-				return ( (String)object ).substring( ( (BigDecimal)start ).intValue() );
-			Assert.isTrue( this.parameters.size() == 3 );
-			Object end = this.parameters.get( 2 ).evaluate( context );
-			Assert.isInstanceOf( end, BigDecimal.class );
-			return ( (String)object ).substring( ( (BigDecimal)start ).intValue(), ( (BigDecimal)end ).intValue() );
-		}
-		if( this.name.equals( "upper" ) )
-		{
-			Assert.isTrue( this.parameters.size() == 1 );
-			Object object = this.parameters.get( 0 ).evaluate( context );
-			Assert.isInstanceOf( object, String.class );
-			return ( (String)object ).toUpperCase();
-		}
-		if( this.name.equals( "println" ) )
-		{
-			Assert.isTrue( this.parameters.size() == 1 );
-			Object object = this.parameters.get( 0 ).evaluate( context );
-			Assert.isInstanceOf( object, String.class );
-			String print = (String)object;
-			System.out.println( print );
-			return print;
-		}
-		if( this.name.equals( "length" ) )
-		{
-			Assert.isTrue( this.parameters.size() == 1 );
-			Object object = this.parameters.get( 0 ).evaluate( context );
-			Assert.isInstanceOf( object, String.class );
-			return ( (String)object ).length();
-		}
 		Assert.fail( "Unknown function " + this.name );
 		return null;
 	}

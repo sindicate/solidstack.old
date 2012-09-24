@@ -37,7 +37,7 @@ public class ScriptParser
 					parameters.add( parse( ",", ")" ) );
 				while( this.tokenizer.lastToken().getType() == TYPE.COMMA );
 				Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.PAREN_CLOSE );
-				result = new Function( ( (Identifier)result ).getName(), parameters );
+				result = Function.function( ( (Identifier)result ).getName(), parameters );
 			}
 			else if( token.getType() == TYPE.OPERATION )
 			{
