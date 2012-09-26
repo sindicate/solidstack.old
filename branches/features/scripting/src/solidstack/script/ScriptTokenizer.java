@@ -178,6 +178,7 @@ public class ScriptTokenizer
 					this.in.push( ch );
 					return new Token( TYPE.NUMBER, result.toString() );
 
+				case '!':
 				case '*':
 				case '/':
 				case '+':
@@ -192,6 +193,20 @@ public class ScriptTokenizer
 						return new Token( Token.TYPE.OPERATION, "==" );
 					this.in.push( ch );
 					return new Token( Token.TYPE.OPERATION, "=" ); // TODO Predefine all operator tokens
+
+				case '&':
+					ch = this.in.read();
+					if( ch == '&' )
+						return new Token( Token.TYPE.OPERATION, "&&" );
+					this.in.push( ch );
+					throw new SourceException( "Unexpected character '" + (char)ch + "'", this.in.getLocation() );
+
+				case '|':
+					ch = this.in.read();
+					if( ch == '|' )
+						return new Token( Token.TYPE.OPERATION, "||" );
+					this.in.push( ch );
+					throw new SourceException( "Unexpected character '" + (char)ch + "'", this.in.getLocation() );
 
 				case '(':
 					return Token.PAREN_OPEN;

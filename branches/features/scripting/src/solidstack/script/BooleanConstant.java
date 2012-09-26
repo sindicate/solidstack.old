@@ -16,4 +16,9 @@ public class BooleanConstant extends Expression
 	{
 		return this.value;
 	}
+
+	public BooleanConstant not()
+	{
+		return new BooleanConstant( !this.value );
+	}
 }

@@ -31,13 +31,13 @@ public class ScriptParser
 				return result;
 			if( token.getType() == TYPE.PAREN_OPEN )
 			{
-				Assert.isTrue( result instanceof Identifier );
+				Assert.isTrue( result != null );
 				List<Expression> parameters = new ArrayList<Expression>();
 				do
 					parameters.add( parse( ",", ")" ) );
 				while( this.tokenizer.lastToken().getType() == TYPE.COMMA );
-				Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.PAREN_CLOSE );
-				result = Function.function( ( (Identifier)result ).getName(), parameters );
+				Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.PAREN_CLOSE ); // TODO Not really needed
+				result = result.append( parameters );
 			}
 			else if( token.getType() == TYPE.OPERATION )
 			{
@@ -90,14 +90,20 @@ public class ScriptParser
 			if( token.getValue().equals( "-" ) )
 			{
 				Expression result = parseOne();
-				Assert.isInstanceOf( result, NumberConstant.class );
-				return ( (NumberConstant)result ).negate();
+				if( result instanceof NumberConstant )
+					return ( (NumberConstant)result ).negate();
+				return new Operation( "-", result, null );
 			}
 			else if( token.getValue().equals( "+" ) )
 			{
+				return parseOne();
+			}
+			else if( token.getValue().equals( "!" ) )
+			{
 				Expression result = parseOne();
-				Assert.isInstanceOf( result, NumberConstant.class );
-				return result;
+				if( result instanceof BooleanConstant )
+					return ( (BooleanConstant)result ).not();
+				return new Operation( "!", result, null );
 			}
 		throw new SourceException( "Unexpected token '" + token + "'", this.tokenizer.getLocation() );
 	}

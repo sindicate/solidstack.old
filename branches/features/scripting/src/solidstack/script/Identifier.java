@@ -1,6 +1,7 @@
 package solidstack.script;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 import solidstack.lang.Assert;
@@ -37,5 +38,11 @@ public class Identifier extends Expression
 	{
 		context.put( this.name, value );
 		return value;
+	}
+
+	@Override
+	public Expression append( List<Expression> parameters )
+	{
+		return Function.function( this.name, parameters );
 	}
 }

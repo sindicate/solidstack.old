@@ -2,6 +2,7 @@ package solidstack.script;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import solidstack.lang.Assert;
@@ -32,7 +33,7 @@ public class Operation extends Expression
 //		precedences.put( "+u", 3 ); // unary plus
 //		precedences.put( "-u", 3 ); // unary minus
 //		precedences.put( "~", 3 ); // bitwise NOT
-//		precedences.put( "!", 3 ); // boolean NOT
+		precedences.put( "!", 3 ); // boolean NOT
 //		precedences.put( "(type)", 3 ); // type cast
 ////		precedences.put( "new", 3 ); // object creation
 
@@ -61,10 +62,10 @@ public class Operation extends Expression
 //		precedences.put( "^", 10 ); // bitwise XOR
 //
 //		precedences.put( "|", 11 ); // bitwise OR
-//
-//		precedences.put( "&&", 12 ); // boolean AND
-//
-//		precedences.put( "||", 13 ); // boolean OR
+
+		precedences.put( "&&", 12 ); // boolean AND
+
+		precedences.put( "||", 13 ); // boolean OR
 
 		precedences.put( "?", 14 ); // conditional
 		precedences.put( ":", 14 ); // conditional
@@ -101,6 +102,40 @@ public class Operation extends Expression
 	@Override
 	public Object evaluate( Map<String, Object> context )
 	{
+		if( this.operation.equals( "!" ) )
+		{
+			Object left = this.left.evaluate( context );
+			if( left instanceof Boolean )
+				return !(Boolean)left;
+			if( left instanceof BigDecimal )
+				return ( (BigDecimal)left ).compareTo( new BigDecimal( 0 ) ) == 0;
+			if( left != null )
+				throw new ScriptException( "Tried to apply ! to a " + left.getClass().getName() );
+			throw new ScriptException( "Tried to apply ! to null" );
+		}
+
+		if( this.operation.equals( "&&" ) )
+		{
+			Object left = this.left.evaluate( context );
+			Assert.isInstanceOf( left, Boolean.class );
+			if( !(Boolean)left )
+				return false;
+			Object right = this.right.evaluate( context );
+			Assert.isInstanceOf( right, Boolean.class );
+			return right;
+		}
+
+		if( this.operation.equals( "||" ) )
+		{
+			Object left = this.left.evaluate( context );
+			Assert.isInstanceOf( left, Boolean.class );
+			if( (Boolean)left )
+				return true;
+			Object right = this.right.evaluate( context );
+			Assert.isInstanceOf( right, Boolean.class );
+			return right;
+		}
+
 		Object right = this.right.evaluate( context );
 
 		if( this.operation.equals( "=" ) )
@@ -201,6 +236,13 @@ public class Operation extends Expression
 			this.right = ( (Operation)this.right ).append( first, second );
 		else
 			this.right = new Operation( this.right, first, second );
+		return this;
+	}
+
+	@Override
+	public Expression append( List<Expression> parameters )
+	{
+		this.right = this.right.append( parameters );
 		return this;
 	}
 }

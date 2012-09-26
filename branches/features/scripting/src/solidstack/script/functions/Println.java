@@ -19,8 +19,14 @@ public class Println extends Function
 	{
 		Assert.isTrue( this.parameters.size() == 1 );
 		Object object = this.parameters.get( 0 ).evaluate( context );
-		Assert.isInstanceOf( object, String.class );
-		String print = (String)object;
+		if( object instanceof String )
+		{
+			String print = (String)object;
+			System.out.println( print );
+			return print;
+		}
+		Assert.isInstanceOf( object, Boolean.class );
+		boolean print = (Boolean)object;
 		System.out.println( print );
 		return print;
 	}

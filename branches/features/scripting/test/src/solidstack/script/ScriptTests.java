@@ -145,6 +145,25 @@ public class ScriptTests
 		test( "1 == 1 == true", true );
 		test( "true == 1 == 1", false );
 		test( "true == ( 1 == 1 )", true );
+
+		test( "!true", false );
+		test( "!false", true );
+		test( "!( 1 == 1 )", false );
+		test( "!( 1 == 0 )", true );
+		test( "!0 ? 2 : 3", new BigDecimal( 2 ) );
+		test( "!1 == false", true );
+
+		test( "false && false", new Boolean( false ) );
+		test( "false && true", new Boolean( false ) );
+		test( "true && false", new Boolean( false ) );
+		test( "true && true", new Boolean( true ) );
+
+		test( "false || false", new Boolean( false ) );
+		test( "false || true", new Boolean( true ) );
+		test( "true || false", new Boolean( true ) );
+		test( "true || true", new Boolean( true ) );
+
+		test( "println( true ) && println( true )", new Boolean( true ) );
 	}
 
 	@Test
