@@ -214,6 +214,8 @@ public class ScriptTokenizer
 					return Token.PAREN_CLOSE;
 				case ',':
 					return Token.COMMA;
+				case ';':
+					return Token.SEMICOLON;
 
 				default:
 					throw new SourceException( "Unexpected character '" + (char)ch + "'", this.in.getLocation() );
@@ -265,11 +267,12 @@ public class ScriptTokenizer
 	// TODO Maybe we should remove this token class, and introduce the even mechanism like in JSONParser.
 	static public class Token
 	{
-		static public enum TYPE { IDENTIFIER, NUMBER, STRING, OPERATION, PAREN_OPEN, PAREN_CLOSE, COMMA, NULL, EOF }
+		static public enum TYPE { IDENTIFIER, NUMBER, STRING, OPERATION, PAREN_OPEN, PAREN_CLOSE, COMMA, SEMICOLON, NULL, EOF }
 
 		static final protected Token PAREN_OPEN = new Token( TYPE.PAREN_OPEN, "(" );
 		static final protected Token PAREN_CLOSE = new Token( TYPE.PAREN_CLOSE, ")" );
 		static final protected Token COMMA = new Token( TYPE.COMMA, ")" );
+		static final protected Token SEMICOLON = new Token( TYPE.SEMICOLON, ")" );
 		static final protected Token NULL = new Token( TYPE.NULL );
 		static final protected Token EOF = new Token( TYPE.EOF );
 

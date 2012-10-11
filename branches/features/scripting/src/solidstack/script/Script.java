@@ -1,6 +1,7 @@
 package solidstack.script;
 
 import java.io.StringReader;
+import java.util.HashMap;
 import java.util.Map;
 
 import solidstack.io.ReaderSourceReader;
@@ -25,6 +26,8 @@ public class Script
 
 	public Object execute( Map<String, Object> context )
 	{
+		if( context == null )
+			context = new HashMap<String, Object>();
 		return this.expression.evaluate( context );
 	}
 }

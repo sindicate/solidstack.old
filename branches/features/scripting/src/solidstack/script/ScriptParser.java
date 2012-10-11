@@ -20,15 +20,37 @@ public class ScriptParser
 
 	public Expression parse( String stop, String stop2 )
 	{
+		Expressions results = null;
 		Expression result = parseOne();
 
 		while( true )
 		{
 			Token token = this.tokenizer.get();
 			if( token.eq( stop ) || token.eq( stop2 ) )
-				return result;
-			if( stop == null && token.getType() == TYPE.EOF )
-				return result;
+			{
+				if( results == null )
+					return result;
+				results.append( result );
+				return results;
+			}
+			if( stop == null )
+			{
+				if( token.getType() == TYPE.EOF )
+				{
+					if( results == null )
+						return result;
+					results.append( result );
+					return results;
+				}
+				if( token.getType() == TYPE.SEMICOLON )
+				{
+					if( results == null )
+						results = new Expressions();
+					results.append( result );
+					result = parseOne();
+					continue;
+				}
+			}
 			if( token.getType() == TYPE.PAREN_OPEN )
 			{
 				Assert.isTrue( result != null );

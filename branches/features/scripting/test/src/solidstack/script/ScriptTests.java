@@ -174,4 +174,11 @@ public class ScriptTests
 		test( "1 == null", false );
 		test( "\"test\" == null", false );
 	}
+
+	@Test
+	static public void test10()
+	{
+		test( "a = 0; b = 1", new BigDecimal( 1 ) );
+//		test( "a = 0;", new BigDecimal( 0 ) );
+	}
 }
