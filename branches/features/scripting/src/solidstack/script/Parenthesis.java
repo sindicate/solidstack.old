@@ -12,6 +12,11 @@ public class Parenthesis extends Expression
 		this.expression = expression;
 	}
 
+	public Expression getExpression()
+	{
+		return this.expression;
+	}
+
 	@Override
 	public Object evaluate( Map<String, Object> context )
 	{

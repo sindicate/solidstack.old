@@ -24,16 +24,16 @@ public class Operation extends Expression
 //		precedences.put( "[", 1 ); // array index
 //		precedences.put( "(", 1 ); // method call
 //		precedences.put( ".", 1 ); // member access
-//
-//		precedences.put( "p++", 2 ); // postfix increment
-//		precedences.put( "p--", 2 ); // postfix decrement
-//
-//		precedences.put( "++u", 3 ); // prefix increment
-//		precedences.put( "--u", 3 ); // prefix decrement
-//		precedences.put( "+u", 3 ); // unary plus
-//		precedences.put( "-u", 3 ); // unary minus
+
+		precedences.put( "@++", 2 ); // postfix increment
+		precedences.put( "@--", 2 ); // postfix decrement
+
+		precedences.put( "++@", 3 ); // prefix increment
+		precedences.put( "--@", 3 ); // prefix decrement
+		precedences.put( "+@", 3 ); // unary plus
+		precedences.put( "-@", 3 ); // unary minus
 //		precedences.put( "~", 3 ); // bitwise NOT
-		precedences.put( "!", 3 ); // boolean NOT
+		precedences.put( "!@", 3 ); // boolean NOT
 //		precedences.put( "(type)", 3 ); // type cast
 ////		precedences.put( "new", 3 ); // object creation
 
@@ -102,16 +102,26 @@ public class Operation extends Expression
 	@Override
 	public Object evaluate( Map<String, Object> context )
 	{
-		if( this.operation.equals( "!" ) )
+		if( this.operation.equals( "@++" ) )
 		{
 			Object left = this.left.evaluate( context );
-			if( left instanceof Boolean )
-				return !(Boolean)left;
-			if( left instanceof BigDecimal )
-				return ( (BigDecimal)left ).compareTo( new BigDecimal( 0 ) ) == 0;
-			if( left != null )
-				throw new ScriptException( "Tried to apply ! to a " + left.getClass().getName() );
-			throw new ScriptException( "Tried to apply ! to null" );
+			if( !( left instanceof Value ) )
+				throw new ScriptException( "Tried to apply ++ to a non mutable value " + left.getClass().getName() );
+			Value value = (Value)left;
+			Object result = value.get();
+			value.set( add( result, new BigDecimal( 1 ) ) );
+			return result;
+		}
+
+		if( this.operation.equals( "++@" ) )
+		{
+			Object right = this.right.evaluate( context );
+			if( !( right instanceof Value ) )
+				throw new ScriptException( "Tried to apply ++ to a non mutable value " + right.getClass().getName() );
+			Value value = (Value)right;
+			Object result = add( value.get(), new BigDecimal( 1 ) );
+			value.set( result );
+			return result;
 		}
 
 		if( this.operation.equals( "&&" ) )
@@ -136,15 +146,34 @@ public class Operation extends Expression
 			return right;
 		}
 
+		Object left = null;
+		if( this.left != null )
+		{
+			left = this.left.evaluate( context );
+			if( left instanceof Value )
+				left = ( (Value)left ).get();
+		}
+
 		Object right = this.right.evaluate( context );
+		if( right instanceof Value )
+			right = ( (Value)right ).get();
+
+		if( this.operation.equals( "!@" ) )
+		{
+			if( right instanceof Boolean )
+				return !(Boolean)right;
+			if( right instanceof BigDecimal )
+				return ( (BigDecimal)right ).compareTo( new BigDecimal( 0 ) ) == 0;
+			if( right != null )
+				throw new ScriptException( "Tried to apply ! to a " + right.getClass().getName() );
+			throw new ScriptException( "Tried to apply ! to null" );
+		}
 
 		if( this.operation.equals( "=" ) )
 		{
 			Assert.isInstanceOf( right, BigDecimal.class );
 			return this.left.assign( context, right );
 		}
-
-		Object left = this.left.evaluate( context );
 
 		if( this.operation.equals( "==" ) )
 		{
@@ -155,14 +184,7 @@ public class Operation extends Expression
 
 		if( this.operation.equals( "+" ) )
 		{
-			if( left instanceof BigDecimal )
-			{
-				Assert.isInstanceOf( right, BigDecimal.class );
-				return ( (BigDecimal)left ).add( (BigDecimal)right );
-			}
-			Assert.isInstanceOf( left, String.class );
-			Assert.isInstanceOf( right, String.class );
-			return (String)left + (String)right;
+			return add( left, right );
 		}
 
 		if( this.operation.equals( "-" ) )
@@ -182,17 +204,9 @@ public class Operation extends Expression
 		if( this.operation.equals( "?" ) )
 		{
 			Object middle = this.middle.evaluate( context );
-			boolean condition;
-			if( left instanceof BigDecimal )
-				condition = ( (BigDecimal)left ).compareTo( new BigDecimal( 0 ) ) != 0;
-			else
-			{
-				Assert.isInstanceOf( left, Boolean.class );
-				condition = (Boolean)left;
-			}
 			Assert.isInstanceOf( middle, BigDecimal.class );
 			Assert.isInstanceOf( right, BigDecimal.class );
-			if( condition )
+			if( isTrue( left ) )
 				return middle;
 			return right;
 		}
@@ -201,8 +215,31 @@ public class Operation extends Expression
 		return null;
 	}
 
+	static Object add( Object left, Object right )
+	{
+		if( left instanceof BigDecimal )
+		{
+			Assert.isInstanceOf( right, BigDecimal.class );
+			return ( (BigDecimal)left ).add( (BigDecimal)right );
+		}
+		Assert.isInstanceOf( left, String.class );
+		Assert.isInstanceOf( right, String.class );
+		return (String)left + (String)right;
+	}
+
+	static boolean isTrue( Object left )
+	{
+		if( left instanceof BigDecimal )
+			return ( (BigDecimal)left ).compareTo( new BigDecimal( 0 ) ) != 0;
+		Assert.isInstanceOf( left, Boolean.class );
+		return (Boolean)left;
+	}
+
 	public Operation append( String operation, Expression expression )
 	{
+		Assert.isTrue( precedences.containsKey( operation ), "Unexpected operation " + operation );
+		Assert.isTrue( precedences.containsKey( this.operation ), "Unexpected operation " + this.operation );
+
 		int prec = precedences.get( operation );
 		Assert.isTrue( prec > 0 );
 
@@ -222,6 +259,8 @@ public class Operation extends Expression
 	// Append ?
 	public Expression append( Expression first, Expression second )
 	{
+		Assert.isTrue( precedences.containsKey( this.operation ), "Unexpected operation " + this.operation );
+
 		int prec = precedences.get( "?" );
 		Assert.isTrue( prec > 0 );
 

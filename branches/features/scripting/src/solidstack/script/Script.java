@@ -28,6 +28,13 @@ public class Script
 	{
 		if( context == null )
 			context = new HashMap<String, Object>();
-		return this.expression.evaluate( context );
+		if( this.expression == null )
+			return null;
+
+		// TODO Add unwrap() method somewhere
+		Object result = this.expression.evaluate( context );
+		if( result instanceof Value )
+			return ( (Value)result ).get();
+		return result;
 	}
 }

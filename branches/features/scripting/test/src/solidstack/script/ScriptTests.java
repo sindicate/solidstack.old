@@ -178,7 +178,22 @@ public class ScriptTests
 	@Test
 	static public void test10()
 	{
+		test( "2; 3", new BigDecimal( 3 ) );
 		test( "a = 0; b = 1", new BigDecimal( 1 ) );
-//		test( "a = 0;", new BigDecimal( 0 ) );
+		test( "a = 0;", new BigDecimal( 0 ) );
+		test( ";", null );
+		test( "", null );
+		test( ";;; a = 0;;;; b = 1;;;", new BigDecimal( 1 ) );
+		test( ";;;;", null );
+	}
+
+	@Test
+	static public void test11()
+	{
+		test( "{ 2; 3 }", new BigDecimal( 3 ) );
+		test( "a = 1; a + a + a++", new BigDecimal( 3 ) );
+		test( "a = 1; a + a + ++a", new BigDecimal( 4 ) );
+		test( "a = 0; if( true ) { a++; a++ }", new BigDecimal( 1 ) );
+		test( "a = 0; if( false ) { a++; a++ } else { ++a; ++a }", new BigDecimal( 2 ) );
 	}
 }

@@ -42,6 +42,8 @@ public class ScriptTokenizer
 
 	protected Token last;
 
+	protected boolean pushed;
+
 
 	/**
 	 * Constructs a new instance of the Tokenizer.
@@ -60,8 +62,28 @@ public class ScriptTokenizer
 	 */
 	public Token get()
 	{
-		this.last = get0();
+		if( this.pushed )
+		{
+			this.pushed = false;
+			return lastToken();
+		}
+		return this.last = get0();
+	}
+
+	public Token lastToken()
+	{
+		if( this.pushed )
+			throw new IllegalStateException( "Token has been pushed back" );
+		if( this.last == null )
+			throw new IllegalStateException( "There is no last token" );
 		return this.last;
+	}
+
+	public void push()
+	{
+		if( this.pushed )
+			throw new IllegalStateException( "Token has already been pushed back" );
+		this.pushed = true;
 	}
 
 	private Token get0()
@@ -178,33 +200,40 @@ public class ScriptTokenizer
 					this.in.push( ch );
 					return new Token( TYPE.NUMBER, result.toString() );
 
-				case '!':
-				case '*':
-				case '/':
 				case '+':
 				case '-':
+					int ch2 = this.in.read();
+					if( ch2 == ch )
+						return new Token( Token.TYPE.UNAOP, String.valueOf( new char[] { (char)ch, (char)ch } ) );
+					this.in.push( ch2 );
+					//$FALL-THROUGH$
+				case '*':
+				case '/':
 				case '?':
 				case ':':
-					return new Token( Token.TYPE.OPERATION, String.valueOf( (char)ch ) );
+					return new Token( Token.TYPE.BINOP, String.valueOf( (char)ch ) );
+
+				case '!':
+					return new Token( Token.TYPE.UNAOP, "!" );
 
 				case '=':
 					ch = this.in.read();
 					if( ch == '=' )
-						return new Token( Token.TYPE.OPERATION, "==" );
+						return new Token( Token.TYPE.BINOP, "==" );
 					this.in.push( ch );
-					return new Token( Token.TYPE.OPERATION, "=" ); // TODO Predefine all operator tokens
+					return new Token( Token.TYPE.BINOP, "=" ); // TODO Predefine all operator tokens
 
 				case '&':
 					ch = this.in.read();
 					if( ch == '&' )
-						return new Token( Token.TYPE.OPERATION, "&&" );
+						return new Token( Token.TYPE.BINOP, "&&" );
 					this.in.push( ch );
 					throw new SourceException( "Unexpected character '" + (char)ch + "'", this.in.getLocation() );
 
 				case '|':
 					ch = this.in.read();
 					if( ch == '|' )
-						return new Token( Token.TYPE.OPERATION, "||" );
+						return new Token( Token.TYPE.BINOP, "||" );
 					this.in.push( ch );
 					throw new SourceException( "Unexpected character '" + (char)ch + "'", this.in.getLocation() );
 
@@ -216,16 +245,15 @@ public class ScriptTokenizer
 					return Token.COMMA;
 				case ';':
 					return Token.SEMICOLON;
+				case '{':
+					return Token.BRACE_OPEN;
+				case '}':
+					return Token.BRACE_CLOSE;
 
 				default:
 					throw new SourceException( "Unexpected character '" + (char)ch + "'", this.in.getLocation() );
 			}
 		}
-	}
-
-	public Token lastToken()
-	{
-		return this.last;
 	}
 
 	/**
@@ -267,12 +295,14 @@ public class ScriptTokenizer
 	// TODO Maybe we should remove this token class, and introduce the even mechanism like in JSONParser.
 	static public class Token
 	{
-		static public enum TYPE { IDENTIFIER, NUMBER, STRING, OPERATION, PAREN_OPEN, PAREN_CLOSE, COMMA, SEMICOLON, NULL, EOF }
+		static public enum TYPE { IDENTIFIER, NUMBER, STRING, BINOP, UNAOP, PAREN_OPEN, PAREN_CLOSE, BRACE_OPEN, BRACE_CLOSE, COMMA, SEMICOLON, NULL, EOF }
 
 		static final protected Token PAREN_OPEN = new Token( TYPE.PAREN_OPEN, "(" );
 		static final protected Token PAREN_CLOSE = new Token( TYPE.PAREN_CLOSE, ")" );
+		static final protected Token BRACE_OPEN = new Token( TYPE.BRACE_OPEN, "{" );
+		static final protected Token BRACE_CLOSE = new Token( TYPE.BRACE_CLOSE, "}" );
 		static final protected Token COMMA = new Token( TYPE.COMMA, ")" );
-		static final protected Token SEMICOLON = new Token( TYPE.SEMICOLON, ")" );
+		static final protected Token SEMICOLON = new Token( TYPE.SEMICOLON, ";" );
 		static final protected Token NULL = new Token( TYPE.NULL );
 		static final protected Token EOF = new Token( TYPE.EOF );
 
