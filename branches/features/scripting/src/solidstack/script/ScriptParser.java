@@ -56,12 +56,15 @@ public class ScriptParser
 			if( token.getType() == TYPE.PAREN_OPEN )
 			{
 				Assert.isTrue( result != null );
-				List<Expression> parameters = new ArrayList<Expression>();
+				Expressions parameters = new Expressions();
 				do
-					parameters.add( parse( ",", ")" ) );
+					parameters.append( parse( ",", ")" ) );
 				while( this.tokenizer.lastToken().getType() == TYPE.COMMA );
 				Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.PAREN_CLOSE ); // TODO Not really needed
-				result = result.append( parameters );
+				if( result instanceof Operation )
+					result = ( (Operation)result ).append( token.getValue(), parameters );
+				else
+					result = Operation.operation( token.getValue(), result, parameters );
 			}
 			else if( token.getType() == TYPE.BINOP )
 			{
@@ -139,6 +142,24 @@ public class ScriptParser
 					throw new SourceException( "Expected a parenthesis (", this.tokenizer.getLocation() );
 				Expression left = parseOne( true );
 				return new While( ( (Parenthesis)result ).getExpression(), left );
+			}
+			if( token.getValue().equals( "function" ) )
+			{
+				token = this.tokenizer.get();
+				if( token.getType() != TYPE.PAREN_OPEN )
+					throw new SourceException( "Expected a parenthesis (", this.tokenizer.getLocation() );
+				List<String> parameters = new ArrayList<String>();
+				do
+				{
+					Expression parameter = parse( ",", ")" );
+					if( !( parameter instanceof Identifier ) )
+						throw new SourceException( "Expected am identifier", this.tokenizer.getLocation() );
+					parameters.add( ( (Identifier)parameter ).getName() );
+				}
+				while( this.tokenizer.lastToken().getType() == TYPE.COMMA );
+				Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.PAREN_CLOSE ); // TODO Not really needed
+				Expression block = parseOne( true );
+				return new FunctionSpec( parameters, block );
 			}
 			return new Identifier( token.getValue() );
 		}

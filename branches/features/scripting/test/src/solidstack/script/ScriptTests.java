@@ -194,4 +194,10 @@ public class ScriptTests
 		test( "a = 0; if( false ) { a++; a++ } else { ++a; ++a }", new BigDecimal( 2 ) );
 		test( "a = 0; while( a < 10 ) { print( ++a ) }", new BigDecimal( 10 ) );
 	}
+
+	@Test
+	static public void test12()
+	{
+		test( "f = function( a ) { a * a }; f( 3 )", new BigDecimal( 9 ) );
+	}
 }

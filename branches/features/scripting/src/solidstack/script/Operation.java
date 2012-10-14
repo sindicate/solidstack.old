@@ -7,6 +7,7 @@ import java.util.Map;
 
 import solidstack.lang.Assert;
 import solidstack.script.operations.And;
+import solidstack.script.operations.Apply;
 import solidstack.script.operations.Assign;
 import solidstack.script.operations.Equals;
 import solidstack.script.operations.GreaterThan;
@@ -37,7 +38,7 @@ abstract public class Operation extends Expression
 		precedences = new HashMap<String, Integer>();
 
 //		precedences.put( "[", 1 ); // array index
-//		precedences.put( "(", 1 ); // method call
+		precedences.put( "(", 1 ); // method call
 //		precedences.put( ".", 1 ); // member access
 
 		precedences.put( "@++", 2 ); // postfix increment
@@ -159,6 +160,11 @@ abstract public class Operation extends Expression
 			case '|':
 				if( name.equals( "||" ) )
 					return new Or( name, left, right );
+				break;
+
+			case '(':
+				if( name.equals( "(" ) )
+					return new Apply( name, left, right );
 				break;
 		}
 		Assert.fail( "Unknown operation " + name );

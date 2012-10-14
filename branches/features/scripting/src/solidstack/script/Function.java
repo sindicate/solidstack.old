@@ -19,6 +19,7 @@ public class Function extends Expression
 
 	static Function function( String name, List<Expression> parameters )
 	{
+		// TODO Built-in functions should also be dynamically determined
 		switch( name.charAt( 0 ) )
 		{
 			case 'a':
