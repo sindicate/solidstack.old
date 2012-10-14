@@ -1,7 +1,6 @@
 package solidstack.script;
 
 import java.math.BigDecimal;
-import java.util.Map;
 
 public class NumberConstant extends Expression
 {
@@ -13,7 +12,7 @@ public class NumberConstant extends Expression
 	}
 
 	@Override
-	public BigDecimal evaluate( Map<String, Object> context )
+	public BigDecimal evaluate( Context context )
 	{
 		return this.value;
 	}

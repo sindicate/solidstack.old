@@ -1,8 +1,8 @@
 package solidstack.script.operations;
 
 import java.util.List;
-import java.util.Map;
 
+import solidstack.script.Context;
 import solidstack.script.Expression;
 import solidstack.script.FunctionInstance;
 import solidstack.script.Identifier;
@@ -17,7 +17,7 @@ public class Apply extends Operation
 	}
 
 	@Override
-	public Object evaluate( Map<String, Object> context )
+	public Object evaluate( Context context )
 	{
 		Object left = evaluateAndUnwrap( this.left, context );
 		if( left == null )

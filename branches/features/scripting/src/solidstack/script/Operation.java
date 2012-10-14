@@ -3,7 +3,6 @@ package solidstack.script;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import solidstack.lang.Assert;
 import solidstack.script.operations.And;
@@ -176,7 +175,7 @@ abstract public class Operation extends Expression
 		return new IfExp( left, middle, right );
 	}
 
-	static protected Object evaluateAndUnwrap( Expression expression, Map<String, Object> context )
+	static protected Object evaluateAndUnwrap( Expression expression, Context context )
 	{
 		Object result = expression.evaluate( context );
 		if( result instanceof Value )

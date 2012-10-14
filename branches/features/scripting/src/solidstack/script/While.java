@@ -1,6 +1,5 @@
 package solidstack.script;
 
-import java.util.Map;
 
 public class While extends Expression
 {
@@ -14,7 +13,7 @@ public class While extends Expression
 	}
 
 	@Override
-	public Object evaluate( Map<String, Object> context )
+	public Object evaluate( Context context )
 	{
 		Object result = null;
 		while( Operation.isTrue( this.condition.evaluate( context ) ) )

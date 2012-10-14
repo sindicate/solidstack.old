@@ -1,6 +1,5 @@
 package solidstack.script;
 
-import java.util.Map;
 
 public class If extends Expression
 {
@@ -16,7 +15,7 @@ public class If extends Expression
 	}
 
 	@Override
-	public Object evaluate( Map<String, Object> context )
+	public Object evaluate( Context context )
 	{
 		if( Operation.isTrue( this.condition.evaluate( context ) ) )
 			return this.left.evaluate( context );

@@ -1,8 +1,6 @@
 package solidstack.script;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
 
 import solidstack.lang.Assert;
 
@@ -22,29 +20,23 @@ public class Identifier extends Expression
 	}
 
 	@Override
-	public Object evaluate( Map<String, Object> context )
+	public Object evaluate( Context context )
 	{
 		return new Link( context );
 	}
 
 	@Override
-	public Object assign( Map<String, Object> context, Object value )
+	public Object assign( Context context, Object value )
 	{
-		context.put( this.name, value );
+		context.set( this.name, value );
 		return value;
-	}
-
-	@Override
-	public Expression append( List<Expression> parameters )
-	{
-		return Function.function( this.name, parameters );
 	}
 
 	public class Link implements Value
 	{
-		private Map<String, Object> context;
+		private Context context;
 
-		public Link( Map<String, Object> context )
+		public Link( Context context )
 		{
 			this.context = context;
 		}
@@ -54,7 +46,7 @@ public class Identifier extends Expression
 			Object result = this.context.get( Identifier.this.name );
 			if( result == null )
 				return null;
-			if( result instanceof BigDecimal || result instanceof String )
+			if( result instanceof BigDecimal || result instanceof String || result instanceof FunctionInstance )
 				return result;
 			if( result instanceof Integer )
 				return new BigDecimal( (Integer)result );
@@ -66,7 +58,7 @@ public class Identifier extends Expression
 		{
 			if( value instanceof BigDecimal || value instanceof String )
 			{
-				this.context.put( Identifier.this.name, value );
+				this.context.set( Identifier.this.name, value );
 				return;
 			}
 			Assert.fail( "Unexpected type " + value.getClass().getName() );

@@ -1,6 +1,5 @@
 package solidstack.script;
 
-import java.util.Map;
 
 public class StringConstant extends Expression
 {
@@ -12,7 +11,7 @@ public class StringConstant extends Expression
 	}
 
 	@Override
-	public String evaluate( Map<String, Object> context )
+	public String evaluate( Context context )
 	{
 		return this.value;
 	}

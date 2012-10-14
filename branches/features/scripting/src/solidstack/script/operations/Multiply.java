@@ -1,9 +1,9 @@
 package solidstack.script.operations;
 
 import java.math.BigDecimal;
-import java.util.Map;
 
 import solidstack.lang.Assert;
+import solidstack.script.Context;
 import solidstack.script.Expression;
 import solidstack.script.Operation;
 
@@ -16,7 +16,7 @@ public class Multiply extends Operation
 	}
 
 	@Override
-	public Object evaluate( Map<String, Object> context )
+	public Object evaluate( Context context )
 	{
 		Object left = evaluateAndUnwrap( this.left, context );
 		Object right = evaluateAndUnwrap( this.right, context );

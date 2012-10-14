@@ -1,9 +1,9 @@
 package solidstack.script.operations;
 
-import java.util.Map;
 
 import org.springframework.util.Assert;
 
+import solidstack.script.Context;
 import solidstack.script.Expression;
 import solidstack.script.Operation;
 
@@ -16,7 +16,7 @@ public class Not extends Operation
 	}
 
 	@Override
-	public Object evaluate( Map<String, Object> context )
+	public Object evaluate( Context context )
 	{
 		Assert.isNull( this.left );
 		Object right = evaluateAndUnwrap( this.right, context );

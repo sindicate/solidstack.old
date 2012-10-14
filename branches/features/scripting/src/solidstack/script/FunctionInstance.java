@@ -1,7 +1,6 @@
 package solidstack.script;
 
 import java.util.List;
-import java.util.Map;
 
 public class FunctionInstance
 {
@@ -14,14 +13,22 @@ public class FunctionInstance
 		this.block = block;
 	}
 
-	public Object call( Map<String, Object> context, List<Object> pars )
+	public Object call( Context context, List<Object> pars )
 	{
 		int count = this.parameters.size();
 		if( count != pars.size() )
 			throw new ScriptException( "Parameter count mismatch" );
-		// TODO Create subcontext
+
+		context = new SubContext( context );
+
+		// TODO If we keep the Link we get output parameters!
 		for( int i = 0; i < count; i++ )
-			context.put( this.parameters.get( i ), pars.get( i ) );
+		{
+			Object value = pars.get( i );
+			if( value instanceof Value )
+				value = ( (Value)value ).get();
+			context.set( this.parameters.get( i ), value );
+		}
 		return this.block.evaluate( context );
 	}
 }

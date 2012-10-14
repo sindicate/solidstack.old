@@ -56,7 +56,7 @@ public class ScriptParser
 			if( token.getType() == TYPE.PAREN_OPEN )
 			{
 				Assert.isTrue( result != null );
-				Expressions parameters = new Expressions();
+				Tuple parameters = new Tuple();
 				do
 					parameters.append( parse( ",", ")" ) );
 				while( this.tokenizer.lastToken().getType() == TYPE.COMMA );
@@ -159,7 +159,7 @@ public class ScriptParser
 				while( this.tokenizer.lastToken().getType() == TYPE.COMMA );
 				Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.PAREN_CLOSE ); // TODO Not really needed
 				Expression block = parseOne( true );
-				return new FunctionSpec( parameters, block );
+				return new Function( parameters, block );
 			}
 			return new Identifier( token.getValue() );
 		}

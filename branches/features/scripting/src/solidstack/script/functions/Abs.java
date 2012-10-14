@@ -2,24 +2,23 @@ package solidstack.script.functions;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 import solidstack.lang.Assert;
-import solidstack.script.Expression;
-import solidstack.script.Function;
+import solidstack.script.Context;
+import solidstack.script.FunctionInstance;
 
-public class Abs extends Function
+public class Abs extends FunctionInstance
 {
-	public Abs( String name, List<Expression> parameters )
+	public Abs()
 	{
-		super( name, parameters );
+		super( null, null );
 	}
 
 	@Override
-	public Object evaluate( Map<String, Object> context )
+	public Object call( Context context, List<Object> parameters )
 	{
-		Assert.isTrue( this.parameters.size() == 1 );
-		Object object = this.parameters.get( 0 ).evaluate( context );
+		Assert.isTrue( parameters.size() == 1 );
+		Object object = parameters.get( 0 );
 		Assert.isInstanceOf( object, BigDecimal.class );
 		return ( (BigDecimal)object ).abs();
 	}

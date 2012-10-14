@@ -1,8 +1,6 @@
 package solidstack.script;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -13,8 +11,8 @@ public class ScriptTests
 	@Test
 	static public void test1()
 	{
-		Map<String, Object> context = new HashMap<String, Object>();
-		context.put( "var1", "Value" );
+		Context context = new Context();
+		context.set( "var1", "Value" );
 		Script script = Script.compile( "var1" );
 		Object result = script.execute( context );
 		Assert.assertEquals( result, "Value" );
@@ -23,8 +21,8 @@ public class ScriptTests
 	@Test
 	static public void test2()
 	{
-		Map<String, Object> context = new HashMap<String, Object>();
-		context.put( "var1", 1 );
+		Context context = new Context();
+		context.set( "var1", 1 );
 		Script script = Script.compile( "var1 + 1" );
 		Object result = script.execute( context );
 		Assert.assertEquals( result, new BigDecimal( 2 ) );
@@ -49,7 +47,7 @@ public class ScriptTests
 		Assert.assertEquals( result, expected );
 	}
 
-	static private void test( String expression, Map<String, Object> context, Object expected )
+	static private void test( String expression, Context context, Object expected )
 	{
 		Script script = Script.compile( expression );
 		Object result = script.execute( context );
@@ -92,7 +90,7 @@ public class ScriptTests
 	@Test
 	static public void test5()
 	{
-		Map<String, Object> context = new HashMap<String, Object>();
+		Context context = new Context();
 
 		test( "a = 1", context, new BigDecimal( 1 ) );
 		Assert.assertEquals( context.get( "a" ), new BigDecimal( 1 ) );
@@ -199,5 +197,10 @@ public class ScriptTests
 	static public void test12()
 	{
 		test( "f = function( a ) { a * a }; f( 3 )", new BigDecimal( 9 ) );
+		test( "function( a ) { a * a } ( 5 )", new BigDecimal( 25 ) );
+		test( "b = 8; function( a ) { a } ( b )", new BigDecimal( 8 ) );
+		test( "function( a ) { a( 3 ) } ( function( b ) { 5 * b } )", new BigDecimal( 15 ) );
+		test( "function( a, b ) { a( 1, 2 ) * b( 3, 4 ) } ( function( c, d ) { c * d }, function( e, f ) { e * f } )", new BigDecimal( 24 ) );
+		test( "function( a, b ) { a( 1, 2 ) * b( 3, 4 ) } ( function( a, b ) { a * b }, function( a, b ) { a * b } )", new BigDecimal( 24 ) );
 	}
 }

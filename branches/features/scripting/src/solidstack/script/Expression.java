@@ -1,15 +1,14 @@
 package solidstack.script;
 
 import java.util.List;
-import java.util.Map;
 
 import solidstack.lang.Assert;
 
 abstract public class Expression
 {
-	abstract public Object evaluate( Map<String, Object> context );
+	abstract public Object evaluate( Context context );
 
-	public Object assign( Map<String, Object> context, Object value )
+	public Object assign( Context context, Object value )
 	{
 		Assert.fail( "Can't assign to " + getClass().getName() );
 		return value;

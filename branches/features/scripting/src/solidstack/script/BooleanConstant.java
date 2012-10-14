@@ -1,6 +1,5 @@
 package solidstack.script;
 
-import java.util.Map;
 
 public class BooleanConstant extends Expression
 {
@@ -12,7 +11,7 @@ public class BooleanConstant extends Expression
 	}
 
 	@Override
-	public Boolean evaluate( Map<String, Object> context )
+	public Boolean evaluate( Context context )
 	{
 		return this.value;
 	}

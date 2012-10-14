@@ -1,24 +1,23 @@
 package solidstack.script.functions;
 
 import java.util.List;
-import java.util.Map;
 
 import solidstack.lang.Assert;
-import solidstack.script.Expression;
-import solidstack.script.Function;
+import solidstack.script.Context;
+import solidstack.script.FunctionInstance;
 
-public class Println extends Function
+public class Println extends FunctionInstance
 {
-	public Println( String name, List<Expression> parameters )
+	public Println()
 	{
-		super( name, parameters );
+		super( null, null );
 	}
 
 	@Override
-	public Object evaluate( Map<String, Object> context )
+	public Object call( Context context, List<Object> parameters )
 	{
-		Assert.isTrue( this.parameters.size() == 1 );
-		Object object = this.parameters.get( 0 ).evaluate( context );
+		Assert.isTrue( parameters.size() == 1 );
+		Object object = parameters.get( 0 );
 		System.out.println( object );
 		return object;
 	}

@@ -3,11 +3,11 @@ package solidstack.script;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Expressions extends Expression
+public class Tuple extends Expression
 {
 	private List<Expression> expressions = new ArrayList<Expression>();
 
-	public Expressions()
+	public Tuple()
 	{
 		// TODO Auto-generated constructor stub
 	}
@@ -15,9 +15,9 @@ public class Expressions extends Expression
 	@Override
 	public Object evaluate( Context context )
 	{
-		Object result = null;
+		List<Object> result = new ArrayList<Object>();
 		for( Expression expression : this.expressions )
-			result = expression.evaluate( context );
+			result.add( expression.evaluate( context ) );
 		return result;
 	}
 

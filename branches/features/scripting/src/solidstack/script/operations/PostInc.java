@@ -1,10 +1,10 @@
 package solidstack.script.operations;
 
 import java.math.BigDecimal;
-import java.util.Map;
 
 import org.springframework.util.Assert;
 
+import solidstack.script.Context;
 import solidstack.script.Expression;
 import solidstack.script.Operation;
 import solidstack.script.ScriptException;
@@ -19,7 +19,7 @@ public class PostInc extends Operation
 	}
 
 	@Override
-	public Object evaluate( Map<String, Object> context )
+	public Object evaluate( Context context )
 	{
 		Assert.isNull( this.right );
 		Object left = this.left.evaluate( context );

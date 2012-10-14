@@ -1,6 +1,5 @@
 package solidstack.script;
 
-import java.util.Map;
 
 
 public class Parenthesis extends Expression
@@ -18,13 +17,13 @@ public class Parenthesis extends Expression
 	}
 
 	@Override
-	public Object evaluate( Map<String, Object> context )
+	public Object evaluate( Context context )
 	{
 		return this.expression.evaluate( context );
 	}
 
 	@Override
-	public Object assign( Map<String, Object> context, Object value )
+	public Object assign( Context context, Object value )
 	{
 		return this.expression.assign( context, value );
 	}

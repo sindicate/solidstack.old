@@ -2,30 +2,29 @@ package solidstack.script.functions;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 import solidstack.lang.Assert;
-import solidstack.script.Expression;
-import solidstack.script.Function;
+import solidstack.script.Context;
+import solidstack.script.FunctionInstance;
 
-public class Substr extends Function
+public class Substr extends FunctionInstance
 {
-	public Substr( String name, List<Expression> parameters )
+	public Substr()
 	{
-		super( name, parameters );
+		super( null, null );
 	}
 
 	@Override
-	public Object evaluate( Map<String, Object> context )
+	public Object call( Context context, List<Object> parameters )
 	{
-		Object object = this.parameters.get( 0 ).evaluate( context );
-		Object start = this.parameters.get( 1 ).evaluate( context );
+		Object object = parameters.get( 0 );
+		Object start = parameters.get( 1 );
 		Assert.isInstanceOf( object, String.class );
 		Assert.isInstanceOf( start, BigDecimal.class );
-		if( this.parameters.size() == 2 )
+		if( parameters.size() == 2 )
 			return ( (String)object ).substring( ( (BigDecimal)start ).intValue() );
-		Assert.isTrue( this.parameters.size() == 3 );
-		Object end = this.parameters.get( 2 ).evaluate( context );
+		Assert.isTrue( parameters.size() == 3 );
+		Object end = parameters.get( 2 );
 		Assert.isInstanceOf( end, BigDecimal.class );
 		return ( (String)object ).substring( ( (BigDecimal)start ).intValue(), ( (BigDecimal)end ).intValue() );
 	}

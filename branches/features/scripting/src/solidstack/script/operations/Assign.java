@@ -1,10 +1,11 @@
 package solidstack.script.operations;
 
 import java.math.BigDecimal;
-import java.util.Map;
 
 import solidstack.lang.Assert;
+import solidstack.script.Context;
 import solidstack.script.Expression;
+import solidstack.script.FunctionInstance;
 import solidstack.script.Operation;
 
 
@@ -16,12 +17,16 @@ public class Assign extends Operation
 	}
 
 	@Override
-	public Object evaluate( Map<String, Object> context )
+	public Object evaluate( Context context )
 	{
 		Object right = evaluateAndUnwrap( this.right, context );
-		Assert.isInstanceOf( right, BigDecimal.class, "Unexpected " + this.right.getClass() );
-		// TODO Replace this with Value?
-		this.left.assign( context, right );
-		return right;
+		if( right == null || right instanceof BigDecimal || right instanceof String || right instanceof FunctionInstance )
+		{
+			// TODO Replace this with Value?
+			this.left.assign( context, right );
+			return right;
+		}
+		Assert.fail( "Unexpected " + this.right.getClass() );
+		return null;
 	}
 }
