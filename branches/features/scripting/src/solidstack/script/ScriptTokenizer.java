@@ -216,6 +216,10 @@ public class ScriptTokenizer
 				case '!':
 					return new Token( Token.TYPE.UNAOP, "!" );
 
+				case '<':
+				case '>':
+					return new Token( Token.TYPE.BINOP, String.valueOf( (char)ch ) );
+
 				case '=':
 					ch = this.in.read();
 					if( ch == '=' )

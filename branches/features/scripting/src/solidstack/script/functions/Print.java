@@ -7,9 +7,9 @@ import solidstack.lang.Assert;
 import solidstack.script.Expression;
 import solidstack.script.Function;
 
-public class Println extends Function
+public class Print extends Function
 {
-	public Println( String name, List<Expression> parameters )
+	public Print( String name, List<Expression> parameters )
 	{
 		super( name, parameters );
 	}
@@ -19,7 +19,7 @@ public class Println extends Function
 	{
 		Assert.isTrue( this.parameters.size() == 1 );
 		Object object = this.parameters.get( 0 ).evaluate( context );
-		System.out.println( object );
+		System.out.print( object );
 		return object;
 	}
 }

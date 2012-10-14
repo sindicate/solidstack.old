@@ -132,6 +132,14 @@ public class ScriptParser
 				Expression right = parseOne( true );
 				return new If( ( (Parenthesis)result ).getExpression(), left, right );
 			}
+			if( token.getValue().equals( "while" ) )
+			{
+				Expression result = parseOne( true );
+				if( !( result instanceof Parenthesis ) )
+					throw new SourceException( "Expected a parenthesis (", this.tokenizer.getLocation() );
+				Expression left = parseOne( true );
+				return new While( ( (Parenthesis)result ).getExpression(), left );
+			}
 			return new Identifier( token.getValue() );
 		}
 		if( token.getType() == TYPE.NUMBER )
@@ -153,6 +161,7 @@ public class ScriptParser
 				return parseOne( false );
 			}
 		if( token.getType() == TYPE.UNAOP )
+		{
 			if( token.getValue().equals( "!" ) )
 			{
 				Expression result = parseOne( false );
@@ -160,11 +169,9 @@ public class ScriptParser
 					return ( (BooleanConstant)result ).not();
 				return new Operation( "!@", null, result );
 			}
-			else
-			{
-				Expression result = parseOne( false );
-				return new Operation( token.getValue() + "@", null, result );
-			}
+			Expression result = parseOne( false );
+			return new Operation( token.getValue() + "@", null, result );
+		}
 		if( token.getType() == TYPE.EOF )
 			return null;
 		if( token.getType() == TYPE.BRACE_OPEN )

@@ -6,6 +6,7 @@ import java.util.Map;
 import solidstack.lang.Assert;
 import solidstack.script.functions.Abs;
 import solidstack.script.functions.Length;
+import solidstack.script.functions.Print;
 import solidstack.script.functions.Println;
 import solidstack.script.functions.Substr;
 import solidstack.script.functions.Upper;
@@ -29,6 +30,8 @@ public class Function extends Expression
 					return new Length( name, parameters );
 				break;
 			case 'p':
+				if( name.equals( "print" ) )
+					return new Print( name, parameters );
 				if( name.equals( "println" ) )
 					return new Println( name, parameters );
 				break;

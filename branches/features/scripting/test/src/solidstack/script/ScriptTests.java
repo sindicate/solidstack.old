@@ -7,6 +7,7 @@ import java.util.Map;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+@SuppressWarnings( "javadoc" )
 public class ScriptTests
 {
 	@Test
@@ -32,8 +33,6 @@ public class ScriptTests
 	@Test
 	static public void test3()
 	{
-		Map<String, Object> context = new HashMap<String, Object>();
-
 		test( "1 + 1 * 2", new BigDecimal( 3 ) );
 		test( "2 * 1 + 1", new BigDecimal( 3 ) );
 		test( "1 + 1 + 1", new BigDecimal( 3 ) );
@@ -60,11 +59,9 @@ public class ScriptTests
 	@Test
 	static public void test4()
 	{
-		Map<String, Object> context = new HashMap<String, Object>();
-
 		int val = 1;
 		Assert.assertEquals( val > 0 ? 2 : 3 + 1, 2 );
-		Assert.assertEquals( 1 + 1 > 0 ? 2 : 3 + 1, 2 );
+		Assert.assertEquals( val + 1 > 0 ? 2 : 3 + 1, 2 );
 		Assert.assertEquals( val > 0 ? 2 : val > 0 ? 3 : 4, 2 );
 
 		test( "1 ? 2 : 3 + 1", new BigDecimal( 2 ) );
@@ -195,5 +192,6 @@ public class ScriptTests
 		test( "a = 1; a + a + ++a", new BigDecimal( 4 ) );
 		test( "a = 0; if( true ) { a++; a++ }", new BigDecimal( 1 ) );
 		test( "a = 0; if( false ) { a++; a++ } else { ++a; ++a }", new BigDecimal( 2 ) );
+		test( "a = 0; while( a < 10 ) { print( ++a ) }", new BigDecimal( 10 ) );
 	}
 }

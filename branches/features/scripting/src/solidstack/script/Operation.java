@@ -47,9 +47,9 @@ public class Operation extends Expression
 //		precedences.put( "<<", 6 ); // signed bit shift left
 //		precedences.put( ">>", 6 ); // signed bit shift right
 //		precedences.put( ">>>", 6 ); // unsigned bit shift right
-//
-//		precedences.put( "<", 7 ); // less than
-//		precedences.put( ">", 7 ); // greater than
+
+		precedences.put( "<", 7 ); // less than
+		precedences.put( ">", 7 ); // greater than
 //		precedences.put( "<=", 7 ); // less than or equal
 //		precedences.put( ">=", 7 ); // greater than or equal
 //		precedences.put( "instanceof", 7 ); // reference test
@@ -182,6 +182,16 @@ public class Operation extends Expression
 			return left.equals( right );
 		}
 
+		if( this.operation.equals( "<" ) )
+		{
+			return compare( left, right ) < 0;
+		}
+
+		if( this.operation.equals( ">" ) )
+		{
+			return compare( left, right ) > 0;
+		}
+
 		if( this.operation.equals( "+" ) )
 		{
 			return add( left, right );
@@ -225,6 +235,18 @@ public class Operation extends Expression
 		Assert.isInstanceOf( left, String.class );
 		Assert.isInstanceOf( right, String.class );
 		return (String)left + (String)right;
+	}
+
+	static int compare( Object left, Object right )
+	{
+		if( left instanceof BigDecimal )
+		{
+			Assert.isInstanceOf( right, BigDecimal.class );
+			return ( (BigDecimal)left ).compareTo( (BigDecimal)right );
+		}
+		Assert.isInstanceOf( left, String.class );
+		Assert.isInstanceOf( right, String.class );
+		return ( (String)left ).compareTo( (String)right );
 	}
 
 	static boolean isTrue( Object left )
