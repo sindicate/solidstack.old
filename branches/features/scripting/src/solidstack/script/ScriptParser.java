@@ -75,7 +75,7 @@ public class ScriptParser
 					if( result instanceof Operation )
 						result = ( (Operation)result ).append( first, second );
 					else
-						result = new Operation( result, first, second );
+						result = Operation.operation( result, first, second );
 				}
 				else
 				{
@@ -86,7 +86,7 @@ public class ScriptParser
 					if( result instanceof Operation )
 						result = ( (Operation)result ).append( token.getValue(), right );
 					else
-						result = new Operation( token.getValue(), result, right );
+						result = Operation.operation( token.getValue(), result, right );
 				}
 			}
 			else if( token.getType() == TYPE.UNAOP )
@@ -95,7 +95,7 @@ public class ScriptParser
 				if( result instanceof Operation )
 					result = ( (Operation)result ).append( "@" + token.getValue(), null );
 				else
-					result = new Operation( "@" + token.getValue(), result, null );
+					result = Operation.operation( "@" + token.getValue(), result, null );
 			}
 			else
 				throw new SourceException( "Unexpected token '" + token + "'", this.tokenizer.getLocation() );
@@ -154,7 +154,7 @@ public class ScriptParser
 				Expression result = parseOne( false );
 				if( result instanceof NumberConstant )
 					return ( (NumberConstant)result ).negate();
-				return new Operation( "-@", result, null );
+				return Operation.operation( "-@", result, null );
 			}
 			else if( token.getValue().equals( "+" ) )
 			{
@@ -167,10 +167,10 @@ public class ScriptParser
 				Expression result = parseOne( false );
 				if( result instanceof BooleanConstant )
 					return ( (BooleanConstant)result ).not();
-				return new Operation( "!@", null, result );
+				return Operation.operation( "!@", null, result );
 			}
 			Expression result = parseOne( false );
-			return new Operation( token.getValue() + "@", null, result );
+			return Operation.operation( token.getValue() + "@", null, result );
 		}
 		if( token.getType() == TYPE.EOF )
 			return null;
