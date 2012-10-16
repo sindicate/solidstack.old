@@ -14,7 +14,7 @@ public class Upper extends FunctionInstance
 	}
 
 	@Override
-	public Object call( Context context, List<Object> parameters )
+	public Object call( Context context, List<?> parameters )
 	{
 		Assert.isTrue( parameters.size() == 1 );
 		Object object = parameters.get( 0 );

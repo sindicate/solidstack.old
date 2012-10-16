@@ -202,5 +202,17 @@ public class ScriptTests
 		test( "function( a ) { a( 3 ) } ( function( b ) { 5 * b } )", new BigDecimal( 15 ) );
 		test( "function( a, b ) { a( 1, 2 ) * b( 3, 4 ) } ( function( c, d ) { c * d }, function( e, f ) { e * f } )", new BigDecimal( 24 ) );
 		test( "function( a, b ) { a( 1, 2 ) * b( 3, 4 ) } ( function( a, b ) { a * b }, function( a, b ) { a * b } )", new BigDecimal( 24 ) );
+		test( "f = function() { 1 }; f()", new BigDecimal( 1 ) );
+	}
+
+	@Test
+	static public void test13()
+	{
+		Context context = new Context();
+		context.set( "s", "sinterklaas" );
+		test( "s.length()", context, 11 );
+		test( "s.substring( 6 )", context, "klaas" );
+		test( "s.substring( 1, 6 )", context, "inter" );
+		test( "s.contains( \"kl\" )", context, true );
 	}
 }

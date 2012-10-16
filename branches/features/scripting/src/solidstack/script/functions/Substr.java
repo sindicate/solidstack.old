@@ -15,7 +15,7 @@ public class Substr extends FunctionInstance
 	}
 
 	@Override
-	public Object call( Context context, List<Object> parameters )
+	public Object call( Context context, List<?> parameters )
 	{
 		Object object = parameters.get( 0 );
 		Object start = parameters.get( 1 );

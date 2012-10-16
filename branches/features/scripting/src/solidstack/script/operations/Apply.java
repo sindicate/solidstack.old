@@ -6,6 +6,7 @@ import solidstack.script.Context;
 import solidstack.script.Expression;
 import solidstack.script.FunctionInstance;
 import solidstack.script.Identifier;
+import solidstack.script.ObjectAccess;
 import solidstack.script.Operation;
 import solidstack.script.ScriptException;
 
@@ -31,7 +32,14 @@ public class Apply extends Operation
 		{
 			FunctionInstance f = (FunctionInstance)left;
 			Object pars = this.right.evaluate( context ); // TODO Unwrap needed here?
-			return f.call( context, (List<Object>)pars );
+			return f.call( context, (List<?>)pars );
+		}
+
+		if( left instanceof ObjectAccess )
+		{
+			ObjectAccess f = (ObjectAccess)left;
+			Object pars = this.right.evaluate( context ); // TODO Unwrap needed here?
+			return f.invoke( ( (List<?>)pars ).toArray() );
 		}
 
 		throw new ScriptException( "Cannot apply parameters to a " + left.getClass().getName() );

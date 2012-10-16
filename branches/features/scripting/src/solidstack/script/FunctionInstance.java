@@ -13,7 +13,7 @@ public class FunctionInstance
 		this.block = block;
 	}
 
-	public Object call( Context context, List<Object> pars )
+	public Object call( Context context, List<?> pars )
 	{
 		int count = this.parameters.size();
 		if( count != pars.size() )
