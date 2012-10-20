@@ -1,3 +1,19 @@
+/*--
+ * Copyright 2012 René M. de Bloois
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package solidstack.script;
 
 import java.math.BigDecimal;
@@ -117,6 +133,17 @@ public class ScriptParser
 				else
 					result = Operation.operation( token.getValue(), result, right );
 			}
+			else if( token.getType() == TYPE.LAMBDA )
+			{
+				Assert.isTrue( result != null );
+				Expression right = parseOne( false, null );
+				if( right == null )
+					throw new SourceException( "Unexpected token '" + this.tokenizer.lastToken() + "'", this.tokenizer.getLocation() );
+				if( result instanceof Operation )
+					result = ( (Operation)result ).append( token.getValue(), right );
+				else
+					result = Operation.operation( token.getValue(), result, right );
+			}
 			else
 				throw new SourceException( "Unexpected token '" + token + "'", this.tokenizer.getLocation() );
 		}
@@ -146,25 +173,25 @@ public class ScriptParser
 			if( token.getValue().equals( "if" ) )
 			{
 				Expression result = parseOne( true, null );
-				if( !( result instanceof Parenthesis ) )
+				if( !( result instanceof Tuple ) )
 					throw new SourceException( "Expected a parenthesis (", this.tokenizer.getLocation() );
 				Expression left = parseOne( true, null );
 				token = this.tokenizer.get();
 				if( token.getType() != TYPE.IDENTIFIER || !token.getValue().equals( "else" ) )
 				{
 					this.tokenizer.push();
-					return new If( ( (Parenthesis)result ).getExpression(), left, null );
+					return new If( result, left, null );
 				}
 				Expression right = parseOne( true, null );
-				return new If( ( (Parenthesis)result ).getExpression(), left, right );
+				return new If( result, left, right );
 			}
 			if( token.getValue().equals( "while" ) )
 			{
 				Expression result = parseOne( true, null );
-				if( !( result instanceof Parenthesis ) )
+				if( !( result instanceof Tuple ) )
 					throw new SourceException( "Expected a parenthesis (", this.tokenizer.getLocation() );
 				Expression left = parseOne( true, null );
-				return new While( ( (Parenthesis)result ).getExpression(), left );
+				return new While( result, left );
 			}
 			if( token.getValue().equals( "function" ) )
 			{
@@ -194,7 +221,18 @@ public class ScriptParser
 		if( token.getType() == TYPE.STRING )
 			return new StringConstant( token.getValue() );
 		if( token == Token.PAREN_OPEN )
-			return new Parenthesis( parse( ")", null ) );
+		{
+			Tuple tuple = new Tuple();
+			do
+			{
+				Expression element = parse( ",", ")" );
+				if( element != null )
+					tuple.append( element );
+			}
+			while( this.tokenizer.lastToken().getType() == TYPE.COMMA );
+			Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.PAREN_CLOSE ); // TODO Not really needed
+			return tuple;
+		}
 		if( token.getType() == TYPE.BINOP )
 			if( token.getValue().equals( "-" ) )
 			{

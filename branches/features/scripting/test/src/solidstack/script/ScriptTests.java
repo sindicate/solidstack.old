@@ -189,6 +189,7 @@ public class ScriptTests
 		test( "a = 1; a + a + a++", new BigDecimal( 3 ) );
 		test( "a = 1; a + a + ++a", new BigDecimal( 4 ) );
 		test( "a = 0; if( true ) { a++; a++ }", new BigDecimal( 1 ) );
+		test( "if( a = 1, b = a, b ) 3 else 4", new BigDecimal( 3 ) );
 		test( "a = 0; if( false ) { a++; a++ } else { ++a; ++a }", new BigDecimal( 2 ) );
 		test( "a = 0; while( a < 10 ) { print( ++a ) }", new BigDecimal( 10 ) );
 	}
@@ -250,5 +251,11 @@ public class ScriptTests
 	static public class TestObject2
 	{
 		public int test( int i1, int i2 ) { return 1; }
+	}
+
+	@Test
+	static public void test14()
+	{
+		test( "f = ( a ) -> a * a; f( 3 )", new BigDecimal( 9 ) );
 	}
 }

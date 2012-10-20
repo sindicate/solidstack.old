@@ -1,3 +1,19 @@
+/*--
+ * Copyright 2012 René M. de Bloois
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package solidstack.script;
 
 import java.math.BigDecimal;
@@ -12,6 +28,7 @@ import solidstack.script.operations.Assign;
 import solidstack.script.operations.Equals;
 import solidstack.script.operations.GreaterThan;
 import solidstack.script.operations.IfExp;
+import solidstack.script.operations.Lambda;
 import solidstack.script.operations.LessThan;
 import solidstack.script.operations.Minus;
 import solidstack.script.operations.Multiply;
@@ -86,18 +103,20 @@ abstract public class Operation extends Expression
 		precedences.put( "?", 14 ); // conditional
 		precedences.put( ":", 14 ); // conditional
 
-		precedences.put( "=", 15 ); // assignment
-//		precedences.put( "*=", 15 ); // assignment
-//		precedences.put( "/=", 15 ); // assignment
-//		precedences.put( "+=", 15 ); // assignment
-//		precedences.put( "-=", 15 ); // assignment
-//		precedences.put( "%=", 15 ); // assignment
-//		precedences.put( "<<=", 15 ); // assignment
-//		precedences.put( ">>=", 15 ); // assignment
-//		precedences.put( ">>>=", 15 ); // assignment
-//		precedences.put( "&=", 15 ); // assignment
-//		precedences.put( "^=", 15 ); // assignment
-//		precedences.put( "|=", 15 ); // assignment
+		precedences.put( "->", 15 ); // lambda
+
+		precedences.put( "=", 16 ); // assignment
+//		precedences.put( "*=", 16 ); // assignment
+//		precedences.put( "/=", 16 ); // assignment
+//		precedences.put( "+=", 16 ); // assignment
+//		precedences.put( "-=", 16 ); // assignment
+//		precedences.put( "%=", 16 ); // assignment
+//		precedences.put( "<<=", 16 ); // assignment
+//		precedences.put( ">>=", 16 ); // assignment
+//		precedences.put( ">>>=", 16 ); // assignment
+//		precedences.put( "&=", 16 ); // assignment
+//		precedences.put( "^=", 16 ); // assignment
+//		precedences.put( "|=", 16 ); // assignment
 	}
 
 	static Operation operation( String name, Expression left, Expression right )
@@ -122,6 +141,8 @@ abstract public class Operation extends Expression
 					return new Minus( name, left, right );
 				if( name.equals( "--@" ) )
 					return new PreDecr( name, left, right );
+				if( name.equals( "->" ) )
+					return new Lambda( name, left, right );
 				break;
 
 			case '=':

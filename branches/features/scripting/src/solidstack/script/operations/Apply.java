@@ -1,3 +1,19 @@
+/*--
+ * Copyright 2012 René M. de Bloois
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package solidstack.script.operations;
 
 import java.util.List;
@@ -9,6 +25,7 @@ import solidstack.script.Identifier;
 import solidstack.script.ObjectAccess;
 import solidstack.script.Operation;
 import solidstack.script.ScriptException;
+import solidstack.script.Tuple;
 
 public class Apply extends Operation
 {
@@ -31,15 +48,15 @@ public class Apply extends Operation
 		if( left instanceof FunctionInstance )
 		{
 			FunctionInstance f = (FunctionInstance)left;
-			Object pars = this.right.evaluate( context ); // TODO Unwrap needed here?
-			return f.call( context, (List<?>)pars );
+			List<Object> pars = ( (Tuple)this.right ).evaluateSeparate( context ); // TODO Unwrap needed here?
+			return f.call( context, pars );
 		}
 
 		if( left instanceof ObjectAccess )
 		{
 			ObjectAccess f = (ObjectAccess)left;
-			Object pars = this.right.evaluate( context ); // TODO Unwrap needed here?
-			return f.invoke( ( (List<?>)pars ).toArray() );
+			List<Object> pars = ( (Tuple)this.right ).evaluateSeparate( context ); // TODO Unwrap needed here?
+			return f.invoke( pars.toArray() );
 		}
 
 		throw new ScriptException( "Cannot apply parameters to a " + left.getClass().getName() );

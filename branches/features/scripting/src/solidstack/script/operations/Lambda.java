@@ -16,15 +16,21 @@
 
 package solidstack.script.operations;
 
+import java.util.ArrayList;
+import java.util.List;
 
+import solidstack.lang.Assert;
 import solidstack.script.Context;
 import solidstack.script.Expression;
+import solidstack.script.FunctionInstance;
+import solidstack.script.Identifier;
 import solidstack.script.Operation;
+import solidstack.script.Tuple;
 
 
-public class LessThan extends Operation
+public class Lambda extends Operation
 {
-	public LessThan( String name, Expression left, Expression right)
+	public Lambda( String name, Expression left, Expression right)
 	{
 		super( name, left, right );
 	}
@@ -32,8 +38,13 @@ public class LessThan extends Operation
 	@Override
 	public Object evaluate( Context context )
 	{
-		Object left = evaluateAndUnwrap( this.left, context );
-		Object right = evaluateAndUnwrap( this.right, context );
-		return Operation.compare( left, right ) < 0;
+		Assert.isInstanceOf( this.left, Tuple.class );
+		List<String> parameters = new ArrayList<String>();
+		for( Expression expression : ( (Tuple)this.left ).getExpressions() )
+		{
+			Assert.isInstanceOf( expression, Identifier.class );
+			parameters.add( ( (Identifier)expression ).getName() );
+		}
+		return new FunctionInstance( parameters, this.right );
 	}
 }

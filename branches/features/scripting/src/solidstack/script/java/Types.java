@@ -1,3 +1,19 @@
+/*--
+ * Copyright 2012 René M. de Bloois
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package solidstack.script.java;
 
 import java.lang.reflect.Array;
@@ -120,7 +136,7 @@ public class Types
 			if( c.length() == 1 )
 				return new Integer( c.charAt( 0 ) );
 		}
-		throw new TypeConversionException( object, Number.class );
+		throw new ClassCastException( object.getClass().getName() + " cannot be cast to java.lang.Number" );
 	}
 
     /**
@@ -147,7 +163,7 @@ public class Types
 		String text = object.toString();
 		if( text.length() == 1 )
 			return text.charAt( 0 );
-		throw new TypeConversionException( text, char.class );
+		throw new ClassCastException( object.getClass().getName() + " cannot be cast to char" );
 	}
 
 	static public Collection asCollection( Object value )
@@ -365,7 +381,7 @@ public class Types
 				return f;
 			}
 
-			throw new TypeConversionException( object, type );
+			throw new ClassCastException( object.getClass().getName() + " cannot be cast to " + type.getName() );
         }
 
 		if( Number.class.isAssignableFrom( type ) )
@@ -412,11 +428,11 @@ public class Types
 					return f;
 				}
 			}
-			catch( TypeConversionException e )
+			catch( ClassCastException e )
 			{
 			}
 
-			throw new TypeConversionException( object, type );
+			throw new ClassCastException( object.getClass().getName() + " cannot be cast to " + type.getName() );
 		}
 
         if( type == String.class )
@@ -528,7 +544,7 @@ public class Types
 
         // TODO Cast to class?
 
-		throw new TypeConversionException( object, type );
+		throw new ClassCastException( object.getClass().getName() + " cannot be cast to " + type.getName() );
 	}
 
     static public int getDistance( Class arg, Class type )

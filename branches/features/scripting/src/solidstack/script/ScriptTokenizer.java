@@ -216,6 +216,8 @@ public class ScriptTokenizer
 					int ch2 = this.in.read();
 					if( ch2 == ch )
 						return new Token( Token.TYPE.UNAOP, String.valueOf( new char[] { (char)ch, (char)ch } ) );
+					if( ch == '-' && ch2 == '>' )
+						return Token.LAMBDA;
 					this.in.push( ch2 );
 					//$FALL-THROUGH$
 				case '*':
@@ -312,7 +314,7 @@ public class ScriptTokenizer
 	// TODO Maybe we should remove this token class, and introduce the even mechanism like in JSONParser.
 	static public class Token
 	{
-		static public enum TYPE { IDENTIFIER, NUMBER, STRING, BINOP, UNAOP, PAREN_OPEN, PAREN_CLOSE, BRACE_OPEN, BRACE_CLOSE, COMMA, SEMICOLON, DOT, NULL, EOF }
+		static public enum TYPE { IDENTIFIER, NUMBER, STRING, BINOP, UNAOP, PAREN_OPEN, PAREN_CLOSE, BRACE_OPEN, BRACE_CLOSE, COMMA, SEMICOLON, DOT, LAMBDA, NULL, EOF }
 
 		static final protected Token PAREN_OPEN = new Token( TYPE.PAREN_OPEN, "(" );
 		static final protected Token PAREN_CLOSE = new Token( TYPE.PAREN_CLOSE, ")" );
@@ -321,6 +323,7 @@ public class ScriptTokenizer
 		static final protected Token COMMA = new Token( TYPE.COMMA, "," );
 		static final protected Token SEMICOLON = new Token( TYPE.SEMICOLON, ";" );
 		static final protected Token DOT = new Token( TYPE.DOT, "." );
+		static final protected Token LAMBDA = new Token( TYPE.LAMBDA, "->" );
 		static final protected Token NULL = new Token( TYPE.NULL );
 		static final protected Token EOF = new Token( TYPE.EOF );
 
