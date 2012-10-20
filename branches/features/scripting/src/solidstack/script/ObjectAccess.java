@@ -1,5 +1,7 @@
 package solidstack.script;
 
+import solidstack.script.java.Java;
+
 
 public class ObjectAccess
 {

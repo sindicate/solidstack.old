@@ -203,6 +203,7 @@ public class ScriptTests
 		test( "function( a, b ) { a( 1, 2 ) * b( 3, 4 ) } ( function( c, d ) { c * d }, function( e, f ) { e * f } )", new BigDecimal( 24 ) );
 		test( "function( a, b ) { a( 1, 2 ) * b( 3, 4 ) } ( function( a, b ) { a * b }, function( a, b ) { a * b } )", new BigDecimal( 24 ) );
 		test( "f = function() { 1 }; f()", new BigDecimal( 1 ) );
+		test( "a = 0; function() { a = 1 }; a", new BigDecimal( 0 ) ); // TODO This may not be right
 	}
 
 	@Test
@@ -214,5 +215,28 @@ public class ScriptTests
 		test( "s.substring( 6 )", context, "klaas" );
 		test( "s.substring( 1, 6 )", context, "inter" );
 		test( "s.contains( \"kl\" )", context, true );
+
+		TestObject o = new TestObject();
+		context.set( "o", o );
+		test( "o.test()", context, 0 );
+		test( "o.test( 1 )", context, 2 ); // BigDecimal
+		test( "o.test( \"string\" )", context, 3 );
+		test( "o.test( \"string\", \"string\" )", context, 4 );
+		assert o.test( new BigDecimal( 1 ), new BigDecimal( 1 ) ) == 6;
+		test( "o.test( 1, 1 )", context, 6 );
+		test( "1.getClass()", BigDecimal.class );
+		test( "1.getClass().valueOf( 1.1 )", new BigDecimal( "1.1" ) );
+	}
+
+	@SuppressWarnings( "unused" )
+	static public class TestObject
+	{
+		public int test() { return 0; }
+		public int test( int i ) { return 1; }
+		public int test( BigDecimal i ) { return 2; }
+		public int test( String s ) { return 3; }
+		public int test( String... s ) { return 4; }
+		public int test( BigDecimal... b ) { return 5; }
+		public int test( BigDecimal b1, Number b2 ) { return 6; }
 	}
 }

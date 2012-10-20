@@ -112,7 +112,14 @@ public class ScriptTokenizer
 				case 'p': case 'q': case 'r': case 's': case 't':
 				case 'u': case 'v': case 'w': case 'x': case 'y':
 				case 'z':
-					while( ch >= 'a' && ch <= 'z' || ch >= '0' && ch <= '9' ) // TODO Add $ and _?
+				case 'A': case 'B': case 'C': case 'D': case 'E':
+				case 'F': case 'G': case 'H': case 'I': case 'J':
+				case 'K': case 'L': case 'M': case 'N': case 'O':
+				case 'P': case 'Q': case 'R': case 'S': case 'T':
+				case 'U': case 'V': case 'W': case 'X': case 'Y':
+				case 'Z':
+				case '_': case '$':
+					while( ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch >= '0' && ch <= '9' || ch == '$' || ch == '_' )
 					{
 						result.append( (char)ch );
 						ch = this.in.read();
@@ -173,7 +180,11 @@ public class ScriptTokenizer
 						result.append( (char)ch );
 						ch = this.in.read();
 						if( !( ch >= '0' && ch <= '9' ) )
-							throw new SourceException( "Invalid number", this.in.getLocation() );
+						{
+							this.in.push( ch );
+							this.in.push( '.' );
+							return new Token( TYPE.NUMBER, result.toString() );
+						}
 						while( ch >= '0' && ch <= '9' )
 						{
 							result.append( (char)ch );

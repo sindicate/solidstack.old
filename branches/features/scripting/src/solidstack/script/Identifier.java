@@ -46,12 +46,9 @@ public class Identifier extends Expression
 			Object result = this.context.get( Identifier.this.name );
 			if( result == null )
 				return null;
-			if( result instanceof BigDecimal || result instanceof String || result instanceof FunctionInstance )
-				return result;
-			if( result instanceof Integer )
+			if( result instanceof Integer ) // TODO Get rid of this
 				return new BigDecimal( (Integer)result );
-			Assert.fail( "Unexpected type " + result.getClass().getName() );
-			return null;
+			return result;
 		}
 
 		public void set( Object value )
