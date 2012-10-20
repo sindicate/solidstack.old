@@ -19,6 +19,8 @@ package solidstack.script;
 import java.util.ArrayList;
 import java.util.List;
 
+import solidstack.lang.Assert;
+
 public class Expressions extends Expression
 {
 	private List<Expression> expressions = new ArrayList<Expression>();
@@ -30,7 +32,8 @@ public class Expressions extends Expression
 
 	public Expressions( Expression expression )
 	{
-		append( expression );
+		if( expression != null )
+			append( expression );
 	}
 
 	@Override
@@ -44,6 +47,7 @@ public class Expressions extends Expression
 
 	public void append( Expression expression )
 	{
+		Assert.notNull( expression );
 		this.expressions.add( expression );
 	}
 }

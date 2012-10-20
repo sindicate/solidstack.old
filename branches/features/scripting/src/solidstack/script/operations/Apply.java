@@ -17,6 +17,7 @@
 package solidstack.script.operations;
 
 import java.util.List;
+import java.util.ListIterator;
 
 import solidstack.script.Context;
 import solidstack.script.Expression;
@@ -26,6 +27,7 @@ import solidstack.script.ObjectAccess;
 import solidstack.script.Operation;
 import solidstack.script.ScriptException;
 import solidstack.script.Tuple;
+import solidstack.script.Value;
 
 public class Apply extends Operation
 {
@@ -48,7 +50,8 @@ public class Apply extends Operation
 		if( left instanceof FunctionInstance )
 		{
 			FunctionInstance f = (FunctionInstance)left;
-			List<Object> pars = ( (Tuple)this.right ).evaluateSeparate( context ); // TODO Unwrap needed here?
+			List<Object> pars = ( (Tuple)this.right ).evaluateSeparate( context );
+			unwrap( pars );
 			return f.call( pars );
 		}
 
@@ -60,5 +63,16 @@ public class Apply extends Operation
 		}
 
 		throw new ScriptException( "Cannot apply parameters to a " + left.getClass().getName() );
+	}
+
+	private void unwrap( List<Object> objects )
+	{
+		ListIterator i = objects.listIterator();
+		while( i.hasNext() )
+		{
+			Object o = i.next();
+			if( o instanceof Value )
+				i.set( ( (Value)o ).get() );
+		}
 	}
 }

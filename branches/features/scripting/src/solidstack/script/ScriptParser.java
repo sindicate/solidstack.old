@@ -38,13 +38,13 @@ public class ScriptParser
 	{
 		Expressions results = null;
 		Expression result = parseOne( true, stop2 );
-		if( stop2 != null && result == null )
+		if( result == null )
 			return null;
 
 		while( true )
 		{
 			Token token = this.tokenizer.get();
-			if( stop == null )
+			if( stop == null && stop2 == null )
 			{
 				if( token.getType() == TYPE.EOF )
 				{
@@ -68,7 +68,9 @@ public class ScriptParser
 				if( results == null )
 					results = new Expressions();
 				results.append( result );
-				result = parseOne( true, null );
+				result = parseOne( true, stop2 );
+				if( result == null )
+					return results;
 				continue;
 			}
 			if( token.getType() == TYPE.PAREN_OPEN )
@@ -155,10 +157,10 @@ public class ScriptParser
 
 		if( start )
 		{
-			if( token.eq( or ) )
-				return null;
 			while( token.getType() == TYPE.SEMICOLON )
 				token = this.tokenizer.get();
+			if( token == Token.EOF || token.eq( or ) )
+				return null;
 		}
 
 		if( token.getType() == TYPE.IDENTIFIER )
@@ -257,8 +259,8 @@ public class ScriptParser
 			Expression result = parseOne( false, null );
 			return Operation.operation( token.getValue() + "@", null, result );
 		}
-		if( token.getType() == TYPE.EOF )
-			return null;
+//		if( token.getType() == TYPE.EOF )
+//			return null;
 		if( token.getType() == TYPE.BRACE_OPEN )
 			return parseBlock();
 		throw new SourceException( "Unexpected token '" + token + "'", this.tokenizer.getLocation() );
@@ -266,7 +268,7 @@ public class ScriptParser
 
 	public Expression parseBlock()
 	{
-		Expression result = parse( "}", null );
+		Expression result = parse( null, "}" );
 		if( !( result instanceof Expressions ) )
 			return new Expressions( result );
 		return result;
