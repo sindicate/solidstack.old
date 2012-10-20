@@ -28,6 +28,11 @@ public class Expressions extends Expression
 		// TODO Auto-generated constructor stub
 	}
 
+	public Expressions( Expression expression )
+	{
+		append( expression );
+	}
+
 	@Override
 	public Object evaluate( Context context )
 	{

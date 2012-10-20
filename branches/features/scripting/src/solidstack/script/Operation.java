@@ -103,9 +103,9 @@ abstract public class Operation extends Expression
 		precedences.put( "?", 14 ); // conditional
 		precedences.put( ":", 14 ); // conditional
 
-		precedences.put( "->", 15 ); // lambda
+		precedences.put( "->", 15 ); // lambda TODO Equal to assignment precedence? Do we want that?
 
-		precedences.put( "=", 16 ); // assignment
+		precedences.put( "=", 15 ); // assignment
 //		precedences.put( "*=", 16 ); // assignment
 //		precedences.put( "/=", 16 ); // assignment
 //		precedences.put( "+=", 16 ); // assignment
@@ -276,9 +276,11 @@ abstract public class Operation extends Expression
 		int myprec = precedences.get( this.operation );
 		Assert.isTrue( myprec > 0 );
 
+		// 14: ?:, 15: = and 16: -> go from right to left
 		if( myprec < prec || myprec == prec && myprec < 14 )
-			return Operation.operation( operation, this, expression );
+			return Operation.operation( operation, this, expression ); // this has precedence
 
+		// appended operation has precedence
 		if( this.right instanceof Operation )
 			this.right = ( (Operation)this.right ).append( operation, expression );
 		else

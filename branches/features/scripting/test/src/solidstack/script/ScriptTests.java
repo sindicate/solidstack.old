@@ -204,7 +204,7 @@ public class ScriptTests
 		test( "function( a, b ) { a( 1, 2 ) * b( 3, 4 ) } ( function( c, d ) { c * d }, function( e, f ) { e * f } )", new BigDecimal( 24 ) );
 		test( "function( a, b ) { a( 1, 2 ) * b( 3, 4 ) } ( function( a, b ) { a * b }, function( a, b ) { a * b } )", new BigDecimal( 24 ) );
 		test( "f = function() { 1 }; f()", new BigDecimal( 1 ) );
-		test( "a = 0; function() { a = 1 }; a", new BigDecimal( 0 ) ); // TODO This may not be right
+		test( "a = 0; function() { a = 1 } (); a", new BigDecimal( 0 ) ); // TODO This may not be right
 	}
 
 	@Test
@@ -256,6 +256,16 @@ public class ScriptTests
 	@Test
 	static public void test14()
 	{
+		// TODO Different way of forming tuples. Possibly through an operator ,
+
 		test( "f = ( a ) -> a * a; f( 3 )", new BigDecimal( 9 ) );
+		test( "( (a) -> a(3) ) ( (b) -> 5 * b )", new BigDecimal( 15 ) );
+		test( "{ ( a, b ) -> a( 1, 2 ) * b( 3, 4 ) } ( ( a, b ) -> a * b, ( a, b ) -> a * b )", new BigDecimal( 24 ) );
+		test( "a = 0; { () -> a = 1 } (); a", new BigDecimal( 0 ) ); // TODO This may not be right
+
+		test( "f = () -> () -> 2; f()()", new BigDecimal( 2 ) );
+		test( "f = () -> { 2 }; f()", new BigDecimal( 2 ) );
+		test( "( () -> 2 )()", new BigDecimal( 2 ) );
+		test( "{ () -> 2 }()", new BigDecimal( 2 ) );
 	}
 }

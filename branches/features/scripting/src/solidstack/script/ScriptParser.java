@@ -266,6 +266,10 @@ public class ScriptParser
 
 	public Expression parseBlock()
 	{
-		return parse( "}", null );
+		Expression result = parse( "}", null );
+		if( !( result instanceof Expressions ) )
+			return new Expressions( result );
+		return result;
+
 	}
 }
