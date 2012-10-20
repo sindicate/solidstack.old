@@ -43,6 +43,20 @@ public class SubContext extends Context
 	@Override
 	public void set( String name, Object value )
 	{
-		this.map.put( name, value != null ? value : Null.INSTANCE );
+		if( !this.parent.setIfExists( name, value ) )
+			this.map.put( name, value != null ? value : Null.INSTANCE );
+	}
+
+	@Override
+	public boolean setIfExists( String name, Object value )
+	{
+		if( this.parent.setIfExists( name, value ) )
+			return true;
+		if( this.map.containsKey( name ) )
+		{
+			this.map.put( name, value != null ? value : Null.INSTANCE );
+			return true;
+		}
+		return false;
 	}
 }

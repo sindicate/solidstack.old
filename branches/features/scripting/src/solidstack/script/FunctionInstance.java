@@ -22,20 +22,26 @@ public class FunctionInstance
 {
 	private List<String> parameters;
 	private Expression block;
+	private Context context;
 
-	public FunctionInstance( List<String> parameters, Expression block )
+	public FunctionInstance()
+	{
+	}
+
+	public FunctionInstance( List<String> parameters, Expression block, Context context )
 	{
 		this.parameters = parameters;
 		this.block = block;
+		this.context = context; // FIXME Possibly need to clone the whole context hierarchy (flattened).
 	}
 
-	public Object call( Context context, List<?> pars )
+	public Object call( List<?> pars )
 	{
 		int count = this.parameters.size();
 		if( count != pars.size() )
 			throw new ScriptException( "Parameter count mismatch" );
 
-		context = new SubContext( context );
+		Context context = new SubContext( this.context ); // Subcontext only stores new variables and local (deffed) variables.
 
 		// TODO If we keep the Link we get output parameters!
 		for( int i = 0; i < count; i++ )

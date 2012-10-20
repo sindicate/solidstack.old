@@ -48,4 +48,14 @@ public class Context
 	{
 		this.map.put( name, value );
 	}
+
+	public boolean setIfExists( String name, Object value )
+	{
+		if( this.map.containsKey( name ) )
+		{
+			this.map.put( name, value );
+			return true;
+		}
+		return false;
+	}
 }

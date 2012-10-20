@@ -32,6 +32,6 @@ public class Function extends Expression
 	@Override
 	public Object evaluate( Context context )
 	{
-		return new FunctionInstance( this.parameters, this.block );
+		return new FunctionInstance( this.parameters, this.block, context );
 	}
 }

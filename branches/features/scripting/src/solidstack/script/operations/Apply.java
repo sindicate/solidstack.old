@@ -49,7 +49,7 @@ public class Apply extends Operation
 		{
 			FunctionInstance f = (FunctionInstance)left;
 			List<Object> pars = ( (Tuple)this.right ).evaluateSeparate( context ); // TODO Unwrap needed here?
-			return f.call( context, pars );
+			return f.call( pars );
 		}
 
 		if( left instanceof ObjectAccess )

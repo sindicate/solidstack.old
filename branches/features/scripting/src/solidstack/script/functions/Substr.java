@@ -20,18 +20,12 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import solidstack.lang.Assert;
-import solidstack.script.Context;
 import solidstack.script.FunctionInstance;
 
 public class Substr extends FunctionInstance
 {
-	public Substr()
-	{
-		super( null, null );
-	}
-
 	@Override
-	public Object call( Context context, List<?> parameters )
+	public Object call( List<?> parameters )
 	{
 		Object object = parameters.get( 0 );
 		Object start = parameters.get( 1 );

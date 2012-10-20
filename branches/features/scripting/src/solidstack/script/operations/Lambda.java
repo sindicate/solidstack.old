@@ -45,6 +45,6 @@ public class Lambda extends Operation
 			Assert.isInstanceOf( expression, Identifier.class );
 			parameters.add( ( (Identifier)expression ).getName() );
 		}
-		return new FunctionInstance( parameters, this.right );
+		return new FunctionInstance( parameters, this.right, context );
 	}
 }
