@@ -17,21 +17,17 @@ public class Resolver
 
 	static public MethodCall resolveMethodCall( CallContext context )
 	{
-		Object object = context.getObject();
-		Class type = object instanceof Class ? (Class)object : object.getClass();
-		// TODO When object is a Class
-		for( Method method : type.getMethods() )
+		for( Method method : context.getType().getMethods() )
 			if( method.getName().equals( context.getName() ) )
 				matchAndAddMethod( context, method );
+
 		MethodCall call = Resolver.calculateBestMethodCandidate( context.getCandidates() );
 		return call;
 	}
 
 	static protected void matchAndAddMethod( CallContext context, Method method )
 	{
-		context.candidateTypes = method.getParameterTypes();
-		context.candidateVarArg = ( method.getModifiers() & Modifier.TRANSIENT ) != 0;
-		MethodCall caller = Resolver.matchArguments( context );
+		MethodCall caller = Resolver.matchArguments( context, method );
 		if( caller != null )
 		{
 			caller.object = context.getObject();
@@ -48,21 +44,13 @@ public class Resolver
 
     // ---------- STEP 1: Used to match argument values with argument types
 
-	static public MethodCall matchArguments( CallContext context )
+	static public MethodCall matchArguments( CallContext context, Method method )
 	{
 		// Initialize all used values from the context
-		Class[] types = context.candidateTypes;
+		Class[] types = method.getParameterTypes();
 		Object[] args = context.getArgs();
 		Class[] argTypes = context.getArgTypes();
-		boolean vararg = context.candidateVarArg;
-
-		if( args == null )
-		{
-			// TODO (RMB) Describe why this is possible?
-			if( types.length == 0 )
-				return new MethodCall( false, false, EMPTY_OBJECT_ARRAY );
-			return null;
-		}
+		boolean vararg = ( method.getModifiers() & Modifier.TRANSIENT ) != 0;
 
 		int argCount = args.length;
 		int typeCount = types.length;
@@ -73,10 +61,10 @@ public class Resolver
 		{
 			if( argCount < lastType )
 				return null;
+			// If the last argument's type is equal to the type of the last parameter, then it is NOT vararg.
 			if( argCount == typeCount )
-				if( args[ argCount - 1 ] != null )
-					if( args[ argCount - 1 ].getClass() == types[ lastType ] )
-						vararg = false;
+				if( argTypes[ argCount - 1 ] == types[ lastType ] )
+					vararg = false;
 		}
 		else
 		{
@@ -86,32 +74,29 @@ public class Resolver
 
 		if( !vararg )
 		{
-			boolean converting = false;
+			int difficulty = 0;
 			for( int i = start; i < argCount; i++ )
 			{
-				int ret = Types.compare( argTypes[ i ], types[ i ] );
+				int ret = Types.assignable( args[ i ], types[ i ] );
 				if( ret < 0 )
 					return null;
-				if( ret == 2 )
-					converting = true;
+				difficulty += ret;
 			}
-			return new MethodCall( false, converting, args );
+			return new MethodCall( false, difficulty, args );
 		}
 
 		// Varargs
 
-		boolean converting = false;
+		int difficulty = 0;
 		for( int i = start; i < lastType; i++ )
 		{
-			int ret = Types.compare( argTypes[ i ], types[ i ] );
+			int ret = Types.assignable( args[ i ], types[ i ] );
 			if( ret < 0 )
 				return null;
-			if( ret == 2 )
-				converting = true;
+			difficulty += ret;
 		}
 
-//		if( includesThis && lastType == 0 )
-//			throw new ScriptException( "Can't have vararg and includesThis, and lastType == 0" );
+		// Adapt the arguments to the method
 
 		Object[] newArgs = new Object[ typeCount ];
 		System.arraycopy( args, 0, newArgs, 0, lastType );
@@ -120,15 +105,15 @@ public class Resolver
 		Object[] varArgs = new Object[ diff ];
 		for( int i = 0; i < diff; i++ )
 		{
-			int ret = Types.compare( argTypes[ i + lastType ], componentType );
+			int ret = Types.assignable( args[ i + lastType ], componentType );
 			if( ret < 0 )
 				return null;
-			if( ret == 2 )
-				converting = true;
+			difficulty += ret;
 			varArgs[ i ] = args[ i + lastType ];
 		}
+
 		newArgs[ lastType ] = varArgs;
-		return new MethodCall( true, converting, newArgs );
+		return new MethodCall( true, difficulty, newArgs );
 	}
 
 
@@ -156,10 +141,17 @@ public class Resolver
 //		NestingLogger.message( "Step 1, determining conversionless candidates, from " + best.size() + " candidates" );
 
 		List< MethodCall > best2 = new ArrayList<MethodCall>( best );
+		int least = best2.get( 0 ).difficulty;
+		for( MethodCall methodCall : best2 )
+		{
+			if( methodCall.difficulty < least )
+				least = methodCall.difficulty;
+		}
+
 		for( Iterator iterator = best2.iterator(); iterator.hasNext(); )
 		{
 			MethodCall candidate = (MethodCall)iterator.next();
-			if( candidate.needsConversion )
+			if( candidate.difficulty > least )
 				iterator.remove();
 		}
 
@@ -186,84 +178,84 @@ public class Resolver
 		if( best2.size() > 0 )
 			best = best2;
 
-		// --------------------
-//		NestingLogger.message( "Step 4, determining most specific candidate, from " + best.size() + " candidates" );
-
-		best2 = new ArrayList( best );
-		int index = 0;
-		while( index < best2.size() - 1 )
-		{
-			MethodCall candidate1 = best2.get( index );
-			MethodCall candidate2 = best2.get( index + 1 );
-			int ret = compareNonConvertingCalls( candidate1.getParameterTypes(), candidate1.getArgs(), candidate1.isVarargCall, candidate2.getParameterTypes(), candidate2.isVarargCall );
-			if( ret < 0 ) // candidate1 is not assignable to candidate2
-			{
-				best2.remove( index );
-				if( index > 0 )
-					index--;
-			}
-			else if( ret == 0 ) // identical
-//					if( candidate1.precedence > candidate2.precedence )
-//					{
-//						best2.remove( index );
-//						if( index > 0 )
-//							index--;
-//					}
-//					else
-					best2.remove( index + 1 );
-			else if( ret == 1 )
-				best2.remove( index + 1 );
-			else
-//				if( candidate1.precedence < candidate2.precedence )
+//		// --------------------
+////		NestingLogger.message( "Step 4, determining most specific candidate, from " + best.size() + " candidates" );
+//
+//		best2 = new ArrayList( best );
+//		int index = 0;
+//		while( index < best2.size() - 1 )
+//		{
+//			MethodCall candidate1 = best2.get( index );
+//			MethodCall candidate2 = best2.get( index + 1 );
+//			int ret = compareNonConvertingCalls( candidate1.getParameterTypes(), candidate1.getArgs(), candidate1.isVarargCall, candidate2.getParameterTypes(), candidate2.isVarargCall );
+//			if( ret < 0 ) // candidate1 is not assignable to candidate2
+//			{
+//				best2.remove( index );
+//				if( index > 0 )
+//					index--;
+//			}
+//			else if( ret == 0 ) // identical
+////					if( candidate1.precedence > candidate2.precedence )
+////					{
+////						best2.remove( index );
+////						if( index > 0 )
+////							index--;
+////					}
+////					else
 //					best2.remove( index + 1 );
-//				else if( candidate1.precedence > candidate2.precedence )
+//			else if( ret == 1 )
+//				best2.remove( index + 1 );
+//			else
+////				if( candidate1.precedence < candidate2.precedence )
+////					best2.remove( index + 1 );
+////				else if( candidate1.precedence > candidate2.precedence )
+////				{
+////					best2.remove( index );
+////					if( index > 0 )
+////						index--;
+////				}
+////				else
+//					index++;
+//		}
+//
+//		if( best2.size() == 1 )
+//			return best2.get( 0 );
+//
+//		if( best2.size() > 0 )
+//			best = best2;
+//
+//		// --------------------
+////		NestingLogger.message( "Step 5, calculating distances of " + best.size() + " candidates" );
+//
+//		// TODO (RMB) Also check for 2 or more smallest distances
+//		best2 = new ArrayList< MethodCall >();
+//
+//		int candidateDistance = 0;
+////		int precedence = 0;
+//		for( MethodCall method : best )
+//		{
+//			int distance = calculateArgumentsDistance( method.getParameterTypes(), method.getArgs() );
+//			if( distance >= 0 )
+//				if( best2.size() == 0 || distance < candidateDistance /* || distance == candidateDistance && method.precedence < precedence */ )
 //				{
-//					best2.remove( index );
-//					if( index > 0 )
-//						index--;
+//					best2.clear();
+//					best2.add( method );
+//					candidateDistance = distance;
+////					precedence = method.precedence;
 //				}
-//				else
-					index++;
-		}
-
-		if( best2.size() == 1 )
-			return best2.get( 0 );
-
-		if( best2.size() > 0 )
-			best = best2;
-
-		// --------------------
-//		NestingLogger.message( "Step 5, calculating distances of " + best.size() + " candidates" );
-
-		// TODO (RMB) Also check for 2 or more smallest distances
-		best2 = new ArrayList< MethodCall >();
-
-		int candidateDistance = 0;
-//		int precedence = 0;
-		for( MethodCall method : best )
-		{
-			int distance = calculateArgumentsDistance( method.getParameterTypes(), method.getArgs() );
-			if( distance >= 0 )
-				if( best2.size() == 0 || distance < candidateDistance /* || distance == candidateDistance && method.precedence < precedence */ )
-				{
-					best2.clear();
-					best2.add( method );
-					candidateDistance = distance;
-//					precedence = method.precedence;
-				}
-				else if( distance == candidateDistance /* && method.precedence == precedence */ )
-				{
-					best2.add( method );
-				}
-		}
-
-		if( best2.size() == 1 )
-			return best2.get( 0 );
-
-		if( best2.size() > 1 )
-			best = best2;
-
-		if( best.size() > 1 )
+//				else if( distance == candidateDistance /* && method.precedence == precedence */ )
+//				{
+//					best2.add( method );
+//				}
+//		}
+//
+//		if( best2.size() == 1 )
+//			return best2.get( 0 );
+//
+//		if( best2.size() > 1 )
+//			best = best2;
+//
+//		if( best.size() > 1 )
 			throw new ResolverException( best );
 
 //		NestingLogger.message( "Step 4, comparing varargs for " + best.size() + " candidates");
@@ -296,7 +288,7 @@ public class Resolver
 
 
 		// --------------------
-		throw new ScriptException( "impossible" );
+//		throw new ScriptException( "impossible" );
     }
 
 

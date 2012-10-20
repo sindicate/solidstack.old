@@ -13,21 +13,15 @@ public class MethodCall implements Cloneable
 	public Object object;
 	public Method method;
 	private Object[] args;
-//	public int precedence;
 	public boolean isVarargCall;
-	public boolean needsConversion;
+	public int difficulty;
 
-	public MethodCall( boolean isVarargCall, boolean needsConversion, Object... args )
+	public MethodCall( boolean isVarargCall, int difficulty, Object... args )
 	{
 		this.args = args;
 		this.isVarargCall = isVarargCall;
-		this.needsConversion = needsConversion;
+		this.difficulty = difficulty;
 	}
-
-//	public void setPrecedence( int precedence )
-//	{
-//		this.precedence = precedence;
-//	}
 
 	public Class[] getParameterTypes()
 	{

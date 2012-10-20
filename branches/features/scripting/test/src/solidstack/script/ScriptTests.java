@@ -216,20 +216,25 @@ public class ScriptTests
 		test( "s.substring( 1, 6 )", context, "inter" );
 		test( "s.contains( \"kl\" )", context, true );
 
-		TestObject o = new TestObject();
-		context.set( "o", o );
-		test( "o.test()", context, 0 );
-		test( "o.test( 1 )", context, 2 ); // BigDecimal
-		test( "o.test( \"string\" )", context, 3 );
-		test( "o.test( \"string\", \"string\" )", context, 4 );
-		assert o.test( new BigDecimal( 1 ), new BigDecimal( 1 ) ) == 6;
-		test( "o.test( 1, 1 )", context, 6 );
+		TestObject1 o1 = new TestObject1();
+		context.set( "o1", o1 );
+		test( "o1.test()", context, 0 );
+		test( "o1.test( 1 )", context, 2 );
+		test( "o1.test( \"string\" )", context, 3 );
+		test( "o1.test( \"string\", \"string\" )", context, 4 );
+		assert o1.test( new BigDecimal( 1 ), new BigDecimal( 1 ) ) == 6;
+		test( "o1.test( 1, 1 )", context, 6 );
 		test( "1.getClass()", BigDecimal.class );
 		test( "1.getClass().valueOf( 1.1 )", new BigDecimal( "1.1" ) );
+		test( "o1.test( 1 == 1 )", context, 7 );
+
+		TestObject2 o2 = new TestObject2();
+		context.set( "o2", o2 );
+		test( "o2.test( 1, 1 )", context, 1 );
 	}
 
 	@SuppressWarnings( "unused" )
-	static public class TestObject
+	static public class TestObject1
 	{
 		public int test() { return 0; }
 		public int test( int i ) { return 1; }
@@ -238,5 +243,12 @@ public class ScriptTests
 		public int test( String... s ) { return 4; }
 		public int test( BigDecimal... b ) { return 5; }
 		public int test( BigDecimal b1, Number b2 ) { return 6; }
+		public int test( boolean b ) { return 7; }
+	}
+
+	@SuppressWarnings( "unused" )
+	static public class TestObject2
+	{
+		public int test( int i1, int i2 ) { return 1; }
 	}
 }

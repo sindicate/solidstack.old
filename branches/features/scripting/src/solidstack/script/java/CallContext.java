@@ -14,17 +14,12 @@ public class CallContext
 
 	// Derived values
 
-	private Class[] argTypes;
+	private Class type; // Type of the object, or if the object is a class, then the object itself.
+	private Class[] argTypes; // Types of the arguments.
 
 	// Dynamic stuff
 
 	private List< MethodCall > candidates = new ArrayList<MethodCall>();
-
-	// Parameters to matchArguments0() TODO Not so nice
-
-	public Class[] candidateTypes;
-//	public boolean candidateIncludesThis;
-	public boolean candidateVarArg;
 
 
 	public CallContext( Object object, String name, Object[] args )
@@ -32,6 +27,7 @@ public class CallContext
 		this.object = object;
 		this.name = name;
 		this.args = args;
+		this.type = object instanceof Class ? (Class)object : object.getClass();
 	}
 
 	public Object getObject()
@@ -49,22 +45,15 @@ public class CallContext
 		return this.args;
 	}
 
-	static public Class[] getTypes( Object[] objects )
+	public Class getType()
 	{
-		Class[] result = new Class[ objects.length ];
-		for( int i = 0; i < objects.length; i++ )
-		{
-			Object arg = objects[ i ];
-			if( arg != null )
-				result[ i ] = arg.getClass();
-		}
-		return result;
+		return this.type;
 	}
 
 	public Class[] getArgTypes()
 	{
 		if( this.argTypes == null )
-			this.argTypes = getTypes( this.args );
+			this.argTypes = Types.getTypes( this.args );
 		return this.argTypes;
 	}
 

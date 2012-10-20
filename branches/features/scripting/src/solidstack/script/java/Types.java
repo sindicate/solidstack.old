@@ -47,29 +47,28 @@ public class Types
 		{ 101, 102,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  0 }, // Object
 	};
 
-    // Symmetric matrix
-    // 0 = equal, 1 = assignable, 2 = not assignable
+    // -1 = not, 0 = nop, 1 = easy, 2 = difficult, 3 = depends
     static public final int[][] PRIMITIVE_ASSIGNABILITY =
     {
-		{   0,   1,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,  1 }, // boolean
-		{  -1,   0,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,  1 }, // Boolean
-		{   2,   2,   0,   1,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,  1 }, // char
-		{   2,   2,  -1,   0,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,  1 }, // Character
-		{   2,   2,   2,   2,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  1 }, // byte
-		{   2,   2,   2,   2,  -1,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  1 }, // Byte
-		{   2,   2,   2,   2,  -1,  -1,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  1 }, // short
-		{   2,   2,   2,   2,  -1,  -1,  -1,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  1 }, // Short
-		{   2,   2,   2,   2,  -1,  -1,  -1,  -1,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  1 }, // int
-		{   2,   2,   2,   2,  -1,  -1,  -1,  -1,  -1,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,  1 }, // Integer
-		{   2,   2,   2,   2,  -1,  -1,  -1,  -1,  -1,  -1,   0,   1,   1,   1,   1,   2,   2,   1,   1,  1 }, // long
-		{   2,   2,   2,   2,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   0,   1,   1,   1,   2,   2,   1,   1,  1 }, // Long
-		{   2,   2,   2,   2,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   0,   2,   2,   2,   2,   1,   1,  1 }, // BigInteger
-		{   2,   2,   2,   2,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   2,   0,   1,   1,   1,   2,   1,  1 }, // float
-		{   2,   2,   2,   2,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   2,  -1,   0,   1,   1,   2,   1,  1 }, // Float
-		{   2,   2,   2,   2,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   2,   2,  -1,  -1,   0,   1,   2,   1,  1 }, // double
-		{   2,   2,   2,   2,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   2,   2,  -1,  -1,  -1,   0,   2,   1,  1 }, // Double
-		{   2,   2,   2,   2,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   2,   2,   2,   2,   0,   1,  1 }, // BigDecimal
-		{   2,   2,   2,   2,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   0,  1 }, // Number
+		{   0,   0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  1 }, // boolean
+		{   0,   0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  1 }, // Boolean
+		{  -1,  -1,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  1 }, // char
+		{  -1,  -1,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  1 }, // Character
+		{  -1,  -1,   1,   1,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  1 }, // byte
+		{  -1,  -1,   1,   1,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  1 }, // Byte
+		{  -1,  -1,   3,   3,   3,   3,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  1 }, // short
+		{  -1,  -1,   3,   3,   3,   3,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  1 }, // Short
+		{  -1,  -1,   3,   3,   3,   3,   3,   3,   0,   0,   1,   1,   1,   3,   3,   1,   1,   1,   1,  1 }, // int
+		{  -1,  -1,   3,   3,   3,   3,   3,   3,   0,   0,   1,   1,   1,   3,   3,   1,   1,   1,   1,  1 }, // Integer
+		{  -1,  -1,   3,   3,   3,   3,   3,   3,   3,   3,   0,   0,   1,   3,   3,   3,   3,   1,   1,  1 }, // long
+		{  -1,  -1,   3,   3,   3,   3,   3,   3,   3,   3,   0,   0,   1,   3,   3,   3,   3,   1,   1,  1 }, // Long
+		{  -1,  -1,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   0,   3,   3,   3,   3,   1,   1,  1 }, // BigInteger
+		{  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   0,   0,   1,   1,   1,   1,  1 }, // float
+		{  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   0,   0,   1,   1,   1,   1,  1 }, // Float
+		{  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   0,   0,   1,   1,  1 }, // double
+		{  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   0,   0,   1,   1,  1 }, // Double
+		{  -1,  -1,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   0,   1,  1 }, // BigDecimal
+		{  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   0,  1 }, // Number
 		{  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  0 }, // Object
 	};
 
@@ -95,8 +94,20 @@ public class Types
     static public final Map< Class, Map< Class, Integer > > distanceCache = new IdentityHashMap< Class, Map<Class,Integer> >();
 
 
+	static public Class[] getTypes( Object[] objects )
+	{
+		Class[] result = new Class[ objects.length ];
+		for( int i = 0; i < objects.length; i++ )
+		{
+			Object arg = objects[ i ];
+			if( arg != null )
+				result[ i ] = arg.getClass();
+		}
+		return result;
+	}
+
 	// TODO RMB 1.7 has a strange construct here.
-	public static Number castToNumber( Object object )
+	static public Number castToNumber( Object object )
 	{
 		if( object instanceof Number )
 			return (Number)object;
@@ -119,7 +130,7 @@ public class Types
      * @param object to coerce to a boolean value
      * @return a boolean value
      */
-	public static boolean castToBoolean( Object object )
+	static public boolean castToBoolean( Object object )
 	{
 		if( object == null )
 			return false;
@@ -127,7 +138,7 @@ public class Types
 		// TODO Maybe call asBoolean()
 	}
 
-	public static char castToChar( Object object )
+	static public char castToChar( Object object )
 	{
 		if( object instanceof Character )
 			return ( (Character)object ).charValue();
@@ -139,7 +150,7 @@ public class Types
 		throw new TypeConversionException( text, char.class );
 	}
 
-	public static Collection asCollection( Object value )
+	static public Collection asCollection( Object value )
 	{
 		if( value == null )
 			return Collections.EMPTY_LIST;
@@ -163,7 +174,7 @@ public class Types
 	 *
 	 * @return the array as a List
 	 */
-	public static List primitiveArrayToList( Object array )
+	static public List primitiveArrayToList( Object array )
 	{
 		int size = Array.getLength( array );
 		List list = new ArrayList( size );
@@ -180,93 +191,73 @@ public class Types
 //    // ATTENTION: The methods isAssignable & compare & calculateDistance & convert need to stay synchronized
 
 
+
+	/**
+	 * Returns -1 when not, 0 is easy, 1 is difficult.
+	 *
+	 * @param arg
+	 * @param type
+	 * @return
+	 */
 	// SYNC isAssignableToType
-    // TODO (RMB) Maybe we should make String in GString identical (no conversion), return 0
-	public static int compare( Class arg, Class type )
+	static public int assignable( Object arg, Class type )
 	{
-//		if( NestingLogger.isEnabled() )
-//			NestingLogger.message( "here" );
-
 		if( arg == null )
-		{
-			if( type.isPrimitive() )
-				return -1;
-			return 1;
-		}
-
-		if( type == arg )
+			return type.isPrimitive() ? -1 : 0;
+		if( type.isInstance( arg ) )
 			return 0;
-
-		if( type.isAssignableFrom( arg ) )
-			return 1;
 
 		Integer i = TYPES.get( type );
 		if( i != null )
 		{
-			Integer j = TYPES.get( arg );
+			Integer j = TYPES.get( arg.getClass() );
 			if( j != null )
 			{
-				try
-				{
-					int distance = PRIMITIVE_DISTANCES[ j ][ i ];
-					return distance > 100 ? 2 : distance > 0 ? 1 : distance < 0 ? -1 : 0;
-				}
-				catch( NullPointerException e )
-				{
-					throw new ScriptException( "Primitive distance for " + arg.getName() + " and " + type.getName() + " not found" );
-				}
+				int a = PRIMITIVE_ASSIGNABILITY[ j ][ i ];
+				if( a != 3 )
+					return a;
+				return assignable0( arg, type );
 			}
 		}
-
-		if( type == String.class )
-			return 2;
-
-		if( type == Boolean.class || type == boolean.class )
-			return 2;
-
-        if( type == Object[].class )
-			if( Collection.class.isAssignableFrom( arg ) )
-				return 2;
-
-		if( type == List.class )
-		{
-			if( Collection.class.isAssignableFrom( arg ) )
-        		return 2;
-
-			if( arg.isArray() )
-        		return 2;
-		}
-
-        if( type == Set.class )
-			if( Collection.class.isAssignableFrom( arg ) )
-        		return 2;
-
-		if( type == LinkedList.class )
-		{
-			if( Collection.class.isAssignableFrom( arg ) )
-        		return 2;
-
-			if( arg.isArray() )
-        		return 2;
-		}
-
-		if( type == Character.class || type == char.class ) // TODO (RMB) I hate this one
-			return 2;
-
-		if( type.isArray() )
-			return 2;
-
-        if( type == Class.class )
-        	if( arg == String.class /* || special string */ )
-        		return 2;
 
         return -1;
 	}
 
 
+	static private int assignable0( Object arg, Class type )
+	{
+		if( arg instanceof BigDecimal )
+		{
+			BigDecimal bd = (BigDecimal)arg;
+			try
+			{
+				if( type == int.class )
+					bd.intValueExact(); // TODO Would be nice if the resulting value is not discarded.
+				else if( type == long.class )
+					bd.longValueExact();
+				else if( type == double.class )
+				{
+					double d = bd.doubleValue();
+					if( d == Double.NEGATIVE_INFINITY || d == Double.POSITIVE_INFINITY )
+						return -1;
+				}
+				else
+					throw new ScriptException( "Unexpected type " + type.getName() );
+				return 1;
+			}
+			catch( ArithmeticException e )
+			{
+				return -1;
+			}
+		}
+
+		throw new ScriptException( "Unexpected arg " + arg.getClass().getName() );
+	}
+
+
 	// SYNC isAssignableToType
     // TODO (RMB) Maybe we should make String in GString identical (no conversion), return 0
-	public static int compareSpecificness( Class arg, Class type )
+	static public int compareSpecificness( Class arg, Class type )
 	{
 		if( arg == null )
 			throw new IllegalArgumentException( "'arg' should not be null" );
@@ -333,7 +324,7 @@ public class Types
 
 
 	// SYNC isAssignableToType()
-	public static Object convert( Object object, Class type )
+	static public Object convert( Object object, Class type )
 	{
 		if( object == null )
 			return null;
