@@ -16,13 +16,11 @@
 
 package solidstack.script;
 
-import java.util.HashMap;
-import java.util.Map;
+
 
 public class SubContext extends Context
 {
 	private Context parent;
-	private Map<String, Object> map = new HashMap<String, Object>();
 
 	public SubContext( Context parent )
 	{
@@ -30,33 +28,33 @@ public class SubContext extends Context
 	}
 
 	@Override
-	public Object get( String name )
+	public Value getValue( String name )
 	{
-		Object result = this.map.get( name );
-		if( result == null )
-			return this.parent.get( name );
-		if( result == Null.INSTANCE )
-			return null;
-		return result;
+		Value v = super.getValue( name );
+		if( v == null )
+			v = this.parent.getValue( name );
+		return v;
 	}
 
 	@Override
 	public void set( String name, Object value )
 	{
-		if( !this.parent.setIfExists( name, value ) )
-			this.map.put( name, value != null ? value : Null.INSTANCE );
+		if( setIfExists( name, value ) )
+			return;
+		this.values.add( new Variable( name, value ) );
 	}
 
 	@Override
 	public boolean setIfExists( String name, Object value )
 	{
-		if( this.parent.setIfExists( name, value ) )
-			return true;
-		if( this.map.containsKey( name ) )
+		Value v = getValue( name );
+		if( v == null )
+			return this.parent.setIfExists( name, value );
+		if( v instanceof Variable )
 		{
-			this.map.put( name, value != null ? value : Null.INSTANCE );
+			v.value = value;
 			return true;
 		}
-		return false;
+		throw new ScriptException( "Cannot assign to value '" + name  + "'" );
 	}
 }

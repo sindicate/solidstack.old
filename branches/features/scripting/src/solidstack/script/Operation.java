@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import solidstack.lang.Assert;
+import solidstack.script.Context.Value;
 import solidstack.script.operations.Access;
 import solidstack.script.operations.And;
 import solidstack.script.operations.Apply;
@@ -213,13 +214,21 @@ abstract public class Operation extends Expression
 
 	static protected Object add( Object left, Object right )
 	{
+		// TODO Type conversions
 		if( left instanceof BigDecimal )
 		{
 			Assert.isInstanceOf( right, BigDecimal.class );
 			return ( (BigDecimal)left ).add( (BigDecimal)right );
 		}
+		if( left instanceof Integer )
+		{
+			Assert.isInstanceOf( right, BigDecimal.class );
+			left = new BigDecimal( (Integer)left );
+			return ( (BigDecimal)left ).add( (BigDecimal)right );
+		}
 		Assert.isInstanceOf( left, String.class );
-		Assert.isInstanceOf( right, String.class );
+		if( !( right instanceof String ) )
+			right = right.toString();
 		return (String)left + (String)right;
 	}
 

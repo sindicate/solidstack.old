@@ -1,4 +1,4 @@
 i = 0;
-f = () -> { println( i ); i++ };
+f = () -> ( println( i ); i++ );
 while( i < 10 ) ( f() );
-println( while( i < 20 ) { f(); } );
+println( "total: " + while( i < 20 ) ( f(); ) );

@@ -26,9 +26,7 @@ public class ScriptTests
 	{
 		Context context = new Context();
 		context.set( "var1", 1 );
-		Script script = Script.compile( "var1 + 1" );
-		Object result = script.execute( context );
-		Assert.assertEquals( result, new BigDecimal( 2 ) );
+		test( "var1 + 1", context, new BigDecimal( 2 ) );
 	}
 
 	@Test

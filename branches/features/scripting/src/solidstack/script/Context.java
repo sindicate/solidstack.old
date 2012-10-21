@@ -16,8 +16,9 @@
 
 package solidstack.script;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import solidstack.script.functions.Abs;
 import solidstack.script.functions.Length;
@@ -28,34 +29,87 @@ import solidstack.script.functions.Upper;
 
 public class Context
 {
-	private Map<String, Object> map = new HashMap<String, Object>();
+	static public class Value
+	{
+		String name;
+		Object value;
+		Value( String name, Object value ) { this.name = name; this.value = value; }
+		public Object get() { return this.value; }
+	}
+
+	static public class Variable extends Value
+	{
+		Variable( String name, Object value ) { super( name, value ); }
+		public void set( Object value ) { this.value = value; }
+	}
+
+	List<Value> values = new ArrayList<Context.Value>();
 
 	{
-		this.map.put( "abs", new Abs() );
-		this.map.put( "length", new Length() );
-		this.map.put( "print", new Print() );
-		this.map.put( "println", new Println() );
-		this.map.put( "substr", new Substr() );
-		this.map.put( "upper", new Upper() );
+		this.values.add( new Value( "abs", new Abs() ) );
+		this.values.add( new Value( "length", new Length() ) );
+		this.values.add( new Value( "print", new Print() ) );
+		this.values.add( new Value( "println", new Println() ) );
+		this.values.add( new Value( "substr", new Substr() ) );
+		this.values.add( new Value( "upper", new Upper() ) );
+	}
+
+	public Value getValue( String name )
+	{
+		for( Value value : this.values )
+			if( value.name.equals( name ) )
+				return value;
+		return null;
 	}
 
 	public Object get( String name )
 	{
-		return this.map.get( name );
+		Value v = getValue( name );
+		if( v == null )
+			return null;
+		return v.value;
+	}
+
+	private void removeValue( String name )
+	{
+		Iterator<Value> i = this.values.iterator();
+		while( i.hasNext() )
+		{
+			Value v = i.next();
+			if( v.name.equals( name ) )
+				i.remove(); // TODO return
+		}
+	}
+
+	public void def( String name, Object value )
+	{
+		removeValue( name );
+		this.values.add( new Variable( name, value ) );
+	}
+
+	public void val( String name, Object value )
+	{
+		removeValue( name );
+		this.values.add( new Value( name, value ) );
 	}
 
 	public void set( String name, Object value )
 	{
-		this.map.put( name, value );
+		if( setIfExists( name, value ) )
+			return;
+		this.values.add( new Variable( name, value ) );
 	}
 
 	public boolean setIfExists( String name, Object value )
 	{
-		if( this.map.containsKey( name ) )
+		Value v = getValue( name );
+		if( v == null )
+			return false;
+		if( v instanceof Variable )
 		{
-			this.map.put( name, value );
+			v.value = value;
 			return true;
 		}
-		return false;
+		throw new ScriptException( "Cannot assign to value '" + name  + "'" );
 	}
 }

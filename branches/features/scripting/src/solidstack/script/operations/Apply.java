@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import solidstack.script.Context;
+import solidstack.script.Context.Value;
 import solidstack.script.Expression;
 import solidstack.script.FunctionInstance;
 import solidstack.script.Identifier;
@@ -27,7 +28,6 @@ import solidstack.script.ObjectAccess;
 import solidstack.script.Operation;
 import solidstack.script.ScriptException;
 import solidstack.script.Tuple;
-import solidstack.script.Value;
 
 public class Apply extends Operation
 {

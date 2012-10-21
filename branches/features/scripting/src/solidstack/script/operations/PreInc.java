@@ -21,10 +21,10 @@ import java.math.BigDecimal;
 import org.springframework.util.Assert;
 
 import solidstack.script.Context;
+import solidstack.script.Context.Variable;
 import solidstack.script.Expression;
 import solidstack.script.Operation;
 import solidstack.script.ScriptException;
-import solidstack.script.Value;
 
 
 public class PreInc extends Operation
@@ -39,9 +39,9 @@ public class PreInc extends Operation
 	{
 		Assert.isNull( this.left );
 		Object right = this.right.evaluate( context );
-		if( !( right instanceof Value ) )
-			throw new ScriptException( "Tried to apply " + this.operation + " to a non mutable value " + right.getClass().getName() );
-		Value value = (Value)right;
+		if( !( right instanceof Variable ) )
+			throw new ScriptException( "Tried to apply " + this.operation + " to a immutable value " + right.getClass().getName() );
+		Variable value = (Variable)right;
 		Object result = add( value.get(), new BigDecimal( 1 ) );
 		value.set( result );
 		return result;

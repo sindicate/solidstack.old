@@ -18,6 +18,8 @@ package solidstack.script;
 
 import java.util.List;
 
+import solidstack.script.Context.Value;
+
 public class FunctionInstance
 {
 	private List<String> parameters;

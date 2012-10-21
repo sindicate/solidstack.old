@@ -19,6 +19,7 @@ package solidstack.script;
 import java.io.StringReader;
 
 import solidstack.io.ReaderSourceReader;
+import solidstack.script.Context.Value;
 
 public class Script
 {
