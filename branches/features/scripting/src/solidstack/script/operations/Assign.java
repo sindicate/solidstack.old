@@ -41,9 +41,8 @@ public class Assign extends Operation
 		Object right = evaluateAndUnwrap( this.right, context );
 		if( right == null || right instanceof BigDecimal || right instanceof String || right instanceof FunctionInstance )
 		{
-			if( left == null )
-				this.left.assign( context, right );
-			else if( left instanceof Variable )
+			Assert.notNull( left );
+			if( left instanceof Variable )
 				( (Variable)left ).set( right );
 			else
 				throw new ScriptException( "Tried to assign to a immutable value" );

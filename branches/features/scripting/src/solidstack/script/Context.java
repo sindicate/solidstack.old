@@ -20,41 +20,22 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import solidstack.script.functions.Abs;
-import solidstack.script.functions.Length;
-import solidstack.script.functions.Print;
-import solidstack.script.functions.Println;
-import solidstack.script.functions.Substr;
-import solidstack.script.functions.Upper;
-
 public class Context
 {
-	static public class Value
+	private Context parent;
+
+	private List<Value> values = new ArrayList<Context.Value>();
+
+	public Context()
 	{
-		String name;
-		Object value;
-		Value( String name, Object value ) { this.name = name; this.value = value; }
-		public Object get() { return this.value; }
 	}
 
-	static public class Variable extends Value
+	public Context( Context parent )
 	{
-		Variable( String name, Object value ) { super( name, value ); }
-		public void set( Object value ) { this.value = value; }
+		this.parent = parent;
 	}
 
-	List<Value> values = new ArrayList<Context.Value>();
-
-	{
-		this.values.add( new Value( "abs", new Abs() ) );
-		this.values.add( new Value( "length", new Length() ) );
-		this.values.add( new Value( "print", new Print() ) );
-		this.values.add( new Value( "println", new Println() ) );
-		this.values.add( new Value( "substr", new Substr() ) );
-		this.values.add( new Value( "upper", new Upper() ) );
-	}
-
-	public Value getValue( String name )
+	Value findLocalValue( String name )
 	{
 		for( Value value : this.values )
 			if( value.name.equals( name ) )
@@ -62,9 +43,27 @@ public class Context
 		return null;
 	}
 
+	private Value findValue( String name )
+	{
+		Value v = findLocalValue( name );
+		if( v != null )
+			return v;
+		if( this.parent != null )
+			return this.parent.findValue( name );
+		return GlobalContext.INSTANCE.findLocalValue( name );
+	}
+
+	public Value getValue( String name )
+	{
+		Value v = findValue( name );
+		if( v == null )
+			return new Undefined( name );
+		return v;
+	}
+
 	public Object get( String name )
 	{
-		Value v = getValue( name );
+		Value v = findValue( name );
 		if( v == null )
 			return null;
 		return v.value;
@@ -102,7 +101,7 @@ public class Context
 
 	public boolean setIfExists( String name, Object value )
 	{
-		Value v = getValue( name );
+		Value v = findValue( name );
 		if( v == null )
 			return false;
 		if( v instanceof Variable )
@@ -111,5 +110,55 @@ public class Context
 			return true;
 		}
 		throw new ScriptException( "Cannot assign to value '" + name  + "'" );
+	}
+
+	static public class Value
+	{
+		String name;
+		Object value;
+
+		Value( String name, Object value )
+		{
+			this.name = name;
+			this.value = value;
+		}
+
+		public Object get()
+		{
+			return this.value;
+		}
+	}
+
+	static public class Variable extends Value
+	{
+		Variable( String name, Object value )
+		{
+			super( name, value );
+		}
+
+		public void set( Object value )
+		{
+			this.value = value;
+		}
+	}
+
+	public class Undefined extends Variable
+	{
+		Undefined( String name )
+		{
+			super( name, null );
+		}
+
+		@Override
+		public Object get()
+		{
+			throw new ScriptException( "'" + this.name + "' undefined" );
+		}
+
+		@Override
+		public void set( Object value )
+		{
+			Context.this.values.add( new Variable( this.name, value ) );
+		}
 	}
 }

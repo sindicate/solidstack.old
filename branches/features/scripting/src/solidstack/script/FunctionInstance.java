@@ -18,8 +18,6 @@ package solidstack.script;
 
 import java.util.List;
 
-import solidstack.script.Context.Value;
-
 public class FunctionInstance
 {
 	private List<String> parameters;
@@ -43,14 +41,12 @@ public class FunctionInstance
 		if( count != pars.size() )
 			throw new ScriptException( "Parameter count mismatch" );
 
-		Context context = new SubContext( this.context ); // Subcontext only stores new variables and local (deffed) variables.
+		Context context = new Context( this.context ); // Subcontext only stores new variables and local (deffed) variables.
 
 		// TODO If we keep the Link we get output parameters!
 		for( int i = 0; i < count; i++ )
 		{
 			Object value = pars.get( i );
-			if( value instanceof Value )
-				value = ( (Value)value ).get();
 			context.set( this.parameters.get( i ), value );
 		}
 		return this.block.evaluate( context );

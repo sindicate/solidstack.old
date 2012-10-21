@@ -226,7 +226,7 @@ abstract public class Operation extends Expression
 			left = new BigDecimal( (Integer)left );
 			return ( (BigDecimal)left ).add( (BigDecimal)right );
 		}
-		Assert.isInstanceOf( left, String.class );
+		Assert.isInstanceOf( left, String.class, "Not expecting " + left.getClass() );
 		if( !( right instanceof String ) )
 			right = right.toString();
 		return (String)left + (String)right;
