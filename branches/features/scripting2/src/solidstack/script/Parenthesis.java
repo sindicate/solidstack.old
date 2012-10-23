@@ -17,7 +17,6 @@
 package solidstack.script;
 
 
-
 public class Parenthesis extends Expression
 {
 	private Expression expression;

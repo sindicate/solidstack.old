@@ -17,6 +17,7 @@
 package solidstack.script;
 
 
+
 public class StringConstant extends Expression
 {
 	private String value;

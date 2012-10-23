@@ -17,7 +17,6 @@
 package solidstack.script;
 
 
-
 public class Identifier extends Expression
 {
 	private String name;

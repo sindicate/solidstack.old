@@ -33,6 +33,7 @@ import solidstack.script.operations.Lambda;
 import solidstack.script.operations.LessThan;
 import solidstack.script.operations.Minus;
 import solidstack.script.operations.Multiply;
+import solidstack.script.operations.Negate;
 import solidstack.script.operations.Not;
 import solidstack.script.operations.Or;
 import solidstack.script.operations.Plus;
@@ -140,6 +141,8 @@ abstract public class Operation extends Expression
 			case '-':
 				if( name.equals( "-" ) )
 					return new Minus( name, left, right );
+				if( name.equals( "-@" ) )
+					return new Negate( name, left, right );
 				if( name.equals( "--@" ) )
 					return new PreDecr( name, left, right );
 				if( name.equals( "->" ) )
@@ -209,6 +212,13 @@ abstract public class Operation extends Expression
 		Object result = expression.evaluate( context );
 		if( result instanceof Value )
 			return ( (Value)result ).get();
+		if( result instanceof TupleValue )
+		{
+			TupleValue results = (TupleValue)result;
+			if( results.size() == 0 )
+				return null;
+			return results.get( 0 );
+		}
 		return result;
 	}
 
@@ -237,6 +247,12 @@ abstract public class Operation extends Expression
 		Assert.isInstanceOf( left, BigDecimal.class );
 		Assert.isInstanceOf( right, BigDecimal.class );
 		return ( (BigDecimal)left ).subtract( (BigDecimal)right );
+	}
+
+	static public Object negate( Object object )
+	{
+		Assert.isInstanceOf( object, BigDecimal.class );
+		return ( (BigDecimal)object ).negate();
 	}
 
 	static protected int compare( Object left, Object right )

@@ -35,7 +35,7 @@ public class Script
 	{
 		ScriptTokenizer t = new ScriptTokenizer( new ReaderSourceReader( new StringReader( script ) ) );
 		ScriptParser p = new ScriptParser( t );
-		Expression result = p.parse( null, null );
+		Expression result = p.parse();
 		return new Script( result );
 	}
 
@@ -50,6 +50,8 @@ public class Script
 		Object result = this.expression.evaluate( context );
 		if( result instanceof Value )
 			return ( (Value)result ).get();
+		if( result instanceof TupleValue )
+			return ( (TupleValue)result ).unwrap();
 		return result;
 	}
 }

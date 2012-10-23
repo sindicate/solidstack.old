@@ -17,6 +17,7 @@
 package solidstack.script;
 
 
+
 public class BooleanConstant extends Expression
 {
 	private boolean value;

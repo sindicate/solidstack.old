@@ -14,30 +14,29 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.operations;
 
 
 
-public class If extends Expression
+import org.springframework.util.Assert;
+
+import solidstack.script.Context;
+import solidstack.script.Expression;
+import solidstack.script.Operation;
+
+
+public class Negate extends Operation
 {
-	private Expression condition;
-	private Expression left;
-	private Expression right;
-
-	public If( Expression condition, Expression left, Expression right )
+	public Negate( String name, Expression left, Expression right)
 	{
-		this.condition = condition;
-		this.left = left;
-		this.right = right;
+		super( name, left, right );
 	}
 
 	@Override
 	public Object evaluate( Context context )
 	{
-		if( Operation.isTrue( Operation.evaluateAndUnwrap( this.condition, context ) ) )
-			return this.left.evaluate( context );
-		if( this.right != null )
-			return this.right.evaluate( context );
-		return null;
+		Assert.isNull( this.left );
+		Object right = evaluateAndUnwrap( this.right, context );
+		return Operation.negate( right );
 	}
 }

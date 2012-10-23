@@ -19,35 +19,45 @@ package solidstack.script;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Expressions extends Expression
-{
-	private List<Expression> expressions = new ArrayList<Expression>();
+import solidstack.script.Context.Value;
 
-	public Expressions()
+public class TupleValue
+{
+	private List<Object> values = new ArrayList<Object>();
+
+	public TupleValue()
 	{
 		// TODO Auto-generated constructor stub
 	}
 
-	public Expressions( Expression expression )
+	public void append( Object value )
 	{
-		if( expression != null )
-			append( expression );
+		this.values.add( value );
 	}
 
-	@Override
-	public Object evaluate( Context context )
+	public List<Object> getValues()
 	{
-		Object result = null;
-		for( Expression e : this.expressions )
-			if( e != null )
-				result = e.evaluate( context );
+		return this.values;
+	}
+
+	public TupleValue unwrap()
+	{
+		TupleValue result = new TupleValue();
+		for( Object object : this.values )
+			if( object instanceof Value )
+				result.append( ( (Value)object ).get() );
 			else
-				result = null;
+				result.append( object );
 		return result;
 	}
 
-	public void append( Expression expression )
+	public int size()
 	{
-		this.expressions.add( expression );
+		return this.values.size();
+	}
+
+	public Object get( int index )
+	{
+		return this.values.get( index );
 	}
 }

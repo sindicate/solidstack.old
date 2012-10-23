@@ -31,18 +31,14 @@ public class Tuple extends Expression
 	@Override
 	public Object evaluate( Context context )
 	{
-		Object result = null;
+		TupleValue values = new TupleValue();
 		for( Expression expression : this.expressions )
-			result = expression.evaluate( context );
-		return result;
-	}
-
-	public List<Object> evaluateSeparate( Context context )
-	{
-		List<Object> result = new ArrayList<Object>();
-		for( Expression expression : this.expressions )
-			result.add( expression.evaluate( context ) );
-		return result;
+			values.append( expression.evaluate( context ) );
+		return values;
+//		Object result = null;
+//		for( Expression expression : this.expressions )
+//			result = expression.evaluate( context );
+//		return result;
 	}
 
 	public void append( Expression expression )
@@ -53,5 +49,10 @@ public class Tuple extends Expression
 	public List<Expression> getExpressions()
 	{
 		return this.expressions;
+	}
+
+	public boolean onlyOneNull()
+	{
+		return this.expressions.size() == 1 && this.expressions.get( 0 ) == null;
 	}
 }

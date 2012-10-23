@@ -17,6 +17,7 @@
 package solidstack.script;
 
 
+
 public class While extends Expression
 {
 	private Expression condition;

@@ -17,6 +17,7 @@
 package solidstack.script;
 
 
+
 public class NullConstant extends Expression
 {
 	@Override

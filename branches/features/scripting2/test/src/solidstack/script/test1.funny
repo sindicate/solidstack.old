@@ -1,0 +1,2 @@
+i = 0; while( i < 10; println(i), i++ );
+a = 1; o = obj( def b = a + 1 ); o.b
