@@ -1,0 +1,49 @@
+Changes in 2.0.0 (revision 264) compared to 1.1.5
+-------------------------------------------------
+
+The biggest and most important change is that the query template engine is been rebuild from the ground up to be a fully generic template engine. The query template engine has become an extension of this generic template engine.
+
+Template file must have the following first line, starting in column 1:
+
+<%@ template version="1.0" language="groovy" %>
+
+The language attribute becomes optional when the TemplateLoader or QueryLoader is ocnfigured with a default language.
+Supported script languages: groovy and javascript.
+For javascript you need the rhino javascript implementation in the classpath.
+
+A lot of improvements in the template compiler.
+
+Generic templates:
+
+	Template files need to have the .slt extension, for example: soap-result.xml.slt
+
+Query templates:
+
+	The QueryManager is renamed to QueryLoader.
+	
+	setPackage() is replaced with setTemplatePath()
+		The path can now be:
+			a folder in the classpath: "classpath:/solidstack/query/"
+			a folder in the filesystem: "c:/folder/"
+			a url: "file:/c:/folder/"
+
+	Queries do not have to be bound to its parameters before execution. Parameters are supplied when executing.
+	Template files need to have the .slt extension, for example: example-query.sql.slt
+	
+	Query.getPreparedSQL() is now public and returns a PreparedSQL object.
+	
+	Added directive: <%@ query language="SQL|JPQL|HQL" %>, default SQL
+		The helps the Query to automatically determine if a native query or a normal query should be used.
+
+	The HibernateSupport class is moved to the solidstack.query.hibernate package.
+		Added methods:
+			createQuery() which returns a org.hibernate.Query.
+			executeUpdate() which calls org.hibernate.Query.executeUpdate() and returns the number of modified entities.
+			list() which calls org.hibernate.Query.list() and returns a list of Hibernate entities.
+			uniqueResult() which calls org.hibernate.Query.uniqueResult() and returns a single Hibernate entity or null.
+		
+	The JPASupport class is moved to the solidstack.query.jpa package.
+		Added methods:
+			getResultList() without the resultClass parameter. This one returns a list of Object[] or a list of objects depending on the number of values returned by the query.
+			getSingleResult() without the resultClass parameter. This one returns an Object[] or an object depending on the number of values returned by the query.
+			executeUpdate() which calls javax.persistence.Query.executeUpdate() and returns the number of modified entities.
