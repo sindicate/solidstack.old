@@ -142,64 +142,64 @@ public class ScriptTests
 		test( "length( \"sinterklaas\" )", 11 );
 	}
 
-//	@Test
-//	static public void test8()
-//	{
-//		test( "1 == 1", true );
-//		test( "1 == 0", false );
-//		test( "1 + 1 == 2 ? 2 : 3", new BigDecimal( 2 ) );
-//
-//		test( "true", true );
-//		test( "false", false );
-//		test( "1 == 1 == true", true );
-//		test( "true == 1 == 1", false );
-//		test( "true == ( 1 == 1 )", true );
-//
-//		test( "!true", false );
-//		test( "!false", true );
-//		test( "!( 1 == 1 )", false );
-//		test( "!( 1 == 0 )", true );
-//		test( "!0 ? 2 : 3", new BigDecimal( 2 ) );
-//		test( "!1 == false", true );
-//
-//		test( "false && false", new Boolean( false ) );
-//		test( "false && true", new Boolean( false ) );
-//		test( "true && false", new Boolean( false ) );
-//		test( "true && true", new Boolean( true ) );
-//
-//		test( "false || false", new Boolean( false ) );
-//		test( "false || true", new Boolean( true ) );
-//		test( "true || false", new Boolean( true ) );
-//		test( "true || true", new Boolean( true ) );
-//
-//		test( "println( true ) && println( true )", new Boolean( true ) );
-//	}
-//
-//	@Test
-//	static public void test9()
-//	{
-//		test( "null", null );
-//		test( "null == null", true );
-//		test( "1 == null", false );
-//		test( "\"test\" == null", false );
-//	}
-//
-//	@Test
-//	static public void test10()
-//	{
-//		test( "2; 3", new BigDecimal( 3 ) );
-//		test( "a = 0; b = 1", new BigDecimal( 1 ) );
-//		test( "a = 0;", new BigDecimal( 0 ) );
-//		test( ";", null );
-//		test( "", null );
-//		test( ";;; a = 0;;;; b = 1;;;", new BigDecimal( 1 ) );
-//		test( ";;;;", null );
-//	}
-//
+	@Test
+	static public void test8()
+	{
+		test( "1 == 1", true );
+		test( "1 == 0", false );
+		test( "1 + 1 == 2 ? 2 : 3", new BigDecimal( 2 ) );
+
+		test( "true", true );
+		test( "false", false );
+		test( "1 == 1 == true", true );
+		test( "true == 1 == 1", false );
+		test( "true == ( 1 == 1 )", true );
+
+		test( "!true", false );
+		test( "!false", true );
+		test( "!( 1 == 1 )", false );
+		test( "!( 1 == 0 )", true );
+		test( "!0 ? 2 : 3", new BigDecimal( 2 ) );
+		test( "!1 == false", true );
+
+		test( "false && false", new Boolean( false ) );
+		test( "false && true", new Boolean( false ) );
+		test( "true && false", new Boolean( false ) );
+		test( "true && true", new Boolean( true ) );
+
+		test( "false || false", new Boolean( false ) );
+		test( "false || true", new Boolean( true ) );
+		test( "true || false", new Boolean( true ) );
+		test( "true || true", new Boolean( true ) );
+
+		test( "println( true ) && println( true )", new Boolean( true ) );
+	}
+
+	@Test
+	static public void test9()
+	{
+		test( "null", null );
+		test( "null == null", true );
+		test( "1 == null", false );
+		test( "\"test\" == null", false );
+	}
+
+	@Test
+	static public void test10()
+	{
+		test( "2; 3", new BigDecimal( 3 ) );
+		test( "a = 0; b = 1", new BigDecimal( 1 ) );
+		test( "a = 0;", new BigDecimal( 0 ) );
+		test( ";", null );
+		test( "", null );
+		test( ";;; a = 0;;;; b = 1;;;", new BigDecimal( 1 ) );
+		test( ";;;;", null );
+	}
+
 //	@Test
 //	static public void test11()
 //	{
-//		test( "{ 2; 3 }", new BigDecimal( 3 ) );
+//		test( "( 2; 3 )", new BigDecimal( 3 ) );
 //		test( "a = 1; a + a + a++", new BigDecimal( 3 ) );
 //		test( "a = 1; a + a + ++a", new BigDecimal( 4 ) );
 //		test( "a = 0; if( true; a++, a++ )", new BigDecimal( 1 ) );
@@ -207,7 +207,7 @@ public class ScriptTests
 //		test( "a = 0; if( false; a++, a++; ++a, ++a )", new BigDecimal( 2 ) );
 //		test( "a = 0; while( a < 10 ; print( ++a ) )", new BigDecimal( 10 ) );
 //	}
-//
+
 //	@Test
 //	static public void test12()
 //	{
