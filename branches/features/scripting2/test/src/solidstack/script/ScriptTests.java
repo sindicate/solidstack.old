@@ -41,6 +41,7 @@ public class ScriptTests
 	static private void test( String expression, Object expected )
 	{
 		Script script = Script.compile( expression );
+//		String dump = new Dumper().dump( script );
 		Object result = script.execute( null );
 		if( result instanceof TupleValue )
 		{
@@ -56,6 +57,7 @@ public class ScriptTests
 	static private void test( String expression, Context context, Object expected )
 	{
 		Script script = Script.compile( expression );
+//		String dump = new Dumper().dump( script );
 		Object result = script.execute( context );
 		if( result instanceof TupleValue )
 		{

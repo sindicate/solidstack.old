@@ -40,24 +40,26 @@ public class ScriptParser
 	public Expressions parse()
 	{
 		Expressions results = new Expressions();
-		Tuple last = parseTuple(); // null means nothing, otherwise Tuple always has items.
-		Assert.isTrue( last == null || last.size() > 0 );
-		Token lastToken = this.tokenizer.lastToken();
-		if( lastToken == Token.EOF || lastToken.getType() == this.stop ) // TODO stop2?
-		{
-			if( last != null )
-					results.append( last );
-			return results;
-		}
+		Tuple last = null;
 		while( true )
 		{
-			results.append( last );
+			if( last != null )
+				if( last == Tuple.EMPTY_TUPLE )
+					results.append( null );
+				else if( last.size() == 1 )
+					results.append( last.get( 0 ) );
+				else
+					results.append( last );
 			last = parseTuple();
-			lastToken = this.tokenizer.lastToken();
+			Assert.isTrue( last != null  );
+			Token lastToken = this.tokenizer.lastToken();
 			if( lastToken == Token.EOF || lastToken.getType() == this.stop ) // TODO stop2?
 			{
-				if( last != null )
-					results.append( last );
+				if( last != Tuple.EMPTY_TUPLE )
+					if( last.size() == 1 )
+						results.append( last.get( 0 ) );
+					else
+						results.append( last );
 				return results;
 			}
 		}
@@ -78,7 +80,7 @@ public class ScriptParser
 					return results;
 				result = results.get( 0 );
 				if( result == null )
-					return null;
+					return Tuple.EMPTY_TUPLE;
 				return results;
 			}
 			Assert.isTrue( last == Token.COMMA, "Not expecting token " + last );

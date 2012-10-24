@@ -18,7 +18,6 @@ package solidstack.script;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
-import java.util.List;
 
 import solidstack.lang.Assert;
 import solidstack.script.Context.Value;
@@ -339,13 +338,6 @@ abstract public class Operation extends Expression
 			this.right = ( (Operation)this.right ).append( first, second );
 		else
 			this.right = Operation.operation( this.right, first, second );
-		return this;
-	}
-
-	@Override
-	public Expression append( List<Expression> parameters )
-	{
-		this.right = this.right.append( parameters );
 		return this;
 	}
 }
