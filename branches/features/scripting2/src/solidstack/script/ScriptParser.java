@@ -242,9 +242,9 @@ public class ScriptParser
 				Expressions expressions = parse();
 				this.stop2 = old2;
 				this.stop = old;
-				if( expressions.size() != 2 ) // TODO And 1?
-					throw new SourceException( "Expected 2 expressions", this.tokenizer.getLocation() );
-				return new While( expressions.get( 0 ), expressions.get( 1 ) );
+				if( expressions.size() < 2 ) // TODO And 1?
+					throw new SourceException( "Expected at least 2 expressions", this.tokenizer.getLocation() );
+				return new While( expressions.remove( 0 ), expressions );
 			}
 			if( token.getValue().equals( "fun" ) )
 			{

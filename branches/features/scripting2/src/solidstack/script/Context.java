@@ -16,7 +16,6 @@
 
 package solidstack.script;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -123,7 +122,6 @@ public class Context
 		Value( String name, Object value )
 		{
 			Assert.notNull( value );
-			Assert.isTrue( value instanceof BigDecimal || value instanceof String || value instanceof FunctionInstance || value == Null.INSTANCE );
 			this.name = name;
 			this.value = value;
 		}

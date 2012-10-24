@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
-import solidstack.lang.Assert;
 import solidstack.script.Context;
 import solidstack.script.Context.Value;
 import solidstack.script.Expression;
@@ -57,10 +56,12 @@ public class Apply extends Operation
 			if( pars instanceof TupleValue )
 			{
 				List<Object> list = ( (TupleValue)pars ).getValues();
+				Operation.unwrapList( list );
 				return f.call( list );
 			}
 			if( pars != null )
 			{
+				pars = Operation.unwrap( pars );
 				List<Object> list = Arrays.asList( pars );
 				return f.call( list );
 			}
@@ -71,9 +72,17 @@ public class Apply extends Operation
 		{
 			ObjectAccess f = (ObjectAccess)left;
 			Object pars = this.right.evaluate( context );
-			Assert.isInstanceOf( pars, List.class );
-			List<Object> list = (List<Object>)pars; // TODO Unwrap needed here?
-			return f.invoke( list.toArray() );
+			if( pars instanceof TupleValue )
+			{
+				List<Object> list = ( (TupleValue)pars ).getValues();
+				return f.invoke( list.toArray() );
+			}
+			if( pars != null )
+			{
+				List<Object> list = Arrays.asList( pars );
+				return f.invoke( list.toArray() );
+			}
+			return f.invoke();
 		}
 
 		throw new ScriptException( "Cannot apply parameters to a " + left.getClass().getName() );

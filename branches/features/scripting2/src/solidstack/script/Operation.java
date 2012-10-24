@@ -18,6 +18,8 @@ package solidstack.script;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
+import java.util.ListIterator;
 
 import solidstack.lang.Assert;
 import solidstack.script.Context.Value;
@@ -211,6 +213,18 @@ abstract public class Operation extends Expression
 		if( object instanceof Value )
 			return ( (Value)object ).get(); // TODO These may be too late. Maybe we should bind the Value reference and the actual value.
 		return object;
+	}
+
+	static public Object unwrapList( List<Object> objects )
+	{
+		// TODO These may be too late. Maybe we should bind the Value reference and the actual value.
+		for( ListIterator<Object> i = objects.listIterator(); i.hasNext(); )
+		{
+			Object object = i.next();
+			if( object instanceof Value )
+				i.set( ( (Value)object ).get() );
+		}
+		return objects;
 	}
 
 	static public Object evaluateAndUnwrap( Expression expression, Context context )
