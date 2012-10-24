@@ -16,6 +16,8 @@
 
 package solidstack.script.operations;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -52,10 +54,17 @@ public class Apply extends Operation
 		{
 			FunctionInstance f = (FunctionInstance)left;
 			Object pars = this.right.evaluate( context );
-			Assert.isInstanceOf( pars, TupleValue.class );
-			List<Object> list = ( (TupleValue)pars ).getValues();
-//			unwrap( list );
-			return f.call( list );
+			if( pars instanceof TupleValue )
+			{
+				List<Object> list = ( (TupleValue)pars ).getValues();
+				return f.call( list );
+			}
+			if( pars != null )
+			{
+				List<Object> list = Arrays.asList( pars );
+				return f.call( list );
+			}
+			return f.call( Collections.emptyList() );
 		}
 
 		if( left instanceof ObjectAccess )

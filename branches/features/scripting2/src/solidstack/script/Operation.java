@@ -207,6 +207,13 @@ abstract public class Operation extends Expression
 		return new IfExp( left, middle, right );
 	}
 
+	static public Object unwrap( Object object )
+	{
+		if( object instanceof Value )
+			return ( (Value)object ).get(); // TODO These may be too late. Maybe we should bind the Value reference and the actual value.
+		return object;
+	}
+
 	static public Object evaluateAndUnwrap( Expression expression, Context context )
 	{
 		Object result = expression.evaluate( context );

@@ -41,8 +41,6 @@ public class Expressions extends Expression
 		for( Expression e : this.expressions )
 			if( e != null )
 				result = e.evaluate( context );
-			else
-				result = null;
 		return result;
 	}
 
@@ -59,5 +57,10 @@ public class Expressions extends Expression
 	public Expression get( int index )
 	{
 		return this.expressions.get( index );
+	}
+
+	public Expression remove( int index )
+	{
+		return this.expressions.remove( 0 );
 	}
 }

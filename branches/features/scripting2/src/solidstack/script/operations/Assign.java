@@ -38,7 +38,7 @@ public class Assign extends Operation
 	public Object evaluate( Context context )
 	{
 		Object left = this.left.evaluate( context );
-		Object right = evaluateAndUnwrap( this.right, context );
+		Object right = evaluateAndUnwrap( this.right, context ); // TODO Maybe not unwrap
 		if( right == null || right instanceof BigDecimal || right instanceof String || right instanceof FunctionInstance )
 		{
 			Assert.notNull( left );

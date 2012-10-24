@@ -208,19 +208,19 @@ public class ScriptTests
 		test( "a = 0; while( a < 10 ; print( ++a ) )", new BigDecimal( 10 ) );
 	}
 
-//	@Test
-//	static public void test12()
-//	{
-//		test( "f = function( a; a * a ); f( 3 )", new BigDecimal( 9 ) );
-//		test( "function( a ) { a * a } ( 5 )", new BigDecimal( 25 ) );
-//		test( "b = 8; function( a ) { a } ( b )", new BigDecimal( 8 ) );
-//		test( "function( a ) { a( 3 ) } ( function( b ) { 5 * b } )", new BigDecimal( 15 ) );
-//		test( "function( a, b ) { a( 1, 2 ) * b( 3, 4 ) } ( function( c, d ) { c * d }, function( e, f ) { e * f } )", new BigDecimal( 24 ) );
-//		test( "function( a, b ) { a( 1, 2 ) * b( 3, 4 ) } ( function( a, b ) { a * b }, function( a, b ) { a * b } )", new BigDecimal( 24 ) );
-//		test( "f = function() { 1 }; f()", new BigDecimal( 1 ) );
-//		test( "a = 0; function() { a = 1 } (); a", new BigDecimal( 1 ) );
-//	}
-//
+	@Test
+	static public void test12()
+	{
+		test( "f = fun( a; a * a ); f( 3 )", new BigDecimal( 9 ) );
+		test( "fun( a; a * a ) ( 5 )", new BigDecimal( 25 ) );
+		test( "b = 8; fun( a; a ) ( b )", new BigDecimal( 8 ) );
+		test( "fun( a; a( 3 ) ) ( fun( b; 5 * b ) )", new BigDecimal( 15 ) );
+		test( "fun( a, b; a( 1, 2 ) * b( 3, 4 ) ) ( fun( c, d; c * d ), fun( e, f; e * f ) )", new BigDecimal( 24 ) );
+		test( "fun( a, b; a( 1, 2 ) * b( 3, 4 ) ) ( fun( a, b; a * b ), fun( a, b; a * b ) )", new BigDecimal( 24 ) );
+		test( "f = fun( ; 1 ); f()", new BigDecimal( 1 ) );
+		test( "a = 0; fun( ; a = 1 ) (); a", new BigDecimal( 1 ) );
+	}
+
 //	@Test
 //	static public void test13()
 //	{

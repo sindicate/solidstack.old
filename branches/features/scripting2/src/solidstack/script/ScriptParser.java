@@ -17,6 +17,8 @@
 package solidstack.script;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import solidstack.io.SourceException;
 import solidstack.lang.Assert;
@@ -38,19 +40,31 @@ public class ScriptParser
 	public Expressions parse()
 	{
 		Expressions results = new Expressions();
+		Tuple last = parseTuple(); // null means nothing, otherwise Tuple always has items.
+		Assert.isTrue( last == null || last.size() > 0 );
+		Token lastToken = this.tokenizer.lastToken();
+		if( lastToken == Token.EOF || lastToken.getType() == this.stop ) // TODO stop2?
+		{
+			if( last != null )
+					results.append( last );
+			return results;
+		}
 		while( true )
 		{
-			Expression result = parseTuple();
-			if( result != null )
-				results.append( result );
-			Token lastToken = this.tokenizer.lastToken();
+			results.append( last );
+			last = parseTuple();
+			lastToken = this.tokenizer.lastToken();
 			if( lastToken == Token.EOF || lastToken.getType() == this.stop ) // TODO stop2?
+			{
+				if( last != null )
+					results.append( last );
 				return results;
+			}
 		}
 	}
 
 	// Parses one tuple (separated with ;)
-	public Expression parseTuple()
+	public Tuple parseTuple()
 	{
 		Tuple results = new Tuple();
 		while( true )
@@ -58,16 +72,14 @@ public class ScriptParser
 			Expression result = parseExpression();
 			results.append( result ); // Can be null
 			Token last = this.tokenizer.lastToken();
-			if( last.getType() == this.stop )
-				return results;
-			if( last == Token.EOF || last == Token.SEMICOLON )
+			if( last == Token.EOF || last == Token.SEMICOLON || last.getType() == this.stop )
 			{
 				if( results.size() > 1 )
 					return results;
 				result = results.get( 0 );
 				if( result == null )
 					return null;
-				return result;
+				return results;
 			}
 			Assert.isTrue( last == Token.COMMA, "Not expecting token " + last );
 		}
@@ -123,7 +135,7 @@ public class ScriptParser
 				TYPE old = this.stop;
 				this.stop = TYPE.PAREN_CLOSE;
 				TYPE old2 = this.stop2;
-				this.stop2 = TYPE.COMMA;
+				this.stop2 = TYPE.COMMA; // TODO THis is not right.
 				Expression parameters = parse();
 				this.stop = old;
 				this.stop2 = old2;
@@ -154,6 +166,8 @@ public class ScriptParser
 		if( token == Token.EOF )
 			return null;
 		if( token.getType() == TYPE.SEMICOLON )
+			return null;
+		if( token.getType() == this.stop )
 			return null;
 		if( token.getType() == TYPE.NUMBER )
 			return new NumberConstant( new BigDecimal( token.getValue() ) );
@@ -193,7 +207,7 @@ public class ScriptParser
 			{
 				token = this.tokenizer.get();
 				if( token.getType() != TYPE.PAREN_OPEN )
-					throw new SourceException( "Expected a opening parenthesis", this.tokenizer.getLocation() );
+					throw new SourceException( "Expected an opening parenthesis", this.tokenizer.getLocation() );
 				TYPE old = this.stop;
 				this.stop = TYPE.PAREN_CLOSE;
 				TYPE old2 = this.stop2; // TODO Always 2
@@ -209,7 +223,7 @@ public class ScriptParser
 			{
 				token = this.tokenizer.get();
 				if( token.getType() != TYPE.PAREN_OPEN )
-					throw new SourceException( "Expected a opening parenthesis", this.tokenizer.getLocation() );
+					throw new SourceException( "Expected an opening parenthesis", this.tokenizer.getLocation() );
 				TYPE old = this.stop;
 				this.stop = TYPE.PAREN_CLOSE;
 				TYPE old2 = this.stop2; // TODO Always 2
@@ -220,6 +234,39 @@ public class ScriptParser
 				if( expressions.size() != 2 ) // TODO And 1?
 					throw new SourceException( "Expected 2 expressions", this.tokenizer.getLocation() );
 				return new While( expressions.get( 0 ), expressions.get( 1 ) );
+			}
+			if( token.getValue().equals( "fun" ) )
+			{
+				token = this.tokenizer.get();
+				if( token.getType() != TYPE.PAREN_OPEN )
+					throw new SourceException( "Expected an opening parenthesis", this.tokenizer.getLocation() );
+				TYPE old = this.stop;
+				this.stop = TYPE.PAREN_CLOSE;
+				TYPE old2 = this.stop2; // TODO Always 2
+				this.stop2 = null;
+				Expressions expressions = parse();
+				this.stop2 = old2;
+				this.stop = old;
+				if( expressions.size() < 2 ) // TODO And 1?
+					throw new SourceException( "Expected 2 or more expressions", this.tokenizer.getLocation() );
+				List<String> parameters = new ArrayList<String>();
+				Expression pars = expressions.remove( 0 );
+				if( pars instanceof Tuple )
+				{
+					for( Expression par : ( (Tuple)pars ).getExpressions() )
+					{
+						if( !( par instanceof Identifier ) )
+							throw new SourceException( "Expected an identifier", this.tokenizer.getLocation() );
+						parameters.add( ( (Identifier)par ).getName() );
+					}
+				}
+				else if( pars != null )
+				{
+					if( !( pars instanceof Identifier ) )
+						throw new SourceException( "Expected an identifier", this.tokenizer.getLocation() );
+					parameters.add( ( (Identifier)pars ).getName() );
+				}
+				return new Function( parameters, expressions );
 			}
 			return new Identifier( token.getValue() );
 		}

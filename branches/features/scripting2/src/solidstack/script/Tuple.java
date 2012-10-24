@@ -21,6 +21,8 @@ import java.util.List;
 
 public class Tuple extends Expression
 {
+	static public final Expression EMPTY_TUPLE = new Tuple();
+
 	private List<Expression> expressions = new ArrayList<Expression>();
 
 	public Tuple()
