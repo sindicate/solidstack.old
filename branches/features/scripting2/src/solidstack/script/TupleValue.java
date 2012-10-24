@@ -60,4 +60,9 @@ public class TupleValue
 	{
 		return this.values.get( index );
 	}
+
+	public Object getLast()
+	{
+		return this.values.get( this.values.size() - 1 );
+	}
 }

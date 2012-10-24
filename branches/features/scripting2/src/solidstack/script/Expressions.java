@@ -50,4 +50,14 @@ public class Expressions extends Expression
 	{
 		this.expressions.add( expression );
 	}
+
+	public int size()
+	{
+		return this.expressions.size();
+	}
+
+	public Expression get( int index )
+	{
+		return this.expressions.get( index );
+	}
 }

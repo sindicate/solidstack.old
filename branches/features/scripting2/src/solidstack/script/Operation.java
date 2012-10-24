@@ -207,18 +207,18 @@ abstract public class Operation extends Expression
 		return new IfExp( left, middle, right );
 	}
 
-	static protected Object evaluateAndUnwrap( Expression expression, Context context )
+	static public Object evaluateAndUnwrap( Expression expression, Context context )
 	{
 		Object result = expression.evaluate( context );
-		if( result instanceof Value )
-			return ( (Value)result ).get();
 		if( result instanceof TupleValue )
 		{
 			TupleValue results = (TupleValue)result;
 			if( results.size() == 0 )
 				return null;
-			return results.get( 0 );
+			result = results.getLast();
 		}
+		if( result instanceof Value ) // TODO Does this ever happen with tuples?
+			return ( (Value)result ).get();
 		return result;
 	}
 

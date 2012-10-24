@@ -44,12 +44,12 @@ public class ScriptParser
 			if( result != null )
 				results.append( result );
 			Token lastToken = this.tokenizer.lastToken();
-			if( lastToken == Token.EOF || lastToken.getType() == this.stop )
+			if( lastToken == Token.EOF || lastToken.getType() == this.stop ) // TODO stop2?
 				return results;
 		}
 	}
 
-	// Parses one expression (separated with ;s)
+	// Parses one tuple (separated with ;)
 	public Expression parseTuple()
 	{
 		Tuple results = new Tuple();
@@ -62,9 +62,12 @@ public class ScriptParser
 				return results;
 			if( last == Token.EOF || last == Token.SEMICOLON )
 			{
-				if( results.onlyOneNull() )
+				if( results.size() > 1 )
+					return results;
+				result = results.get( 0 );
+				if( result == null )
 					return null;
-				return results;
+				return result;
 			}
 			Assert.isTrue( last == Token.COMMA, "Not expecting token " + last );
 		}
@@ -74,7 +77,7 @@ public class ScriptParser
 	public Expression parseExpression()
 	{
 		Expression result = parseAtom();
-		if( result == null )
+		if( result == null ) // TODO What if no atom because of ,
 			return null;
 
 		while( true )
@@ -83,6 +86,8 @@ public class ScriptParser
 			if( token.getType() == TYPE.EOF )
 				return result;
 			if( token.getType() == TYPE.SEMICOLON )
+				return result;
+			if( token.getType() == TYPE.COMMA )
 				return result;
 			if( token.getType() == this.stop )
 				return result;
@@ -126,6 +131,13 @@ public class ScriptParser
 					result = ( (Operation)result ).append( token.getValue(), parameters );
 				else
 					result = Operation.operation( token.getValue(), result, parameters );
+			}
+			else if( token.getType() == TYPE.UNAOP )
+			{
+				if( result instanceof Operation )
+					result = ( (Operation)result ).append( "@" + token.getValue(), null );
+				else
+					result = Operation.operation( "@" + token.getValue(), result, null );
 			}
 			else
 				throw new SourceException( "Unexpected token '" + token + "'", this.tokenizer.getLocation() );
@@ -177,20 +189,47 @@ public class ScriptParser
 				return new BooleanConstant( true );
 			if( name.equals( "null" ) )
 				return new NullConstant();
-//			return new Identifier( token.getValue() );
+			if( token.getValue().equals( "if" ) )
+			{
+				token = this.tokenizer.get();
+				if( token.getType() != TYPE.PAREN_OPEN )
+					throw new SourceException( "Expected a opening parenthesis", this.tokenizer.getLocation() );
+				TYPE old = this.stop;
+				this.stop = TYPE.PAREN_CLOSE;
+				TYPE old2 = this.stop2; // TODO Always 2
+				this.stop2 = null;
+				Expressions expressions = parse();
+				this.stop2 = old2;
+				this.stop = old;
+				if( expressions.size() != 2 && expressions.size() != 3 )
+					throw new SourceException( "Expected 2 or 3 expressions", this.tokenizer.getLocation() );
+				return new If( expressions.get( 0 ), expressions.get( 1 ), expressions.size() == 3 ? expressions.get( 2 ) : null );
+			}
+			if( token.getValue().equals( "while" ) )
+			{
+				token = this.tokenizer.get();
+				if( token.getType() != TYPE.PAREN_OPEN )
+					throw new SourceException( "Expected a opening parenthesis", this.tokenizer.getLocation() );
+				TYPE old = this.stop;
+				this.stop = TYPE.PAREN_CLOSE;
+				TYPE old2 = this.stop2; // TODO Always 2
+				this.stop2 = null;
+				Expressions expressions = parse();
+				this.stop2 = old2;
+				this.stop = old;
+				if( expressions.size() != 2 ) // TODO And 1?
+					throw new SourceException( "Expected 2 expressions", this.tokenizer.getLocation() );
+				return new While( expressions.get( 0 ), expressions.get( 1 ) );
+			}
+			return new Identifier( token.getValue() );
 		}
 		else if( token.getType() == TYPE.UNAOP )
 		{
-			if( token.getValue().equals( "!" ) )
-			{
-				Expression result = parseAtom(); // TODO Pre-apply
-				return Operation.operation( "!@", null, result );
-			}
-//			Expression result = parseOne( false, null );
-//			return Operation.operation( token.getValue() + "@", null, result );
+			Expression result = parseAtom();
+			return Operation.operation( token.getValue() + "@", null, result ); // TODO Pre-apply
 		}
-		Assert.isTrue( token.getType() == TYPE.IDENTIFIER, "Not expecting token " + token );
-		return new Identifier( token.getValue() );
+		Assert.fail( "Not expecting token " + token );
+		return null;
 	}
 
 //	public Expression parse( String stop, String stop2 )

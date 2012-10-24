@@ -35,10 +35,6 @@ public class Tuple extends Expression
 		for( Expression expression : this.expressions )
 			values.append( expression.evaluate( context ) );
 		return values;
-//		Object result = null;
-//		for( Expression expression : this.expressions )
-//			result = expression.evaluate( context );
-//		return result;
 	}
 
 	public void append( Expression expression )
@@ -51,8 +47,13 @@ public class Tuple extends Expression
 		return this.expressions;
 	}
 
-	public boolean onlyOneNull()
+	public int size()
 	{
-		return this.expressions.size() == 1 && this.expressions.get( 0 ) == null;
+		return this.expressions.size();
+	}
+
+	public Expression get( int index )
+	{
+		return this.expressions.get( index );
 	}
 }

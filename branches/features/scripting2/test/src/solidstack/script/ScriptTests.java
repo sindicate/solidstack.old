@@ -196,17 +196,17 @@ public class ScriptTests
 		test( ";;;;", null );
 	}
 
-//	@Test
-//	static public void test11()
-//	{
-//		test( "( 2; 3 )", new BigDecimal( 3 ) );
-//		test( "a = 1; a + a + a++", new BigDecimal( 3 ) );
-//		test( "a = 1; a + a + ++a", new BigDecimal( 4 ) );
-//		test( "a = 0; if( true; a++, a++ )", new BigDecimal( 1 ) );
-//		test( "if( a = 1, b = a, b; 3; 4 )", new BigDecimal( 3 ) );
-//		test( "a = 0; if( false; a++, a++; ++a, ++a )", new BigDecimal( 2 ) );
-//		test( "a = 0; while( a < 10 ; print( ++a ) )", new BigDecimal( 10 ) );
-//	}
+	@Test
+	static public void test11()
+	{
+		test( "( 2; 3 )", new BigDecimal( 3 ) );
+		test( "a = 1; a + a + a++", new BigDecimal( 3 ) );
+		test( "a = 1; a + a + ++a", new BigDecimal( 4 ) );
+		test( "a = 0; if( true; a++, a++ )", new BigDecimal( 1 ) );
+		test( "if( a = 1, b = a, b; 3; 4 )", new BigDecimal( 3 ) );
+		test( "a = 0; if( false; a++, a++; ++a, ++a )", new BigDecimal( 2 ) );
+		test( "a = 0; while( a < 10 ; print( ++a ) )", new BigDecimal( 10 ) );
+	}
 
 //	@Test
 //	static public void test12()

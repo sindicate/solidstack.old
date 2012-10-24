@@ -19,7 +19,6 @@ package solidstack.script;
 import java.io.StringReader;
 
 import solidstack.io.ReaderSourceReader;
-import solidstack.script.Context.Value;
 
 public class Script
 {
@@ -46,12 +45,6 @@ public class Script
 		if( this.expression == null )
 			return null;
 
-		// TODO Add unwrap() method somewhere
-		Object result = this.expression.evaluate( context );
-		if( result instanceof Value )
-			return ( (Value)result ).get();
-		if( result instanceof TupleValue )
-			return ( (TupleValue)result ).unwrap();
-		return result;
+		return Operation.evaluateAndUnwrap( this.expression, context );
 	}
 }
