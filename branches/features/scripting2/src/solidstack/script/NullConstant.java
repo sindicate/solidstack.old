@@ -23,6 +23,6 @@ public class NullConstant extends Expression
 	@Override
 	public Object evaluate( Context context )
 	{
-		return null;
+		return Null.INSTANCE;
 	}
 }

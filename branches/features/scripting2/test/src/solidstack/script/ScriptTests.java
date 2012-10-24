@@ -221,6 +221,7 @@ public class ScriptTests
 		test( "fun( a, b; a( 1, 2 ) * b( 3, 4 ) ) ( fun( a, b; a * b ), fun( a, b; a * b ) )", new BigDecimal( 24 ) );
 		test( "f = fun( ; 1 ); f()", new BigDecimal( 1 ) );
 		test( "a = 0; fun( ; a = 1 ) (); a", new BigDecimal( 1 ) );
+		test( "fun( a; a ) ( null )", null );
 	}
 
 //	@Test

@@ -45,6 +45,9 @@ public class Script
 		if( this.expression == null )
 			return null;
 
-		return Operation.evaluateAndUnwrap( this.expression, context );
+		Object result = Operation.evaluateAndUnwrap( this.expression, context );
+		if( result == Null.INSTANCE )
+			return null;
+		return result;
 	}
 }

@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import solidstack.lang.Assert;
+
 public class Context
 {
 	private Context parent;
@@ -119,6 +121,7 @@ public class Context
 
 		Value( String name, Object value )
 		{
+			Assert.notNull( value );
 			this.name = name;
 			this.value = value;
 		}
@@ -146,7 +149,7 @@ public class Context
 	{
 		Undefined( String name )
 		{
-			super( name, null );
+			super( name, Null.INSTANCE );
 		}
 
 		@Override
