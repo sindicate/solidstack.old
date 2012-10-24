@@ -111,8 +111,11 @@ public class ScriptParser
 				{
 					TYPE old = this.stop;
 					this.stop = TYPE.COLON;
+					TYPE old2 = this.stop2;
+					this.stop2 = null;
 					Expression middle = parse();
 					this.stop = old;
+					this.stop2 = old2;
 					Expression right = parseAtom();
 					Assert.notNull( right );
 					if( result instanceof Operation )
@@ -135,7 +138,7 @@ public class ScriptParser
 				TYPE old = this.stop;
 				this.stop = TYPE.PAREN_CLOSE;
 				TYPE old2 = this.stop2;
-				this.stop2 = TYPE.COMMA; // TODO THis is not right.
+				this.stop2 = null;
 				Expression parameters = parse();
 				this.stop = old;
 				this.stop2 = old2;
@@ -160,6 +163,9 @@ public class ScriptParser
 //		return result;
 	}
 
+	/**
+	 * @return The smallest expression possible.
+	 */
 	public Expression parseAtom()
 	{
 		Token token = this.tokenizer.get();
@@ -177,8 +183,11 @@ public class ScriptParser
 		{
 			TYPE old = this.stop;
 			this.stop = TYPE.PAREN_CLOSE;
+			TYPE old2 = this.stop2;
+			this.stop2 = null;
 			Expression result = parse();
 			this.stop = old;
+			this.stop2 = old2;
 			Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.PAREN_CLOSE, "Not expecting token " + token );
 			return result;
 		}
@@ -210,7 +219,7 @@ public class ScriptParser
 					throw new SourceException( "Expected an opening parenthesis", this.tokenizer.getLocation() );
 				TYPE old = this.stop;
 				this.stop = TYPE.PAREN_CLOSE;
-				TYPE old2 = this.stop2; // TODO Always 2
+				TYPE old2 = this.stop2;
 				this.stop2 = null;
 				Expressions expressions = parse();
 				this.stop2 = old2;
@@ -226,7 +235,7 @@ public class ScriptParser
 					throw new SourceException( "Expected an opening parenthesis", this.tokenizer.getLocation() );
 				TYPE old = this.stop;
 				this.stop = TYPE.PAREN_CLOSE;
-				TYPE old2 = this.stop2; // TODO Always 2
+				TYPE old2 = this.stop2;
 				this.stop2 = null;
 				Expressions expressions = parse();
 				this.stop2 = old2;
@@ -242,7 +251,7 @@ public class ScriptParser
 					throw new SourceException( "Expected an opening parenthesis", this.tokenizer.getLocation() );
 				TYPE old = this.stop;
 				this.stop = TYPE.PAREN_CLOSE;
-				TYPE old2 = this.stop2; // TODO Always 2
+				TYPE old2 = this.stop2;
 				this.stop2 = null;
 				Expressions expressions = parse();
 				this.stop2 = old2;
