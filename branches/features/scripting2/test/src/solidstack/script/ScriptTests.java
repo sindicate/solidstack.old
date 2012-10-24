@@ -22,7 +22,7 @@ public class ScriptTests
 	static public void test2()
 	{
 		Context context = new Context();
-		context.set( "var1", 1 );
+		context.set( "var1", new BigDecimal( 1 ) );
 		test( "var1 + 1", context, new BigDecimal( 2 ) );
 	}
 
@@ -250,7 +250,16 @@ public class ScriptTests
 //		context.set( "o2", o2 );
 //		test( "o2.test( 1, 1 )", context, 1 );
 //	}
-//
+
+	@Test
+	static public void test14()
+	{
+		test( "( a, b ) = ( 1, 2 ); a + b", new BigDecimal( 3 ) );
+		test( "( a, b ) = ( 1, 2 ); a + b", new BigDecimal( 3 ) );
+		test( "( a, b ) = fun( ; 1, 2 )(); a + b", new BigDecimal( 3 ) );
+		test( "( a, b ) = ( fun( ; 1 ), fun( ; 2 ) ) ; a() + b()", new BigDecimal( 3 ) );
+	}
+
 //	@SuppressWarnings( "unused" )
 //	static public class TestObject1
 //	{

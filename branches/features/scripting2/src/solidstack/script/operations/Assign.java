@@ -20,11 +20,13 @@ import java.math.BigDecimal;
 
 import solidstack.lang.Assert;
 import solidstack.script.Context;
+import solidstack.script.Context.Value;
 import solidstack.script.Context.Variable;
 import solidstack.script.Expression;
 import solidstack.script.FunctionInstance;
 import solidstack.script.Operation;
 import solidstack.script.ScriptException;
+import solidstack.script.TupleValue;
 
 
 public class Assign extends Operation
@@ -38,17 +40,45 @@ public class Assign extends Operation
 	public Object evaluate( Context context )
 	{
 		Object left = this.left.evaluate( context );
-		Object right = evaluateAndUnwrap( this.right, context ); // TODO Maybe not unwrap
-		if( right == null || right instanceof BigDecimal || right instanceof String || right instanceof FunctionInstance )
+		Object right = this.right.evaluate( context );
+
+		if( right instanceof TupleValue )
 		{
-			Assert.notNull( left );
-			if( left instanceof Variable )
-				( (Variable)left ).set( right );
+			Assert.isInstanceOf( left, TupleValue.class );
+			TupleValue leftTuple = (TupleValue)left;
+			TupleValue rightTuple = (TupleValue)right;
+			int len = leftTuple.size();
+			Assert.isTrue( rightTuple.size() == len );
+			for( int i = 0; i < len; i++ )
+			{
+				Object l = leftTuple.get( i );
+				Object r = rightTuple.get( i );
+				assign( l, r );
+			}
+		}
+		else
+		{
+			Assert.isFalse( left instanceof TupleValue );
+			assign( left, right );
+		}
+
+		return right;
+	}
+
+	static private void assign( Object var, Object value )
+	{
+		Assert.notNull( var );
+		Assert.notNull( value );
+		if( value instanceof Value )
+			value = ( (Value)value ).get();
+		if( value instanceof BigDecimal || value instanceof String || value instanceof FunctionInstance )
+		{
+			if( var instanceof Variable )
+				( (Variable)var ).set( value );
 			else
 				throw new ScriptException( "Tried to assign to a immutable value" );
-			return right;
 		}
-		Assert.fail( "Unexpected " + this.right.getClass() );
-		return null;
+		else
+			Assert.fail( "Unexpected " + value.getClass() );
 	}
 }
