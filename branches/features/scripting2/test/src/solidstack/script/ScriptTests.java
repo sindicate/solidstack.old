@@ -206,6 +206,7 @@ public class ScriptTests
 		test( "fun( a; a ) ( null )", null );
 		test( "f = fun( ; fun( ; 2 ) ); f()()", new BigDecimal( 2 ) );
 		test( "a = 1; f = fun( ; a ); a = 2; f()", new BigDecimal( 2 ) );
+		test( "fun(a;fun(;a))(1)()", new BigDecimal( 1 ) );
 	}
 
 	@Test
@@ -283,6 +284,24 @@ public class ScriptTests
 		test( "a = 1; s = \"a = ${a}\"; a = 2; s", "a = 2" );
 		test( "a = 1; \"a = \\${a}\"", "a = ${a}" );
 		test( "\"${1}\"", "1" );
-//		test( "\"${}\"", "1" );
+//		test( "\"${}\"", "1" ); TODO
 	}
+
+	// TODO Exceptions, catch & finally
+	// TODO MethodMissing
+	// TODO Default parameter values
+	// TODO Calls with named parameters
+	// TODO def & val
+	// TODO { } blocks for new scopes
+	// TODO Store tuples in variables?
+	// TODO Binary and hexadecimal literals
+	// TODO Add methods to the datatypes and/or objects
+	// TODO DSLs
+	// TODO Underscores in number literals
+	// TODO Parameter spreading
+	// TODO Arrays and maps with literals
+	// TODO Ranges
+	// TODO Synchronization
+	// TODO Return, switch, break, continue
+	// TODO Threads & sleep, etc
 }

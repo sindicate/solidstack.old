@@ -30,4 +30,17 @@ public class ScriptTests2
 			"total: 20 numbers"
 		);
 	}
+
+	@Test
+	static public void test3()
+	{
+		ScriptTests.test( '''
+			foo = fun( f; f( "test" ) );
+			foo( fun( a;
+				a
+			));
+			''',
+			"test"
+		);
+	}
 }
