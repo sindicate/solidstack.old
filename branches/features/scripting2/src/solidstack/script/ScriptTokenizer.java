@@ -150,6 +150,7 @@ public class ScriptTokenizer
 								case 't': ch = '\t'; break;
 								case '\"': break;
 								case '\\': break;
+								case '$': result.append( '\\' ); break; // TODO Remember, not for '' strings
 								case 'u':
 									char[] codePoint = new char[ 4 ];
 									for( int i = 0; i < 4; i++ )

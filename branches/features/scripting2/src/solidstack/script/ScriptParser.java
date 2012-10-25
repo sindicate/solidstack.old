@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import solidstack.io.SourceException;
+import solidstack.io.SourceReader;
+import solidstack.io.SourceReaders;
 import solidstack.lang.Assert;
 import solidstack.script.ScriptTokenizer.Token;
 import solidstack.script.ScriptTokenizer.Token.TYPE;
@@ -180,7 +182,7 @@ public class ScriptParser
 		if( token.getType() == TYPE.NUMBER )
 			return new NumberConstant( new BigDecimal( token.getValue() ) );
 		if( token.getType() == TYPE.STRING )
-			return new StringConstant( token.getValue() );
+			return parseString( token.getValue() );
 		if( token == Token.PAREN_OPEN )
 		{
 			TYPE old = this.stop;
@@ -288,6 +290,42 @@ public class ScriptParser
 		}
 		Assert.fail( "Not expecting token " + token );
 		return null;
+	}
+
+	public Expression parseString( String s )
+	{
+		SourceReader in = SourceReaders.forString( s, this.tokenizer.getLocation() ); // TODO This location is not correct
+		StringTokenizer t = new StringTokenizer( in );
+		ScriptTokenizer oldTokenizer = this.tokenizer;
+		this.tokenizer = t;
+
+		TYPE old = this.stop;
+		this.stop = TYPE.BRACE_CLOSE;
+		TYPE old2 = this.stop2;
+		this.stop2 = null;
+
+		StringExpression result = new StringExpression();
+
+		String fragment = t.getFragment();
+		while( t.foundExpression() )
+		{
+			if( fragment.length() != 0 )
+				result.append( new StringConstant( fragment ) );
+			Expressions expressions = parse();
+			result.append( expressions );
+			fragment = t.getFragment();
+		}
+		if( fragment.length() != 0 )
+			result.append( new StringConstant( fragment ) );
+
+		this.stop2 = old2;
+		this.stop = old;
+
+		this.tokenizer = oldTokenizer;
+
+		if( result.size() == 1 && result.get( 0 ) instanceof StringConstant )
+			return result.get( 0 );
+		return result;
 	}
 
 //	public Expression parse( String stop, String stop2 )

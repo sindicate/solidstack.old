@@ -19,28 +19,16 @@ package solidstack.script;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Expressions extends Expression
+
+
+public class StringExpression extends Expression
 {
 	private List<Expression> expressions = new ArrayList<Expression>();
 
-	public Expressions()
-	{
-	}
-
-	public Expressions( Expression expression )
-	{
-		if( expression != null )
-			append( expression );
-	}
-
 	@Override
-	public Object evaluate( Context context )
+	public SuperString evaluate( Context context )
 	{
-		Object result = null;
-		for( Expression e : this.expressions )
-			if( e != null )
-				result = e.evaluate( context );
-		return result;
+		return new SuperString( this.expressions, context );
 	}
 
 	public void append( Expression expression )
@@ -56,10 +44,5 @@ public class Expressions extends Expression
 	public Expression get( int index )
 	{
 		return this.expressions.get( index );
-	}
-
-	public Expression remove( int index )
-	{
-		return this.expressions.remove( 0 );
 	}
 }

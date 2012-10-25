@@ -48,6 +48,8 @@ public class Script
 		Object result = Operation.evaluateAndUnwrap( this.expression, context );
 		if( result == Null.INSTANCE )
 			return null;
+		if( result instanceof SuperString )
+			return result.toString();
 		return result;
 	}
 }

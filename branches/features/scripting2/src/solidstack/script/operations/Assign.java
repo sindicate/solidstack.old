@@ -26,6 +26,7 @@ import solidstack.script.Expression;
 import solidstack.script.FunctionInstance;
 import solidstack.script.Operation;
 import solidstack.script.ScriptException;
+import solidstack.script.SuperString;
 import solidstack.script.TupleValue;
 
 
@@ -71,7 +72,7 @@ public class Assign extends Operation
 		Assert.notNull( value );
 		if( value instanceof Value )
 			value = ( (Value)value ).get();
-		if( value instanceof BigDecimal || value instanceof String || value instanceof FunctionInstance )
+		if( value instanceof BigDecimal || value instanceof String || value instanceof FunctionInstance || value instanceof SuperString )
 		{
 			if( var instanceof Variable )
 				( (Variable)var ).set( value );

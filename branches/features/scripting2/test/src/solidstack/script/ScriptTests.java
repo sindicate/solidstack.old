@@ -1,9 +1,5 @@
 package solidstack.script;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.math.BigDecimal;
 
 import org.testng.Assert;
@@ -42,36 +38,17 @@ public class ScriptTests
 		test( "( 1 + 2 ) * ( 2 + 1 )", new BigDecimal( 9 ) );
 	}
 
-	static private void test( String expression, Object expected )
+	static public void test( String expression, Object expected )
 	{
-		Script script = Script.compile( expression );
-//		String dump = new Dumper().dump( script );
-		Object result = script.execute( null );
-		if( result instanceof TupleValue )
-		{
-			TupleValue results = (TupleValue)result;
-			Assert.assertTrue( results.size() == 1 );
-			result = results.get( 0 );
-			Assert.assertEquals( result, expected );
-		}
-		else
-			Assert.assertEquals( result, expected );
+		test( expression, null, expected );
 	}
 
-	static private void test( String expression, Context context, Object expected )
+	static public void test( String expression, Context context, Object expected )
 	{
 		Script script = Script.compile( expression );
 //		String dump = new Dumper().dump( script );
 		Object result = script.execute( context );
-		if( result instanceof TupleValue )
-		{
-			TupleValue results = (TupleValue)result;
-			Assert.assertTrue( results.size() == 1 );
-			result = results.get( 0 );
-			Assert.assertEquals( result, expected );
-		}
-		else
-			Assert.assertEquals( result, expected );
+		Assert.assertEquals( result, expected );
 	}
 
 	@Test
@@ -228,6 +205,7 @@ public class ScriptTests
 		test( "a = 0; fun( ; a = 1 ) (); a", new BigDecimal( 1 ) );
 		test( "fun( a; a ) ( null )", null );
 		test( "f = fun( ; fun( ; 2 ) ); f()()", new BigDecimal( 2 ) );
+		test( "a = 1; f = fun( ; a ); a = 2; f()", new BigDecimal( 2 ) );
 	}
 
 	@Test
@@ -285,23 +263,26 @@ public class ScriptTests
 		public int test( int i1, int i2 ) { return 1; }
 	}
 
-	static private void test( String file ) throws IOException
-	{
-		InputStream in = ScriptTests.class.getResourceAsStream( file );
-		Reader reader = new InputStreamReader( in );
-		char[] buffer = new char[ 1024 ];
-		StringBuilder contents = new StringBuilder();
-		int len;
-		while( ( len = reader.read( buffer ) ) >= 0 )
-			contents.append( buffer, 0, len );
-		Script.compile( contents.toString() ).execute( null );
-		// TODO Validate result
-	}
+//	static private void test( String file ) throws IOException
+//	{
+//		InputStream in = ScriptTests.class.getResourceAsStream( file );
+//		Reader reader = new InputStreamReader( in );
+//		char[] buffer = new char[ 1024 ];
+//		StringBuilder contents = new StringBuilder();
+//		int len;
+//		while( ( len = reader.read( buffer ) ) >= 0 )
+//			contents.append( buffer, 0, len );
+//		Script.compile( contents.toString() ).execute( null );
+//		// TODO Validate result
+//	}
 
 	@Test
-	static public void test15() throws IOException
+	static public void test15()
 	{
-		test( "test1.funny" );
-		test( "test2.noob" );
+		test( "a = 1; \"a = ${a}\"", "a = 1" );
+		test( "a = 1; s = \"a = ${a}\"; a = 2; s", "a = 2" );
+		test( "a = 1; \"a = \\${a}\"", "a = ${a}" );
+		test( "\"${1}\"", "1" );
+//		test( "\"${}\"", "1" );
 	}
 }
