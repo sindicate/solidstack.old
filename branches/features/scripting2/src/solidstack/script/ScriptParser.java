@@ -38,7 +38,6 @@ public class ScriptParser
 {
 	private ScriptTokenizer tokenizer;
 	private TYPE stop;
-	private TYPE stop2;
 
 
 	/**
@@ -70,8 +69,10 @@ public class ScriptParser
 			last = parseTuple();
 			Assert.isTrue( last != null  );
 			Token lastToken = this.tokenizer.lastToken();
-			if( lastToken == Token.TOK_EOF || lastToken.getType() == this.stop ) // TODO stop2?
+			if( lastToken == Token.TOK_EOF || lastToken.getType() == this.stop )
 			{
+				if( this.stop != null && lastToken == Token.TOK_EOF )
+					throw new SourceException( "Unexpected " + last + ", missing " + this.stop, this.tokenizer.getLocation() );
 				if( last != Tuple.EMPTY_TUPLE )
 					if( last.size() == 1 )
 						results.append( last.get( 0 ) );
@@ -93,6 +94,8 @@ public class ScriptParser
 			Token last = this.tokenizer.lastToken();
 			if( last == Token.TOK_EOF || last == Token.TOK_SEMICOLON || last.getType() == this.stop )
 			{
+				if( this.stop != null && last == Token.TOK_EOF )
+					throw new SourceException( "Unexpected " + last + ", missing " + this.stop, this.tokenizer.getLocation() );
 				if( results.size() > 1 )
 					return results;
 				result = results.get( 0 );
@@ -115,12 +118,15 @@ public class ScriptParser
 		{
 			Token token = this.tokenizer.get();
 			TYPE type = token.getType();
-			if( type == this.stop || type == this.stop2 )
+			if( type == this.stop )
 				return result;
 
 			switch( type )
 			{
 				case EOF:
+					if( this.stop != null )
+						throw new SourceException( "Unexpected " + token + ", missing " + this.stop, this.tokenizer.getLocation() );
+					//$FALL-THROUGH$
 				case SEMICOLON:
 				case COMMA:
 					return result;
@@ -128,13 +134,9 @@ public class ScriptParser
 				case BINOP:
 					if( token.getValue().equals( "?" ) )
 					{
-						TYPE old = this.stop;
-						this.stop = TYPE.COLON;
-						TYPE old2 = this.stop2;
-						this.stop2 = null;
+						TYPE oldStop = swapStops( TYPE.COLON );
 						Expression middle = parse();
-						this.stop = old;
-						this.stop2 = old2;
+						swapStops( oldStop );
 						Expression right = parseAtom();
 						Assert.notNull( right );
 						if( result instanceof Operation )
@@ -154,13 +156,9 @@ public class ScriptParser
 					break;
 
 				case PAREN_OPEN:
-					TYPE old = this.stop;
-					this.stop = TYPE.PAREN_CLOSE;
-					TYPE old2 = this.stop2;
-					this.stop2 = null;
+					TYPE oldStop = swapStops( TYPE.PAREN_CLOSE );
 					Expression parameters = parse();
-					this.stop = old;
-					this.stop2 = old2;
+					swapStops( oldStop );
 					if( result instanceof Operation )
 						result = ( (Operation)result ).append( token.getValue(), parameters );
 					else
@@ -187,11 +185,15 @@ public class ScriptParser
 	{
 		Token token = this.tokenizer.get();
 		TYPE type = token.getType();
-		if( type == this.stop ) // TODO stop2?
+		if( type == this.stop )
 			return null;
+
 		switch( type )
 		{
 			case EOF:
+				if( this.stop != null )
+					throw new SourceException( "Unexpected " + token + ", missing " + this.stop, this.tokenizer.getLocation() );
+				//$FALL-THROUGH$
 			case SEMICOLON:
 				return null;
 
@@ -202,9 +204,9 @@ public class ScriptParser
 				return parseString( token.getValue() );
 
 			case PAREN_OPEN:
-				TYPE[] oldStops = swapStops( TYPE.PAREN_CLOSE );
+				TYPE oldStop = swapStops( TYPE.PAREN_CLOSE );
 				Expression result = parse();
-				swapStops( oldStops );
+				swapStops( oldStop );
 				Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.PAREN_CLOSE, "Not expecting token " + token );
 				return result;
 
@@ -234,9 +236,9 @@ public class ScriptParser
 					token = this.tokenizer.get();
 					if( token.getType() != TYPE.PAREN_OPEN )
 						throw new SourceException( "Expected an opening parenthesis", this.tokenizer.getLocation() );
-					oldStops = swapStops( TYPE.PAREN_CLOSE );
+					oldStop = swapStops( TYPE.PAREN_CLOSE );
 					Expressions expressions = parse();
-					swapStops( oldStops );
+					swapStops( oldStop );
 					if( expressions.size() != 2 && expressions.size() != 3 )
 						throw new SourceException( "Expected 2 or 3 expressions", this.tokenizer.getLocation() );
 					return new If( expressions.get( 0 ), expressions.get( 1 ), expressions.size() == 3 ? expressions.get( 2 ) : null );
@@ -247,9 +249,9 @@ public class ScriptParser
 					token = this.tokenizer.get();
 					if( token.getType() != TYPE.PAREN_OPEN )
 						throw new SourceException( "Expected an opening parenthesis", this.tokenizer.getLocation() );
-					oldStops = swapStops( TYPE.PAREN_CLOSE );
+					oldStop = swapStops( TYPE.PAREN_CLOSE );
 					Expressions expressions = parse();
-					swapStops( oldStops );
+					swapStops( oldStop );
 					if( expressions.size() < 2 ) // TODO And 1?
 						throw new SourceException( "Expected at least 2 expressions", this.tokenizer.getLocation() );
 					return new While( expressions.remove( 0 ), expressions );
@@ -260,9 +262,9 @@ public class ScriptParser
 					token = this.tokenizer.get();
 					if( token.getType() != TYPE.PAREN_OPEN )
 						throw new SourceException( "Expected an opening parenthesis", this.tokenizer.getLocation() );
-					oldStops = swapStops( TYPE.PAREN_CLOSE );
+					oldStop = swapStops( TYPE.PAREN_CLOSE );
 					Expressions expressions = parse();
-					swapStops( oldStops );
+					swapStops( oldStop );
 					if( expressions.size() < 2 ) // TODO And 1?
 						throw new SourceException( "Expected 2 or more expressions", this.tokenizer.getLocation() );
 					List<String> parameters = new ArrayList<String>();
@@ -309,7 +311,7 @@ public class ScriptParser
 		ScriptTokenizer oldTokenizer = this.tokenizer;
 		this.tokenizer = t;
 
-		TYPE[] oldStops = swapStops( TYPE.BRACE_CLOSE );
+		TYPE oldStop = swapStops( TYPE.BRACE_CLOSE );
 
 		StringExpression result = new StringExpression();
 
@@ -325,7 +327,7 @@ public class ScriptParser
 		if( fragment.length() != 0 )
 			result.append( new StringConstant( fragment ) );
 
-		swapStops( oldStops );
+		swapStops( oldStop );
 
 		this.tokenizer = oldTokenizer;
 
@@ -334,11 +336,10 @@ public class ScriptParser
 		return result;
 	}
 
-	private TYPE[] swapStops( TYPE... stop )
+	private TYPE swapStops( TYPE stop )
 	{
-		TYPE[] result = new TYPE[] { this.stop, this.stop2 };
-		this.stop = stop[ 0 ];
-		this.stop2 = stop.length == 2 ? stop[ 1 ] : null;
+		TYPE result = this.stop;
+		this.stop = stop;
 		return result;
 	}
 

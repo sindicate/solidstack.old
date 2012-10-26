@@ -5,6 +5,8 @@ import java.math.BigDecimal;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import solidstack.io.SourceException;
+
 
 @SuppressWarnings( "javadoc" )
 public class ScriptTests
@@ -51,6 +53,19 @@ public class ScriptTests
 		Assert.assertEquals( result, expected );
 	}
 
+	static public void testParseFail( String expression )
+	{
+		try
+		{
+			Script.compile( expression );
+			Assert.fail( "Expected a SourceException" );
+		}
+		catch( SourceException e )
+		{
+			// Expected
+		}
+	}
+
 	@Test
 	static public void test4()
 	{
@@ -59,6 +74,7 @@ public class ScriptTests
 		Assert.assertEquals( val + 1 > 0 ? 2 : 3 + 1, 2 );
 		Assert.assertEquals( val > 0 ? 2 : val > 0 ? 3 : 4, 2 );
 
+		testParseFail( "1 ? 2 ; 3 : 4" );
 		test( "1 ? 2 : 3 + 1", new BigDecimal( 2 ) );
 		test( "( 1 ? 2 : 3 ) + 1", new BigDecimal( 3 ) );
 		test( "1 + 1 ? 2 : 3 + 1", new BigDecimal( 2 ) );
@@ -195,6 +211,7 @@ public class ScriptTests
 	@Test
 	static public void test12()
 	{
+		testParseFail( "println( 1 " );
 		test( "f = fun( a; a * a ); f( 3 )", new BigDecimal( 9 ) );
 		test( "fun( a; a * a ) ( 5 )", new BigDecimal( 25 ) );
 		test( "b = 8; fun( a; a ) ( b )", new BigDecimal( 8 ) );
