@@ -35,9 +35,15 @@ public class If extends Expression
 	public Object evaluate( Context context )
 	{
 		if( Operation.isTrue( Operation.evaluateAndUnwrap( this.condition, context ) ) )
-			return this.left.evaluate( context );
-		if( this.right != null )
-			return this.right.evaluate( context );
+		{
+			if( this.left != null )
+				return this.left.evaluate( context );
+		}
+		else
+		{
+			if( this.right != null )
+				return this.right.evaluate( context );
+		}
 		return null;
 	}
 }

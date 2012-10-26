@@ -66,38 +66,59 @@ public class ScriptTests
 		}
 	}
 
+//	@Test
+//	static public void test4()
+//	{
+//		int val = 1;
+//		Assert.assertEquals( val > 0 ? 2 : 3 + 1, 2 );
+//		Assert.assertEquals( val + 1 > 0 ? 2 : 3 + 1, 2 );
+//		Assert.assertEquals( val > 0 ? 2 : val > 0 ? 3 : 4, 2 );
+//
+//		testParseFail( "1 ? 2 ; 3 : 4" );
+//		test( "1 ? 2 : 3 + 1", new BigDecimal( 2 ) );
+//		test( "( 1 ? 2 : 3 ) + 1", new BigDecimal( 3 ) );
+//		test( "1 + 1 ? 2 : 3 + 1", new BigDecimal( 2 ) );
+//		test( "1 + ( 1 ? 2 : 3 ) + 1", new BigDecimal( 4 ) );
+//		test( "1 + ( 1 ? 2 : 3 + 1 )", new BigDecimal( 3 ) );
+//		test( "( 1 + 1 ? 2 : 3 ) + 1", new BigDecimal( 3 ) );
+//		test( "0 ? 2 : 3 + 4 * 5", new BigDecimal( 23 ) );
+//		test( "0 ? 2 : ( 3 + 4 ) * 5", new BigDecimal( 35 ) );
+//		test( "( 0 ? 2 : 3 ) + 4 * 5", new BigDecimal( 23 ) );
+//		test( "( ( 0 ? 2 : 3 ) + 4 ) * 5", new BigDecimal( 35 ) );
+//		test( "1 ? 1 ? 2 : 3 : 4", new BigDecimal( 2 ) );
+//		test( "1 ? 0 ? 2 : 3 : 4", new BigDecimal( 3 ) );
+//		test( "0 ? 0 ? 2 : 3 : 4", new BigDecimal( 4 ) );
+//		test( "1 ? 2 : 1 ? 3 : 4", new BigDecimal( 2 ) );
+//		test( "( 1 ? 2 : 1 ) ? 3 : 4", new BigDecimal( 3 ) );
+//		test( "0 ? 2 : 1 ? 3 : 4", new BigDecimal( 3 ) );
+//		test( "0 ? 2 : 0 ? 3 : 4", new BigDecimal( 4 ) );
+//		test( "1 ? 2 : 3 + 4 ? 5 : 6", new BigDecimal( 2 ) );
+//		test( "( 1 ? 2 : 3 ) + 4 ? 5 : 6", new BigDecimal( 5 ) );
+//		test( "1 ? 2 : 3 + ( 4 ? 5 : 6 )", new BigDecimal( 2 ) );
+//		test( "( 1 ? 2 : 3 ) + ( 4 ? 5 : 6 )", new BigDecimal( 7 ) );
+//		test( "0 ? 2 : 3 + 4 ? 5 : 6", new BigDecimal( 5 ) );
+//		test( "0 ? 2 : 3 + ( 4 ? 5 : 6 )", new BigDecimal( 8 ) );
+//
+//		test( "1 + 1 == 2 ? 2 : 3", new BigDecimal( 2 ) );
+//		test( "!0 ? 2 : 3", new BigDecimal( 2 ) );
+//	}
+
 	@Test
 	static public void test4()
 	{
-		int val = 1;
-		Assert.assertEquals( val > 0 ? 2 : 3 + 1, 2 );
-		Assert.assertEquals( val + 1 > 0 ? 2 : 3 + 1, 2 );
-		Assert.assertEquals( val > 0 ? 2 : val > 0 ? 3 : 4, 2 );
-
-		testParseFail( "1 ? 2 ; 3 : 4" );
-		test( "1 ? 2 : 3 + 1", new BigDecimal( 2 ) );
-		test( "( 1 ? 2 : 3 ) + 1", new BigDecimal( 3 ) );
-		test( "1 + 1 ? 2 : 3 + 1", new BigDecimal( 2 ) );
-		test( "1 + ( 1 ? 2 : 3 ) + 1", new BigDecimal( 4 ) );
-		test( "1 + ( 1 ? 2 : 3 + 1 )", new BigDecimal( 3 ) );
-		test( "( 1 + 1 ? 2 : 3 ) + 1", new BigDecimal( 3 ) );
-		test( "0 ? 2 : 3 + 4 * 5", new BigDecimal( 23 ) );
-		test( "0 ? 2 : ( 3 + 4 ) * 5", new BigDecimal( 35 ) );
-		test( "( 0 ? 2 : 3 ) + 4 * 5", new BigDecimal( 23 ) );
-		test( "( ( 0 ? 2 : 3 ) + 4 ) * 5", new BigDecimal( 35 ) );
-		test( "1 ? 1 ? 2 : 3 : 4", new BigDecimal( 2 ) );
-		test( "1 ? 0 ? 2 : 3 : 4", new BigDecimal( 3 ) );
-		test( "0 ? 0 ? 2 : 3 : 4", new BigDecimal( 4 ) );
-		test( "1 ? 2 : 1 ? 3 : 4", new BigDecimal( 2 ) );
-		test( "( 1 ? 2 : 1 ) ? 3 : 4", new BigDecimal( 3 ) );
-		test( "0 ? 2 : 1 ? 3 : 4", new BigDecimal( 3 ) );
-		test( "0 ? 2 : 0 ? 3 : 4", new BigDecimal( 4 ) );
-		test( "1 ? 2 : 3 + 4 ? 5 : 6", new BigDecimal( 2 ) );
-		test( "( 1 ? 2 : 3 ) + 4 ? 5 : 6", new BigDecimal( 5 ) );
-		test( "1 ? 2 : 3 + ( 4 ? 5 : 6 )", new BigDecimal( 2 ) );
-		test( "( 1 ? 2 : 3 ) + ( 4 ? 5 : 6 )", new BigDecimal( 7 ) );
-		test( "0 ? 2 : 3 + 4 ? 5 : 6", new BigDecimal( 5 ) );
-		test( "0 ? 2 : 3 + ( 4 ? 5 : 6 )", new BigDecimal( 8 ) );
+		test( "if( 1; 2; 3 + 1 )", new BigDecimal( 2 ) );
+		test( "if( !\"\"; 2; 3 )", new BigDecimal( 2 ) );
+		test( "if( !\"x\"; 2; 3 )", new BigDecimal( 3 ) );
+		test( "if( 1; 2 )", new BigDecimal( 2 ) );
+		test( "if( 1;; 2 )", null );
+		test( "if( null; 2 )", null );
+		test( "if( null;; 2 )", new BigDecimal( 2 ) );
+		test( "1 || 2", new BigDecimal( 1 ) );
+		test( "0 || 2", new BigDecimal( 0 ) );
+		test( "null || 2", new BigDecimal( 2 ) );
+		test( "1 && 2", new BigDecimal( 2 ) );
+		test( "0 && 2", new BigDecimal( 2 ) );
+		test( "null && 2", null );
 	}
 
 	@Test
@@ -146,7 +167,6 @@ public class ScriptTests
 	{
 		test( "1 == 1", true );
 		test( "1 == 0", false );
-		test( "1 + 1 == 2 ? 2 : 3", new BigDecimal( 2 ) );
 
 		test( "true", true );
 		test( "false", false );
@@ -158,7 +178,6 @@ public class ScriptTests
 		test( "!false", true );
 		test( "!( 1 == 1 )", false );
 		test( "!( 1 == 0 )", true );
-		test( "!0 ? 2 : 3", new BigDecimal( 2 ) );
 		test( "!1 == false", true );
 
 		test( "false && false", new Boolean( false ) );

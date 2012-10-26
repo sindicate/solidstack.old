@@ -132,27 +132,12 @@ public class ScriptParser
 					return result;
 
 				case BINOP:
-					if( token.getValue().equals( "?" ) )
-					{
-						TYPE oldStop = swapStops( TYPE.COLON );
-						Expression middle = parse();
-						swapStops( oldStop );
-						Expression right = parseAtom();
-						Assert.notNull( right );
-						if( result instanceof Operation )
-							result = ( (Operation)result ).append( middle, right );
-						else
-							result = Operation.operation( result, middle, right );
-					}
+					Expression right = parseAtom();
+					Assert.notNull( right );
+					if( result instanceof Operation )
+						result = ( (Operation)result ).append( token.getValue(), right );
 					else
-					{
-						Expression right = parseAtom();
-						Assert.notNull( right );
-						if( result instanceof Operation )
-							result = ( (Operation)result ).append( token.getValue(), right );
-						else
-							result = Operation.operation( token.getValue(), result, right );
-					}
+						result = Operation.operation( token.getValue(), result, right );
 					break;
 
 				case PAREN_OPEN:

@@ -42,4 +42,17 @@ public class SuperString
 		}
 		return result.toString();
 	}
+
+	public boolean isEmpty()
+	{
+		Context context = new Context( this.context ); // Subcontext only stores new variables and local (deffed) variables.
+
+		for( Expression e : this.expressions )
+		{
+			Object object = Operation.evaluateAndUnwrap( e, context );
+			if( object.toString().length() != 0 )
+				return false;
+		}
+		return true;
+	}
 }

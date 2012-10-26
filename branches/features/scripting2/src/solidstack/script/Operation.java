@@ -29,7 +29,6 @@ import solidstack.script.operations.Apply;
 import solidstack.script.operations.Assign;
 import solidstack.script.operations.Equals;
 import solidstack.script.operations.GreaterThan;
-import solidstack.script.operations.IfExp;
 import solidstack.script.operations.Lambda;
 import solidstack.script.operations.LessThan;
 import solidstack.script.operations.Minus;
@@ -203,11 +202,6 @@ abstract public class Operation extends Expression
 		return null;
 	}
 
-	static Operation operation( Expression left, Expression middle, Expression right )
-	{
-		return new IfExp( left, middle, right );
-	}
-
 	static public Object unwrap( Object object )
 	{
 		if( object instanceof Value )
@@ -289,10 +283,13 @@ abstract public class Operation extends Expression
 
 	static protected boolean isTrue( Object left )
 	{
-		if( left instanceof BigDecimal )
-			return ( (BigDecimal)left ).compareTo( new BigDecimal( 0 ) ) != 0;
-		Assert.isInstanceOf( left, Boolean.class );
-		return (Boolean)left;
+		if( left instanceof Boolean )
+			return (Boolean)left;
+		if( left instanceof String )
+			return ( (String)left ).length() != 0;
+		if( left instanceof SuperString )
+			return !( (SuperString)left ).isEmpty();
+		return left != null && left != Null.INSTANCE; // TODO Why do we return Null.INSTANCE? I forgot.
 	}
 
 	protected Operation( String operation, Expression left, Expression right )
@@ -330,28 +327,6 @@ abstract public class Operation extends Expression
 			this.right = ( (Operation)this.right ).append( operation, expression );
 		else
 			this.right = Operation.operation( operation, this.right, expression );
-		return this;
-	}
-
-	// Append ?
-	public Expression append( Expression first, Expression second )
-	{
-		Assert.isTrue( precedences.containsKey( this.operation ), "Unexpected operation " + this.operation );
-
-		int prec = precedences.get( "?" );
-		Assert.isTrue( prec > 0 );
-
-		int myprec = precedences.get( this.operation );
-		Assert.isTrue( myprec > 0 );
-
-		if( myprec < prec )
-			return Operation.operation( this, first, second );
-
-		 // Only happens when appending ? to = or another ?
-		if( this.right instanceof Operation )
-			this.right = ( (Operation)this.right ).append( first, second );
-		else
-			this.right = Operation.operation( this.right, first, second );
 		return this;
 	}
 }

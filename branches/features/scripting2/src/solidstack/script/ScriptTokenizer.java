@@ -261,7 +261,6 @@ public class ScriptTokenizer
 					//$FALL-THROUGH$
 				case '*':
 				case '/':
-				case '?':
 				case '.':
 					return new Token( Token.TYPE.BINOP, String.valueOf( (char)ch ) );
 				case ':':
