@@ -7,7 +7,12 @@ public class ScriptTests2
 	@Test
 	static public void test1()
 	{
+		// TODO Without the ) you get no error from the parser
 		ScriptTests.test( '''
+			println( "Multiline strings
+work too" );
+			println( "Single line \\
+with escaped newline" );
 			i = 0;
 			while( i < 10;
 				println( i );
@@ -31,16 +36,17 @@ public class ScriptTests2
 		);
 	}
 
-	@Test
-	static public void test3()
-	{
-		ScriptTests.test( '''
-			foo = fun( f; f( "test" ) );
-			foo( fun( a;
-				a
-			));
-			''',
-			"test"
-		);
-	}
+//	@Test
+//	static public void test3()
+//	{
+//		ScriptTests.test( '''
+//			// This syntax runs to the end of the container
+//			foo = ( f -> f( "test" ) );
+//			foo( a -> a );
+//			foo( a, b -> a ); // This has 2 parameters: a and a closure
+//			foo( a -> a, b ); // This has 1 parameter: a closure returning a tuple
+//			''',
+//			"test"
+//		);
+//	}
 }

@@ -27,18 +27,33 @@ import solidstack.lang.Assert;
 import solidstack.script.ScriptTokenizer.Token;
 import solidstack.script.ScriptTokenizer.Token.TYPE;
 
+
+/**
+ * Parses a funny script.
+ *
+ * @author René de Bloois
+ *
+ */
 public class ScriptParser
 {
 	private ScriptTokenizer tokenizer;
 	private TYPE stop;
 	private TYPE stop2;
 
-	public ScriptParser( ScriptTokenizer t )
+
+	/**
+	 * @param tokenizer The script tokenizer.
+	 */
+	public ScriptParser( ScriptTokenizer tokenizer )
 	{
-		this.tokenizer = t;
+		this.tokenizer = tokenizer;
 	}
 
-	// Parses everything
+	/**
+	 * Parses everything.
+	 *
+	 * @return An expression.
+	 */
 	public Expressions parse()
 	{
 		Expressions results = new Expressions();
@@ -55,7 +70,7 @@ public class ScriptParser
 			last = parseTuple();
 			Assert.isTrue( last != null  );
 			Token lastToken = this.tokenizer.lastToken();
-			if( lastToken == Token.EOF || lastToken.getType() == this.stop ) // TODO stop2?
+			if( lastToken == Token.TOK_EOF || lastToken.getType() == this.stop ) // TODO stop2?
 			{
 				if( last != Tuple.EMPTY_TUPLE )
 					if( last.size() == 1 )
@@ -68,7 +83,7 @@ public class ScriptParser
 	}
 
 	// Parses one tuple (separated with ;)
-	public Tuple parseTuple()
+	private Tuple parseTuple()
 	{
 		Tuple results = new Tuple();
 		while( true )
@@ -76,7 +91,7 @@ public class ScriptParser
 			Expression result = parseExpression();
 			results.append( result ); // Can be null
 			Token last = this.tokenizer.lastToken();
-			if( last == Token.EOF || last == Token.SEMICOLON || last.getType() == this.stop )
+			if( last == Token.TOK_EOF || last == Token.TOK_SEMICOLON || last.getType() == this.stop )
 			{
 				if( results.size() > 1 )
 					return results;
@@ -85,12 +100,12 @@ public class ScriptParser
 					return Tuple.EMPTY_TUPLE;
 				return results;
 			}
-			Assert.isTrue( last == Token.COMMA, "Not expecting token " + last );
+			Assert.isTrue( last == Token.TOK_COMMA, "Not expecting token " + last );
 		}
 	}
 
 	// Parses on expression (separated with commas)
-	public Expression parseExpression()
+	private Expression parseExpression()
 	{
 		Expression result = parseAtom();
 		if( result == null ) // TODO What if no atom because of ,
@@ -99,210 +114,202 @@ public class ScriptParser
 		while( true )
 		{
 			Token token = this.tokenizer.get();
-			if( token.getType() == TYPE.EOF )
+			TYPE type = token.getType();
+			if( type == this.stop || type == this.stop2 )
 				return result;
-			if( token.getType() == TYPE.SEMICOLON )
-				return result;
-			if( token.getType() == TYPE.COMMA )
-				return result;
-			if( token.getType() == this.stop )
-				return result;
-			if( token.getType() == this.stop2 )
-				return result;
-			if( token.getType() == TYPE.BINOP )
+
+			switch( type )
 			{
-				if( token.getValue().equals( "?" ) )
-				{
+				case EOF:
+				case SEMICOLON:
+				case COMMA:
+					return result;
+
+				case BINOP:
+					if( token.getValue().equals( "?" ) )
+					{
+						TYPE old = this.stop;
+						this.stop = TYPE.COLON;
+						TYPE old2 = this.stop2;
+						this.stop2 = null;
+						Expression middle = parse();
+						this.stop = old;
+						this.stop2 = old2;
+						Expression right = parseAtom();
+						Assert.notNull( right );
+						if( result instanceof Operation )
+							result = ( (Operation)result ).append( middle, right );
+						else
+							result = Operation.operation( result, middle, right );
+					}
+					else
+					{
+						Expression right = parseAtom();
+						Assert.notNull( right );
+						if( result instanceof Operation )
+							result = ( (Operation)result ).append( token.getValue(), right );
+						else
+							result = Operation.operation( token.getValue(), result, right );
+					}
+					break;
+
+				case PAREN_OPEN:
 					TYPE old = this.stop;
-					this.stop = TYPE.COLON;
+					this.stop = TYPE.PAREN_CLOSE;
 					TYPE old2 = this.stop2;
 					this.stop2 = null;
-					Expression middle = parse();
+					Expression parameters = parse();
 					this.stop = old;
 					this.stop2 = old2;
-					Expression right = parseAtom();
-					Assert.notNull( right );
 					if( result instanceof Operation )
-						result = ( (Operation)result ).append( middle, right );
+						result = ( (Operation)result ).append( token.getValue(), parameters );
 					else
-						result = Operation.operation( result, middle, right );
-				}
-				else
-				{
-					Expression right = parseAtom();
-					Assert.notNull( right );
-					if( result instanceof Operation )
-						result = ( (Operation)result ).append( token.getValue(), right );
-					else
-						result = Operation.operation( token.getValue(), result, right );
-				}
-			}
-			else if( token.getType() == TYPE.PAREN_OPEN )
-			{
-				TYPE old = this.stop;
-				this.stop = TYPE.PAREN_CLOSE;
-				TYPE old2 = this.stop2;
-				this.stop2 = null;
-				Expression parameters = parse();
-				this.stop = old;
-				this.stop2 = old2;
-				if( result instanceof Operation )
-					result = ( (Operation)result ).append( token.getValue(), parameters );
-				else
-					result = Operation.operation( token.getValue(), result, parameters );
-			}
-			else if( token.getType() == TYPE.UNAOP )
-			{
-				if( result instanceof Operation )
-					result = ( (Operation)result ).append( "@" + token.getValue(), null );
-				else
-					result = Operation.operation( "@" + token.getValue(), result, null );
-			}
-			else
-				throw new SourceException( "Unexpected token '" + token + "'", this.tokenizer.getLocation() );
-		}
+						result = Operation.operation( token.getValue(), result, parameters );
+					break;
 
-//		Token token = this.tokenizer.get();
-//		Assert.isTrue( token.getType() == TYPE.EOF );
-//		return result;
+				case UNAOP:
+					if( result instanceof Operation )
+						result = ( (Operation)result ).append( "@" + token.getValue(), null );
+					else
+						result = Operation.operation( "@" + token.getValue(), result, null );
+					break;
+
+				default:
+					throw new SourceException( "Unexpected token '" + token + "'", this.tokenizer.getLocation() );
+			}
+		}
 	}
 
 	/**
 	 * @return The smallest expression possible.
 	 */
-	public Expression parseAtom()
+	private Expression parseAtom()
 	{
 		Token token = this.tokenizer.get();
-		if( token == Token.EOF )
+		TYPE type = token.getType();
+		if( type == this.stop ) // TODO stop2?
 			return null;
-		if( token.getType() == TYPE.SEMICOLON )
-			return null;
-		if( token.getType() == this.stop )
-			return null;
-		if( token.getType() == TYPE.NUMBER )
-			return new NumberConstant( new BigDecimal( token.getValue() ) );
-		if( token.getType() == TYPE.STRING )
-			return parseString( token.getValue() );
-		if( token == Token.PAREN_OPEN )
+		switch( type )
 		{
-			TYPE old = this.stop;
-			this.stop = TYPE.PAREN_CLOSE;
-			TYPE old2 = this.stop2;
-			this.stop2 = null;
-			Expression result = parse();
-			this.stop = old;
-			this.stop2 = old2;
-			Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.PAREN_CLOSE, "Not expecting token " + token );
-			return result;
-		}
-		if( token.getType() == TYPE.BINOP )
-		{
-			if( token.getValue().equals( "-" ) )
-			{
-				Expression result = parseAtom(); // TODO Pre-apply
-				return Operation.operation( "-@", null, result );
-			}
-			else if( token.getValue().equals( "+" ) )
-			{
-				return parseAtom(); // TODO Is this correct, just ignore the operation?
-			}
-		}
-		else if( token.getType() == TYPE.IDENTIFIER )
-		{
-			String name = token.getValue();
-			if( name.equals( "false" ) )
-				return new BooleanConstant( false );
-			if( name.equals( "true" ) )
-				return new BooleanConstant( true );
-			if( name.equals( "null" ) )
-				return new NullConstant();
-			if( token.getValue().equals( "if" ) )
-			{
-				token = this.tokenizer.get();
-				if( token.getType() != TYPE.PAREN_OPEN )
-					throw new SourceException( "Expected an opening parenthesis", this.tokenizer.getLocation() );
-				TYPE old = this.stop;
-				this.stop = TYPE.PAREN_CLOSE;
-				TYPE old2 = this.stop2;
-				this.stop2 = null;
-				Expressions expressions = parse();
-				this.stop2 = old2;
-				this.stop = old;
-				if( expressions.size() != 2 && expressions.size() != 3 )
-					throw new SourceException( "Expected 2 or 3 expressions", this.tokenizer.getLocation() );
-				return new If( expressions.get( 0 ), expressions.get( 1 ), expressions.size() == 3 ? expressions.get( 2 ) : null );
-			}
-			if( token.getValue().equals( "while" ) )
-			{
-				token = this.tokenizer.get();
-				if( token.getType() != TYPE.PAREN_OPEN )
-					throw new SourceException( "Expected an opening parenthesis", this.tokenizer.getLocation() );
-				TYPE old = this.stop;
-				this.stop = TYPE.PAREN_CLOSE;
-				TYPE old2 = this.stop2;
-				this.stop2 = null;
-				Expressions expressions = parse();
-				this.stop2 = old2;
-				this.stop = old;
-				if( expressions.size() < 2 ) // TODO And 1?
-					throw new SourceException( "Expected at least 2 expressions", this.tokenizer.getLocation() );
-				return new While( expressions.remove( 0 ), expressions );
-			}
-			if( token.getValue().equals( "fun" ) )
-			{
-				token = this.tokenizer.get();
-				if( token.getType() != TYPE.PAREN_OPEN )
-					throw new SourceException( "Expected an opening parenthesis", this.tokenizer.getLocation() );
-				TYPE old = this.stop;
-				this.stop = TYPE.PAREN_CLOSE;
-				TYPE old2 = this.stop2;
-				this.stop2 = null;
-				Expressions expressions = parse();
-				this.stop2 = old2;
-				this.stop = old;
-				if( expressions.size() < 2 ) // TODO And 1?
-					throw new SourceException( "Expected 2 or more expressions", this.tokenizer.getLocation() );
-				List<String> parameters = new ArrayList<String>();
-				Expression pars = expressions.remove( 0 );
-				if( pars instanceof Tuple )
+			case EOF:
+			case SEMICOLON:
+				return null;
+
+			case NUMBER:
+				return new NumberConstant( new BigDecimal( token.getValue() ) );
+
+			case STRING:
+				return parseString( token.getValue() );
+
+			case PAREN_OPEN:
+				TYPE[] oldStops = swapStops( TYPE.PAREN_CLOSE );
+				Expression result = parse();
+				swapStops( oldStops );
+				Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.PAREN_CLOSE, "Not expecting token " + token );
+				return result;
+
+			case BINOP:
+				if( token.getValue().equals( "-" ) )
 				{
-					for( Expression par : ( (Tuple)pars ).getExpressions() )
+					result = parseAtom(); // TODO Pre-apply
+					return Operation.operation( "-@", null, result );
+				}
+				if( token.getValue().equals( "+" ) )
+					return parseAtom(); // TODO Is this correct, just ignore the operation?
+				throw new SourceException( "Unexpected token " + token, this.tokenizer.getLocation() );
+
+			case IDENTIFIER:
+				String name = token.getValue();
+				if( name.equals( "false" ) )
+					return new BooleanConstant( false );
+
+				if( name.equals( "true" ) )
+					return new BooleanConstant( true );
+
+				if( name.equals( "null" ) )
+					return new NullConstant();
+
+				if( token.getValue().equals( "if" ) )
+				{
+					token = this.tokenizer.get();
+					if( token.getType() != TYPE.PAREN_OPEN )
+						throw new SourceException( "Expected an opening parenthesis", this.tokenizer.getLocation() );
+					oldStops = swapStops( TYPE.PAREN_CLOSE );
+					Expressions expressions = parse();
+					swapStops( oldStops );
+					if( expressions.size() != 2 && expressions.size() != 3 )
+						throw new SourceException( "Expected 2 or 3 expressions", this.tokenizer.getLocation() );
+					return new If( expressions.get( 0 ), expressions.get( 1 ), expressions.size() == 3 ? expressions.get( 2 ) : null );
+				}
+
+				if( token.getValue().equals( "while" ) )
+				{
+					token = this.tokenizer.get();
+					if( token.getType() != TYPE.PAREN_OPEN )
+						throw new SourceException( "Expected an opening parenthesis", this.tokenizer.getLocation() );
+					oldStops = swapStops( TYPE.PAREN_CLOSE );
+					Expressions expressions = parse();
+					swapStops( oldStops );
+					if( expressions.size() < 2 ) // TODO And 1?
+						throw new SourceException( "Expected at least 2 expressions", this.tokenizer.getLocation() );
+					return new While( expressions.remove( 0 ), expressions );
+				}
+
+				if( token.getValue().equals( "fun" ) )
+				{
+					token = this.tokenizer.get();
+					if( token.getType() != TYPE.PAREN_OPEN )
+						throw new SourceException( "Expected an opening parenthesis", this.tokenizer.getLocation() );
+					oldStops = swapStops( TYPE.PAREN_CLOSE );
+					Expressions expressions = parse();
+					swapStops( oldStops );
+					if( expressions.size() < 2 ) // TODO And 1?
+						throw new SourceException( "Expected 2 or more expressions", this.tokenizer.getLocation() );
+					List<String> parameters = new ArrayList<String>();
+					Expression pars = expressions.remove( 0 );
+					if( pars instanceof Tuple )
 					{
-						if( !( par instanceof Identifier ) )
-							throw new SourceException( "Expected an identifier", this.tokenizer.getLocation() );
-						parameters.add( ( (Identifier)par ).getName() );
+						for( Expression par : ( (Tuple)pars ).getExpressions() )
+						{
+							if( !( par instanceof Identifier ) )
+								throw new SourceException( "Expected an identifier", this.tokenizer.getLocation() );
+							parameters.add( ( (Identifier)par ).getName() );
+						}
 					}
+					else if( pars != null )
+					{
+						if( !( pars instanceof Identifier ) )
+							throw new SourceException( "Expected an identifier", this.tokenizer.getLocation() );
+						parameters.add( ( (Identifier)pars ).getName() );
+					}
+					return new Function( parameters, expressions );
 				}
-				else if( pars != null )
-				{
-					if( !( pars instanceof Identifier ) )
-						throw new SourceException( "Expected an identifier", this.tokenizer.getLocation() );
-					parameters.add( ( (Identifier)pars ).getName() );
-				}
-				return new Function( parameters, expressions );
-			}
-			return new Identifier( token.getValue() );
+
+				return new Identifier( token.getValue() );
+
+			case UNAOP:
+				result = parseAtom();
+				return Operation.operation( token.getValue() + "@", null, result ); // TODO Pre-apply
+
+			default:
+				throw new SourceException( "Unexpected token " + token, this.tokenizer.getLocation() );
 		}
-		else if( token.getType() == TYPE.UNAOP )
-		{
-			Expression result = parseAtom();
-			return Operation.operation( token.getValue() + "@", null, result ); // TODO Pre-apply
-		}
-		Assert.fail( "Not expecting token " + token );
-		return null;
 	}
 
-	public Expression parseString( String s )
+	/**
+	 * Parses a super string.
+	 *
+	 * @param s The super string to parse.
+	 * @return An expression.
+	 */
+	private Expression parseString( String s )
 	{
 		SourceReader in = SourceReaders.forString( s, this.tokenizer.getLocation() ); // TODO This location is not correct
 		StringTokenizer t = new StringTokenizer( in );
 		ScriptTokenizer oldTokenizer = this.tokenizer;
 		this.tokenizer = t;
 
-		TYPE old = this.stop;
-		this.stop = TYPE.BRACE_CLOSE;
-		TYPE old2 = this.stop2;
-		this.stop2 = null;
+		TYPE[] oldStops = swapStops( TYPE.BRACE_CLOSE );
 
 		StringExpression result = new StringExpression();
 
@@ -318,8 +325,7 @@ public class ScriptParser
 		if( fragment.length() != 0 )
 			result.append( new StringConstant( fragment ) );
 
-		this.stop2 = old2;
-		this.stop = old;
+		swapStops( oldStops );
 
 		this.tokenizer = oldTokenizer;
 
@@ -328,100 +334,14 @@ public class ScriptParser
 		return result;
 	}
 
-//	public Expression parse( String stop, String stop2 )
-//	{
-//		Expressions results = new Expressions();
-//		while( true )
-//		{
-//			Expression result = parseExpression( stop, stop2 );
-//			if( result != null )
-//				results.append( result );
-//			Token last = this.tokenizer.lastToken();
-//			if( last == Token.EOF || last.getValue().equals( stop ) || last.getValue().equals( stop2 ) )
-//				return results.normalize();
-//		}
-//	}
-//
-//	public Expression parseExpression( String stop, String stop2 )
-//	{
-//		Expression result = parseOne( true, stop2 );
-//		if( result == null )
-//			return null;
-//
-//		while( true )
-//		{
-//			Token token = this.tokenizer.get();
-//			if( stop == null && stop2 == null )
-//			{
-//				if( token.getType() == TYPE.EOF )
-//					return result;
-//			}
-//			else if( token.eq( stop ) || token.eq( stop2 ) )
-//				return result;
-//			if( token.getType() == TYPE.SEMICOLON )
-//				return result;
-//			if( token.getType() == TYPE.PAREN_OPEN )
-//			{
-//				Assert.isTrue( result != null );
-//				Tuple parameters = new Tuple();
-//				do
-//				{
-//					Expression parameter = parse( ",", ")" );
-//					if( parameter != null )
-//						parameters.append( parameter );
-//				}
-//				while( this.tokenizer.lastToken().getType() == TYPE.COMMA );
-//				Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.PAREN_CLOSE ); // TODO Not really needed
-//				if( result instanceof Operation )
-//					result = ( (Operation)result ).append( token.getValue(), parameters );
-//				else
-//					result = Operation.operation( token.getValue(), result, parameters );
-//			}
-//			else if( token.getType() == TYPE.BINOP )
-//			{
-//				Assert.isTrue( result != null );
-//				if( token.getValue().equals( "?" ) )
-//				{
-//					Expression first = parse( ":", null );
-//					Expression second = parseOne( false, null );
-//					if( second == null )
-//						throw new SourceException( "Unexpected token '" + this.tokenizer.lastToken() + "'", this.tokenizer.getLocation() );
-//					if( result instanceof Operation )
-//						result = ( (Operation)result ).append( first, second );
-//					else
-//						result = Operation.operation( result, first, second );
-//				}
-//				else
-//				{
-//					Assert.isFalse( token.getValue().equals( ":" ) );
-//					Expression right = parseOne( false, null );
-//					if( right == null )
-//						throw new SourceException( "Unexpected token '" + this.tokenizer.lastToken() + "'", this.tokenizer.getLocation() );
-//					if( result instanceof Operation )
-//						result = ( (Operation)result ).append( token.getValue(), right );
-//					else
-//						result = Operation.operation( token.getValue(), result, right );
-//				}
-//			}
-//			else if( token.getType() == TYPE.UNAOP )
-//			{
-//				Assert.isTrue( result != null );
-//				if( result instanceof Operation )
-//					result = ( (Operation)result ).append( "@" + token.getValue(), null );
-//				else
-//					result = Operation.operation( "@" + token.getValue(), result, null );
-//			}
-//			else if( token.getType() == TYPE.DOT )
-//			{
-//				// TODO This is equal to the binary operation
-//				Expression right = parseOne( false, null );
-//				if( right == null )
-//					throw new SourceException( "Unexpected token '" + this.tokenizer.lastToken() + "'", this.tokenizer.getLocation() );
-//				if( result instanceof Operation )
-//					result = ( (Operation)result ).append( token.getValue(), right );
-//				else
-//					result = Operation.operation( token.getValue(), result, right );
-//			}
+	private TYPE[] swapStops( TYPE... stop )
+	{
+		TYPE[] result = new TYPE[] { this.stop, this.stop2 };
+		this.stop = stop[ 0 ];
+		this.stop2 = stop.length == 2 ? stop[ 1 ] : null;
+		return result;
+	}
+
 //			else if( token.getType() == TYPE.LAMBDA )
 //			{
 //				Assert.isTrue( result != null );
@@ -433,132 +353,4 @@ public class ScriptParser
 //				else
 //					result = Operation.operation( token.getValue(), result, right );
 //			}
-//			else
-//				throw new SourceException( "Unexpected token '" + token + "'", this.tokenizer.getLocation() );
-//		}
-//	}
-//
-//	public Expression parseOne( boolean start, String or )
-//	{
-//		Token token = this.tokenizer.get();
-//
-//		if( start )
-//		{
-//			while( token.getType() == TYPE.SEMICOLON )
-//				token = this.tokenizer.get();
-//			if( token == Token.EOF || token.eq( or ) )
-//				return null;
-//		}
-//
-//		if( token.getType() == TYPE.IDENTIFIER )
-//		{
-//			String name = token.getValue();
-//			if( name.equals( "false" ) )
-//				return new BooleanConstant( false );
-//			if( name.equals( "true" ) )
-//				return new BooleanConstant( true );
-//			if( name.equals( "null" ) )
-//				return new NullConstant();
-//			if( token.getValue().equals( "if" ) )
-//			{
-//				Expression result = parseOne( true, null );
-//				if( !( result instanceof Tuple ) )
-//					throw new SourceException( "Expected a parenthesis (", this.tokenizer.getLocation() );
-//				Expression left = parseOne( true, null );
-//				token = this.tokenizer.get();
-//				if( token.getType() != TYPE.IDENTIFIER || !token.getValue().equals( "else" ) )
-//				{
-//					this.tokenizer.push();
-//					return new If( result, left, null );
-//				}
-//				Expression right = parseOne( true, null );
-//				return new If( result, left, right );
-//			}
-//			if( token.getValue().equals( "while" ) )
-//			{
-//				Expression result = parseOne( false, null );
-//				if( !( result instanceof Tuple ) )
-//					throw new SourceException( "Expected a parenthesis (", this.tokenizer.getLocation() );
-//				Expression left = parseExpression( null, null );
-//				return new While( result, left );
-//			}
-//			if( token.getValue().equals( "function" ) )
-//			{
-//				token = this.tokenizer.get();
-//				if( token.getType() != TYPE.PAREN_OPEN )
-//					throw new SourceException( "Expected a parenthesis (", this.tokenizer.getLocation() );
-//				List<String> parameters = new ArrayList<String>();
-//				do
-//				{
-//					Expression parameter = parse( ",", ")" );
-//					if( parameter != null )
-//					{
-//						if( !( parameter instanceof Identifier ) )
-//							throw new SourceException( "Expected an identifier", this.tokenizer.getLocation() );
-//						parameters.add( ( (Identifier)parameter ).getName() );
-//					}
-//				}
-//				while( this.tokenizer.lastToken().getType() == TYPE.COMMA );
-//				Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.PAREN_CLOSE ); // TODO Not really needed
-//				Expression block = parseOne( true, null );
-//				return new Function( parameters, block );
-//			}
-//			return new Identifier( token.getValue() );
-//		}
-//		if( token.getType() == TYPE.NUMBER )
-//			return new NumberConstant( new BigDecimal( token.getValue() ) );
-//		if( token.getType() == TYPE.STRING )
-//			return new StringConstant( token.getValue() );
-//		if( token == Token.PAREN_OPEN )
-//		{
-//			Tuple tuple = new Tuple();
-//			do
-//			{
-//				Expression element = parse( ",", ")" );
-//				if( element != null )
-//					tuple.append( element );
-//			}
-//			while( this.tokenizer.lastToken().getType() == TYPE.COMMA );
-//			Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.PAREN_CLOSE ); // TODO Not really needed
-//			return tuple;
-//		}
-//		if( token.getType() == TYPE.BINOP )
-//			if( token.getValue().equals( "-" ) )
-//			{
-//				Expression result = parseOne( false, null );
-//				if( result instanceof NumberConstant )
-//					return ( (NumberConstant)result ).negate();
-//				return Operation.operation( "-@", result, null );
-//			}
-//			else if( token.getValue().equals( "+" ) )
-//			{
-//				return parseOne( false, null );
-//			}
-//		if( token.getType() == TYPE.UNAOP )
-//		{
-//			if( token.getValue().equals( "!" ) )
-//			{
-//				Expression result = parseOne( false, null );
-//				if( result instanceof BooleanConstant )
-//					return ( (BooleanConstant)result ).not();
-//				return Operation.operation( "!@", null, result );
-//			}
-//			Expression result = parseOne( false, null );
-//			return Operation.operation( token.getValue() + "@", null, result );
-//		}
-////		if( token.getType() == TYPE.EOF )
-////			return null;
-//		if( token.getType() == TYPE.BRACE_OPEN )
-//			return parseBlock();
-//		throw new SourceException( "Unexpected token '" + token + "'", this.tokenizer.getLocation() );
-//	}
-//
-//	public Expression parseBlock()
-//	{
-//		Expression result = parse( null, "}" );
-//		if( !( result instanceof Expressions ) )
-//			return new Expressions( result );
-//		return result;
-//
-//	}
 }
