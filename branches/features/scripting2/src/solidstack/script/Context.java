@@ -16,17 +16,14 @@
 
 package solidstack.script;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import solidstack.lang.Assert;
+import solidstack.script.ValueMap.Entry;
 
 public class Context
 {
 	private Context parent;
 
-	private List<Value> values = new ArrayList<Context.Value>();
+	private ValueMap<Value> values = new ValueMap<Value>();
 
 	public Context()
 	{
@@ -39,10 +36,7 @@ public class Context
 
 	Value findLocalValue( String name )
 	{
-		for( Value value : this.values )
-			if( value.name.equals( name ) )
-				return value;
-		return null;
+		return this.values.get( name );
 	}
 
 	private Value findValue( String name )
@@ -71,34 +65,21 @@ public class Context
 		return v.value;
 	}
 
-	private void removeValue( String name )
-	{
-		Iterator<Value> i = this.values.iterator();
-		while( i.hasNext() )
-		{
-			Value v = i.next();
-			if( v.name.equals( name ) )
-				i.remove(); // TODO return
-		}
-	}
-
 	public void def( String name, Object value )
 	{
-		removeValue( name );
-		this.values.add( new Variable( name, value ) );
+		this.values.put( name, new Variable( value ) );
 	}
 
 	public void val( String name, Object value )
 	{
-		removeValue( name );
-		this.values.add( new Value( name, value ) );
+		this.values.put( name, new Variable( value ) );
 	}
 
 	public void set( String name, Object value )
 	{
 		if( setIfExists( name, value ) )
 			return;
-		this.values.add( new Variable( name, value ) );
+		this.values.put( name, new Variable( value ) );
 	}
 
 	public boolean setIfExists( String name, Object value )
@@ -114,15 +95,13 @@ public class Context
 		throw new ScriptException( "Cannot assign to value '" + name  + "'" );
 	}
 
-	static public class Value
+	static public class Value extends Entry
 	{
-		String name;
 		Object value;
 
-		Value( String name, Object value )
+		Value( Object value )
 		{
 			Assert.notNull( value );
-			this.name = name;
 			this.value = value;
 		}
 
@@ -134,9 +113,9 @@ public class Context
 
 	static public class Variable extends Value
 	{
-		Variable( String name, Object value )
+		Variable( Object value )
 		{
-			super( name, value );
+			super( value );
 		}
 
 		public void set( Object value )
@@ -147,9 +126,12 @@ public class Context
 
 	public class Undefined extends Variable
 	{
+		private String name;
+
 		Undefined( String name )
 		{
-			super( name, Null.INSTANCE );
+			super( Null.INSTANCE );
+			this.name = name;
 		}
 
 		@Override
@@ -161,7 +143,7 @@ public class Context
 		@Override
 		public void set( Object value )
 		{
-			Context.this.values.add( new Variable( this.name, value ) );
+			Context.this.values.put( this.name, new Variable( value ) );
 		}
 	}
 }

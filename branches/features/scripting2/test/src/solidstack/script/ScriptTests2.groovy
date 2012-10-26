@@ -34,6 +34,8 @@ with escaped newline" );
 			''',
 			"total: 20 numbers"
 		);
+		// FIXME String addition with nulls gives a NPE
+		// FIXME The string with the while loop does not work when it is a superstring
 	}
 
 //	@Test
