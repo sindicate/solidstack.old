@@ -1,6 +1,7 @@
 /*--
- * Copyright 2012 René import solidstack.script.java.Java;
-e Apache License, Version 2.0 (the "License");
+ * Copyright 2012 René M. de Bloois
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
