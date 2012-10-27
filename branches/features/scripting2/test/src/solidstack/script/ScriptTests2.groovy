@@ -16,6 +16,7 @@
 
 package solidstack.script;
 
+import org.testng.Assert
 import org.testng.annotations.Test
 
 public class ScriptTests2
@@ -77,11 +78,19 @@ with escaped newline" );
 	@Test
 	static public void test4()
 	{
-		ScriptTests.eval( '''
-			f = fun(; throw("error") );
-			f();
-			'''
-		);
+		try
+		{
+			ScriptTests.eval( '''
+				f = fun(; throw("error") );
+				f();
+				'''
+			);
+			Assert.fail( "Expected an exception" );
+		}
+		catch( ThrowException e )
+		{
+
+		}
 		// assert( actual( o.f( 3 ) ) == expected( 12 ) ); // Will throw: Expected 12, got ${got}
 		// assert( x != null ); // Will throw: x must not be null
 		// assert( x ); // Will throw: x must not be false/null/empty, depending on what case is found

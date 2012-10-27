@@ -22,5 +22,18 @@ public class ThrowException extends RuntimeException
 
 	public ThrowException( Object object )
 	{
+		this.object = object;
+	}
+
+	@Override
+	public synchronized Throwable initCause( Throwable cause )
+	{
+		return null;
+	}
+
+	@Override
+	public String getMessage()
+	{
+		return this.object.toString();
 	}
 }
