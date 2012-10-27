@@ -63,10 +63,20 @@ public class ScriptTests
 
 	static public void test( String expression, Context context, Object expected )
 	{
+		Object result = eval( expression, context );
+		Assert.assertEquals( result, expected );
+	}
+
+	static public Object eval( String expression )
+	{
+		return eval( expression, null );
+	}
+
+	static public Object eval( String expression, Context context )
+	{
 		Script script = Script.compile( expression );
 //		String dump = new Dumper().dump( script );
-		Object result = script.execute( context );
-		Assert.assertEquals( result, expected );
+		return script.execute( context );
 	}
 
 	static public void testParseFail( String expression )
@@ -356,4 +366,7 @@ public class ScriptTests
 	// TODO Synchronization
 	// TODO Return, switch, break, continue
 	// TODO Threads & sleep, etc
+	// TODO Assert with lazy evaluation of its arguments
+	// TODO Optional? Lazy evaluation of all arguments
+	// TODO // Comments, /* comments, /** comments which can contain /* comments
 }

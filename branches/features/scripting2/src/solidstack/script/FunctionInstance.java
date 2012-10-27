@@ -46,7 +46,7 @@ public class FunctionInstance
 		// TODO If we keep the Link we get output parameters!
 		for( int i = 0; i < count; i++ )
 		{
-			Object value = Operation.unwrap( pars.get( i ) );
+			Object value = Operation.unwrap( pars.get( i ) ); // TODO Unwrap is also done in the caller
 			context.set( this.parameters.get( i ), value );
 		}
 		return this.block.evaluate( context );

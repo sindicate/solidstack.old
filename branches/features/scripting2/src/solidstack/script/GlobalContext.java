@@ -21,6 +21,7 @@ import solidstack.script.functions.Length;
 import solidstack.script.functions.Print;
 import solidstack.script.functions.Println;
 import solidstack.script.functions.Substr;
+import solidstack.script.functions.Throw;
 import solidstack.script.functions.Upper;
 
 
@@ -37,6 +38,7 @@ public class GlobalContext extends Context
 		val( "print", new Print() );
 		val( "println", new Println() );
 		val( "substr", new Substr() );
+		val( "throw", new Throw() );
 		val( "upper", new Upper() );
 	}
 }

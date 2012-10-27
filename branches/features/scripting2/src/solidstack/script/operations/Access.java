@@ -40,6 +40,8 @@ public class Access extends Operation
 		Object left = evaluateAndUnwrap( this.left, context );
 		Assert.isInstanceOf( Identifier.class, this.right );
 		String right = ( (Identifier)this.right ).getName();
+		if( left instanceof Context )
+			return ( (Context)left ).get( right );
 		return new ObjectAccess( left, right );
 	}
 }

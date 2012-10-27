@@ -72,7 +72,7 @@ public class Assign extends Operation
 		Assert.notNull( value );
 		if( value instanceof Value )
 			value = ( (Value)value ).get();
-		if( value instanceof BigDecimal || value instanceof String || value instanceof FunctionInstance || value instanceof SuperString )
+		if( value instanceof BigDecimal || value instanceof String || value instanceof FunctionInstance || value instanceof SuperString || value instanceof Context )
 		{
 			if( var instanceof Variable )
 				( (Variable)var ).set( value );

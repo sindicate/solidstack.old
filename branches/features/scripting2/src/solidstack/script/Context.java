@@ -27,10 +27,12 @@ public class Context
 
 	public Context()
 	{
+		def( "this", this );
 	}
 
 	public Context( Context parent )
 	{
+		this();
 		this.parent = parent;
 	}
 

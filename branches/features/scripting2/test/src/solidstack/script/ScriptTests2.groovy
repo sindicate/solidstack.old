@@ -54,6 +54,42 @@ with escaped newline" );
 		// FIXME The string with the while loop does not work when it is a superstring
 	}
 
+	@Test
+	static public void test3()
+	{
+		ScriptTests.eval( '''
+			o = (
+				a = 4;
+				f = fun( b; b * a );
+				this;
+			);
+			if( !( ( got = o.f( 3 ) ) == 12 ); println( "Expected 12, got ${got}" ) );
+			'''
+		);
+		// assert( actual( o.f( 3 ) ) == expected( 12 ) ); // Will throw: Expected 12, got ${got}
+		// assert( x != null ); // Will throw: x must not be null
+		// assert( x ); // Will throw: x must not be false/null/empty, depending on what case is found
+		// FIXME String addition with nulls gives a NPE
+		// FIXME The string with the while loop does not work when it is a superstring
+		// TODO assert with multiple tuples?
+	}
+
+	@Test
+	static public void test4()
+	{
+		ScriptTests.eval( '''
+			f = fun(; throw("error") );
+			f();
+			'''
+		);
+		// assert( actual( o.f( 3 ) ) == expected( 12 ) ); // Will throw: Expected 12, got ${got}
+		// assert( x != null ); // Will throw: x must not be null
+		// assert( x ); // Will throw: x must not be false/null/empty, depending on what case is found
+		// FIXME String addition with nulls gives a NPE
+		// FIXME The string with the while loop does not work when it is a superstring
+		// TODO assert with multiple tuples?
+	}
+
 //	@Test
 //	static public void test3()
 //	{

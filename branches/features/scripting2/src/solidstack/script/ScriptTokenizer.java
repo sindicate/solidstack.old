@@ -418,6 +418,9 @@ public class ScriptTokenizer
 		@Override
 		public String toString()
 		{
+			if( getType() == TYPE.STRING )
+				return "\"" + this.value + "\""; // TODO Or maybe just the double quote. Actually, we don't know what quote is used.
+			// TODO Maybe we should not parse the complete string as a token, especially with super strings
 			if( this.value != null )
 				return this.value.toString();
 			Assert.isTrue( this == TOK_EOF );
