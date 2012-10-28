@@ -45,8 +45,9 @@ import solidstack.script.operations.PreInc;
 
 abstract public class Operation extends Expression
 {
-	static protected final HashMap<String, Integer> precedences;
+	static private final HashMap<String, Integer> precedences;
 
+	// TODO Make private
 	protected String operation;
 	protected Expression left;
 	protected Expression middle;

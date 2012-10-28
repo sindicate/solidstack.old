@@ -36,7 +36,7 @@ public class PushbackReader
 	/**
 	 * The push back buffer;
 	 */
-	private StringBuilder buffer;
+	private StringBuilder buffer = new StringBuilder();
 
 	/**
 	 * The current line number.
@@ -55,7 +55,6 @@ public class PushbackReader
 	public PushbackReader( SourceReader reader )
 	{
 		this.reader = reader;
-		this.buffer = new StringBuilder();
 		this.lineNumber = reader.getLineNumber();
 	}
 
@@ -72,7 +71,10 @@ public class PushbackReader
 	 */
 	public SourceLocation getLocation()
 	{
-		return new SourceLocation( this.reader.getResource(), this.lineNumber );
+		SourceLocation result = this.reader.getLocation();
+		if( result.getLineNumber() != this.lineNumber )
+			throw new IllegalStateException( "There is a newline in the push back buffer" );
+		return result;
 	}
 
 	/**
@@ -85,6 +87,14 @@ public class PushbackReader
 		if( this.buffer.length() > 0 )
 			throw new IllegalStateException( "There are still characters in the push back buffer" );
 		return this.reader;
+	}
+
+	/**
+	 * @return The resource that is being read.
+	 */
+	public Resource getResource()
+	{
+		return this.reader.getResource();
 	}
 
 	/**
@@ -137,7 +147,7 @@ public class PushbackReader
 			if( ch == '\n' )
 				this.lineNumber--;
 			this.buffer.append( (char)ch );
-		}
+	}
 	}
 
 	/**

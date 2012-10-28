@@ -46,8 +46,6 @@ public class ScriptTokenizer
 	 */
 	private Token last;
 
-	private int lastLineNumber;
-
 	/**
 	 * The last token is pushed back.
 	 */
@@ -133,8 +131,7 @@ public class ScriptTokenizer
 			switch( ch )
 			{
 				case -1:
-					this.lastLineNumber = in.getLineNumber();
-					return Token.TOK_EOF;
+					return new Token( TYPE.EOF, in.getLocation() );
 
 				default:
 					break ws;
@@ -147,7 +144,7 @@ public class ScriptTokenizer
 			}
 		}
 
-		this.lastLineNumber = in.getLineNumber();
+		SourceLocation location = in.getLocation();
 		switch( ch )
 		{
 			// Identifier
@@ -171,7 +168,7 @@ public class ScriptTokenizer
 				}
 				in.push( ch );
 				// TODO Internalize identifier tokens
-				return new Token( Token.TYPE.IDENTIFIER, result.toString() );
+				return new Token( Token.TYPE.IDENTIFIER, location, result.toString() );
 
 			// String
 			case '"':
@@ -183,7 +180,7 @@ public class ScriptTokenizer
 						case -1:
 							throw new SourceException( "Missing \"", in.getLocation() );
 						case '"':
-							return new Token( TYPE.STRING, result.toString() );
+							return new Token( TYPE.STRING, location, result.toString() );
 						case '\\':
 							ch = in.read();
 							switch( ch )
@@ -232,7 +229,7 @@ public class ScriptTokenizer
 					{
 						in.push( ch );
 						in.push( '.' );
-						return new Token( TYPE.NUMBER, result.toString() );
+						return new Token( TYPE.NUMBER, location, result.toString() );
 					}
 					while( ch >= '0' && ch <= '9' )
 					{
@@ -258,14 +255,14 @@ public class ScriptTokenizer
 					}
 				}
 				in.push( ch );
-				return new Token( TYPE.NUMBER, result.toString() );
+				return new Token( TYPE.NUMBER, location, result.toString() );
 
 			// Operators
 			case '+':
 			case '-':
 				int ch2 = in.read();
 				if( ch2 == ch )
-					return new Token( Token.TYPE.UNAOP, String.valueOf( new char[] { (char)ch, (char)ch } ) );
+					return new Token( Token.TYPE.UNAOP, location, String.valueOf( new char[] { (char)ch, (char)ch } ) );
 //					if( ch == '-' && ch2 == '>' )
 //						return Token.TOK_LAMBDA;
 				in.push( ch2 );
@@ -273,46 +270,46 @@ public class ScriptTokenizer
 			case '*':
 			case '/':
 			case '.':
-				return new Token( Token.TYPE.BINOP, String.valueOf( (char)ch ) );
+				return new Token( Token.TYPE.BINOP, location, String.valueOf( (char)ch ) );
 			case ':':
-				return Token.TOK_COLON;
+				return new Token( TYPE.COLON, location, ":" );
 			case '!':
-				return new Token( Token.TYPE.UNAOP, "!" );
+				return new Token( Token.TYPE.UNAOP, location, "!" );
 			case '<':
 			case '>':
-				return new Token( Token.TYPE.BINOP, String.valueOf( (char)ch ) );
+				return new Token( Token.TYPE.BINOP, location, String.valueOf( (char)ch ) );
 			case '=':
 				ch = in.read();
 				if( ch == '=' )
-					return new Token( Token.TYPE.BINOP, "==" );
+					return new Token( Token.TYPE.BINOP, location, "==" );
 				in.push( ch );
-				return new Token( Token.TYPE.BINOP, "=" ); // TODO Predefine all operator tokens
+				return new Token( Token.TYPE.BINOP, location, "=" ); // TODO Predefine all operator tokens
 			case '&':
 				ch = in.read();
 				if( ch == '&' )
-					return new Token( Token.TYPE.BINOP, "&&" );
+					return new Token( Token.TYPE.BINOP, location, "&&" );
 				in.push( ch );
 				throw new SourceException( "Unexpected character '" + (char)ch + "'", in.getLocation() );
 			case '|':
 				ch = in.read();
 				if( ch == '|' )
-					return new Token( Token.TYPE.BINOP, "||" );
+					return new Token( Token.TYPE.BINOP, location, "||" );
 				in.push( ch );
 				throw new SourceException( "Unexpected character '" + (char)ch + "'", in.getLocation() );
 
 			// Others
 			case '(':
-				return Token.TOK_PAREN_OPEN;
+				return new Token( TYPE.PAREN_OPEN, location, "(" );
 			case ')':
-				return Token.TOK_PAREN_CLOSE;
+				return new Token( TYPE.PAREN_CLOSE, location, ")" );
 			case ',':
-				return Token.TOK_COMMA;
+				return new Token( TYPE.COMMA, location, "," );
 			case ';':
-				return Token.TOK_SEMICOLON;
+				return new Token( TYPE.SEMICOLON, location, ";" );
 			case '{':
-				return Token.TOK_BRACE_OPEN;
+				return new Token( TYPE.BRACE_OPEN, location, "{" );
 			case '}':
-				return Token.TOK_BRACE_CLOSE;
+				return new Token( TYPE.BRACE_CLOSE, location, "}" );
 
 			default:
 				throw new SourceException( "Unexpected character '" + (char)ch + "'", in.getLocation() );
@@ -320,38 +317,7 @@ public class ScriptTokenizer
 	}
 
 	/**
-	 * Returns the current line number.
-	 *
-	 * @return The current line number.
-	 */
-	public int getLineNumber()
-	{
-		return getIn().getLineNumber();
-	}
-
-	/**
-	 * Returns the current file location.
-	 *
-	 * @return The current file location.
-	 */
-	public SourceLocation getLocation()
-	{
-		return getIn().getLocation();
-	}
-
-	/**
-	 * Returns the underlying reader. But only if the back buffer is empty, otherwise an IllegalStateException is thrown.
-	 *
-	 * @return The underlying reader.
-	 */
-	public SourceReader getReader()
-	{
-		return getIn().getReader();
-	}
-
-
-	/**
-	 * A CSV token.
+	 * A token.
 	 *
 	 * @author René M. de Bloois
 	 */
@@ -362,18 +328,7 @@ public class ScriptTokenizer
 		 * Token types.
 		 */
 		@SuppressWarnings( "javadoc" )
-		static public enum TYPE { IDENTIFIER, NUMBER, STRING, BINOP, UNAOP, PAREN_OPEN, PAREN_CLOSE, BRACE_OPEN, BRACE_CLOSE, COMMA, SEMICOLON, COLON, /* LAMBDA, */ EOF }
-
-		@SuppressWarnings( "javadoc" )
-		static final protected Token TOK_PAREN_OPEN = new Token( TYPE.PAREN_OPEN, "(" ); @SuppressWarnings( "javadoc" )
-		static final protected Token TOK_PAREN_CLOSE = new Token( TYPE.PAREN_CLOSE, ")" ); @SuppressWarnings( "javadoc" )
-		static final protected Token TOK_BRACE_OPEN = new Token( TYPE.BRACE_OPEN, "{" ); @SuppressWarnings( "javadoc" )
-		static final protected Token TOK_BRACE_CLOSE = new Token( TYPE.BRACE_CLOSE, "}" ); @SuppressWarnings( "javadoc" )
-		static final protected Token TOK_COMMA = new Token( TYPE.COMMA, "," ); @SuppressWarnings( "javadoc" )
-		static final protected Token TOK_SEMICOLON = new Token( TYPE.SEMICOLON, ";" ); @SuppressWarnings( "javadoc" )
-		static final protected Token TOK_COLON = new Token( TYPE.COLON, ":" ); @SuppressWarnings( "javadoc" )
-//		static final protected Token TOK_LAMBDA = new Token( TYPE.LAMBDA, "->" ); @SuppressWarnings( "javadoc" )
-		static final protected Token TOK_EOF = new Token( TYPE.EOF );
+		static public enum TYPE { IDENTIFIER, NUMBER, STRING, BINOP, UNAOP, PAREN_OPEN, PAREN_CLOSE, BRACE_OPEN, BRACE_CLOSE, COMMA, SEMICOLON, COLON, EOF }
 
 		/**
 		 * The type of the token.
@@ -385,23 +340,26 @@ public class ScriptTokenizer
 		 */
 		private String value;
 
+		private SourceLocation location;
+
 		/**
 		 * Constructs a new token.
 		 *
 		 * @param type The type of the token.
 		 */
-		private Token( TYPE type )
+		private Token( TYPE type, SourceLocation location )
 		{
 			this.type = type;
+			this.location = location;
 		}
 
 		/**
 		 * @param type The type of the token.
 		 * @param value The value of the token.
 		 */
-		private Token( TYPE type, String value )
+		private Token( TYPE type, SourceLocation location, String value )
 		{
-			this.type = type;
+			this( type, location );
 			this.value = value;
 		}
 
@@ -425,6 +383,11 @@ public class ScriptTokenizer
 			return this.value;
 		}
 
+		public SourceLocation getLocation()
+		{
+			return this.location;
+		}
+
 		@Override
 		public String toString()
 		{
@@ -433,7 +396,7 @@ public class ScriptTokenizer
 			// TODO Maybe we should not parse the complete string as a token, especially with super strings
 			if( this.value != null )
 				return this.value.toString();
-			Assert.isTrue( this == TOK_EOF );
+			Assert.isTrue( this.type == TYPE.EOF );
 			return "EOF";
 		}
 

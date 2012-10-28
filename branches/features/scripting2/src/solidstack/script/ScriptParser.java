@@ -56,28 +56,28 @@ public class ScriptParser
 	public Expressions parse()
 	{
 		Expressions results = new Expressions();
-		Tuple last = null;
+		Tuple lastTuple = null;
 		while( true )
 		{
-			if( last != null )
-				if( last == Tuple.EMPTY_TUPLE )
+			if( lastTuple != null )
+				if( lastTuple == Tuple.EMPTY_TUPLE )
 					results.append( null );
-				else if( last.size() == 1 )
-					results.append( last.get( 0 ) );
+				else if( lastTuple.size() == 1 )
+					results.append( lastTuple.get( 0 ) );
 				else
-					results.append( last );
-			last = parseTuple();
-			Assert.isTrue( last != null  );
-			Token lastToken = this.tokenizer.lastToken();
-			if( lastToken == Token.TOK_EOF || lastToken.getType() == this.stop )
+					results.append( lastTuple );
+			lastTuple = parseTuple();
+			Assert.isTrue( lastTuple != null  );
+			Token last = this.tokenizer.lastToken();
+			if( last.getType() == TYPE.EOF || last.getType() == this.stop )
 			{
-				if( this.stop != null && lastToken == Token.TOK_EOF )
-					throw new SourceException( "Unexpected " + last + ", missing " + this.stop, this.tokenizer.getLocation() );
-				if( last != Tuple.EMPTY_TUPLE )
-					if( last.size() == 1 )
-						results.append( last.get( 0 ) );
+				if( this.stop != null && last.getType() == TYPE.EOF )
+					throw new SourceException( "Unexpected " + last + ", missing " + this.stop, last.getLocation() );
+				if( lastTuple != Tuple.EMPTY_TUPLE )
+					if( lastTuple.size() == 1 )
+						results.append( lastTuple.get( 0 ) );
 					else
-						results.append( last );
+						results.append( lastTuple );
 				return results;
 			}
 		}
@@ -92,10 +92,10 @@ public class ScriptParser
 			Expression result = parseExpression();
 			results.append( result ); // Can be null
 			Token last = this.tokenizer.lastToken();
-			if( last == Token.TOK_EOF || last == Token.TOK_SEMICOLON || last.getType() == this.stop )
+			if( last.getType() == TYPE.EOF || last.getType() == TYPE.SEMICOLON || last.getType() == this.stop )
 			{
-				if( this.stop != null && last == Token.TOK_EOF )
-					throw new SourceException( "Unexpected " + last + ", missing " + this.stop, this.tokenizer.getLocation() );
+				if( this.stop != null && last.getType() == TYPE.EOF )
+					throw new SourceException( "Unexpected " + last + ", missing " + this.stop, last.getLocation() );
 				if( results.size() > 1 )
 					return results;
 				result = results.get( 0 );
@@ -103,7 +103,7 @@ public class ScriptParser
 					return Tuple.EMPTY_TUPLE;
 				return results;
 			}
-			Assert.isTrue( last == Token.TOK_COMMA, "Not expecting token " + last );
+			Assert.isTrue( last.getType() == TYPE.COMMA, "Not expecting token " + last );
 		}
 	}
 
@@ -125,7 +125,7 @@ public class ScriptParser
 			{
 				case EOF:
 					if( this.stop != null )
-						throw new SourceException( "Unexpected " + token + ", missing " + this.stop, this.tokenizer.getLocation() );
+						throw new SourceException( "Unexpected " + token + ", missing " + this.stop, token.getLocation() );
 					//$FALL-THROUGH$
 				case SEMICOLON:
 				case COMMA:
@@ -158,7 +158,7 @@ public class ScriptParser
 					break;
 
 				default:
-					throw new SourceException( "Unexpected token '" + token + "'", this.tokenizer.getLocation() );
+					throw new SourceException( "Unexpected token '" + token + "'", token.getLocation() );
 			}
 		}
 	}
@@ -177,7 +177,7 @@ public class ScriptParser
 		{
 			case EOF:
 				if( this.stop != null )
-					throw new SourceException( "Unexpected " + token + ", missing " + this.stop, this.tokenizer.getLocation() );
+					throw new SourceException( "Unexpected " + token + ", missing " + this.stop, token.getLocation() );
 				//$FALL-THROUGH$
 			case SEMICOLON:
 				return null;
@@ -186,7 +186,7 @@ public class ScriptParser
 				return new NumberConstant( new BigDecimal( token.getValue() ) );
 
 			case STRING:
-				return parseString( token.getValue() );
+				return parseString( token );
 
 			case PAREN_OPEN:
 				TYPE oldStop = swapStops( TYPE.PAREN_CLOSE );
@@ -203,7 +203,7 @@ public class ScriptParser
 				}
 				if( token.getValue().equals( "+" ) )
 					return parseAtom(); // TODO Is this correct, just ignore the operation?
-				throw new SourceException( "Unexpected token " + token, this.tokenizer.getLocation() );
+				throw new SourceException( "Unexpected token " + token, token.getLocation() );
 
 			case IDENTIFIER:
 				String name = token.getValue();
@@ -220,12 +220,12 @@ public class ScriptParser
 				{
 					token = this.tokenizer.get();
 					if( token.getType() != TYPE.PAREN_OPEN )
-						throw new SourceException( "Expected an opening parenthesis", this.tokenizer.getLocation() );
+						throw new SourceException( "Expected an opening parenthesis", token.getLocation() );
 					oldStop = swapStops( TYPE.PAREN_CLOSE );
 					Expressions expressions = parse();
 					swapStops( oldStop );
 					if( expressions.size() != 2 && expressions.size() != 3 )
-						throw new SourceException( "Expected 2 or 3 expressions", this.tokenizer.getLocation() );
+						throw new SourceException( "Expected 2 or 3 expressions", token.getLocation() );
 					return new If( expressions.get( 0 ), expressions.get( 1 ), expressions.size() == 3 ? expressions.get( 2 ) : null );
 				}
 
@@ -233,12 +233,12 @@ public class ScriptParser
 				{
 					token = this.tokenizer.get();
 					if( token.getType() != TYPE.PAREN_OPEN )
-						throw new SourceException( "Expected an opening parenthesis", this.tokenizer.getLocation() );
+						throw new SourceException( "Expected an opening parenthesis", token.getLocation() );
 					oldStop = swapStops( TYPE.PAREN_CLOSE );
 					Expressions expressions = parse();
 					swapStops( oldStop );
 					if( expressions.size() < 2 ) // TODO And 1?
-						throw new SourceException( "Expected at least 2 expressions", this.tokenizer.getLocation() );
+						throw new SourceException( "Expected at least 2 expressions", token.getLocation() );
 					return new While( expressions.remove( 0 ), expressions );
 				}
 
@@ -246,12 +246,12 @@ public class ScriptParser
 				{
 					token = this.tokenizer.get();
 					if( token.getType() != TYPE.PAREN_OPEN )
-						throw new SourceException( "Expected an opening parenthesis", this.tokenizer.getLocation() );
+						throw new SourceException( "Expected an opening parenthesis", token.getLocation() );
 					oldStop = swapStops( TYPE.PAREN_CLOSE );
 					Expressions expressions = parse();
 					swapStops( oldStop );
 					if( expressions.size() < 2 ) // TODO And 1?
-						throw new SourceException( "Expected 2 or more expressions", this.tokenizer.getLocation() );
+						throw new SourceException( "Expected 2 or more expressions", token.getLocation() );
 					List<String> parameters = new ArrayList<String>();
 					Expression pars = expressions.remove( 0 );
 					if( pars instanceof Tuple )
@@ -259,14 +259,14 @@ public class ScriptParser
 						for( Expression par : ( (Tuple)pars ).getExpressions() )
 						{
 							if( !( par instanceof Identifier ) )
-								throw new SourceException( "Expected an identifier", this.tokenizer.getLocation() );
+								throw new SourceException( "Expected an identifier", token.getLocation() ); // FIXME Use the line number from the par
 							parameters.add( ( (Identifier)par ).getName() );
 						}
 					}
 					else if( pars != null )
 					{
 						if( !( pars instanceof Identifier ) )
-							throw new SourceException( "Expected an identifier", this.tokenizer.getLocation() );
+							throw new SourceException( "Expected an identifier", token.getLocation() ); // FIXME Use the line number from the par
 						parameters.add( ( (Identifier)pars ).getName() );
 					}
 					return new Function( parameters, expressions );
@@ -279,7 +279,7 @@ public class ScriptParser
 				return Operation.operation( token.getValue() + "@", null, result ); // TODO Pre-apply
 
 			default:
-				throw new SourceException( "Unexpected token " + token, this.tokenizer.getLocation() );
+				throw new SourceException( "Unexpected token " + token, token.getLocation() );
 		}
 	}
 
@@ -289,9 +289,9 @@ public class ScriptParser
 	 * @param s The super string to parse.
 	 * @return An expression.
 	 */
-	private Expression parseString( String s )
+	private Expression parseString( Token string )
 	{
-		SourceReader in = SourceReaders.forString( s, this.tokenizer.getLocation() ); // TODO This location is not correct
+		SourceReader in = SourceReaders.forString( string.getValue(), string.getLocation() );
 		StringTokenizer t = new StringTokenizer( in );
 		ScriptTokenizer oldTokenizer = this.tokenizer;
 		this.tokenizer = t;
@@ -327,16 +327,4 @@ public class ScriptParser
 		this.stop = stop;
 		return result;
 	}
-
-//			else if( token.getType() == TYPE.LAMBDA )
-//			{
-//				Assert.isTrue( result != null );
-//				Expression right = parseOne( false, null );
-//				if( right == null )
-//					throw new SourceException( "Unexpected token '" + this.tokenizer.lastToken() + "'", this.tokenizer.getLocation() );
-//				if( result instanceof Operation )
-//					result = ( (Operation)result ).append( token.getValue(), right );
-//				else
-//					result = Operation.operation( token.getValue(), result, right );
-//			}
 }
