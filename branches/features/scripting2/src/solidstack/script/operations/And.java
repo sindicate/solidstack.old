@@ -18,9 +18,9 @@ package solidstack.script.operations;
 
 
 
-import solidstack.script.Context;
 import solidstack.script.Expression;
 import solidstack.script.Operation;
+import solidstack.script.ThreadContext;
 
 
 public class And extends Operation
@@ -30,11 +30,11 @@ public class And extends Operation
 		super( name, left, right );
 	}
 
-	public Object evaluate( Context context )
+	public Object evaluate( ThreadContext thread )
 	{
-		Object left = evaluateAndUnwrap( this.left, context );
+		Object left = evaluateAndUnwrap( this.left, thread );
 		if( !Operation.isTrue( left ) )
 			return left;
-		return evaluateAndUnwrap( this.right, context );
+		return evaluateAndUnwrap( this.right, thread );
 	}
 }

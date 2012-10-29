@@ -32,11 +32,11 @@ public class While extends LocalizedExpression
 		this.left = left;
 	}
 
-	public Object evaluate( Context context )
+	public Object evaluate( ThreadContext thread )
 	{
 		Object result = null;
-		while( Operation.isTrue( Operation.evaluateAndUnwrap( this.condition, context ) ) )
-			result = this.left.evaluate( context );
+		while( Operation.isTrue( Operation.evaluateAndUnwrap( this.condition, thread ) ) )
+			result = this.left.evaluate( thread );
 		return result;
 	}
 }

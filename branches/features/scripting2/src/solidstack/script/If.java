@@ -36,17 +36,17 @@ public class If extends LocalizedExpression
 		this.right = right;
 	}
 
-	public Object evaluate( Context context )
+	public Object evaluate( ThreadContext thread )
 	{
-		if( Operation.isTrue( Operation.evaluateAndUnwrap( this.condition, context ) ) )
+		if( Operation.isTrue( Operation.evaluateAndUnwrap( this.condition, thread ) ) )
 		{
 			if( this.left != null )
-				return this.left.evaluate( context );
+				return this.left.evaluate( thread );
 		}
 		else
 		{
 			if( this.right != null )
-				return this.right.evaluate( context );
+				return this.right.evaluate( thread );
 		}
 		return null;
 	}

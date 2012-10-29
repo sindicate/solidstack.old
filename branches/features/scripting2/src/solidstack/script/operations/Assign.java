@@ -27,6 +27,7 @@ import solidstack.script.FunctionInstance;
 import solidstack.script.Operation;
 import solidstack.script.ScriptException;
 import solidstack.script.SuperString;
+import solidstack.script.ThreadContext;
 import solidstack.script.TupleValue;
 
 
@@ -37,10 +38,10 @@ public class Assign extends Operation
 		super( name, left, right );
 	}
 
-	public Object evaluate( Context context )
+	public Object evaluate( ThreadContext thread )
 	{
-		Object left = this.left.evaluate( context );
-		Object right = this.right.evaluate( context );
+		Object left = this.left.evaluate( thread );
+		Object right = this.right.evaluate( thread );
 
 		if( right instanceof TupleValue )
 		{

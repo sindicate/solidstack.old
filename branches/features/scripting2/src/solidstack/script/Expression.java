@@ -27,10 +27,10 @@ public interface Expression
 	/**
 	 * Evaluate the expression.
 	 *
-	 * @param context The context/scope.
+	 * @param thread The context/scope.
 	 * @return The result of evaluating this expression.
 	 */
-	Object evaluate( Context context );
+	Object evaluate( ThreadContext thread );
 
 	/**
 	 * @return The source location where this expression is encountered.

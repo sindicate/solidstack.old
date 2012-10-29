@@ -25,6 +25,7 @@ import solidstack.script.Expression;
 import solidstack.script.Identifier;
 import solidstack.script.ObjectAccess;
 import solidstack.script.Operation;
+import solidstack.script.ThreadContext;
 
 
 public class Access extends Operation
@@ -34,9 +35,9 @@ public class Access extends Operation
 		super( name, left, right );
 	}
 
-	public Object evaluate( Context context )
+	public Object evaluate( ThreadContext thread )
 	{
-		Object left = evaluateAndUnwrap( this.left, context );
+		Object left = evaluateAndUnwrap( this.left, thread );
 		Assert.isInstanceOf( Identifier.class, this.right );
 		String right = ( (Identifier)this.right ).getName();
 		if( left instanceof Context )

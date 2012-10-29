@@ -32,7 +32,7 @@ public class StringConstant extends LocalizedExpression
 		this.value = value;
 	}
 
-	public String evaluate( Context context )
+	public String evaluate( ThreadContext thread )
 	{
 		return this.value;
 	}

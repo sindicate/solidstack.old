@@ -20,11 +20,11 @@ import java.math.BigDecimal;
 
 import org.springframework.util.Assert;
 
-import solidstack.script.Context;
 import solidstack.script.Context.Variable;
 import solidstack.script.Expression;
 import solidstack.script.Operation;
 import solidstack.script.ScriptException;
+import solidstack.script.ThreadContext;
 
 
 public class PostDecr extends Operation
@@ -34,10 +34,10 @@ public class PostDecr extends Operation
 		super( name, left, right );
 	}
 
-	public Object evaluate( Context context )
+	public Object evaluate( ThreadContext thread )
 	{
 		Assert.isNull( this.right );
-		Object left = this.left.evaluate( context );
+		Object left = this.left.evaluate( thread );
 		if( !( left instanceof Variable ) )
 			throw new ScriptException( "Tried to apply " + this.operation + " to a immutable value " + left.getClass().getName() );
 		Variable value = (Variable)left;

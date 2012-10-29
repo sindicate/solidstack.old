@@ -33,8 +33,18 @@ public class Function extends LocalizedExpression
 		this.block = block;
 	}
 
-	public Object evaluate( Context context )
+	public Object evaluate( ThreadContext thread )
 	{
-		return new FunctionInstance( this.parameters, this.block, context );
+		return new FunctionInstance( this, thread.getContext() );
+	}
+
+	public List<String> getParameters()
+	{
+		return this.parameters;
+	}
+
+	public Expression getBlock()
+	{
+		return this.block;
 	}
 }

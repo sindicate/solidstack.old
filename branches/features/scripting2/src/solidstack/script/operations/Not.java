@@ -19,9 +19,9 @@ package solidstack.script.operations;
 import org.springframework.util.Assert;
 
 import solidstack.io.SourceLocation;
-import solidstack.script.Context;
 import solidstack.script.Expression;
 import solidstack.script.Operation;
+import solidstack.script.ThreadContext;
 
 
 public class Not extends Operation
@@ -35,10 +35,10 @@ public class Not extends Operation
 		this.location = location;
 	}
 
-	public Object evaluate( Context context )
+	public Object evaluate( ThreadContext thread )
 	{
 		Assert.isNull( this.left );
-		Object right = evaluateAndUnwrap( this.right, context );
+		Object right = evaluateAndUnwrap( this.right, thread );
 		return !Operation.isTrue( right );
 	}
 

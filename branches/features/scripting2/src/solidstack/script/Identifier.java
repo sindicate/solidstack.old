@@ -36,8 +36,8 @@ public class Identifier extends LocalizedExpression
 		return this.name;
 	}
 
-	public Object evaluate( Context context )
+	public Object evaluate( ThreadContext thread )
 	{
-		return context.getValue( this.name );
+		return thread.getContext().getValue( this.name );
 	}
 }

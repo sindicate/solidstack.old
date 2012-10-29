@@ -20,39 +20,27 @@ import java.util.List;
 
 public class SuperString
 {
-	private List<Expression> expressions;
-	private Context context;
+	private List<Object> values;
 
-	public SuperString( List<Expression> expressions, Context context )
+	public SuperString( List<Object> values )
 	{
-		this.expressions = expressions;
-		this.context = context; // FIXME Possibly need to clone the whole context hierarchy (flattened).
+		this.values = values;
 	}
 
 	@Override
 	public String toString()
 	{
-		Context context = new Context( this.context ); // Subcontext only stores new variables and local (deffed) variables.
-
 		StringBuilder result = new StringBuilder();
-		for( Expression e : this.expressions )
-		{
-			Object object = Operation.evaluateAndUnwrap( e, context );
-			result.append( object );
-		}
+		for( Object value : this.values )
+			result.append( value );
 		return result.toString();
 	}
 
 	public boolean isEmpty()
 	{
-		Context context = new Context( this.context ); // Subcontext only stores new variables and local (deffed) variables.
-
-		for( Expression e : this.expressions )
-		{
-			Object object = Operation.evaluateAndUnwrap( e, context );
-			if( object.toString().length() != 0 )
+		for( Object value : this.values )
+			if( value.toString().length() != 0 ) // TODO What about nulls?
 				return false;
-		}
 		return true;
 	}
 }

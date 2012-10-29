@@ -316,6 +316,8 @@ public class ScriptParser
 
 		this.tokenizer = oldTokenizer;
 
+		if( result.size() == 0 )
+			return new StringConstant( string.getLocation(), "" );
 		if( result.size() == 1 && result.get( 0 ) instanceof StringConstant )
 			return result.get( 0 );
 		return result;

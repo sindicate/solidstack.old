@@ -27,7 +27,7 @@ public class NullConstant extends LocalizedExpression
 		super( location );
 	}
 
-	public Object evaluate( Context context )
+	public Object evaluate( ThreadContext thread )
 	{
 		return Null.INSTANCE;
 	}

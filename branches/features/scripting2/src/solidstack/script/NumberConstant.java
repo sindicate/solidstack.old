@@ -32,7 +32,7 @@ public class NumberConstant extends LocalizedExpression
 		this.value = value;
 	}
 
-	public BigDecimal evaluate( Context context )
+	public BigDecimal evaluate( ThreadContext thread )
 	{
 		return this.value;
 	}

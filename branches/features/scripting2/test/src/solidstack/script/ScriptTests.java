@@ -343,10 +343,14 @@ public class ScriptTests
 	static public void test15()
 	{
 		test( "a = 1; \"a = ${a}\"", "a = 1" );
-		test( "a = 1; s = \"a = ${a}\"; a = 2; s", "a = 2" );
+		test( "a = 1; s = \"a = ${a}\"; a = 2; s", "a = 1" );
 		test( "a = 1; \"a = \\${a}\"", "a = ${a}" );
 		test( "\"${1}\"", "1" );
 //		test( "\"${}\"", "1" ); TODO
+		test( "\"\".getClass()", String.class );
+		test( "\"x\".getClass()", String.class );
+		test( "\"${1}\".getClass()", SuperString.class );
+		test( "\"x${1}x\".getClass()", SuperString.class );
 	}
 
 	// TODO Exceptions, catch & finally

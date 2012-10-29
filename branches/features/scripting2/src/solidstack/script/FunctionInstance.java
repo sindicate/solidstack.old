@@ -20,24 +20,23 @@ import java.util.List;
 
 public class FunctionInstance
 {
-	private List<String> parameters;
-	private Expression block;
+	private Function function;
 	private Context context;
 
 	public FunctionInstance()
 	{
 	}
 
-	public FunctionInstance( List<String> parameters, Expression block, Context context )
+	public FunctionInstance( Function function, Context context )
 	{
-		this.parameters = parameters;
-		this.block = block;
+		this.function = function;
 		this.context = context; // FIXME Possibly need to clone the whole context hierarchy (flattened).
 	}
 
-	public Object call( List<?> pars )
+	public Object call( List<?> pars, ThreadContext thread )
 	{
-		int count = this.parameters.size();
+		List<String> parameters = this.function.getParameters();
+		int count = parameters.size();
 		if( count != pars.size() )
 			throw new ScriptException( "Parameter count mismatch" );
 
@@ -47,8 +46,13 @@ public class FunctionInstance
 		for( int i = 0; i < count; i++ )
 		{
 			Object value = Operation.unwrap( pars.get( i ) ); // TODO Unwrap is also done in the caller
-			context.set( this.parameters.get( i ), value );
+			context.set( parameters.get( i ), value );
 		}
-		return this.block.evaluate( context );
+
+		context = thread.swapContext( context );
+		Object result = this.function.getBlock().evaluate( thread );
+		thread.swapContext( context );
+
+		return result;
 	}
 }

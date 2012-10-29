@@ -21,11 +21,11 @@ import java.math.BigDecimal;
 import org.springframework.util.Assert;
 
 import solidstack.io.SourceLocation;
-import solidstack.script.Context;
 import solidstack.script.Context.Variable;
 import solidstack.script.Expression;
 import solidstack.script.Operation;
 import solidstack.script.ScriptException;
+import solidstack.script.ThreadContext;
 
 
 public class PreInc extends Operation
@@ -39,10 +39,10 @@ public class PreInc extends Operation
 		this.location = location;
 	}
 
-	public Object evaluate( Context context )
+	public Object evaluate( ThreadContext thread )
 	{
 		Assert.isNull( this.left );
-		Object right = this.right.evaluate( context );
+		Object right = this.right.evaluate( thread );
 		if( !( right instanceof Variable ) )
 			throw new ScriptException( "Tried to apply " + this.operation + " to a immutable value " + right.getClass().getName() );
 		Variable value = (Variable)right;

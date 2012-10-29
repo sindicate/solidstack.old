@@ -37,12 +37,12 @@ public class Expressions implements Expression
 			append( expression );
 	}
 
-	public Object evaluate( Context context )
+	public Object evaluate( ThreadContext thread )
 	{
 		Object result = null;
 		for( Expression e : this.expressions )
 			if( e != null )
-				result = e.evaluate( context );
+				result = e.evaluate( thread );
 		return result;
 	}
 

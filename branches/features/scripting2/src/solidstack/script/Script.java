@@ -40,12 +40,15 @@ public class Script
 
 	public Object execute( Context context )
 	{
-		if( context == null )
-			context = new Context();
 		if( this.expression == null )
 			return null;
 
-		Object result = Operation.evaluateAndUnwrap( this.expression, context );
+		if( context == null )
+			context = new Context();
+
+		ThreadContext thread = new ThreadContext( context );
+
+		Object result = Operation.evaluateAndUnwrap( this.expression, thread );
 		if( result == Null.INSTANCE )
 			return null;
 		if( result instanceof SuperString )

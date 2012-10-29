@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
-import solidstack.script.Context;
 import solidstack.script.Context.Value;
 import solidstack.script.Expression;
 import solidstack.script.FunctionInstance;
@@ -29,6 +28,7 @@ import solidstack.script.Identifier;
 import solidstack.script.ObjectAccess;
 import solidstack.script.Operation;
 import solidstack.script.ScriptException;
+import solidstack.script.ThreadContext;
 import solidstack.script.TupleValue;
 
 public class Apply extends Operation
@@ -38,9 +38,9 @@ public class Apply extends Operation
 		super( name, left, right );
 	}
 
-	public Object evaluate( Context context )
+	public Object evaluate( ThreadContext thread )
 	{
-		Object left = evaluateAndUnwrap( this.left, context );
+		Object left = evaluateAndUnwrap( this.left, thread );
 		if( left == null )
 		{
 			if( this.left instanceof Identifier )
@@ -51,26 +51,33 @@ public class Apply extends Operation
 		if( left instanceof FunctionInstance )
 		{
 			FunctionInstance f = (FunctionInstance)left;
-			Object pars = this.right.evaluate( context );
+			Object pars = this.right.evaluate( thread );
+
+			List<Object> list;
 			if( pars instanceof TupleValue )
 			{
-				List<Object> list = ( (TupleValue)pars ).getValues();
+				list = ( (TupleValue)pars ).getValues();
 				Operation.unwrapList( list );
-				return f.call( list );
 			}
-			if( pars != null )
+			else if( pars != null )
 			{
 				pars = Operation.unwrap( pars );
-				List<Object> list = Arrays.asList( pars );
-				return f.call( list );
+				list = Arrays.asList( pars );
 			}
-			return f.call( Collections.emptyList() );
+			else
+				list = Collections.emptyList(); // TODO Can be a contant maybe
+
+			thread.pushStack( getLocation() );
+			Object result = f.call( list, thread );
+			thread.popStack();
+
+			return result;
 		}
 
 		if( left instanceof ObjectAccess )
 		{
 			ObjectAccess f = (ObjectAccess)left;
-			Object pars = this.right.evaluate( context );
+			Object pars = this.right.evaluate( thread );
 			if( pars instanceof TupleValue )
 			{
 				List<Object> list = ( (TupleValue)pars ).getValues();

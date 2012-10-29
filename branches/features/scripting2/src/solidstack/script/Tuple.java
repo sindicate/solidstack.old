@@ -30,11 +30,11 @@ public class Tuple implements Expression
 	private List<Expression> expressions = new ArrayList<Expression>();
 
 
-	public Object evaluate( Context context )
+	public Object evaluate( ThreadContext thread )
 	{
 		TupleValue values = new TupleValue();
 		for( Expression expression : this.expressions )
-			values.append( expression.evaluate( context ) );
+			values.append( expression.evaluate( thread ) );
 		return values;
 	}
 

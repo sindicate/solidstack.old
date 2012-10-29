@@ -16,13 +16,17 @@
 
 package solidstack.script;
 
+import solidstack.io.SourceLocation;
+
 public class ThrowException extends RuntimeException
 {
 	private Object object;
+	private SourceLocation[] stack;
 
-	public ThrowException( Object object )
+	public ThrowException( Object object, SourceLocation[] stack )
 	{
 		this.object = object;
+		this.stack = stack;
 	}
 
 	@Override
@@ -34,6 +38,6 @@ public class ThrowException extends RuntimeException
 	@Override
 	public String getMessage()
 	{
-		return this.object.toString();
+		return this.object.toString() + ", at " + this.stack[ 0 ];
 	}
 }

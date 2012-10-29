@@ -20,11 +20,12 @@ import java.util.List;
 
 import solidstack.lang.Assert;
 import solidstack.script.FunctionInstance;
+import solidstack.script.ThreadContext;
 
 public class Print extends FunctionInstance
 {
 	@Override
-	public Object call( List<?> parameters )
+	public Object call( List<?> parameters, ThreadContext thread )
 	{
 		Assert.isTrue( parameters.size() == 1 );
 		Object object = parameters.get( 0 );

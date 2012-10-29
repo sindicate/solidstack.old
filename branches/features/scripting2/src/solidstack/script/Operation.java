@@ -235,9 +235,9 @@ abstract public class Operation implements Expression
 		return objects;
 	}
 
-	static public Object evaluateAndUnwrap( Expression expression, Context context )
+	static public Object evaluateAndUnwrap( Expression expression, ThreadContext thread )
 	{
-		Object result = expression.evaluate( context );
+		Object result = expression.evaluate( thread );
 		if( result instanceof TupleValue )
 		{
 			TupleValue results = (TupleValue)result;

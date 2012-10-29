@@ -33,9 +33,12 @@ public class StringExpression extends LocalizedExpression
 		super( location );
 	}
 
-	public SuperString evaluate( Context context )
+	public SuperString evaluate( ThreadContext thread )
 	{
-		return new SuperString( this.expressions, context );
+		List<Object> values = new ArrayList<Object>();
+		for( Expression expression : this.expressions )
+			values.add( Operation.evaluateAndUnwrap( expression, thread ) );
+		return new SuperString( values );
 	}
 
 	public void append( Expression expression )

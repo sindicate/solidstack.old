@@ -18,9 +18,9 @@ package solidstack.script.operations;
 
 
 
-import solidstack.script.Context;
 import solidstack.script.Expression;
 import solidstack.script.Operation;
+import solidstack.script.ThreadContext;
 
 
 public class Minus extends Operation
@@ -30,10 +30,10 @@ public class Minus extends Operation
 		super( name, left, right );
 	}
 
-	public Object evaluate( Context context )
+	public Object evaluate( ThreadContext thread )
 	{
-		Object left = evaluateAndUnwrap( this.left, context );
-		Object right = evaluateAndUnwrap( this.right, context );
+		Object left = evaluateAndUnwrap( this.left, thread );
+		Object right = evaluateAndUnwrap( this.right, thread );
 		return Operation.minus( left, right );
 	}
 }

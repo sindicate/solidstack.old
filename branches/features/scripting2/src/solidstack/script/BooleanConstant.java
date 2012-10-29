@@ -30,7 +30,7 @@ public class BooleanConstant extends LocalizedExpression
 		this.value = value;
 	}
 
-	public Boolean evaluate( Context context )
+	public Boolean evaluate( ThreadContext thread )
 	{
 		return this.value;
 	}
