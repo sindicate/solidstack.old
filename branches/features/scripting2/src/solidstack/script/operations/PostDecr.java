@@ -34,7 +34,6 @@ public class PostDecr extends Operation
 		super( name, left, right );
 	}
 
-	@Override
 	public Object evaluate( Context context )
 	{
 		Assert.isNull( this.right );

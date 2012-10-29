@@ -16,13 +16,17 @@
 
 package solidstack.script;
 
+import solidstack.io.SourceLocation;
 
-public class Parenthesis extends Expression
+
+public class Parenthesis extends LocalizedExpression
 {
 	private Expression expression;
 
-	public Parenthesis( Expression expression )
+
+	public Parenthesis( SourceLocation location, Expression expression )
 	{
+		super( location );
 		this.expression = expression;
 	}
 
@@ -31,15 +35,8 @@ public class Parenthesis extends Expression
 		return this.expression;
 	}
 
-	@Override
 	public Object evaluate( Context context )
 	{
 		return this.expression.evaluate( context );
-	}
-
-	@Override
-	public Object assign( Context context, Object value )
-	{
-		return this.expression.assign( context, value );
 	}
 }

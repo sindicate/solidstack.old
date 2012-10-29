@@ -19,13 +19,20 @@ package solidstack.script;
 import java.util.ArrayList;
 import java.util.List;
 
+import solidstack.io.SourceLocation;
 
 
-public class StringExpression extends Expression
+
+public class StringExpression extends LocalizedExpression
 {
 	private List<Expression> expressions = new ArrayList<Expression>();
 
-	@Override
+
+	public StringExpression( SourceLocation location )
+	{
+		super( location );
+	}
+
 	public SuperString evaluate( Context context )
 	{
 		return new SuperString( this.expressions, context );

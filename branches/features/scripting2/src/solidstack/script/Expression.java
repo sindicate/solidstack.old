@@ -16,15 +16,24 @@
 
 package solidstack.script;
 
-import solidstack.lang.Assert;
+import solidstack.io.SourceLocation;
 
-abstract public class Expression
+
+/**
+ * An expression.
+ */
+public interface Expression
 {
-	abstract public Object evaluate( Context context );
+	/**
+	 * Evaluate the expression.
+	 *
+	 * @param context The context/scope.
+	 * @return The result of evaluating this expression.
+	 */
+	Object evaluate( Context context );
 
-	public Object assign( Context context, Object value )
-	{
-		Assert.fail( "Can't assign to " + getClass().getName() );
-		return value;
-	}
+	/**
+	 * @return The source location where this expression is encountered.
+	 */
+	SourceLocation getLocation();
 }

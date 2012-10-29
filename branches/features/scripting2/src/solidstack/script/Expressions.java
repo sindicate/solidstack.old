@@ -19,9 +19,13 @@ package solidstack.script;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Expressions extends Expression
+import solidstack.io.SourceLocation;
+import solidstack.lang.Assert;
+
+public class Expressions implements Expression
 {
 	private List<Expression> expressions = new ArrayList<Expression>();
+
 
 	public Expressions()
 	{
@@ -33,7 +37,6 @@ public class Expressions extends Expression
 			append( expression );
 	}
 
-	@Override
 	public Object evaluate( Context context )
 	{
 		Object result = null;
@@ -61,5 +64,11 @@ public class Expressions extends Expression
 	public Expression remove( int index )
 	{
 		return this.expressions.remove( 0 );
+	}
+
+	public SourceLocation getLocation()
+	{
+		Assert.isTrue( !this.expressions.isEmpty() );
+		return this.expressions.get( 0 ).getLocation();
 	}
 }

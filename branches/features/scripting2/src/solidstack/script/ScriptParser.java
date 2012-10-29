@@ -183,7 +183,7 @@ public class ScriptParser
 				return null;
 
 			case NUMBER:
-				return new NumberConstant( new BigDecimal( token.getValue() ) );
+				return new NumberConstant( token.getLocation(), new BigDecimal( token.getValue() ) );
 
 			case STRING:
 				return parseString( token );
@@ -199,7 +199,7 @@ public class ScriptParser
 				if( token.getValue().equals( "-" ) )
 				{
 					result = parseAtom(); // TODO Pre-apply
-					return Operation.operation( "-@", null, result );
+					return Operation.preOp( token.getLocation(), "-@", result );
 				}
 				if( token.getValue().equals( "+" ) )
 					return parseAtom(); // TODO Is this correct, just ignore the operation?
@@ -208,50 +208,50 @@ public class ScriptParser
 			case IDENTIFIER:
 				String name = token.getValue();
 				if( name.equals( "false" ) )
-					return new BooleanConstant( false );
+					return new BooleanConstant( token.getLocation(), false );
 
 				if( name.equals( "true" ) )
-					return new BooleanConstant( true );
+					return new BooleanConstant( token.getLocation(), true );
 
 				if( name.equals( "null" ) )
-					return new NullConstant();
+					return new NullConstant( token.getLocation() );
 
 				if( token.getValue().equals( "if" ) )
 				{
-					token = this.tokenizer.get();
-					if( token.getType() != TYPE.PAREN_OPEN )
-						throw new SourceException( "Expected an opening parenthesis", token.getLocation() );
+					Token token2 = this.tokenizer.get();
+					if( token2.getType() != TYPE.PAREN_OPEN )
+						throw new SourceException( "Expected an opening parenthesis", token2.getLocation() );
 					oldStop = swapStops( TYPE.PAREN_CLOSE );
 					Expressions expressions = parse();
 					swapStops( oldStop );
 					if( expressions.size() != 2 && expressions.size() != 3 )
-						throw new SourceException( "Expected 2 or 3 expressions", token.getLocation() );
-					return new If( expressions.get( 0 ), expressions.get( 1 ), expressions.size() == 3 ? expressions.get( 2 ) : null );
+						throw new SourceException( "Expected 2 or 3 expressions", token2.getLocation() );
+					return new If( token.getLocation(), expressions.get( 0 ), expressions.get( 1 ), expressions.size() == 3 ? expressions.get( 2 ) : null );
 				}
 
 				if( token.getValue().equals( "while" ) )
 				{
-					token = this.tokenizer.get();
-					if( token.getType() != TYPE.PAREN_OPEN )
-						throw new SourceException( "Expected an opening parenthesis", token.getLocation() );
+					Token token2 = this.tokenizer.get();
+					if( token2.getType() != TYPE.PAREN_OPEN )
+						throw new SourceException( "Expected an opening parenthesis", token2.getLocation() );
 					oldStop = swapStops( TYPE.PAREN_CLOSE );
 					Expressions expressions = parse();
 					swapStops( oldStop );
 					if( expressions.size() < 2 ) // TODO And 1?
-						throw new SourceException( "Expected at least 2 expressions", token.getLocation() );
-					return new While( expressions.remove( 0 ), expressions );
+						throw new SourceException( "Expected at least 2 expressions", token2.getLocation() );
+					return new While( token.getLocation(), expressions.remove( 0 ), expressions );
 				}
 
 				if( token.getValue().equals( "fun" ) )
 				{
-					token = this.tokenizer.get();
-					if( token.getType() != TYPE.PAREN_OPEN )
-						throw new SourceException( "Expected an opening parenthesis", token.getLocation() );
+					Token token2 = this.tokenizer.get();
+					if( token2.getType() != TYPE.PAREN_OPEN )
+						throw new SourceException( "Expected an opening parenthesis", token2.getLocation() );
 					oldStop = swapStops( TYPE.PAREN_CLOSE );
 					Expressions expressions = parse();
 					swapStops( oldStop );
 					if( expressions.size() < 2 ) // TODO And 1?
-						throw new SourceException( "Expected 2 or more expressions", token.getLocation() );
+						throw new SourceException( "Expected 2 or more expressions", token2.getLocation() );
 					List<String> parameters = new ArrayList<String>();
 					Expression pars = expressions.remove( 0 );
 					if( pars instanceof Tuple )
@@ -259,24 +259,24 @@ public class ScriptParser
 						for( Expression par : ( (Tuple)pars ).getExpressions() )
 						{
 							if( !( par instanceof Identifier ) )
-								throw new SourceException( "Expected an identifier", token.getLocation() ); // FIXME Use the line number from the par
+								throw new SourceException( "Expected an identifier", token2.getLocation() ); // FIXME Use the line number from the par
 							parameters.add( ( (Identifier)par ).getName() );
 						}
 					}
 					else if( pars != null )
 					{
 						if( !( pars instanceof Identifier ) )
-							throw new SourceException( "Expected an identifier", token.getLocation() ); // FIXME Use the line number from the par
+							throw new SourceException( "Expected an identifier", token2.getLocation() ); // FIXME Use the line number from the par
 						parameters.add( ( (Identifier)pars ).getName() );
 					}
-					return new Function( parameters, expressions );
+					return new Function( token.getLocation(), parameters, expressions );
 				}
 
-				return new Identifier( token.getValue() );
+				return new Identifier( token.getLocation(), token.getValue() );
 
 			case UNAOP:
 				result = parseAtom();
-				return Operation.operation( token.getValue() + "@", null, result ); // TODO Pre-apply
+				return Operation.preOp( token.getLocation(), token.getValue() + "@", result ); // TODO Pre-apply
 
 			default:
 				throw new SourceException( "Unexpected token " + token, token.getLocation() );
@@ -298,19 +298,19 @@ public class ScriptParser
 
 		TYPE oldStop = swapStops( TYPE.BRACE_CLOSE );
 
-		StringExpression result = new StringExpression();
+		StringExpression result = new StringExpression( string.getLocation() );
 
 		String fragment = t.getFragment();
 		while( t.foundExpression() )
 		{
 			if( fragment.length() != 0 )
-				result.append( new StringConstant( fragment ) );
+				result.append( new StringConstant( string.getLocation(), fragment ) );
 			Expressions expressions = parse();
 			result.append( expressions );
 			fragment = t.getFragment();
 		}
 		if( fragment.length() != 0 )
-			result.append( new StringConstant( fragment ) );
+			result.append( new StringConstant( string.getLocation(), fragment ) );
 
 		swapStops( oldStop );
 

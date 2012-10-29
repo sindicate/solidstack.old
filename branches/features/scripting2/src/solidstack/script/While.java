@@ -16,20 +16,22 @@
 
 package solidstack.script;
 
+import solidstack.io.SourceLocation;
 
 
-public class While extends Expression
+
+public class While extends LocalizedExpression
 {
 	private Expression condition;
 	private Expression left;
 
-	public While( Expression condition, Expression left )
+	public While( SourceLocation location, Expression condition, Expression left )
 	{
+		super( location );
 		this.condition = condition;
 		this.left = left;
 	}
 
-	@Override
 	public Object evaluate( Context context )
 	{
 		Object result = null;

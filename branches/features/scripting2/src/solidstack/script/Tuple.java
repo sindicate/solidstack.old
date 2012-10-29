@@ -19,18 +19,17 @@ package solidstack.script;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Tuple extends Expression
+import solidstack.io.SourceLocation;
+import solidstack.lang.Assert;
+
+
+public class Tuple implements Expression
 {
 	static public final Tuple EMPTY_TUPLE = new Tuple();
 
 	private List<Expression> expressions = new ArrayList<Expression>();
 
-	public Tuple()
-	{
-		// TODO Auto-generated constructor stub
-	}
 
-	@Override
 	public Object evaluate( Context context )
 	{
 		TupleValue values = new TupleValue();
@@ -57,5 +56,11 @@ public class Tuple extends Expression
 	public Expression get( int index )
 	{
 		return this.expressions.get( index );
+	}
+
+	public SourceLocation getLocation()
+	{
+		Assert.isTrue( !this.expressions.isEmpty() );
+		return this.expressions.get( 0 ).getLocation();
 	}
 }

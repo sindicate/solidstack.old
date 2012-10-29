@@ -19,35 +19,23 @@ package solidstack.script;
 import solidstack.io.SourceLocation;
 
 
-
-public class If extends LocalizedExpression
+/**
+ * An expression that knows its location.
+ */
+abstract public class LocalizedExpression implements Expression
 {
-	private Expression condition;
-	private Expression left;
-	private Expression right;
+	private SourceLocation location;
 
-
-	public If( SourceLocation location, Expression condition, Expression left, Expression right )
+	/**
+	 * @param location The location of this expression in the source.
+	 */
+	public LocalizedExpression( SourceLocation location )
 	{
-		super( location );
-
-		this.condition = condition;
-		this.left = left;
-		this.right = right;
+		this.location = location;
 	}
 
-	public Object evaluate( Context context )
+	public SourceLocation getLocation()
 	{
-		if( Operation.isTrue( Operation.evaluateAndUnwrap( this.condition, context ) ) )
-		{
-			if( this.left != null )
-				return this.left.evaluate( context );
-		}
-		else
-		{
-			if( this.right != null )
-				return this.right.evaluate( context );
-		}
-		return null;
+		return this.location;
 	}
 }

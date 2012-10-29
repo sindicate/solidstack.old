@@ -18,23 +18,22 @@ package solidstack.script;
 
 import java.math.BigDecimal;
 
-public class NumberConstant extends Expression
+import solidstack.io.SourceLocation;
+
+public class NumberConstant extends LocalizedExpression
 {
 	private BigDecimal value;
 
-	public NumberConstant( BigDecimal value )
+
+	public NumberConstant( SourceLocation location, BigDecimal value )
 	{
+		super( location );
+
 		this.value = value;
 	}
 
-	@Override
 	public BigDecimal evaluate( Context context )
 	{
 		return this.value;
-	}
-
-	public NumberConstant negate()
-	{
-		return new NumberConstant( this.value.negate() );
 	}
 }

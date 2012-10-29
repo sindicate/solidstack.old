@@ -16,13 +16,18 @@
 
 package solidstack.script;
 
+import solidstack.io.SourceLocation;
 
-public class Identifier extends Expression
+
+public class Identifier extends LocalizedExpression
 {
 	private String name;
 
-	public Identifier( String name )
+
+	public Identifier( SourceLocation location, String name )
 	{
+		super( location );
+
 		this.name = name;
 	}
 
@@ -31,16 +36,8 @@ public class Identifier extends Expression
 		return this.name;
 	}
 
-	@Override
 	public Object evaluate( Context context )
 	{
 		return context.getValue( this.name );
-	}
-
-	@Override
-	public Object assign( Context context, Object value )
-	{
-		context.set( this.name, value );
-		return value;
 	}
 }

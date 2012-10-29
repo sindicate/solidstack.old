@@ -18,18 +18,21 @@ package solidstack.script;
 
 import java.util.List;
 
-public class Function extends Expression
+import solidstack.io.SourceLocation;
+
+public class Function extends LocalizedExpression
 {
 	private List<String> parameters;
 	private Expression block;
 
-	public Function( List<String> parameters, Expression block )
+	public Function( SourceLocation location, List<String> parameters, Expression block )
 	{
+		super( location );
+
 		this.parameters = parameters;
 		this.block = block;
 	}
 
-	@Override
 	public Object evaluate( Context context )
 	{
 		return new FunctionInstance( this.parameters, this.block, context );

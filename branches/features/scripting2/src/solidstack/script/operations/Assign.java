@@ -37,7 +37,6 @@ public class Assign extends Operation
 		super( name, left, right );
 	}
 
-	@Override
 	public Object evaluate( Context context )
 	{
 		Object left = this.left.evaluate( context );

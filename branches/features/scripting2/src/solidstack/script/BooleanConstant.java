@@ -16,25 +16,22 @@
 
 package solidstack.script;
 
+import solidstack.io.SourceLocation;
 
 
-public class BooleanConstant extends Expression
+
+public class BooleanConstant extends LocalizedExpression
 {
 	private boolean value;
 
-	public BooleanConstant( boolean value )
+	public BooleanConstant( SourceLocation location, boolean value )
 	{
+		super( location );
 		this.value = value;
 	}
 
-	@Override
 	public Boolean evaluate( Context context )
 	{
 		return this.value;
-	}
-
-	public BooleanConstant not()
-	{
-		return new BooleanConstant( !this.value );
 	}
 }

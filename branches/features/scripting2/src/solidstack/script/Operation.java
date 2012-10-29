@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 
+import solidstack.io.SourceLocation;
 import solidstack.lang.Assert;
 import solidstack.script.Context.Value;
 import solidstack.script.operations.Access;
@@ -29,7 +30,6 @@ import solidstack.script.operations.Apply;
 import solidstack.script.operations.Assign;
 import solidstack.script.operations.Equals;
 import solidstack.script.operations.GreaterThan;
-import solidstack.script.operations.Lambda;
 import solidstack.script.operations.LessThan;
 import solidstack.script.operations.Minus;
 import solidstack.script.operations.Multiply;
@@ -43,7 +43,7 @@ import solidstack.script.operations.PreDecr;
 import solidstack.script.operations.PreInc;
 
 
-abstract public class Operation extends Expression
+abstract public class Operation implements Expression
 {
 	static private final HashMap<String, Integer> precedences;
 
@@ -135,19 +135,11 @@ abstract public class Operation extends Expression
 			case '+':
 				if( name.equals( "+" ) )
 					return new Plus( name, left, right );
-				if( name.equals( "++@" ) )
-					return new PreInc( name, left, right );
 				break;
 
 			case '-':
 				if( name.equals( "-" ) )
 					return new Minus( name, left, right );
-				if( name.equals( "-@" ) )
-					return new Negate( name, left, right );
-				if( name.equals( "--@" ) )
-					return new PreDecr( name, left, right );
-				if( name.equals( "->" ) )
-					return new Lambda( name, left, right );
 				break;
 
 			case '=':
@@ -155,11 +147,6 @@ abstract public class Operation extends Expression
 					return new Assign( name, left, right );
 				if( name.equals( "==" ) )
 					return new Equals( name, left, right );
-				break;
-
-			case '!':
-				if( name.equals( "!@" ) )
-					return new Not( name, left, right );
 				break;
 
 			case '<':
@@ -197,6 +184,32 @@ abstract public class Operation extends Expression
 			case '.':
 				if( name.equals( "." ) )
 					return new Access( name, left, right );
+				break;
+		}
+		Assert.fail( "Unknown operation " + name );
+		return null;
+	}
+
+	static Operation preOp( SourceLocation location, String name, Expression right )
+	{
+		// TODO The ifs are not all necessary, for example * is always just *
+		switch( name.charAt( 0 ) )
+		{
+			case '+':
+				if( name.equals( "++@" ) )
+					return new PreInc( location, name, right );
+				break;
+
+			case '-':
+				if( name.equals( "-@" ) )
+					return new Negate( location, name, right );
+				if( name.equals( "--@" ) )
+					return new PreDecr( location, name, right );
+				break;
+
+			case '!':
+				if( name.equals( "!@" ) )
+					return new Not( location, name, right );
 				break;
 		}
 		Assert.fail( "Unknown operation " + name );
@@ -300,14 +313,6 @@ abstract public class Operation extends Expression
 		this.right = right;
 	}
 
-	public Operation( Expression left, Expression middle, Expression right )
-	{
-		this.operation = "?";
-		this.left = left;
-		this.middle = middle;
-		this.right = right;
-	}
-
 	public Operation append( String operation, Expression expression )
 	{
 		Assert.isTrue( precedences.containsKey( operation ), "Unexpected operation " + operation );
@@ -329,5 +334,10 @@ abstract public class Operation extends Expression
 		else
 			this.right = Operation.operation( operation, this.right, expression );
 		return this;
+	}
+
+	public SourceLocation getLocation()
+	{
+		return this.left.getLocation();
 	}
 }

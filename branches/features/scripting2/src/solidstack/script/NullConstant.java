@@ -16,11 +16,17 @@
 
 package solidstack.script;
 
+import solidstack.io.SourceLocation;
 
 
-public class NullConstant extends Expression
+
+public class NullConstant extends LocalizedExpression
 {
-	@Override
+	public NullConstant( SourceLocation location )
+	{
+		super( location );
+	}
+
 	public Object evaluate( Context context )
 	{
 		return Null.INSTANCE;

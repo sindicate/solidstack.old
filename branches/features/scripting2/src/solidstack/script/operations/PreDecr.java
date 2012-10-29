@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 
 import org.springframework.util.Assert;
 
+import solidstack.io.SourceLocation;
 import solidstack.script.Context;
 import solidstack.script.Context.Variable;
 import solidstack.script.Expression;
@@ -29,12 +30,15 @@ import solidstack.script.ScriptException;
 
 public class PreDecr extends Operation
 {
-	public PreDecr( String name, Expression left, Expression right)
+	private SourceLocation location;
+
+	public PreDecr( SourceLocation location, String name, Expression right)
 	{
-		super( name, left, right );
+		super( name, null, right );
+
+		this.location = location;
 	}
 
-	@Override
 	public Object evaluate( Context context )
 	{
 		Assert.isNull( this.left );
@@ -45,5 +49,11 @@ public class PreDecr extends Operation
 		Object result = add( value.get(), new BigDecimal( -1 ) );
 		value.set( result );
 		return result;
+	}
+
+	@Override
+	public SourceLocation getLocation()
+	{
+		return this.location;
 	}
 }

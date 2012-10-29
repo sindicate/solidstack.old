@@ -38,7 +38,6 @@ public class Apply extends Operation
 		super( name, left, right );
 	}
 
-	@Override
 	public Object evaluate( Context context )
 	{
 		Object left = evaluateAndUnwrap( this.left, context );

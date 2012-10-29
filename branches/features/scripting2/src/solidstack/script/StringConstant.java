@@ -16,18 +16,22 @@
 
 package solidstack.script;
 
+import solidstack.io.SourceLocation;
 
 
-public class StringConstant extends Expression
+
+public class StringConstant extends LocalizedExpression
 {
 	private String value;
 
-	public StringConstant( String value )
+
+	public StringConstant( SourceLocation location, String value )
 	{
+		super( location );
+
 		this.value = value;
 	}
 
-	@Override
 	public String evaluate( Context context )
 	{
 		return this.value;
