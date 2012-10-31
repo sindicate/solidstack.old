@@ -274,6 +274,10 @@ public class ScriptTokenizer
 			case ':':
 				return new Token( TYPE.COLON, location, ":" );
 			case '!':
+				ch = in.read();
+				if( ch == '=' )
+					return new Token( Token.TYPE.BINOP, location, "!=" );
+				in.push( ch );
 				return new Token( Token.TYPE.UNAOP, location, "!" );
 			case '<':
 			case '>':

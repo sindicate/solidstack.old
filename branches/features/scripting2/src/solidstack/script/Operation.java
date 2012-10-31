@@ -35,6 +35,7 @@ import solidstack.script.operations.Minus;
 import solidstack.script.operations.Multiply;
 import solidstack.script.operations.Negate;
 import solidstack.script.operations.Not;
+import solidstack.script.operations.NotEquals;
 import solidstack.script.operations.Or;
 import solidstack.script.operations.Plus;
 import solidstack.script.operations.PostDecr;
@@ -147,6 +148,11 @@ abstract public class Operation implements Expression
 					return new Assign( name, left, right );
 				if( name.equals( "==" ) )
 					return new Equals( name, left, right );
+				break;
+
+			case '!':
+				if( name.equals( "!=" ) )
+					return new NotEquals( name, left, right );
 				break;
 
 			case '<':

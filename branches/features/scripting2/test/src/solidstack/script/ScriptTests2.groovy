@@ -25,6 +25,7 @@ public class ScriptTests2
 	static public void test1()
 	{
 		// TODO Without the ) you get no error from the parser
+		// TODO Find a way to parse a string with | as the left border marker.
 		ScriptTests.test( '''
 			println( "Multiline strings
 work too" );
@@ -64,15 +65,11 @@ with escaped newline" );
 				f = fun( b; b * a );
 				this;
 			);
-			if( !( ( got = o.f( 3 ) ) == 12 ); println( "Expected 12, got ${got}" ) );
+			if( ( got = o.f( 3 ) ) != 12;
+				throw( "Expected 12, got ${got}" )
+			);
 			'''
 		);
-		// assert( actual( o.f( 3 ) ) == expected( 12 ) ); // Will throw: Expected 12, got ${got}
-		// assert( x != null ); // Will throw: x must not be null
-		// assert( x ); // Will throw: x must not be false/null/empty, depending on what case is found
-		// FIXME String addition with nulls gives a NPE
-		// FIXME The string with the while loop does not work when it is a superstring
-		// TODO assert with multiple tuples?
 	}
 
 	@Test
@@ -96,8 +93,6 @@ with escaped newline" );
 		// assert( actual( o.f( 3 ) ) == expected( 12 ) ); // Will throw: Expected 12, got ${got}
 		// assert( x != null ); // Will throw: x must not be null
 		// assert( x ); // Will throw: x must not be false/null/empty, depending on what case is found
-		// FIXME String addition with nulls gives a NPE
-		// FIXME The string with the while loop does not work when it is a superstring
 		// TODO assert with multiple tuples?
 	}
 

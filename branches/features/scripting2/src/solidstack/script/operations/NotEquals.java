@@ -19,23 +19,19 @@ package solidstack.script.operations;
 
 
 import solidstack.script.Expression;
-import solidstack.script.Operation;
 import solidstack.script.ThreadContext;
 
 
-public class Equals extends Operation
+public class NotEquals extends Equals
 {
-	public Equals( String name, Expression left, Expression right)
+	public NotEquals( String name, Expression left, Expression right)
 	{
 		super( name, left, right );
 	}
 
+	@Override
 	public Boolean evaluate( ThreadContext thread )
 	{
-		Object left = evaluateAndUnwrap( this.left, thread );
-		Object right = evaluateAndUnwrap( this.right, thread );
-		if( left == null )
-			return right == null;
-		return left.equals( right );
+		return !super.evaluate( thread );
 	}
 }

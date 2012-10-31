@@ -373,4 +373,6 @@ public class ScriptTests
 	// TODO Assert with lazy evaluation of its arguments
 	// TODO Optional? Lazy evaluation of all arguments
 	// TODO // Comments, /* comments, /** comments which can contain /* comments
+	// TODO Compile time (post processing) transformation functions, for example: removeMargins()
+	// TODO Token interceptors that work on the token stream, or custom script parsers for eval
 }
