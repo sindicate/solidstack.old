@@ -27,10 +27,14 @@ public class ScriptTests2
 		// TODO Without the ) you get no error from the parser
 		// TODO Find a way to parse a string with | as the left border marker.
 		ScriptTests.test( '''
-			println( "Multiline strings
-work too" );
+			println( "\\
+				Multiline strings
+				work too" );
 			println( "Single line \\
 with escaped newline" );
+			println( stripMargin( "\\
+				|Multiline |strings
+				|with indentation stripped" ) );
 			i = 0;
 			while( i < 10;
 				println( i );
