@@ -52,14 +52,18 @@ public class Context extends AbstractContext
 	}
 
 	@Override
-	public void def( String name, Object value )
+	public Variable def( String name, Object value )
 	{
-		this.values.put( name, new Variable( value ) );
+		Variable result = new Variable( name, value );
+		this.values.put( result );
+		return result;
 	}
 
 	@Override
-	public void val( String name, Object value )
+	public Value val( String name, Object value )
 	{
-		this.values.put( name, new Variable( value ) );
+		Value result = new Value( name, value );
+		this.values.put( result );
+		return result;
 	}
 }

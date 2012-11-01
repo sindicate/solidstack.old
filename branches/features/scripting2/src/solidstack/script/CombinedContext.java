@@ -41,14 +41,14 @@ public class CombinedContext extends AbstractContext
 	}
 
 	@Override
-	public void def( String name, Object value )
+	public Variable def( String name, Object value )
 	{
-		this.context1.def( name, value );
+		return this.context1.def( name, value );
 	}
 
 	@Override
-	public void val( String name, Object value )
+	public Value val( String name, Object value )
 	{
-		this.context1.val( name, value );
+		return this.context1.val( name, value );
 	}
 }

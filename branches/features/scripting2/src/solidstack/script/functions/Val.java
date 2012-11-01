@@ -24,7 +24,7 @@ import solidstack.script.FunctionInstance;
 import solidstack.script.Null;
 import solidstack.script.ThreadContext;
 
-public class Def extends FunctionInstance
+public class Val extends FunctionInstance
 {
 	@Override
 	public Object call( List<Object> parameters, ThreadContext thread )
@@ -33,6 +33,6 @@ public class Def extends FunctionInstance
 		Object object = parameters.get( 0 );
 		Assert.isInstanceOf( object, Value.class );
 		String name = ( (Value)object ).getKey();
-		return thread.getContext().def( name, Null.INSTANCE );
+		return thread.getContext().val( name, Null.INSTANCE );
 	}
 }

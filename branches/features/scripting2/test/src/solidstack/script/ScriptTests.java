@@ -357,7 +357,10 @@ public class ScriptTests
 	static public void test16()
 	{
 		test( "fun( ; a = 1 )(); a", new BigDecimal( 1 ) ); // The function has no context of its own
-//		test( "def( a ) = 1;", new BigDecimal( 1 ) );
+		test( "def( a ) = 1;", new BigDecimal( 1 ) );
+		test( "a = 1; fun( ; def( a ) = 2 )(); a", new BigDecimal( 2 ) ); // The function has no context of its own
+//		test( "a = 1; fun( ; val( a ) = 2 )(); a", new BigDecimal( 2 ) ); // The function has no context of its own
+//		test( "a = 1; fun{ ; def( a ) = 2 }(); a", new BigDecimal( 1 ) ); // The function has its own context TODO
 	}
 
 	// TODO Exceptions, catch & finally

@@ -46,18 +46,18 @@ public class ParameterContext extends AbstractContext
 
 	public void defParameter( String name, Object value )
 	{
-		this.values.put( name, new Variable( value ) );
+		this.values.put( new Variable( name, value ) );
 	}
 
 	@Override
-	public void def( String name, Object value )
+	public Variable def( String name, Object value )
 	{
-		this.parent.def( name, value );
+		return this.parent.def( name, value );
 	}
 
 	@Override
-	public void val( String name, Object value )
+	public Value val( String name, Object value )
 	{
-		this.parent.val( name, value );
+		return this.parent.val( name, value );
 	}
 }

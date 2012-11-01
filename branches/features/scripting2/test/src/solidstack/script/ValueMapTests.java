@@ -19,7 +19,7 @@ public class ValueMapTests
 		{
 			String key = Integer.toString( i );
 			TestEntry entry = new TestEntry( key );
-			values.put( key, entry );
+			values.put( entry );
 		}
 		Assert.assertEquals( values.size(), COUNT );
 
@@ -32,7 +32,7 @@ public class ValueMapTests
 		{
 			String key = Integer.toString( i );
 			TestEntry entry = values.remove( key );
-			Assert.assertEquals( entry.key, key );
+			Assert.assertEquals( entry.getKey(), key );
 		}
 		Assert.assertEquals( values.size(), 0 );
 
@@ -40,25 +40,23 @@ public class ValueMapTests
 		{
 			String key = Integer.toString( i );
 			TestEntry entry = new TestEntry( key );
-			values.put( key, entry );
+			values.put( entry );
 		}
 		Assert.assertEquals( values.size(), COUNT );
 		for( int i = COUNT - 1; i >= 0; i-- )
 		{
 			String key = Integer.toString( i );
 			TestEntry entry = values.remove( key );
-			Assert.assertEquals( entry.key, key );
+			Assert.assertEquals( entry.getKey(), key );
 		}
 		Assert.assertEquals( values.size(), 0 );
 	}
 
 	static public class TestEntry extends Entry
 	{
-		public String key;
-
 		public TestEntry( String key )
 		{
-			this.key = key;
+			super( key );
 		}
 	}
 }

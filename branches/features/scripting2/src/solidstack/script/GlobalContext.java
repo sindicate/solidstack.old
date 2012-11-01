@@ -24,6 +24,7 @@ import solidstack.script.functions.Println;
 import solidstack.script.functions.Substr;
 import solidstack.script.functions.Throw;
 import solidstack.script.functions.Upper;
+import solidstack.script.functions.Val;
 import solidstack.script.functions.stripMargin;
 
 
@@ -44,5 +45,6 @@ public class GlobalContext extends Context
 		val( "substr", new Substr() );
 		val( "throw", new Throw() );
 		val( "upper", new Upper() );
+		val( "val", new Val() );
 	}
 }

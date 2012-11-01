@@ -47,7 +47,7 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<String, T>
 		Entry entry = this.entries[ index ];
 		while( entry != null ) // Loop till we find it
 		{
-			if( entry.___key.equals( key ) )
+			if( entry.key.equals( key ) )
 				return (T)entry;
 			entry = entry.___next;
 		}
@@ -59,8 +59,15 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<String, T>
 	{
 		if( key == null )
 			throw new NullPointerException( "key" );
+		if( !key.equals( value.getKey() ) )
+			throw new IllegalArgumentException( "keys don't match" );
 
-		value.___key = key;
+		return put( value );
+	}
+
+	public T put( T value )
+	{
+		String key = value.key;
 
 		int hash = key.hashCode();
 		int index = hash & this.entries.length - 1;
@@ -69,7 +76,7 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<String, T>
 		Entry last = null;
 		while( entry != null ) // Loop till we find it
 		{
-			if( entry.___key.equals( key ) )
+			if( entry.key.equals( key ) )
 			{
 				value.___next = entry.___next; // Replace link with the new entry
 				if( last == null )
@@ -110,7 +117,7 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<String, T>
 		Entry last = null;
 		while( entry != null ) // Loop till we find it
 		{
-			if( entry.___key.equals( key ) )
+			if( entry.key.equals( key ) )
 			{
 				this.size--;
 				if( last == null )
@@ -218,7 +225,7 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<String, T>
 			while( entry != null )
 			{
 				Entry next = entry.___next;
-				put( entry.___key, (T)entry );
+				put( (T)entry );
 				entry = next;
 			}
 		}
@@ -269,8 +276,17 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<String, T>
 	 */
 	static public class Entry
 	{
-		// Can't make this private, else it won't compile on Java 7. Added ___ to prevent name shadowing by subclasses.
-		Entry ___next;
-		String ___key;
+		Entry ___next; // Can't make this private, else it won't compile on Java 7. Added ___ to prevent name shadowing by subclasses.
+		private String key;
+
+		protected Entry( String key )
+		{
+			this.key = key;
+		}
+
+		public String getKey()
+		{
+			return this.key;
+		}
 	}
 }

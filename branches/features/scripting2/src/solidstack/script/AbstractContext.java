@@ -40,9 +40,9 @@ abstract public class AbstractContext
 		return v.value;
 	}
 
-	abstract public void def( String name, Object value );
+	abstract public Variable def( String name, Object value );
 
-	abstract public void val( String name, Object value );
+	abstract public Value val( String name, Object value );
 
 	public void set( String name, Object value )
 	{
@@ -64,12 +64,19 @@ abstract public class AbstractContext
 		throw new ScriptException( "Cannot assign to value '" + name  + "'" );
 	}
 
+//	public Undefined getUndefined( String name )
+//	{
+//		return new Undefined( name );
+//	}
+
 	static public class Value extends Entry
 	{
 		Object value;
 
-		Value( Object value )
+		Value( String name, Object value )
 		{
+			super( name );
+
 			Assert.notNull( value );
 			this.value = value;
 		}
@@ -82,9 +89,9 @@ abstract public class AbstractContext
 
 	static public class Variable extends Value
 	{
-		Variable( Object value )
+		Variable( String name, Object value )
 		{
-			super( value );
+			super( name, value );
 		}
 
 		public void set( Object value )
@@ -95,24 +102,21 @@ abstract public class AbstractContext
 
 	public class Undefined extends Variable
 	{
-		private String name;
-
 		Undefined( String name )
 		{
-			super( Null.INSTANCE );
-			this.name = name;
+			super( name, Null.INSTANCE );
 		}
 
 		@Override
 		public Object get()
 		{
-			throw new ScriptException( "'" + this.name + "' undefined" );
+			throw new ScriptException( "'" + getKey() + "' undefined" );
 		}
 
 		@Override
 		public void set( Object value )
 		{
-			def( this.name, value );
+			def( getKey(), value );
 		}
 	}
 }
