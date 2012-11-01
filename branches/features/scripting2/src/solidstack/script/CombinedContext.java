@@ -18,48 +18,37 @@ package solidstack.script;
 
 
 
-public class Context extends AbstractContext
+public class CombinedContext extends AbstractContext
 {
-	private Context parent;
+	private AbstractContext context1, context2;
 
-	private ValueMap<Value> values = new ValueMap<Value>();
-
-	public Context()
+	public CombinedContext( AbstractContext context1, AbstractContext context2 )
 	{
-		def( "this", this );
-	}
-
-	public Context( Context parent )
-	{
-		this();
-		this.parent = parent;
-	}
-
-	Value findLocalValue( String name )
-	{
-		return this.values.get( name );
+		this.context1 = context1;
+		this.context2 = context2;
 	}
 
 	@Override
 	public Value findValue( String name )
 	{
-		Value v = findLocalValue( name );
+		Value v = this.context1.findValue( name );
 		if( v != null )
 			return v;
-		if( this.parent != null )
-			return this.parent.findValue( name );
-		return GlobalContext.INSTANCE.findLocalValue( name );
+		v = this.context2.findValue( name );
+		if( v != null )
+			return v;
+		return null;
 	}
 
 	@Override
 	public void def( String name, Object value )
 	{
-		this.values.put( name, new Variable( value ) );
+		this.context1.def( name, value );
 	}
 
 	@Override
 	public void val( String name, Object value )
 	{
-		this.values.put( name, new Variable( value ) );
+		this.context1.val( name, value );
 	}
 }

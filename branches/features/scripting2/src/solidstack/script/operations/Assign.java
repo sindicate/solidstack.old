@@ -19,9 +19,9 @@ package solidstack.script.operations;
 import java.math.BigDecimal;
 
 import solidstack.lang.Assert;
-import solidstack.script.Context;
-import solidstack.script.Context.Value;
-import solidstack.script.Context.Variable;
+import solidstack.script.AbstractContext;
+import solidstack.script.AbstractContext.Value;
+import solidstack.script.AbstractContext.Variable;
 import solidstack.script.Expression;
 import solidstack.script.FunctionInstance;
 import solidstack.script.Operation;
@@ -72,7 +72,7 @@ public class Assign extends Operation
 		Assert.notNull( value );
 		if( value instanceof Value )
 			value = ( (Value)value ).get();
-		if( value instanceof BigDecimal || value instanceof String || value instanceof FunctionInstance || value instanceof SuperString || value instanceof Context )
+		if( value instanceof BigDecimal || value instanceof String || value instanceof FunctionInstance || value instanceof SuperString || value instanceof AbstractContext )
 		{
 			if( var instanceof Variable )
 				( (Variable)var ).set( value );

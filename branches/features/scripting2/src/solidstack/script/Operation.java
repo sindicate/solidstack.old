@@ -23,7 +23,7 @@ import java.util.ListIterator;
 
 import solidstack.io.SourceLocation;
 import solidstack.lang.Assert;
-import solidstack.script.Context.Value;
+import solidstack.script.AbstractContext.Value;
 import solidstack.script.operations.Access;
 import solidstack.script.operations.And;
 import solidstack.script.operations.Apply;
@@ -269,6 +269,11 @@ abstract public class Operation implements Expression
 			Assert.isInstanceOf( right, BigDecimal.class );
 			left = new BigDecimal( (Integer)left );
 			return ( (BigDecimal)left ).add( (BigDecimal)right );
+		}
+		if( left instanceof AbstractContext )
+		{
+			Assert.isInstanceOf( right, AbstractContext.class );
+			return new CombinedContext( (AbstractContext)left, (AbstractContext)right );
 		}
 		Assert.isInstanceOf( left, String.class, "Not expecting " + left.getClass() );
 		if( !( right instanceof String ) )

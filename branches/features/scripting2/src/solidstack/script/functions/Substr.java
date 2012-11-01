@@ -21,22 +21,28 @@ import java.util.List;
 
 import solidstack.lang.Assert;
 import solidstack.script.FunctionInstance;
+import solidstack.script.Operation;
 import solidstack.script.ThreadContext;
 
 public class Substr extends FunctionInstance
 {
 	@Override
-	public Object call( List<?> parameters, ThreadContext thread )
+	public Object call( List<Object> parameters, ThreadContext thread )
 	{
+		Assert.isTrue( parameters.size() == 2 || parameters.size() == 3 );
+		Operation.unwrapList( parameters );
+
 		Object object = parameters.get( 0 );
 		Object start = parameters.get( 1 );
 		Assert.isInstanceOf( object, String.class );
 		Assert.isInstanceOf( start, BigDecimal.class );
+
 		if( parameters.size() == 2 )
 			return ( (String)object ).substring( ( (BigDecimal)start ).intValue() );
-		Assert.isTrue( parameters.size() == 3 );
+
 		Object end = parameters.get( 2 );
 		Assert.isInstanceOf( end, BigDecimal.class );
+
 		return ( (String)object ).substring( ( (BigDecimal)start ).intValue(), ( (BigDecimal)end ).intValue() );
 	}
 }

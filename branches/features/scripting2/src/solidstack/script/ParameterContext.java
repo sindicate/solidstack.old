@@ -18,20 +18,15 @@ package solidstack.script;
 
 
 
-public class Context extends AbstractContext
+
+public class ParameterContext extends AbstractContext
 {
-	private Context parent;
+	private AbstractContext parent;
 
 	private ValueMap<Value> values = new ValueMap<Value>();
 
-	public Context()
+	public ParameterContext( AbstractContext parent )
 	{
-		def( "this", this );
-	}
-
-	public Context( Context parent )
-	{
-		this();
 		this.parent = parent;
 	}
 
@@ -46,20 +41,23 @@ public class Context extends AbstractContext
 		Value v = findLocalValue( name );
 		if( v != null )
 			return v;
-		if( this.parent != null )
-			return this.parent.findValue( name );
-		return GlobalContext.INSTANCE.findLocalValue( name );
+		return this.parent.findValue( name );
+	}
+
+	public void defParameter( String name, Object value )
+	{
+		this.values.put( name, new Variable( value ) );
 	}
 
 	@Override
 	public void def( String name, Object value )
 	{
-		this.values.put( name, new Variable( value ) );
+		this.parent.def( name, value );
 	}
 
 	@Override
 	public void val( String name, Object value )
 	{
-		this.values.put( name, new Variable( value ) );
+		this.parent.val( name, value );
 	}
 }

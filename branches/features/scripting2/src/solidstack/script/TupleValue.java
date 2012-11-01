@@ -19,7 +19,8 @@ package solidstack.script;
 import java.util.ArrayList;
 import java.util.List;
 
-import solidstack.script.Context.Value;
+import solidstack.script.AbstractContext.Value;
+
 
 public class TupleValue
 {

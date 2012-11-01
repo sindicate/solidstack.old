@@ -20,7 +20,7 @@ package solidstack.script.operations;
 
 import org.springframework.util.Assert;
 
-import solidstack.script.Context;
+import solidstack.script.AbstractContext;
 import solidstack.script.Expression;
 import solidstack.script.Identifier;
 import solidstack.script.ObjectAccess;
@@ -40,8 +40,8 @@ public class Access extends Operation
 		Object left = evaluateAndUnwrap( this.left, thread );
 		Assert.isInstanceOf( Identifier.class, this.right );
 		String right = ( (Identifier)this.right ).getName();
-		if( left instanceof Context )
-			return ( (Context)left ).get( right );
+		if( left instanceof AbstractContext )
+			return ( (AbstractContext)left ).get( right );
 		return new ObjectAccess( left, right );
 	}
 }

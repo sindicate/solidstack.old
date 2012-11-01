@@ -353,6 +353,13 @@ public class ScriptTests
 		test( "\"x${1}x\".getClass()", SuperString.class );
 	}
 
+	@Test
+	static public void test16()
+	{
+		test( "fun( ; a = 1 )(); a", new BigDecimal( 1 ) ); // The function has no context of its own
+//		test( "def( a ) = 1;", new BigDecimal( 1 ) );
+	}
+
 	// TODO Exceptions, catch & finally
 	// TODO MethodMissing
 	// TODO Default parameter values

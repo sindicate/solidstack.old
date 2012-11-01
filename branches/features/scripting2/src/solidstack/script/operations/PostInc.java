@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 
 import org.springframework.util.Assert;
 
-import solidstack.script.Context.Variable;
+import solidstack.script.AbstractContext.Variable;
 import solidstack.script.Expression;
 import solidstack.script.Operation;
 import solidstack.script.ScriptException;

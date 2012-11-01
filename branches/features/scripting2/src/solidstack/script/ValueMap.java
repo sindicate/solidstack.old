@@ -35,6 +35,7 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<String, T>
 	private int threshold = (int)( this.entries.length * LOAD_FACTOR );
 
 
+	// TODO Work with Identifier instead of String. That way we can pre-compute the hash.
 	public T get( Object key )
 	{
 		if( key == null )

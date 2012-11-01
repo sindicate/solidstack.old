@@ -19,20 +19,18 @@ package solidstack.script.functions;
 import java.util.List;
 
 import solidstack.lang.Assert;
+import solidstack.script.AbstractContext.Variable;
 import solidstack.script.FunctionInstance;
-import solidstack.script.Operation;
 import solidstack.script.ThreadContext;
 
-public class Print extends FunctionInstance
+public class Def extends FunctionInstance
 {
 	@Override
 	public Object call( List<Object> parameters, ThreadContext thread )
 	{
 		Assert.isTrue( parameters.size() == 1 );
-		Operation.unwrapList( parameters );
-
 		Object object = parameters.get( 0 );
-		System.out.print( object );
-		return object;
+		Assert.isInstanceOf( object, Variable.class );
+		throw new UnsupportedOperationException();
 	}
 }

@@ -20,14 +20,17 @@ import java.util.List;
 
 import solidstack.lang.Assert;
 import solidstack.script.FunctionInstance;
+import solidstack.script.Operation;
 import solidstack.script.ThreadContext;
 
 public class stripMargin extends FunctionInstance
 {
 	@Override
-	public Object call( List<?> parameters, ThreadContext thread )
+	public Object call( List<Object> parameters, ThreadContext thread )
 	{
 		Assert.isTrue( parameters.size() == 1 );
+		Operation.unwrapList( parameters );
+
 		Object object = parameters.get( 0 );
 		Assert.isInstanceOf( object, String.class );
 		return ( (String)object ).replaceAll( "(?m)^[ \\t]*\\|", "" );

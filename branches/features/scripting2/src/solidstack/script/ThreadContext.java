@@ -7,7 +7,7 @@ import solidstack.io.SourceLocation;
 
 public class ThreadContext
 {
-	private Context context;
+	private AbstractContext context;
 	private Deque<SourceLocation> stack = new ArrayDeque<SourceLocation>();
 
 
@@ -16,14 +16,14 @@ public class ThreadContext
 		this.context = context;
 	}
 
-	public Context getContext()
+	public AbstractContext getContext()
 	{
 		return this.context;
 	}
 
-	public Context swapContext( Context context )
+	public AbstractContext swapContext( AbstractContext context )
 	{
-		Context old = this.context;
+		AbstractContext old = this.context;
 		this.context = context;
 		return old;
 	}

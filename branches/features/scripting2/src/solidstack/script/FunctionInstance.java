@@ -21,38 +21,42 @@ import java.util.List;
 public class FunctionInstance
 {
 	private Function function;
-	private Context context;
+	private AbstractContext context;
 
 	public FunctionInstance()
 	{
 	}
 
-	public FunctionInstance( Function function, Context context )
+	public FunctionInstance( Function function, AbstractContext context )
 	{
 		this.function = function;
 		this.context = context; // FIXME Possibly need to clone the whole context hierarchy (flattened).
 	}
 
-	public Object call( List<?> pars, ThreadContext thread )
+	public Object call( List<Object> pars, ThreadContext thread )
 	{
 		List<String> parameters = this.function.getParameters();
 		int count = parameters.size();
 		if( count != pars.size() )
 			throw new ScriptException( "Parameter count mismatch" );
 
-		Context context = new Context( this.context ); // Subcontext only stores new variables and local (deffed) variables.
-
-		// TODO If we keep the Link we get output parameters!
-		for( int i = 0; i < count; i++ )
+		AbstractContext newContext;
+		if( count > 0 )
 		{
-			Object value = Operation.unwrap( pars.get( i ) ); // TODO Unwrap is also done in the caller
-			context.set( parameters.get( i ), value );
+			ParameterContext parContext = new ParameterContext( this.context );
+			for( int i = 0; i < count; i++ )
+			{
+				Object value = Operation.unwrap( pars.get( i ) ); // TODO If we keep the Link we get output parameters!
+				parContext.defParameter( parameters.get( i ), value );
+			}
+			newContext = parContext;
 		}
+		else
+			newContext = this.context;
 
-		context = thread.swapContext( context );
+		AbstractContext old = thread.swapContext( newContext );
 		Object result = this.function.getBlock().evaluate( thread );
-		thread.swapContext( context );
-
+		thread.swapContext( old );
 		return result;
 	}
 }

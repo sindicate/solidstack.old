@@ -20,15 +20,18 @@ import java.util.List;
 
 import solidstack.lang.Assert;
 import solidstack.script.FunctionInstance;
+import solidstack.script.Operation;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 
 public class Throw extends FunctionInstance
 {
 	@Override
-	public Object call( List<?> parameters, ThreadContext thread )
+	public Object call( List<Object> parameters, ThreadContext thread )
 	{
 		Assert.isTrue( parameters.size() == 1 );
+		Operation.unwrapList( parameters );
+
 		Object object = parameters.get( 0 );
 		throw new ThrowException( object, thread.cloneStack() );
 	}

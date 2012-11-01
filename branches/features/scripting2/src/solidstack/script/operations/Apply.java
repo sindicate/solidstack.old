@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
-import solidstack.script.Context.Value;
+import solidstack.script.AbstractContext.Value;
 import solidstack.script.Expression;
 import solidstack.script.FunctionInstance;
 import solidstack.script.Identifier;
@@ -30,6 +30,7 @@ import solidstack.script.Operation;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 import solidstack.script.TupleValue;
+
 
 public class Apply extends Operation
 {
@@ -57,15 +58,13 @@ public class Apply extends Operation
 			if( pars instanceof TupleValue )
 			{
 				list = ( (TupleValue)pars ).getValues();
-				Operation.unwrapList( list );
 			}
 			else if( pars != null )
 			{
-				pars = Operation.unwrap( pars );
 				list = Arrays.asList( pars );
 			}
 			else
-				list = Collections.emptyList(); // TODO Can be a contant maybe
+				list = Collections.emptyList(); // TODO Can be a constant maybe
 
 			thread.pushStack( getLocation() );
 			Object result = f.call( list, thread );
