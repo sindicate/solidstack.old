@@ -60,49 +60,47 @@ with escaped newline" );
 		// FIXME The string with the while loop does not work when it is a superstring
 	}
 
-//	@Test
-//	static public void test3()
-//	{
-//		ScriptTests.eval( '''
-//			o = {
-//				a = 4;
-//				f = fun( b; b * a );
-//				this;
-//			};
-//			if( ( got = o.f( 3 ) ) != 12;
-//				throw( "Expected 12, got ${got}" )
-//			);
-//			oo = {
-//				f = fun( b; b );
-//				this + o;
-//			};
-//			if( ( got = oo.f( 4 ) ) != 4;
-//				throw( "Expected 4, got ${got}" )
-//			);
-//			'''
-//		);
-//		ScriptTests.eval( '''
-//			c = fun( a;
-//				f = fun( b; b * a );
-//				this;
-//			);
-//			o = c( 5 );
-//			if( ( got = o.f( 3 ) ) != 15;
-//				throw( "Expected 15, got ${got}" )
-//			);
-//			cc = fun( ;
-//				f = fun( b; b );
-//				this + c( 6 );
-//			);
-//			oo = cc();
-//			if( ( got = oo.f( 3 ) ) != 3;
-//				throw( "Expected 3, got ${got}" )
-//			);
-//			f = o( fun( ; a ) );
-//			f();
-//			'''
-//		);
-//	}
+	@Test
+	static public void test3()
+	{
+		ScriptTests.eval( '''
+			o = {
+				a = 4;
+				f = fun( b; b * a );
+				this;
+			};
+			if( ( got = o.f( 3 ) ) != 12;
+				throw( "Expected 12, got ${got}" )
+			);
+			oo = {
+				f = fun( b; b );
+				this + o;
+			};
+			if( ( got = oo.f( 4 ) ) != 4;
+				throw( "Expected 4, got ${got}" )
+			);
+			'''
+		);
+		ScriptTests.eval( '''
+			c = fun{ a;
+				f = fun( b; b * a );
+				this;
+			};
+			o = c( 5 );
+			if( ( got = o.f( 3 ) ) != 15;
+				throw( "Expected 15, got ${got}" )
+			);
+			cc = fun{ ;
+				f = fun( b; b );
+				this + c( 6 );
+			};
+			oo = cc();
+			if( ( got = oo.f( 3 ) ) != 3;
+				throw( "Expected 3, got ${got}" )
+			);
+			'''
+		);
+	}
 
 	@Test
 	static public void test4()

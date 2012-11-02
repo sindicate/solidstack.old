@@ -356,11 +356,18 @@ public class ScriptTests
 	@Test
 	static public void test16()
 	{
-		test( "fun( ; a = 1 )(); a", new BigDecimal( 1 ) ); // The function has no context of its own
 		test( "def( a ) = 1;", new BigDecimal( 1 ) );
+
+		test( "fun( ; a = 1 )(); a", new BigDecimal( 1 ) ); // The function has no context of its own
+		test( "a = 1; fun( a; a++ )( a ); a;", new BigDecimal( 1 ) );
 		test( "a = 1; fun( ; def( a ) = 2 )(); a", new BigDecimal( 2 ) ); // The function has no context of its own
 //		test( "a = 1; fun( ; val( a ) = 2 )(); a", new BigDecimal( 2 ) ); // The function has no context of its own
-//		test( "a = 1; fun{ ; def( a ) = 2 }(); a", new BigDecimal( 1 ) ); // The function has its own context TODO
+		test( "a = 1; fun{ ; def( a ) = 2 }(); a", new BigDecimal( 1 ) ); // The function has its own context
+
+		test( "( a = 1 ); a", new BigDecimal( 1 ) ); // The block has no context of its own
+		test( "a = 1; ( def( a ) = 2 ); a", new BigDecimal( 2 ) ); // The block has no context of its own
+//		test( "a = 1; fun( ; val( a ) = 2 )(); a", new BigDecimal( 2 ) ); // The function has no context of its own
+		test( "a = 1; { def( a ) = 2 }; a", new BigDecimal( 1 ) ); // The block has its own context
 	}
 
 	// TODO Exceptions, catch & finally
@@ -385,4 +392,5 @@ public class ScriptTests
 	// TODO // Comments, /* comments, /** comments which can contain /* comments
 	// TODO Compile time (post processing) transformation functions, for example: removeMargins()
 	// TODO Token interceptors that work on the token stream, or custom script parsers for eval
+	// TODO Symbols :red
 }

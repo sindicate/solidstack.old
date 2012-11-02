@@ -195,6 +195,13 @@ public class ScriptParser
 				Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.PAREN_CLOSE, "Not expecting token " + token );
 				return result;
 
+			case BRACE_OPEN:
+				oldStop = swapStops( TYPE.BRACE_CLOSE );
+				result = parse();
+				swapStops( oldStop );
+				Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.BRACE_CLOSE, "Not expecting token " + token );
+				return new Block( token.getLocation(), result );
+
 			case BINOP:
 				if( token.getValue().equals( "-" ) )
 				{
@@ -245,9 +252,12 @@ public class ScriptParser
 				if( token.getValue().equals( "fun" ) )
 				{
 					Token token2 = this.tokenizer.get();
-					if( token2.getType() != TYPE.PAREN_OPEN )
-						throw new SourceException( "Expected an opening parenthesis", token2.getLocation() );
-					oldStop = swapStops( TYPE.PAREN_CLOSE );
+					if( token2.getType() != TYPE.PAREN_OPEN && token2.getType() != TYPE.BRACE_OPEN )
+						throw new SourceException( "Expected one of (, {", token2.getLocation() );
+					if( token2.getType() == TYPE.PAREN_OPEN )
+						oldStop = swapStops( TYPE.PAREN_CLOSE );
+					else
+						oldStop = swapStops( TYPE.BRACE_CLOSE );
 					Expressions expressions = parse();
 					swapStops( oldStop );
 					if( expressions.size() < 2 ) // TODO And 1?
@@ -269,7 +279,7 @@ public class ScriptParser
 							throw new SourceException( "Expected an identifier", token2.getLocation() ); // FIXME Use the line number from the par
 						parameters.add( ( (Identifier)pars ).getName() );
 					}
-					return new Function( token.getLocation(), parameters, expressions );
+					return new Function( token.getLocation(), parameters, expressions, token2.getType() == TYPE.BRACE_OPEN );
 				}
 
 				return new Identifier( token.getLocation(), token.getValue() );

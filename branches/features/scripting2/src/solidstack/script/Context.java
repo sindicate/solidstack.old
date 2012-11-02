@@ -20,7 +20,7 @@ package solidstack.script;
 
 public class Context extends AbstractContext
 {
-	private Context parent;
+	private AbstractContext parent;
 
 	private ValueMap<Value> values = new ValueMap<Value>();
 
@@ -29,7 +29,7 @@ public class Context extends AbstractContext
 		def( "this", this );
 	}
 
-	public Context( Context parent )
+	public Context( AbstractContext parent )
 	{
 		this();
 		this.parent = parent;

@@ -16,42 +16,31 @@
 
 package solidstack.script;
 
-import java.util.List;
-
 import solidstack.io.SourceLocation;
 
-public class Function extends LocalizedExpression
-{
-	private List<String> parameters;
-	private Expression block;
-	private boolean subContext;
 
-	public Function( SourceLocation location, List<String> parameters, Expression block, boolean subContext )
+public class Block extends LocalizedExpression // TODO Is this localized needed?
+{
+	private Expression expression;
+
+
+	public Block( SourceLocation location, Expression expression )
 	{
 		super( location );
+		this.expression = expression;
+	}
 
-		this.parameters = parameters;
-		this.block = block;
-		this.subContext = subContext;
+	public Expression getExpression()
+	{
+		return this.expression;
 	}
 
 	public Object evaluate( ThreadContext thread )
 	{
-		return new FunctionInstance( this, thread.getContext() );
-	}
-
-	public List<String> getParameters()
-	{
-		return this.parameters;
-	}
-
-	public Expression getBlock()
-	{
-		return this.block;
-	}
-
-	public boolean subContext()
-	{
-		return this.subContext;
+		Context context = new Context( thread.getContext() );
+		AbstractContext old = thread.swapContext( context );
+		Object result = this.expression.evaluate( thread );
+		thread.swapContext( old );
+		return result;
 	}
 }

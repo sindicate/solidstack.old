@@ -41,7 +41,17 @@ public class FunctionInstance
 			throw new ScriptException( "Parameter count mismatch" );
 
 		AbstractContext newContext;
-		if( count > 0 )
+		if( this.function.subContext() )
+		{
+			Context context = new Context( this.context );
+			for( int i = 0; i < count; i++ )
+			{
+				Object value = Operation.unwrap( pars.get( i ) ); // TODO If we keep the Link we get output parameters!
+				context.def( parameters.get( i ), value );
+			}
+			newContext = context;
+		}
+		else if( count > 0 )
 		{
 			ParameterContext parContext = new ParameterContext( this.context );
 			for( int i = 0; i < count; i++ )
