@@ -30,8 +30,21 @@ public class ObjectAccess
 		this.name = name;
 	}
 
+	public Object getObject()
+	{
+		return this.object;
+	}
+
+	public String getName()
+	{
+		return this.name;
+	}
+
 	public Object invoke( Object... args )
 	{
-		return Java.invoke( this.object, this.name, args );
+		Object object = this.object;
+		if( object instanceof Lazy )
+			object = ( (Lazy)object ).get();
+		return Java.invoke( object, this.name, args );
 	}
 }

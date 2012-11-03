@@ -17,6 +17,7 @@
 package solidstack.script;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -368,6 +369,14 @@ public class ScriptTests
 		test( "a = 1; ( def( a ) = 2 ); a", new BigDecimal( 2 ) ); // The block has no context of its own
 //		test( "a = 1; fun( ; val( a ) = 2 )(); a", new BigDecimal( 2 ) ); // The function has no context of its own
 		test( "a = 1; { def( a ) = 2 }; a", new BigDecimal( 1 ) ); // The block has its own context
+	}
+
+	@Test
+	static public void test17()
+	{
+		test( "class( java.util.ArrayList );", ArrayList.class );
+		test( "c = class( java.util.ArrayList ); c();", new ArrayList() );
+		test( "l = class( java.util.ArrayList )(); l.add( \"sinterklaas\" ); l.toArray();", new Object[] { "sinterklaas" } );
 	}
 
 	// TODO Exceptions, catch & finally

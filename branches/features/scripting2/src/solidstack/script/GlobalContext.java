@@ -17,6 +17,7 @@
 package solidstack.script;
 
 import solidstack.script.functions.Abs;
+import solidstack.script.functions.Class;
 import solidstack.script.functions.Def;
 import solidstack.script.functions.Length;
 import solidstack.script.functions.Print;
@@ -37,6 +38,7 @@ public class GlobalContext extends Context
 	public GlobalContext()
 	{
 		val( "abs", new Abs() );
+		val( "class", new Class() );
 		val( "def", new Def() );
 		val( "length", new Length() );
 		val( "print", new Print() );

@@ -30,6 +30,7 @@ import solidstack.script.Operation;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 import solidstack.script.TupleValue;
+import solidstack.script.java.Java;
 
 
 public class Apply extends Operation
@@ -56,13 +57,9 @@ public class Apply extends Operation
 
 			List<Object> list;
 			if( pars instanceof TupleValue )
-			{
 				list = ( (TupleValue)pars ).getValues();
-			}
 			else if( pars != null )
-			{
 				list = Arrays.asList( pars );
-			}
 			else
 				list = Collections.emptyList(); // TODO Can be a constant maybe
 
@@ -83,11 +80,22 @@ public class Apply extends Operation
 				return f.invoke( list.toArray() );
 			}
 			if( pars != null )
-			{
-				List<Object> list = Arrays.asList( pars );
-				return f.invoke( list.toArray() );
-			}
+				return f.invoke( new Object[] { pars } );
 			return f.invoke();
+		}
+
+		if( left instanceof Class )
+		{
+			Class cls = (Class)left;
+			Object pars = this.right.evaluate( thread );
+			if( pars instanceof TupleValue )
+			{
+				List<Object> list = ( (TupleValue)pars ).getValues();
+				return Java.construct( cls, list.toArray() );
+			}
+			if( pars != null )
+				return Java.construct( cls, new Object[] { pars } );
+			return Java.construct( cls );
 		}
 
 		throw new ScriptException( "Cannot apply parameters to a " + left.getClass().getName() );

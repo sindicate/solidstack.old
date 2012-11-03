@@ -16,7 +16,7 @@
 
 package solidstack.script.java;
 
-
+import solidstack.script.ScriptException;
 
 
 public class Java
@@ -28,5 +28,19 @@ public class Java
 		if( call == null )
 			throw new MissingMethodException( context );
 		return call.invoke();
+	}
+
+	static public Object construct( Class cls, Object... args )
+	{
+		if( args.length > 0 )
+			throw new UnsupportedOperationException();
+		try
+		{
+			return cls.newInstance();
+		}
+		catch( ReflectiveOperationException e )
+		{
+			throw new ScriptException( e );
+		}
 	}
 }

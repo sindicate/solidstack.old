@@ -16,8 +16,6 @@
 
 package solidstack.script.operations;
 
-
-
 import org.springframework.util.Assert;
 
 import solidstack.script.AbstractContext;
@@ -37,9 +35,10 @@ public class Access extends Operation
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = evaluateAndUnwrap( this.left, thread );
+		Object left = this.left.evaluate( thread );
 		Assert.isInstanceOf( Identifier.class, this.right );
 		String right = ( (Identifier)this.right ).getName();
+		// TODO I think these should be covered elsewhere
 		if( left instanceof AbstractContext )
 			return ( (AbstractContext)left ).get( right );
 		return new ObjectAccess( left, right );

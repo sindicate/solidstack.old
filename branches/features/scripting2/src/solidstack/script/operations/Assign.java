@@ -16,17 +16,12 @@
 
 package solidstack.script.operations;
 
-import java.math.BigDecimal;
-
 import solidstack.lang.Assert;
-import solidstack.script.AbstractContext;
 import solidstack.script.AbstractContext.Value;
 import solidstack.script.AbstractContext.Variable;
 import solidstack.script.Expression;
-import solidstack.script.FunctionInstance;
 import solidstack.script.Operation;
 import solidstack.script.ScriptException;
-import solidstack.script.SuperString;
 import solidstack.script.ThreadContext;
 import solidstack.script.TupleValue;
 
@@ -72,14 +67,9 @@ public class Assign extends Operation
 		Assert.notNull( value );
 		if( value instanceof Value )
 			value = ( (Value)value ).get();
-		if( value instanceof BigDecimal || value instanceof String || value instanceof FunctionInstance || value instanceof SuperString || value instanceof AbstractContext )
-		{
-			if( var instanceof Variable )
-				( (Variable)var ).set( value );
-			else
-				throw new ScriptException( "Tried to assign to a immutable value" );
-		}
+		if( var instanceof Variable )
+			( (Variable)var ).set( value );
 		else
-			Assert.fail( "Unexpected " + value.getClass() );
+			throw new ScriptException( "Tried to assign to a immutable value" );
 	}
 }
