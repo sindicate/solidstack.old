@@ -16,12 +16,26 @@
 
 package solidstack.script;
 
+import java.util.Map;
+
 import solidstack.lang.Assert;
 import solidstack.script.ValueMap.Entry;
 
 
 abstract public class AbstractContext
 {
+	private boolean strictUndefined = true;
+
+	public void setStrictUndefined( boolean strict )
+	{
+		this.strictUndefined = strict;
+	}
+
+	public boolean isStrictUndefined()
+	{
+		return this.strictUndefined;
+	}
+
 	abstract public Value findValue( String name );
 
 	public Value getValue( String name )
@@ -43,6 +57,12 @@ abstract public class AbstractContext
 	abstract public Variable def( String name, Object value );
 
 	abstract public Value val( String name, Object value );
+
+	public void def( Map<String, Object> values )
+	{
+		for( java.util.Map.Entry<String, Object> entry : values.entrySet() )
+			def( entry.getKey(), entry.getValue() );
+	}
 
 	public void set( String name, Object value )
 	{
@@ -110,7 +130,9 @@ abstract public class AbstractContext
 		@Override
 		public Object get()
 		{
-			throw new ScriptException( "'" + getKey() + "' undefined" );
+			if( AbstractContext.this.strictUndefined )
+				throw new ScriptException( "'" + getKey() + "' undefined" );
+			return null;
 		}
 
 		@Override

@@ -29,6 +29,7 @@ import solidstack.lang.Assert;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.EVENT;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
+import solidstack.template.funny.FunnyTemplateCompiler;
 import solidstack.template.groovy.GroovyTemplateCompiler;
 import solidstack.template.javascript.JavaScriptTemplateCompiler;
 
@@ -128,7 +129,14 @@ public class TemplateCompiler
 				else
 					throw new TemplateException( "Template has no \"language\" directive" );
 
-			if( lang.equals( "javascript" ) )
+			if( lang.equals( "funny" ) )
+			{
+				FunnyTemplateCompiler compiler = new FunnyTemplateCompiler();
+				compiler.generateScript( context );
+				Loggers.compiler.trace( "Generated FunnyScript:\n{}", context.getScript() );
+				compiler.compileScript( context );
+			}
+			else if( lang.equals( "javascript" ) )
 			{
 				JavaScriptTemplateCompiler compiler = new JavaScriptTemplateCompiler();
 				compiler.generateScript( context );
