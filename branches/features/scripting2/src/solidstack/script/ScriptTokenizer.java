@@ -124,199 +124,213 @@ public class ScriptTokenizer
 		StringBuilder result = clearBuffer();
 		PushbackReader in = getIn();
 
-		int ch;
-		ws: while( true )
+		while( true )
 		{
-			ch = in.read();
+			int ch;
+			ws: while( true )
+			{
+				ch = in.read();
+				switch( ch )
+				{
+					case -1:
+						return new Token( TYPE.EOF, in.getLocation() );
+
+					default:
+						break ws;
+
+					// Whitespace
+					case ' ':
+					case '\t':
+					case '\n':
+					case '\r':
+				}
+			}
+
+			SourceLocation location = in.getLocation();
 			switch( ch )
 			{
-				case -1:
-					return new Token( TYPE.EOF, in.getLocation() );
-
-				default:
-					break ws;
-
-				// Whitespace
-				case ' ':
-				case '\t':
-				case '\n':
-				case '\r':
-			}
-		}
-
-		SourceLocation location = in.getLocation();
-		switch( ch )
-		{
-			// Identifier
-			case 'a': case 'b': case 'c': case 'd': case 'e':
-			case 'f': case 'g': case 'h': case 'i': case 'j':
-			case 'k': case 'l': case 'm': case 'n': case 'o':
-			case 'p': case 'q': case 'r': case 's': case 't':
-			case 'u': case 'v': case 'w': case 'x': case 'y':
-			case 'z':
-			case 'A': case 'B': case 'C': case 'D': case 'E':
-			case 'F': case 'G': case 'H': case 'I': case 'J':
-			case 'K': case 'L': case 'M': case 'N': case 'O':
-			case 'P': case 'Q': case 'R': case 'S': case 'T':
-			case 'U': case 'V': case 'W': case 'X': case 'Y':
-			case 'Z':
-			case '_': case '$':
-				while( ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch >= '0' && ch <= '9' || ch == '$' || ch == '_' )
-				{
-					result.append( (char)ch );
-					ch = in.read();
-				}
-				in.push( ch );
-				// TODO Internalize identifier tokens
-				return new Token( Token.TYPE.IDENTIFIER, location, result.toString() );
-
-			// String
-			case '"':
-				while( true )
-				{
-					ch = in.read();
-					switch( ch )
+				// Identifier
+				case 'a': case 'b': case 'c': case 'd': case 'e':
+				case 'f': case 'g': case 'h': case 'i': case 'j':
+				case 'k': case 'l': case 'm': case 'n': case 'o':
+				case 'p': case 'q': case 'r': case 's': case 't':
+				case 'u': case 'v': case 'w': case 'x': case 'y':
+				case 'z':
+				case 'A': case 'B': case 'C': case 'D': case 'E':
+				case 'F': case 'G': case 'H': case 'I': case 'J':
+				case 'K': case 'L': case 'M': case 'N': case 'O':
+				case 'P': case 'Q': case 'R': case 'S': case 'T':
+				case 'U': case 'V': case 'W': case 'X': case 'Y':
+				case 'Z':
+				case '_': case '$':
+					while( ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch >= '0' && ch <= '9' || ch == '$' || ch == '_' )
 					{
-						case -1:
-							throw new SourceException( "Missing \"", in.getLocation() );
-						case '"':
-							return new Token( TYPE.STRING, location, result.toString() );
-						case '\\':
-							ch = in.read();
-							switch( ch )
-							{
-								case -1: throw new SourceException( "Incomplete escape sequence", in.getLocation() );
-								case '\n': continue;
-								case 'b': ch = '\b'; break;
-								case 'f': ch = '\f'; break;
-								case 'n': ch = '\n'; break;
-								case 'r': ch = '\r'; break;
-								case 't': ch = '\t'; break;
-								case '\"': break;
-								case '\\': break;
-								case '$': result.append( '\\' ); break; // TODO Remember, not for '' strings
-								case 'u':
-									char[] codePoint = new char[ 4 ];
-									for( int i = 0; i < 4; i++ )
-									{
-										ch = in.read();
-										codePoint[ i ] = (char)ch;
-										if( !( ch >= '0' && ch <= '9' ) )
-											throw new SourceException( "Illegal escape sequence: \\u" + String.valueOf( codePoint, 0, i + 1 ), in.getLocation() );
-									}
-									ch = Integer.valueOf( String.valueOf( codePoint ), 16 );
-									break;
-								default:
-									throw new SourceException( "Illegal escape sequence: \\" + ( ch >= 0 ? (char)ch : "" ), in.getLocation() );
-							}
+						result.append( (char)ch );
+						ch = in.read();
 					}
-					result.append( (char)ch );
-				}
+					in.push( ch );
+					// TODO Internalize identifier tokens
+					return new Token( Token.TYPE.IDENTIFIER, location, result.toString() );
 
-			// Number
-			case '0': case '1': case '2': case '3': case '4':
-			case '5': case '6': case '7': case '8': case '9':
-				while( ch >= '0' && ch <= '9' )
-				{
-					result.append( (char)ch );
+				// String
+				case '"':
+					while( true )
+					{
+						ch = in.read();
+						switch( ch )
+						{
+							case -1:
+								throw new SourceException( "Missing \"", in.getLocation() );
+							case '"':
+								return new Token( TYPE.STRING, location, result.toString() );
+							case '\\':
+								ch = in.read();
+								switch( ch )
+								{
+									case -1: throw new SourceException( "Incomplete escape sequence", in.getLocation() );
+									case '\n': continue;
+									case 'b': ch = '\b'; break;
+									case 'f': ch = '\f'; break;
+									case 'n': ch = '\n'; break;
+									case 'r': ch = '\r'; break;
+									case 't': ch = '\t'; break;
+									case '\"': break;
+									case '\\': break;
+									case '$': result.append( '\\' ); break; // TODO Remember, not for '' strings
+									case 'u':
+										char[] codePoint = new char[ 4 ];
+										for( int i = 0; i < 4; i++ )
+										{
+											ch = in.read();
+											codePoint[ i ] = (char)ch;
+											if( !( ch >= '0' && ch <= '9' ) )
+												throw new SourceException( "Illegal escape sequence: \\u" + String.valueOf( codePoint, 0, i + 1 ), in.getLocation() );
+										}
+										ch = Integer.valueOf( String.valueOf( codePoint ), 16 );
+										break;
+									default:
+										throw new SourceException( "Illegal escape sequence: \\" + ( ch >= 0 ? (char)ch : "" ), in.getLocation() );
+								}
+						}
+						result.append( (char)ch );
+					}
+
+				// Number
+				case '0': case '1': case '2': case '3': case '4':
+				case '5': case '6': case '7': case '8': case '9':
+					while( ch >= '0' && ch <= '9' )
+					{
+						result.append( (char)ch );
+						ch = in.read();
+					}
+					if( ch == '.' )
+					{
+						result.append( (char)ch );
+						ch = in.read();
+						if( !( ch >= '0' && ch <= '9' ) )
+						{
+							in.push( ch );
+							in.push( '.' );
+							return new Token( TYPE.NUMBER, location, result.toString() );
+						}
+						while( ch >= '0' && ch <= '9' )
+						{
+							result.append( (char)ch );
+							ch = in.read();
+						}
+					}
+					if( ch == 'E' || ch == 'e' )
+					{
+						result.append( (char)ch );
+						ch = in.read();
+						if( ch == '+' || ch == '-' )
+						{
+							result.append( (char)ch );
+							ch = in.read();
+						}
+						if( !( ch >= '0' && ch <= '9' ) )
+							throw new SourceException( "Invalid number", in.getLocation() );
+						while( ch >= '0' && ch <= '9' )
+						{
+							result.append( (char)ch );
+							ch = in.read();
+						}
+					}
+					in.push( ch );
+					return new Token( TYPE.NUMBER, location, result.toString() );
+
+				// Operators
+				case '+':
+				case '-':
+					int ch2 = in.read();
+					if( ch2 == ch )
+						return new Token( Token.TYPE.UNAOP, location, String.valueOf( new char[] { (char)ch, (char)ch } ) );
+	//					if( ch == '-' && ch2 == '>' )
+	//						return Token.TOK_LAMBDA;
+					in.push( ch2 );
+					//$FALL-THROUGH$
+				case '*':
+				case '.':
+					return new Token( Token.TYPE.BINOP, location, String.valueOf( (char)ch ) );
+				case ':':
+					return new Token( TYPE.COLON, location, ":" );
+				case '!':
 					ch = in.read();
-				}
-				if( ch == '.' )
-				{
-					result.append( (char)ch );
+					if( ch == '=' )
+						return new Token( Token.TYPE.BINOP, location, "!=" );
+					in.push( ch );
+					return new Token( Token.TYPE.UNAOP, location, "!" );
+				case '<':
+				case '>':
+					return new Token( Token.TYPE.BINOP, location, String.valueOf( (char)ch ) );
+				case '=':
 					ch = in.read();
-					if( !( ch >= '0' && ch <= '9' ) )
+					if( ch == '=' )
+						return new Token( Token.TYPE.BINOP, location, "==" );
+					in.push( ch );
+					return new Token( Token.TYPE.BINOP, location, "=" ); // TODO Predefine all operator tokens
+				case '&':
+					ch = in.read();
+					if( ch == '&' )
+						return new Token( Token.TYPE.BINOP, location, "&&" );
+					in.push( ch );
+					throw new SourceException( "Unexpected character '" + (char)ch + "'", in.getLocation() );
+				case '|':
+					ch = in.read();
+					if( ch == '|' )
+						return new Token( Token.TYPE.BINOP, location, "||" );
+					in.push( ch );
+					throw new SourceException( "Unexpected character '" + (char)ch + "'", in.getLocation() );
+
+				// Others
+				case '(':
+					return new Token( TYPE.PAREN_OPEN, location, "(" );
+				case ')':
+					return new Token( TYPE.PAREN_CLOSE, location, ")" );
+				case ',':
+					return new Token( TYPE.COMMA, location, "," );
+				case ';':
+					return new Token( TYPE.SEMICOLON, location, ";" );
+				case '{':
+					return new Token( TYPE.BRACE_OPEN, location, "{" );
+				case '}':
+					return new Token( TYPE.BRACE_CLOSE, location, "}" );
+
+				case '/':
+					ch = in.read();
+					if( ch != '/' )
 					{
 						in.push( ch );
-						in.push( '.' );
-						return new Token( TYPE.NUMBER, location, result.toString() );
+						return new Token( Token.TYPE.BINOP, location, "/" );
 					}
-					while( ch >= '0' && ch <= '9' )
-					{
-						result.append( (char)ch );
-						ch = in.read();
-					}
-				}
-				if( ch == 'E' || ch == 'e' )
-				{
-					result.append( (char)ch );
 					ch = in.read();
-					if( ch == '+' || ch == '-' )
-					{
-						result.append( (char)ch );
+					while( ch != '\n' && ch != -1 )
 						ch = in.read();
-					}
-					if( !( ch >= '0' && ch <= '9' ) )
-						throw new SourceException( "Invalid number", in.getLocation() );
-					while( ch >= '0' && ch <= '9' )
-					{
-						result.append( (char)ch );
-						ch = in.read();
-					}
-				}
-				in.push( ch );
-				return new Token( TYPE.NUMBER, location, result.toString() );
+					break;
 
-			// Operators
-			case '+':
-			case '-':
-				int ch2 = in.read();
-				if( ch2 == ch )
-					return new Token( Token.TYPE.UNAOP, location, String.valueOf( new char[] { (char)ch, (char)ch } ) );
-//					if( ch == '-' && ch2 == '>' )
-//						return Token.TOK_LAMBDA;
-				in.push( ch2 );
-				//$FALL-THROUGH$
-			case '*':
-			case '/':
-			case '.':
-				return new Token( Token.TYPE.BINOP, location, String.valueOf( (char)ch ) );
-			case ':':
-				return new Token( TYPE.COLON, location, ":" );
-			case '!':
-				ch = in.read();
-				if( ch == '=' )
-					return new Token( Token.TYPE.BINOP, location, "!=" );
-				in.push( ch );
-				return new Token( Token.TYPE.UNAOP, location, "!" );
-			case '<':
-			case '>':
-				return new Token( Token.TYPE.BINOP, location, String.valueOf( (char)ch ) );
-			case '=':
-				ch = in.read();
-				if( ch == '=' )
-					return new Token( Token.TYPE.BINOP, location, "==" );
-				in.push( ch );
-				return new Token( Token.TYPE.BINOP, location, "=" ); // TODO Predefine all operator tokens
-			case '&':
-				ch = in.read();
-				if( ch == '&' )
-					return new Token( Token.TYPE.BINOP, location, "&&" );
-				in.push( ch );
-				throw new SourceException( "Unexpected character '" + (char)ch + "'", in.getLocation() );
-			case '|':
-				ch = in.read();
-				if( ch == '|' )
-					return new Token( Token.TYPE.BINOP, location, "||" );
-				in.push( ch );
-				throw new SourceException( "Unexpected character '" + (char)ch + "'", in.getLocation() );
-
-			// Others
-			case '(':
-				return new Token( TYPE.PAREN_OPEN, location, "(" );
-			case ')':
-				return new Token( TYPE.PAREN_CLOSE, location, ")" );
-			case ',':
-				return new Token( TYPE.COMMA, location, "," );
-			case ';':
-				return new Token( TYPE.SEMICOLON, location, ";" );
-			case '{':
-				return new Token( TYPE.BRACE_OPEN, location, "{" );
-			case '}':
-				return new Token( TYPE.BRACE_CLOSE, location, "}" );
-
-			default:
-				throw new SourceException( "Unexpected character '" + (char)ch + "'", in.getLocation() );
+				default:
+					throw new SourceException( "Unexpected character '" + (char)ch + "'", in.getLocation() );
+			}
 		}
 	}
 

@@ -1,5 +1,5 @@
 <%@ template version="1.0" encoding="UTF-8" language="funny" %>
-<%
+<% // Test if the import at the bottom works, and this comment too of course
 class( "java.util.Date" )() %>
 SELECT *
 <%@ template contentType="text/html; charset=ISO-8859-1" %>

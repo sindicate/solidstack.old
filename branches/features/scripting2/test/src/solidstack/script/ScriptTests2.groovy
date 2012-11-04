@@ -36,11 +36,11 @@ with escaped newline" );
 				|Multiline |strings
 				|with indentation stripped" ) );
 			i = 0;
-			while( i < 10;
+			while( i < 10; // This is a comment
 				println( i );
 				i++
 			);
-			''',
+			// Comment at the end''',
 			new BigDecimal( 9 )
 		);
 	}
