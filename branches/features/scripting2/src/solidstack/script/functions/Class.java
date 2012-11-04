@@ -19,9 +19,7 @@ package solidstack.script.functions;
 import java.util.List;
 
 import solidstack.lang.Assert;
-import solidstack.script.AbstractContext.Value;
 import solidstack.script.FunctionInstance;
-import solidstack.script.ObjectAccess;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 
@@ -32,15 +30,8 @@ public class Class extends FunctionInstance
 	{
 		Assert.isTrue( parameters.size() == 1 );
 		Object object = parameters.get( 0 );
-		String name = null;
-		while( object instanceof ObjectAccess )
-		{
-			ObjectAccess access = (ObjectAccess)object;
-			name = access.getName() + ( name != null ? "." + name : "" );
-			object = access.getObject();
-		}
-		Assert.isTrue( object instanceof Value );
-		name = ( (Value)object ).getKey() + "." + name;
+		Assert.isTrue( object instanceof String );
+		String name = (String)object;
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
 		try
 		{

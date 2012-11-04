@@ -42,9 +42,6 @@ public class ObjectAccess
 
 	public Object invoke( Object... args )
 	{
-		Object object = this.object;
-		if( object instanceof Lazy )
-			object = ( (Lazy)object ).get();
-		return Java.invoke( object, this.name, args );
+		return Java.invoke( this.object, this.name, args );
 	}
 }

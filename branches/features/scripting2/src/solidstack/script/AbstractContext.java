@@ -89,7 +89,7 @@ abstract public class AbstractContext
 //		return new Undefined( name );
 //	}
 
-	static public class Value extends Entry implements Lazy
+	static public class Value extends Entry
 	{
 		Object value;
 

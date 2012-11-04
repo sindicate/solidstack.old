@@ -374,9 +374,9 @@ public class ScriptTests
 	@Test
 	static public void test17()
 	{
-		test( "class( java.util.ArrayList );", ArrayList.class );
-		test( "c = class( java.util.ArrayList ); c();", new ArrayList() );
-		test( "l = class( java.util.ArrayList )(); l.add( \"sinterklaas\" ); l.toArray();", new Object[] { "sinterklaas" } );
+		test( "class( \"java.util.ArrayList\" );", ArrayList.class );
+		test( "c = class( \"java.util.ArrayList\" ); c();", new ArrayList() );
+		test( "l = class( \"java.util.ArrayList\" )(); l.add( \"sinterklaas\" ); l.toArray();", new Object[] { "sinterklaas" } );
 	}
 
 	// TODO Exceptions, catch & finally
@@ -403,4 +403,5 @@ public class ScriptTests
 	// TODO Token interceptors that work on the token stream, or custom script parsers for eval
 	// TODO Symbols :red
 	// TODO Mixins
+	// TODO Lazy evaluation
 }
