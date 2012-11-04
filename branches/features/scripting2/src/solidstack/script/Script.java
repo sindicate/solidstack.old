@@ -53,6 +53,8 @@ public class Script
 			return null;
 		if( result instanceof SuperString )
 			return result.toString();
+		if( result instanceof ObjectAccess )
+			return ( (ObjectAccess)result ).get();
 		return result;
 	}
 }

@@ -300,17 +300,35 @@ public class ScriptTests
 	}
 
 	@Test
-	static public void test14()
+	static public void test13_2()
 	{
-		test( "( a, b ) = ( 1, 2 ); a + b", new BigDecimal( 3 ) );
-		test( "( a, b ) = ( 1, 2 ); a + b", new BigDecimal( 3 ) );
-		test( "( a, b ) = fun( ; 1, 2 )(); a + b", new BigDecimal( 3 ) );
-		test( "( a, b ) = ( fun( ; 1 ), fun( ; 2 ) ) ; a() + b()", new BigDecimal( 3 ) );
+		Context context = new Context();
+		test( "c = class( \"solidstack.script.ScriptTests$TestObject1\" );", context, TestObject1.class );
+		test( "c().value", context, 0 );
+		test( "c( 1 ).value", context, 2 );
+		test( "c( \"string\" ).value", context, 3 );
+		test( "c( \"string\", \"string\" ).value", context, 4 );
+		test( "c( 1, 1 ).value", context, 6 );
+		test( "c( 1 == 1 ).value", context, 7 );
+
+		test( "c2 = class( \"solidstack.script.ScriptTests$TestObject2\" );", context, TestObject2.class );
+		test( "c2( 1, 1 ).value", context, 1 );
 	}
 
 	@SuppressWarnings( "unused" )
 	static public class TestObject1
 	{
+		public int value;
+
+		public TestObject1() { this.value = 0; }
+		public TestObject1( int i ) { this.value = 1; }
+		public TestObject1( BigDecimal i ) { this.value = 2; }
+		public TestObject1( String s ) { this.value = 3; }
+		public TestObject1( String... s ) { this.value = 4; }
+		public TestObject1( BigDecimal... b ) { this.value = 5; }
+		public TestObject1( BigDecimal b1, Number b2 ) { this.value = 6; }
+		public TestObject1( boolean b ) { this.value = 7; }
+
 		public int test() { return 0; }
 		public int test( int i ) { return 1; }
 		public int test( BigDecimal i ) { return 2; }
@@ -324,6 +342,11 @@ public class ScriptTests
 	@SuppressWarnings( "unused" )
 	static public class TestObject2
 	{
+		public int value;
+
+		public TestObject2() { this.value = 0; }
+		public TestObject2( int i1, int i2 ) { this.value = 1; }
+
 		public int test( int i1, int i2 ) { return 1; }
 	}
 
@@ -339,6 +362,15 @@ public class ScriptTests
 //		Script.compile( contents.toString() ).execute( null );
 //		// TODO Validate result
 //	}
+
+	@Test
+	static public void test14()
+	{
+		test( "( a, b ) = ( 1, 2 ); a + b", new BigDecimal( 3 ) );
+		test( "( a, b ) = ( 1, 2 ); a + b", new BigDecimal( 3 ) );
+		test( "( a, b ) = fun( ; 1, 2 )(); a + b", new BigDecimal( 3 ) );
+		test( "( a, b ) = ( fun( ; 1 ), fun( ; 2 ) ) ; a() + b()", new BigDecimal( 3 ) );
+	}
 
 	@Test
 	static public void test15()
@@ -377,6 +409,7 @@ public class ScriptTests
 		test( "class( \"java.util.ArrayList\" );", ArrayList.class );
 		test( "c = class( \"java.util.ArrayList\" ); c();", new ArrayList() );
 		test( "l = class( \"java.util.ArrayList\" )(); l.add( \"sinterklaas\" ); l.toArray();", new Object[] { "sinterklaas" } );
+		test( "ArrayList = class( \"java.util.ArrayList\" ); l = ArrayList(); l.toArray();", new Object[ 0 ] );
 	}
 
 	// TODO Exceptions, catch & finally

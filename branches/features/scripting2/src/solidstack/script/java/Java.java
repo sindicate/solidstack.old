@@ -16,6 +16,8 @@
 
 package solidstack.script.java;
 
+import java.lang.reflect.Field;
+
 import solidstack.script.ScriptException;
 
 
@@ -30,17 +32,25 @@ public class Java
 		return call.invoke();
 	}
 
-	static public Object construct( Class cls, Object... args )
+	static public Object get( Object object, String name )
 	{
-		if( args.length > 0 )
-			throw new UnsupportedOperationException();
 		try
 		{
-			return cls.newInstance();
+			Field field = object.getClass().getField( name );
+			return field.get( object );
 		}
 		catch( ReflectiveOperationException e )
 		{
 			throw new ScriptException( e );
 		}
+	}
+
+	static public Object construct( Class cls, Object... args )
+	{
+		CallContext context = new CallContext( cls, null, args );
+		MethodCall call = Resolver.resolveConstructorCall( context );
+		if( call == null )
+			throw new MissingMethodException( context );
+		return call.invoke();
 	}
 }

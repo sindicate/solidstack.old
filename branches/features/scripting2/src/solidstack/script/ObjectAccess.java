@@ -44,4 +44,9 @@ public class ObjectAccess
 	{
 		return Java.invoke( this.object, this.name, args );
 	}
+
+	public Object get()
+	{
+		return Java.get( this.object, this.name );
+	}
 }

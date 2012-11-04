@@ -16,6 +16,7 @@
 
 package solidstack.script.java;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -35,21 +36,32 @@ public class Resolver
 	{
 		for( Method method : context.getType().getMethods() )
 			if( method.getName().equals( context.getName() ) )
-				matchAndAddMethod( context, method );
+			{
+				MethodCall caller = Resolver.matchArguments( context, method.getParameterTypes(), ( method.getModifiers() & Modifier.TRANSIENT ) != 0 );
+				if( caller != null )
+				{
+					caller.object = context.getObject();
+					caller.method = method;
+					context.addCandidate( caller );
+				}
+			}
 
-		MethodCall call = Resolver.calculateBestMethodCandidate( context.getCandidates() );
-		return call;
+		return Resolver.calculateBestMethodCandidate( context.getCandidates() );
 	}
 
-	static protected void matchAndAddMethod( CallContext context, Method method )
+	static public MethodCall resolveConstructorCall( CallContext context )
 	{
-		MethodCall caller = Resolver.matchArguments( context, method );
-		if( caller != null )
+		for( Constructor constructor : context.getType().getConstructors() )
 		{
-			caller.object = context.getObject();
-			caller.method = method;
-			context.addCandidate( caller );
+			MethodCall caller = Resolver.matchArguments( context, constructor.getParameterTypes(), ( constructor.getModifiers() & Modifier.TRANSIENT ) != 0 );
+			if( caller != null )
+			{
+				caller.constructor = constructor;
+				context.addCandidate( caller );
+			}
 		}
+
+		return Resolver.calculateBestMethodCandidate( context.getCandidates() );
 	}
 
 
@@ -60,13 +72,11 @@ public class Resolver
 
     // ---------- STEP 1: Used to match argument values with argument types
 
-	static public MethodCall matchArguments( CallContext context, Method method )
+	static public MethodCall matchArguments( CallContext context, Class[] types, boolean vararg )
 	{
 		// Initialize all used values from the context
-		Class[] types = method.getParameterTypes();
 		Object[] args = context.getArgs();
 		Class[] argTypes = context.getArgTypes();
-		boolean vararg = ( method.getModifiers() & Modifier.TRANSIENT ) != 0;
 
 		int argCount = args.length;
 		int typeCount = types.length;
