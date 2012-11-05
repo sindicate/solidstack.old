@@ -23,6 +23,7 @@ import java.util.ListIterator;
 
 import solidstack.io.SourceLocation;
 import solidstack.lang.Assert;
+import solidstack.script.AbstractContext.Undefined;
 import solidstack.script.AbstractContext.Value;
 import solidstack.script.operations.Access;
 import solidstack.script.operations.And;
@@ -314,7 +315,7 @@ abstract public class Operation implements Expression
 			return ( (String)left ).length() != 0;
 		if( left instanceof SuperString )
 			return !( (SuperString)left ).isEmpty();
-		return left != null && left != Null.INSTANCE; // TODO Why do we return Null.INSTANCE? I forgot.
+		return left != null && left != Null.INSTANCE && !( left instanceof Undefined );
 	}
 
 	protected Operation( String operation, Expression left, Expression right )

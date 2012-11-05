@@ -187,6 +187,11 @@ public class ScriptTests
 		test( "println( \"Hello World!\" )", "Hello World!" );
 		test( "println( upper( \"Hello World!\" ) )", "HELLO WORLD!" );
 		test( "length( \"sinterklaas\" )", 11 );
+		test( "defined( a )", false );
+		test( "defined( def( a ) )", true );
+		test( "defined( 1 )", true );
+		test( "if( a; a )", null ); // TODO Ponder over this once more
+//		test( "a && a", null ); TODO And this?
 	}
 
 	@Test

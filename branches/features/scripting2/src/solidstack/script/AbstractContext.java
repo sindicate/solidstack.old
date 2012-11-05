@@ -24,18 +24,6 @@ import solidstack.script.ValueMap.Entry;
 
 abstract public class AbstractContext
 {
-	private boolean strictUndefined = true;
-
-	public void setStrictUndefined( boolean strict )
-	{
-		this.strictUndefined = strict;
-	}
-
-	public boolean isStrictUndefined()
-	{
-		return this.strictUndefined;
-	}
-
 	abstract public Value findValue( String name );
 
 	public Value getValue( String name )
@@ -130,9 +118,7 @@ abstract public class AbstractContext
 		@Override
 		public Object get()
 		{
-			if( AbstractContext.this.strictUndefined )
-				throw new ScriptException( "'" + getKey() + "' undefined" );
-			return null;
+			throw new ScriptException( "'" + getKey() + "' undefined" );
 		}
 
 		@Override

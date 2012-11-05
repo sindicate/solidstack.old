@@ -48,7 +48,6 @@ public class FunnyTemplate extends Template
 		ConvertingWriter out = new GroovyConvertingWriter( writer );
 
 		Context context = new Context();
-		context.setStrictUndefined( false );
 		context.def( params );
 		// TODO What about 'this'?
 		context.def( "out", out );

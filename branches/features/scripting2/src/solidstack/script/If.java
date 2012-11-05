@@ -38,7 +38,7 @@ public class If extends LocalizedExpression
 
 	public Object evaluate( ThreadContext thread )
 	{
-		if( Operation.isTrue( Operation.evaluateAndUnwrap( this.condition, thread ) ) )
+		if( Operation.isTrue( this.condition.evaluate( thread ) ) )
 		{
 			if( this.left != null )
 				return this.left.evaluate( thread );
