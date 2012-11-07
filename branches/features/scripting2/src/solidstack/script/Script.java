@@ -46,7 +46,7 @@ public class Script
 		if( context == null )
 			context = new Context();
 
-		ThreadContext thread = new ThreadContext( context );
+		ThreadContext thread = ThreadContext.init( context );
 
 		Object result = Operation.evaluateAndUnwrap( this.expression, thread );
 		if( result == Null.INSTANCE )

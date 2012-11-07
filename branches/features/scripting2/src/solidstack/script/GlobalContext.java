@@ -20,6 +20,7 @@ import solidstack.script.functions.Abs;
 import solidstack.script.functions.Class;
 import solidstack.script.functions.Def;
 import solidstack.script.functions.Defined;
+import solidstack.script.functions.ForEach;
 import solidstack.script.functions.Length;
 import solidstack.script.functions.Print;
 import solidstack.script.functions.Println;
@@ -27,7 +28,7 @@ import solidstack.script.functions.Substr;
 import solidstack.script.functions.Throw;
 import solidstack.script.functions.Upper;
 import solidstack.script.functions.Val;
-import solidstack.script.functions.stripMargin;
+import solidstack.script.functions.StripMargin;
 
 
 
@@ -42,10 +43,11 @@ public class GlobalContext extends Context
 		val( "class", new Class() );
 		val( "def", new Def() );
 		val( "defined", new Defined() );
+		val( "forEach", new ForEach() );
 		val( "length", new Length() );
 		val( "print", new Print() );
 		val( "println", new Println() );
-		val( "stripMargin", new stripMargin() );
+		val( "stripMargin", new StripMargin() );
 		val( "substr", new Substr() );
 		val( "throw", new Throw() );
 		val( "upper", new Upper() );

@@ -16,6 +16,8 @@
 
 package solidstack.script.java;
 
+import groovy.lang.GroovyRuntimeException;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -37,7 +39,7 @@ public class Resolver
 		for( Method method : context.getType().getMethods() )
 			if( method.getName().equals( context.getName() ) )
 			{
-				MethodCall caller = Resolver.matchArguments( context, method.getParameterTypes(), ( method.getModifiers() & Modifier.TRANSIENT ) != 0 );
+				MethodCall caller = Resolver.matchArguments( context, method.getParameterTypes(), ( method.getModifiers() & Modifier.TRANSIENT ) != 0, false );
 				if( caller != null )
 				{
 					caller.object = context.getObject();
@@ -46,14 +48,52 @@ public class Resolver
 				}
 			}
 
+		context.setThisMode( true );
+		collectMethods( context.getType(), context );
+		context.setThisMode( false );
+
 		return Resolver.calculateBestMethodCandidate( context.getCandidates() );
+	}
+
+	static public void collectMethods( Class cls, CallContext context )
+	{
+		ClassExt ext = ClassExt.forClass( cls );
+		if( ext != null )
+		{
+			// TODO Multiple
+			Method method = ext.getMethod( context.getName() );
+			if( method != null )
+			{
+				MethodCall caller = Resolver.matchArguments( context, method.getParameterTypes(), ( method.getModifiers() & Modifier.TRANSIENT ) != 0, true );
+				if( caller != null )
+				{
+					caller.object = context.getObject();
+					caller.method = method;
+					context.addCandidate( caller );
+				}
+			}
+		}
+
+		Class[] interfaces = cls.getInterfaces();
+		for( Class iface : interfaces )
+		{
+			if( !context.isInterfaceDone( iface ) )
+			{
+				collectMethods( iface, context );
+				context.interfaceDone( iface );
+			}
+		}
+
+		cls = cls.getSuperclass();
+		if( cls != null )
+			collectMethods( cls, context );
 	}
 
 	static public MethodCall resolveConstructorCall( CallContext context )
 	{
 		for( Constructor constructor : context.getType().getConstructors() )
 		{
-			MethodCall caller = Resolver.matchArguments( context, constructor.getParameterTypes(), ( constructor.getModifiers() & Modifier.TRANSIENT ) != 0 );
+			MethodCall caller = Resolver.matchArguments( context, constructor.getParameterTypes(), ( constructor.getModifiers() & Modifier.TRANSIENT ) != 0, false );
 			if( caller != null )
 			{
 				caller.constructor = constructor;
@@ -72,7 +112,7 @@ public class Resolver
 
     // ---------- STEP 1: Used to match argument values with argument types
 
-	static public MethodCall matchArguments( CallContext context, Class[] types, boolean vararg )
+	static public MethodCall matchArguments( CallContext context, Class[] types, boolean vararg, boolean ths )
 	{
 		// Initialize all used values from the context
 		Object[] args = context.getArgs();
@@ -81,7 +121,7 @@ public class Resolver
 		int argCount = args.length;
 		int typeCount = types.length;
 		int lastType = typeCount - 1;
-		int start = 0;
+		int start = ths ? 1 : 0;
 
 		if( vararg )
 		{
@@ -121,6 +161,9 @@ public class Resolver
 				return null;
 			difficulty += ret;
 		}
+
+		if( ths && lastType == 0 )
+			throw new GroovyRuntimeException( "Can't have vararg and includesThis, and lastType == 0" );
 
 		// Adapt the arguments to the method
 

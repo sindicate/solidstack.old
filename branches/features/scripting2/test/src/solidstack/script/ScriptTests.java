@@ -57,42 +57,6 @@ public class ScriptTests
 		test( "( 1 + 2 ) * ( 2 + 1 )", new BigDecimal( 9 ) );
 	}
 
-	static public void test( String expression, Object expected )
-	{
-		test( expression, null, expected );
-	}
-
-	static public void test( String expression, Context context, Object expected )
-	{
-		Object result = eval( expression, context );
-		Assert.assertEquals( result, expected );
-	}
-
-	static public Object eval( String expression )
-	{
-		return eval( expression, null );
-	}
-
-	static public Object eval( String expression, Context context )
-	{
-		Script script = Script.compile( expression );
-//		String dump = new Dumper().dump( script );
-		return script.execute( context );
-	}
-
-	static public void testParseFail( String expression )
-	{
-		try
-		{
-			Script.compile( expression );
-			Assert.fail( "Expected a SourceException" );
-		}
-		catch( SourceException e )
-		{
-			// Expected
-		}
-	}
-
 //	@Test
 //	static public void test4()
 //	{
@@ -320,54 +284,6 @@ public class ScriptTests
 		test( "c2( 1, 1 ).value", context, 1 );
 	}
 
-	@SuppressWarnings( "unused" )
-	static public class TestObject1
-	{
-		public int value;
-
-		public TestObject1() { this.value = 0; }
-		public TestObject1( int i ) { this.value = 1; }
-		public TestObject1( BigDecimal i ) { this.value = 2; }
-		public TestObject1( String s ) { this.value = 3; }
-		public TestObject1( String... s ) { this.value = 4; }
-		public TestObject1( BigDecimal... b ) { this.value = 5; }
-		public TestObject1( BigDecimal b1, Number b2 ) { this.value = 6; }
-		public TestObject1( boolean b ) { this.value = 7; }
-
-		public int test() { return 0; }
-		public int test( int i ) { return 1; }
-		public int test( BigDecimal i ) { return 2; }
-		public int test( String s ) { return 3; }
-		public int test( String... s ) { return 4; }
-		public int test( BigDecimal... b ) { return 5; }
-		public int test( BigDecimal b1, Number b2 ) { return 6; }
-		public int test( boolean b ) { return 7; }
-	}
-
-	@SuppressWarnings( "unused" )
-	static public class TestObject2
-	{
-		public int value;
-
-		public TestObject2() { this.value = 0; }
-		public TestObject2( int i1, int i2 ) { this.value = 1; }
-
-		public int test( int i1, int i2 ) { return 1; }
-	}
-
-//	static private void test( String file ) throws IOException
-//	{
-//		InputStream in = ScriptTests.class.getResourceAsStream( file );
-//		Reader reader = new InputStreamReader( in );
-//		char[] buffer = new char[ 1024 ];
-//		StringBuilder contents = new StringBuilder();
-//		int len;
-//		while( ( len = reader.read( buffer ) ) >= 0 )
-//			contents.append( buffer, 0, len );
-//		Script.compile( contents.toString() ).execute( null );
-//		// TODO Validate result
-//	}
-
 	@Test
 	static public void test14()
 	{
@@ -417,12 +333,21 @@ public class ScriptTests
 		test( "ArrayList = class( \"java.util.ArrayList\" ); l = ArrayList(); l.toArray();", new Object[ 0 ] );
 	}
 
+	@Test
+	static public void test18()
+	{
+		test( "l = class( \"java.util.ArrayList\" )(); forEach( l, fun( i; i ) )", null );
+		test( "l = class( \"java.util.ArrayList\" )(); i = 0; while( i < 10; l.add( i ), i++ ); l.each( fun( i; println( i ) ) )", new BigDecimal( 9 ) );
+	}
+
+	// TODO Calls with named parameters
+	// TODO Loop through collection
+	// TODO Class extension
+
 	// TODO Exceptions, catch & finally
 	// TODO MethodMissing
 	// TODO Default parameter values
-	// TODO Calls with named parameters
 	// TODO def & val
-	// TODO { } blocks for new scopes
 	// TODO Store tuples in variables?
 	// TODO Binary and hexadecimal literals
 	// TODO Add methods to the datatypes and/or objects
@@ -442,4 +367,88 @@ public class ScriptTests
 	// TODO Symbols :red
 	// TODO Mixins
 	// TODO Lazy evaluation
+
+	static public void test( String expression, Object expected )
+	{
+		test( expression, null, expected );
+	}
+
+	static public void test( String expression, Context context, Object expected )
+	{
+		Object result = eval( expression, context );
+		Assert.assertEquals( result, expected );
+	}
+
+	static public Object eval( String expression )
+	{
+		return eval( expression, null );
+	}
+
+	static public Object eval( String expression, Context context )
+	{
+		Script script = Script.compile( expression );
+//		String dump = new Dumper().dump( script );
+		return script.execute( context );
+	}
+
+	static public void testParseFail( String expression )
+	{
+		try
+		{
+			Script.compile( expression );
+			Assert.fail( "Expected a SourceException" );
+		}
+		catch( SourceException e )
+		{
+			// Expected
+		}
+	}
+
+//	static private void test( String file ) throws IOException
+//	{
+//		InputStream in = ScriptTests.class.getResourceAsStream( file );
+//		Reader reader = new InputStreamReader( in );
+//		char[] buffer = new char[ 1024 ];
+//		StringBuilder contents = new StringBuilder();
+//		int len;
+//		while( ( len = reader.read( buffer ) ) >= 0 )
+//			contents.append( buffer, 0, len );
+//		Script.compile( contents.toString() ).execute( null );
+//		// TODO Validate result
+//	}
+
+	@SuppressWarnings( "unused" )
+	static public class TestObject1
+	{
+		public int value;
+
+		public TestObject1() { this.value = 0; }
+		public TestObject1( int i ) { this.value = 1; }
+		public TestObject1( BigDecimal i ) { this.value = 2; }
+		public TestObject1( String s ) { this.value = 3; }
+		public TestObject1( String... s ) { this.value = 4; }
+		public TestObject1( BigDecimal... b ) { this.value = 5; }
+		public TestObject1( BigDecimal b1, Number b2 ) { this.value = 6; }
+		public TestObject1( boolean b ) { this.value = 7; }
+
+		public int test() { return 0; }
+		public int test( int i ) { return 1; }
+		public int test( BigDecimal i ) { return 2; }
+		public int test( String s ) { return 3; }
+		public int test( String... s ) { return 4; }
+		public int test( BigDecimal... b ) { return 5; }
+		public int test( BigDecimal b1, Number b2 ) { return 6; }
+		public int test( boolean b ) { return 7; }
+	}
+
+	@SuppressWarnings( "unused" )
+	static public class TestObject2
+	{
+		public int value;
+
+		public TestObject2() { this.value = 0; }
+		public TestObject2( int i1, int i2 ) { this.value = 1; }
+
+		public int test( int i1, int i2 ) { return 1; }
+	}
 }

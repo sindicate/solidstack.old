@@ -17,7 +17,9 @@
 package solidstack.script.java;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 public class CallContext
@@ -33,9 +35,14 @@ public class CallContext
 	private Class type; // Type of the object, or if the object is a class, then the object itself.
 	private Class[] argTypes; // Types of the arguments.
 
+	private boolean thisMode;
+	private Object[] combiArgs; // The arguments of the call
+	private Class[] combiArgTypes; // Types of the arguments.
+
 	// Dynamic stuff
 
 	private List< MethodCall > candidates = new ArrayList<MethodCall>();
+	private Set< Class > interfacesDone = new HashSet();
 
 
 	public CallContext( Object object, String name, Object[] args )
@@ -44,6 +51,11 @@ public class CallContext
 		this.name = name;
 		this.args = args;
 		this.type = object instanceof Class ? (Class)object : object.getClass();
+	}
+
+	public void setThisMode( boolean thisMode )
+	{
+		this.thisMode = thisMode;
 	}
 
 	public Object getObject()
@@ -58,6 +70,17 @@ public class CallContext
 
 	public Object[] getArgs()
 	{
+		if( this.thisMode )
+		{
+			if( this.combiArgs == null )
+			{
+				int argCount = this.args.length;
+				this.combiArgs = new Object[ argCount + 1 ];
+				this.combiArgs[ 0 ] = this.object;
+				System.arraycopy( this.args, 0, this.combiArgs, 1, argCount );
+			}
+			return this.combiArgs;
+		}
 		return this.args;
 	}
 
@@ -70,6 +93,17 @@ public class CallContext
 	{
 		if( this.argTypes == null )
 			this.argTypes = Types.getTypes( this.args );
+		if( this.thisMode )
+		{
+			if( this.combiArgTypes == null )
+			{
+				int argCount = this.argTypes.length;
+				this.combiArgTypes = new Class[ argCount + 1 ];
+				this.combiArgTypes[ 0 ] = getType();
+				System.arraycopy( this.argTypes, 0, this.combiArgTypes, 1, argCount );
+			}
+			return this.combiArgTypes;
+		}
 		return this.argTypes;
 	}
 
@@ -82,5 +116,15 @@ public class CallContext
 	public List<MethodCall> getCandidates()
 	{
 		return this.candidates;
+	}
+
+	public boolean isInterfaceDone( Class iface )
+	{
+		return this.interfacesDone.contains( iface );
+	}
+
+	public void interfaceDone( Class iface )
+	{
+		this.interfacesDone.add( iface );
 	}
 }

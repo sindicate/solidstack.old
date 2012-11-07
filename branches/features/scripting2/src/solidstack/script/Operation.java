@@ -230,7 +230,7 @@ abstract public class Operation implements Expression
 		return object;
 	}
 
-	static public Object unwrapList( List<Object> objects )
+	static public List<Object> unwrapList( List<Object> objects )
 	{
 		// TODO These may be too late. Maybe we should bind the Value reference and the actual value.
 		for( ListIterator<Object> i = objects.listIterator(); i.hasNext(); )

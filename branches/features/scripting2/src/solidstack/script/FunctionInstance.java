@@ -16,9 +16,10 @@
 
 package solidstack.script;
 
+import java.util.Arrays;
 import java.util.List;
 
-public class FunctionInstance
+public class FunctionInstance implements solidstack.script.java.Function
 {
 	private Function function;
 	private AbstractContext context;
@@ -33,6 +34,13 @@ public class FunctionInstance
 		this.context = context; // FIXME Possibly need to clone the whole context hierarchy (flattened).
 	}
 
+	public Object call( Object... args )
+	{
+		ThreadContext context = ThreadContext.get();
+		return call( Arrays.asList( args ), context );
+	}
+
+	// FIXME Variable arg
 	public Object call( List<Object> pars, ThreadContext thread )
 	{
 		List<String> parameters = this.function.getParameters();

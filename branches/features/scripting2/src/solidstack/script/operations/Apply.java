@@ -19,9 +19,7 @@ package solidstack.script.operations;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.ListIterator;
 
-import solidstack.script.AbstractContext.Value;
 import solidstack.script.Expression;
 import solidstack.script.FunctionInstance;
 import solidstack.script.Identifier;
@@ -77,10 +75,10 @@ public class Apply extends Operation
 			if( pars instanceof TupleValue )
 			{
 				List<Object> list = ( (TupleValue)pars ).getValues();
-				return f.invoke( list.toArray() );
+				return f.invoke( unwrapList( list ).toArray() ); // TODO unwrap array
 			}
 			if( pars != null )
-				return f.invoke( new Object[] { pars } );
+				return f.invoke( unwrap( pars ) );
 			return f.invoke();
 		}
 
@@ -99,16 +97,5 @@ public class Apply extends Operation
 		}
 
 		throw new ScriptException( "Cannot apply parameters to a " + left.getClass().getName() );
-	}
-
-	private void unwrap( List<Object> objects )
-	{
-		ListIterator i = objects.listIterator();
-		while( i.hasNext() )
-		{
-			Object o = i.next();
-			if( o instanceof Value )
-				i.set( ( (Value)o ).get() );
-		}
 	}
 }

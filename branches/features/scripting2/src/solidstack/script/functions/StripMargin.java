@@ -23,7 +23,7 @@ import solidstack.script.FunctionInstance;
 import solidstack.script.Operation;
 import solidstack.script.ThreadContext;
 
-public class stripMargin extends FunctionInstance
+public class StripMargin extends FunctionInstance
 {
 	@Override
 	public Object call( List<Object> parameters, ThreadContext thread )
