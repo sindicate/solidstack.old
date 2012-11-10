@@ -14,41 +14,58 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.context;
+
+import solidstack.script.ValueMap;
 
 
 
-public class CombinedContext extends AbstractContext
+public class Context extends AbstractContext
 {
-	private AbstractContext context1, context2;
+	private AbstractContext parent;
 
-	public CombinedContext( AbstractContext context1, AbstractContext context2 )
+	private ValueMap<Value> values = new ValueMap<Value>();
+
+	public Context()
 	{
-		this.context1 = context1;
-		this.context2 = context2;
+		def( "this", this );
+	}
+
+	public Context( AbstractContext parent )
+	{
+		this();
+		this.parent = parent;
+	}
+
+	Value findLocalValue( String name )
+	{
+		return this.values.get( name );
 	}
 
 	@Override
 	public Value findValue( String name )
 	{
-		Value v = this.context1.findValue( name );
+		Value v = findLocalValue( name );
 		if( v != null )
 			return v;
-		v = this.context2.findValue( name );
-		if( v != null )
-			return v;
-		return null;
+		if( this.parent != null )
+			return this.parent.findValue( name );
+		return GlobalContext.INSTANCE.findLocalValue( name );
 	}
 
 	@Override
 	public Variable def( String name, Object value )
 	{
-		return this.context1.def( name, value );
+		Variable result = new Variable( name, value );
+		this.values.put( result );
+		return result;
 	}
 
 	@Override
 	public Value val( String name, Object value )
 	{
-		return this.context1.val( name, value );
+		Value result = new Value( name, value );
+		this.values.put( result );
+		return result;
 	}
 }

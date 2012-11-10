@@ -14,33 +14,14 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.objects;
 
-import java.util.List;
-
-public class SuperString
+public class Null
 {
-	private List<Object> values;
+	static public final Null INSTANCE = new Null();
 
-	public SuperString( List<Object> values )
+	private Null()
 	{
-		this.values = values;
-	}
 
-	@Override
-	public String toString()
-	{
-		StringBuilder result = new StringBuilder();
-		for( Object value : this.values )
-			result.append( value );
-		return result.toString();
-	}
-
-	public boolean isEmpty()
-	{
-		for( Object value : this.values )
-			if( value.toString().length() != 0 ) // TODO What about nulls?
-				return false;
-		return true;
 	}
 }

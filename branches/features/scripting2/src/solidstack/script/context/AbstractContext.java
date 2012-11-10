@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.context;
 
 import java.util.Map;
 
 import solidstack.lang.Assert;
+import solidstack.script.ScriptException;
+import solidstack.script.ValueMap;
 import solidstack.script.ValueMap.Entry;
+import solidstack.script.objects.Null;
 
 
 abstract public class AbstractContext

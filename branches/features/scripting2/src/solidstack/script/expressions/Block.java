@@ -14,40 +14,36 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.expressions;
 
 import solidstack.io.SourceLocation;
+import solidstack.script.ThreadContext;
+import solidstack.script.context.AbstractContext;
+import solidstack.script.context.Context;
 
 
-
-public class If extends LocalizedExpression
+public class Block extends LocalizedExpression // TODO Is this localized needed?
 {
-	private Expression condition;
-	private Expression left;
-	private Expression right;
+	private Expression expression;
 
 
-	public If( SourceLocation location, Expression condition, Expression left, Expression right )
+	public Block( SourceLocation location, Expression expression )
 	{
 		super( location );
+		this.expression = expression;
+	}
 
-		this.condition = condition;
-		this.left = left;
-		this.right = right;
+	public Expression getExpression()
+	{
+		return this.expression;
 	}
 
 	public Object evaluate( ThreadContext thread )
 	{
-		if( Operation.isTrue( this.condition.evaluate( thread ) ) )
-		{
-			if( this.left != null )
-				return this.left.evaluate( thread );
-		}
-		else
-		{
-			if( this.right != null )
-				return this.right.evaluate( thread );
-		}
-		return null;
+		Context context = new Context( thread.getContext() );
+		AbstractContext old = thread.swapContext( context );
+		Object result = this.expression.evaluate( thread );
+		thread.swapContext( old );
+		return result;
 	}
 }

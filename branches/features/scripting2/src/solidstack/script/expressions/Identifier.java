@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.expressions;
 
 import solidstack.io.SourceLocation;
+import solidstack.script.ThreadContext;
 
 
 public class Identifier extends LocalizedExpression

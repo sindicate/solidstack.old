@@ -14,36 +14,33 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.expressions;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import solidstack.io.SourceLocation;
-import solidstack.lang.Assert;
+import solidstack.script.ThreadContext;
+import solidstack.script.objects.SuperString;
 
-public class Expressions implements Expression
+
+
+public class StringExpression extends LocalizedExpression
 {
 	private List<Expression> expressions = new ArrayList<Expression>();
 
 
-	public Expressions()
+	public StringExpression( SourceLocation location )
 	{
+		super( location );
 	}
 
-	public Expressions( Expression expression )
+	public SuperString evaluate( ThreadContext thread )
 	{
-		if( expression != null )
-			append( expression );
-	}
-
-	public Object evaluate( ThreadContext thread )
-	{
-		Object result = null;
-		for( Expression e : this.expressions )
-			if( e != null )
-				result = e.evaluate( thread );
-		return result;
+		List<Object> values = new ArrayList<Object>();
+		for( Expression expression : this.expressions )
+			values.add( Operation.evaluateAndUnwrap( expression, thread ) );
+		return new SuperString( values );
 	}
 
 	public void append( Expression expression )
@@ -59,16 +56,5 @@ public class Expressions implements Expression
 	public Expression get( int index )
 	{
 		return this.expressions.get( index );
-	}
-
-	public Expression remove( int index )
-	{
-		return this.expressions.remove( 0 );
-	}
-
-	public SourceLocation getLocation()
-	{
-		Assert.isTrue( !this.expressions.isEmpty() );
-		return this.expressions.get( 0 ).getLocation();
 	}
 }

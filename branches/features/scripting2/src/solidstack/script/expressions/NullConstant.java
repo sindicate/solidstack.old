@@ -14,26 +14,23 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.expressions;
 
 import solidstack.io.SourceLocation;
+import solidstack.script.ThreadContext;
+import solidstack.script.objects.Null;
 
 
-/**
- * An expression.
- */
-public interface Expression
+
+public class NullConstant extends LocalizedExpression
 {
-	/**
-	 * Evaluate the expression.
-	 *
-	 * @param thread The context/scope.
-	 * @return The result of evaluating this expression.
-	 */
-	Object evaluate( ThreadContext thread );
+	public NullConstant( SourceLocation location )
+	{
+		super( location );
+	}
 
-	/**
-	 * @return The source location where this expression is encountered.
-	 */
-	SourceLocation getLocation();
+	public Object evaluate( ThreadContext thread )
+	{
+		return Null.INSTANCE;
+	}
 }

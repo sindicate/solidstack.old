@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.objects;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import solidstack.script.AbstractContext.Value;
+import solidstack.script.context.AbstractContext;
+import solidstack.script.context.AbstractContext.Value;
 
 
 public class TupleValue

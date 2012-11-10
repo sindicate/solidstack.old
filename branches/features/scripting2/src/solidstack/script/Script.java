@@ -19,6 +19,13 @@ package solidstack.script;
 import java.io.StringReader;
 
 import solidstack.io.ReaderSourceReader;
+import solidstack.script.context.Context;
+import solidstack.script.expressions.Expression;
+import solidstack.script.expressions.Operation;
+import solidstack.script.objects.ClassAccess;
+import solidstack.script.objects.Null;
+import solidstack.script.objects.ObjectAccess;
+import solidstack.script.objects.SuperString;
 
 public class Script
 {

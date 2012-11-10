@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.expressions;
 
 import java.util.List;
 
 import solidstack.io.SourceLocation;
+import solidstack.script.ThreadContext;
+import solidstack.script.objects.FunctionInstance;
 
 public class Function extends LocalizedExpression
 {

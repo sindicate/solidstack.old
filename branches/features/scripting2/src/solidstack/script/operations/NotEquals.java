@@ -18,8 +18,8 @@ package solidstack.script.operations;
 
 
 
-import solidstack.script.Expression;
 import solidstack.script.ThreadContext;
+import solidstack.script.expressions.Expression;
 
 
 public class NotEquals extends Equals

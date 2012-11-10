@@ -19,9 +19,9 @@ package solidstack.script.operations;
 import org.springframework.util.Assert;
 
 import solidstack.io.SourceLocation;
-import solidstack.script.Expression;
-import solidstack.script.Operation;
 import solidstack.script.ThreadContext;
+import solidstack.script.expressions.Expression;
+import solidstack.script.expressions.Operation;
 
 
 public class Not extends Operation

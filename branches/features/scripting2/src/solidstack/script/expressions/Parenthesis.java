@@ -14,14 +14,30 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.expressions;
 
-public class Null
+import solidstack.io.SourceLocation;
+import solidstack.script.ThreadContext;
+
+
+public class Parenthesis extends LocalizedExpression
 {
-	static public final Null INSTANCE = new Null();
+	private Expression expression;
 
-	private Null()
+
+	public Parenthesis( SourceLocation location, Expression expression )
 	{
+		super( location );
+		this.expression = expression;
+	}
 
+	public Expression getExpression()
+	{
+		return this.expression;
+	}
+
+	public Object evaluate( ThreadContext thread )
+	{
+		return this.expression.evaluate( thread );
 	}
 }

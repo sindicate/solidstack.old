@@ -17,13 +17,13 @@
 package solidstack.script.operations;
 
 import solidstack.lang.Assert;
-import solidstack.script.AbstractContext.Value;
-import solidstack.script.AbstractContext.Variable;
-import solidstack.script.Expression;
-import solidstack.script.Operation;
+import solidstack.script.context.AbstractContext.Value;
+import solidstack.script.context.AbstractContext.Variable;
+import solidstack.script.expressions.Expression;
+import solidstack.script.expressions.Operation;
+import solidstack.script.objects.TupleValue;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
-import solidstack.script.TupleValue;
 
 
 public class Assign extends Operation

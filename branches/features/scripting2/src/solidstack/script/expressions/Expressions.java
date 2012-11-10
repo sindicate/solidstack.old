@@ -14,38 +14,42 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.expressions;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import solidstack.io.SourceLocation;
 import solidstack.lang.Assert;
+import solidstack.script.ThreadContext;
 
-
-public class Tuple implements Expression
+public class Expressions implements Expression
 {
-	static public final Tuple EMPTY_TUPLE = new Tuple();
-
 	private List<Expression> expressions = new ArrayList<Expression>();
 
 
+	public Expressions()
+	{
+	}
+
+	public Expressions( Expression expression )
+	{
+		if( expression != null )
+			append( expression );
+	}
+
 	public Object evaluate( ThreadContext thread )
 	{
-		TupleValue values = new TupleValue();
-		for( Expression expression : this.expressions )
-			values.append( expression.evaluate( thread ) );
-		return values;
+		Object result = null;
+		for( Expression e : this.expressions )
+			if( e != null )
+				result = e.evaluate( thread );
+		return result;
 	}
 
 	public void append( Expression expression )
 	{
 		this.expressions.add( expression );
-	}
-
-	public List<Expression> getExpressions()
-	{
-		return this.expressions;
 	}
 
 	public int size()
@@ -56,6 +60,11 @@ public class Tuple implements Expression
 	public Expression get( int index )
 	{
 		return this.expressions.get( index );
+	}
+
+	public Expression remove( int index )
+	{
+		return this.expressions.remove( 0 );
 	}
 
 	public SourceLocation getLocation()

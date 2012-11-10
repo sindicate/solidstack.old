@@ -20,9 +20,9 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import solidstack.lang.Assert;
-import solidstack.script.FunctionInstance;
-import solidstack.script.Operation;
 import solidstack.script.ThreadContext;
+import solidstack.script.expressions.Operation;
+import solidstack.script.objects.FunctionInstance;
 
 public class Abs extends FunctionInstance
 {

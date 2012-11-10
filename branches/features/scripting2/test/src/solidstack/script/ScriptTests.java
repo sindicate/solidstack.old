@@ -25,8 +25,10 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import solidstack.io.SourceException;
+import solidstack.script.context.Context;
 import solidstack.script.java.MissingFieldException;
 import solidstack.script.java.MissingMethodException;
+import solidstack.script.objects.SuperString;
 
 
 @SuppressWarnings( "javadoc" )

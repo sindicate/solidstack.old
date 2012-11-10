@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.objects;
 
 import solidstack.script.java.Java;
 
 
-public class ClassAccess
+public class ObjectAccess
 {
-	private Class type;
+	private Object object;
 	private String name;
 
-	public ClassAccess( Class type, String name )
+	public ObjectAccess( Object object, String name )
 	{
-		this.type = type;
+		this.object = object;
 		this.name = name;
 	}
 
-	public Object getType()
+	public Object getObject()
 	{
-		return this.type;
+		return this.object;
 	}
 
 	public String getName()
@@ -42,11 +42,11 @@ public class ClassAccess
 
 	public Object invoke( Object... args )
 	{
-		return Java.invokeStatic( this.type, this.name, args );
+		return Java.invoke( this.object, this.name, args );
 	}
 
 	public Object get()
 	{
-		return Java.getStatic( this.type, this.name );
+		return Java.get( this.object, this.name );
 	}
 }

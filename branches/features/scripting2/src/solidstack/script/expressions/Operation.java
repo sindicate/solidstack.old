@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.expressions;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -23,8 +23,14 @@ import java.util.ListIterator;
 
 import solidstack.io.SourceLocation;
 import solidstack.lang.Assert;
-import solidstack.script.AbstractContext.Undefined;
-import solidstack.script.AbstractContext.Value;
+import solidstack.script.ThreadContext;
+import solidstack.script.context.AbstractContext;
+import solidstack.script.context.CombinedContext;
+import solidstack.script.context.AbstractContext.Undefined;
+import solidstack.script.context.AbstractContext.Value;
+import solidstack.script.objects.Null;
+import solidstack.script.objects.SuperString;
+import solidstack.script.objects.TupleValue;
 import solidstack.script.operations.Access;
 import solidstack.script.operations.And;
 import solidstack.script.operations.Apply;
@@ -126,7 +132,7 @@ abstract public class Operation implements Expression
 //		precedences.put( "|=", 16 ); // assignment
 	}
 
-	static Operation operation( String name, Expression left, Expression right )
+	static public Operation operation( String name, Expression left, Expression right )
 	{
 		// TODO The ifs are not all necessary, for example * is always just *
 		switch( name.charAt( 0 ) )
@@ -204,7 +210,7 @@ abstract public class Operation implements Expression
 		return null;
 	}
 
-	static Operation preOp( SourceLocation location, String name, Expression right )
+	static public Operation preOp( SourceLocation location, String name, Expression right )
 	{
 		// TODO The ifs are not all necessary, for example * is always just *
 		switch( name.charAt( 0 ) )

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.context;
 
 import solidstack.script.functions.Abs;
 import solidstack.script.functions.Class;

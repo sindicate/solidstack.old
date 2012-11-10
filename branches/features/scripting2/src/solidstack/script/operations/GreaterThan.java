@@ -18,9 +18,9 @@ package solidstack.script.operations;
 
 
 
-import solidstack.script.Expression;
-import solidstack.script.Operation;
 import solidstack.script.ThreadContext;
+import solidstack.script.expressions.Expression;
+import solidstack.script.expressions.Operation;
 
 
 public class GreaterThan extends Operation

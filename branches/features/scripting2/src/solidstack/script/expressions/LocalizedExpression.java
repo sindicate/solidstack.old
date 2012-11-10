@@ -14,39 +14,28 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.expressions;
 
-import solidstack.script.java.Java;
+import solidstack.io.SourceLocation;
 
 
-public class ObjectAccess
+/**
+ * An expression that knows its location.
+ */
+abstract public class LocalizedExpression implements Expression
 {
-	private Object object;
-	private String name;
+	private SourceLocation location;
 
-	public ObjectAccess( Object object, String name )
+	/**
+	 * @param location The location of this expression in the source.
+	 */
+	public LocalizedExpression( SourceLocation location )
 	{
-		this.object = object;
-		this.name = name;
+		this.location = location;
 	}
 
-	public Object getObject()
+	public SourceLocation getLocation()
 	{
-		return this.object;
-	}
-
-	public String getName()
-	{
-		return this.name;
-	}
-
-	public Object invoke( Object... args )
-	{
-		return Java.invoke( this.object, this.name, args );
-	}
-
-	public Object get()
-	{
-		return Java.get( this.object, this.name );
+		return this.location;
 	}
 }

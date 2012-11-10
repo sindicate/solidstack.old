@@ -14,36 +14,40 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.expressions;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import solidstack.io.SourceLocation;
+import solidstack.lang.Assert;
+import solidstack.script.ThreadContext;
+import solidstack.script.objects.TupleValue;
 
 
-
-public class StringExpression extends LocalizedExpression
+public class Tuple implements Expression
 {
+	static public final Tuple EMPTY_TUPLE = new Tuple();
+
 	private List<Expression> expressions = new ArrayList<Expression>();
 
 
-	public StringExpression( SourceLocation location )
+	public Object evaluate( ThreadContext thread )
 	{
-		super( location );
-	}
-
-	public SuperString evaluate( ThreadContext thread )
-	{
-		List<Object> values = new ArrayList<Object>();
+		TupleValue values = new TupleValue();
 		for( Expression expression : this.expressions )
-			values.add( Operation.evaluateAndUnwrap( expression, thread ) );
-		return new SuperString( values );
+			values.append( expression.evaluate( thread ) );
+		return values;
 	}
 
 	public void append( Expression expression )
 	{
 		this.expressions.add( expression );
+	}
+
+	public List<Expression> getExpressions()
+	{
+		return this.expressions;
 	}
 
 	public int size()
@@ -54,5 +58,11 @@ public class StringExpression extends LocalizedExpression
 	public Expression get( int index )
 	{
 		return this.expressions.get( index );
+	}
+
+	public SourceLocation getLocation()
+	{
+		Assert.isTrue( !this.expressions.isEmpty() );
+		return this.expressions.get( 0 ).getLocation();
 	}
 }

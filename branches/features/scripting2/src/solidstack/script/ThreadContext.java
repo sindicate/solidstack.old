@@ -20,6 +20,8 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import solidstack.io.SourceLocation;
+import solidstack.script.context.AbstractContext;
+import solidstack.script.context.Context;
 
 public class ThreadContext
 {

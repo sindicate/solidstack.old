@@ -14,26 +14,39 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.objects;
 
-import solidstack.io.SourceLocation;
+import solidstack.script.java.Java;
 
 
-
-public class StringConstant extends LocalizedExpression
+public class ClassAccess
 {
-	private String value;
+	private Class type;
+	private String name;
 
-
-	public StringConstant( SourceLocation location, String value )
+	public ClassAccess( Class type, String name )
 	{
-		super( location );
-
-		this.value = value;
+		this.type = type;
+		this.name = name;
 	}
 
-	public String evaluate( ThreadContext thread )
+	public Object getType()
 	{
-		return this.value;
+		return this.type;
+	}
+
+	public String getName()
+	{
+		return this.name;
+	}
+
+	public Object invoke( Object... args )
+	{
+		return Java.invokeStatic( this.type, this.name, args );
+	}
+
+	public Object get()
+	{
+		return Java.getStatic( this.type, this.name );
 	}
 }

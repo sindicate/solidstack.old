@@ -14,26 +14,41 @@
  * limitations under the License.
  */
 
-package solidstack.script;
-
-import java.math.BigDecimal;
+package solidstack.script.expressions;
 
 import solidstack.io.SourceLocation;
+import solidstack.script.ThreadContext;
 
-public class NumberConstant extends LocalizedExpression
+
+
+public class If extends LocalizedExpression
 {
-	private BigDecimal value;
+	private Expression condition;
+	private Expression left;
+	private Expression right;
 
 
-	public NumberConstant( SourceLocation location, BigDecimal value )
+	public If( SourceLocation location, Expression condition, Expression left, Expression right )
 	{
 		super( location );
 
-		this.value = value;
+		this.condition = condition;
+		this.left = left;
+		this.right = right;
 	}
 
-	public BigDecimal evaluate( ThreadContext thread )
+	public Object evaluate( ThreadContext thread )
 	{
-		return this.value;
+		if( Operation.isTrue( this.condition.evaluate( thread ) ) )
+		{
+			if( this.left != null )
+				return this.left.evaluate( thread );
+		}
+		else
+		{
+			if( this.right != null )
+				return this.right.evaluate( thread );
+		}
+		return null;
 	}
 }

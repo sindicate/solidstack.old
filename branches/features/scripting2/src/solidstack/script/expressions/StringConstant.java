@@ -14,28 +14,27 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.expressions;
 
 import solidstack.io.SourceLocation;
+import solidstack.script.ThreadContext;
 
 
-/**
- * An expression that knows its location.
- */
-abstract public class LocalizedExpression implements Expression
+
+public class StringConstant extends LocalizedExpression
 {
-	private SourceLocation location;
+	private String value;
 
-	/**
-	 * @param location The location of this expression in the source.
-	 */
-	public LocalizedExpression( SourceLocation location )
+
+	public StringConstant( SourceLocation location, String value )
 	{
-		this.location = location;
+		super( location );
+
+		this.value = value;
 	}
 
-	public SourceLocation getLocation()
+	public String evaluate( ThreadContext thread )
 	{
-		return this.location;
+		return this.value;
 	}
 }

@@ -14,24 +14,27 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.expressions;
 
 import solidstack.io.SourceLocation;
+import solidstack.script.ThreadContext;
 
 
-
-public class BooleanConstant extends LocalizedExpression
+/**
+ * An expression.
+ */
+public interface Expression
 {
-	private boolean value;
+	/**
+	 * Evaluate the expression.
+	 *
+	 * @param thread The context/scope.
+	 * @return The result of evaluating this expression.
+	 */
+	Object evaluate( ThreadContext thread );
 
-	public BooleanConstant( SourceLocation location, boolean value )
-	{
-		super( location );
-		this.value = value;
-	}
-
-	public Boolean evaluate( ThreadContext thread )
-	{
-		return this.value;
-	}
+	/**
+	 * @return The source location where this expression is encountered.
+	 */
+	SourceLocation getLocation();
 }

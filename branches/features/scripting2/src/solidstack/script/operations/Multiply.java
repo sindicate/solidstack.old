@@ -19,9 +19,9 @@ package solidstack.script.operations;
 import java.math.BigDecimal;
 
 import solidstack.lang.Assert;
-import solidstack.script.Expression;
-import solidstack.script.Operation;
 import solidstack.script.ThreadContext;
+import solidstack.script.expressions.Expression;
+import solidstack.script.expressions.Operation;
 
 
 public class Multiply extends Operation

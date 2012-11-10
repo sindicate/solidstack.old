@@ -18,12 +18,12 @@ package solidstack.script.operations;
 
 import org.springframework.util.Assert;
 
-import solidstack.script.AbstractContext;
-import solidstack.script.Expression;
-import solidstack.script.Identifier;
-import solidstack.script.ObjectAccess;
-import solidstack.script.Operation;
 import solidstack.script.ThreadContext;
+import solidstack.script.context.AbstractContext;
+import solidstack.script.expressions.Expression;
+import solidstack.script.expressions.Identifier;
+import solidstack.script.expressions.Operation;
+import solidstack.script.objects.ObjectAccess;
 
 
 public class Access extends Operation

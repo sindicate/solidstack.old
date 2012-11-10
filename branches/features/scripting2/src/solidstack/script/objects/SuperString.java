@@ -14,29 +14,33 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.objects;
 
-import solidstack.io.SourceLocation;
+import java.util.List;
 
-
-public class Parenthesis extends LocalizedExpression
+public class SuperString
 {
-	private Expression expression;
+	private List<Object> values;
 
-
-	public Parenthesis( SourceLocation location, Expression expression )
+	public SuperString( List<Object> values )
 	{
-		super( location );
-		this.expression = expression;
+		this.values = values;
 	}
 
-	public Expression getExpression()
+	@Override
+	public String toString()
 	{
-		return this.expression;
+		StringBuilder result = new StringBuilder();
+		for( Object value : this.values )
+			result.append( value );
+		return result.toString();
 	}
 
-	public Object evaluate( ThreadContext thread )
+	public boolean isEmpty()
 	{
-		return this.expression.evaluate( thread );
+		for( Object value : this.values )
+			if( value.toString().length() != 0 ) // TODO What about nulls?
+				return false;
+		return true;
 	}
 }

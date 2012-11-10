@@ -20,8 +20,8 @@ import java.io.IOException;
 import java.util.Map;
 
 import solidstack.io.FatalIOException;
-import solidstack.script.Context;
 import solidstack.script.Script;
+import solidstack.script.context.Context;
 import solidstack.template.ConvertingWriter;
 import solidstack.template.EncodingWriter;
 import solidstack.template.Template;

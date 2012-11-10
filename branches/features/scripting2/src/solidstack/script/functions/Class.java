@@ -19,9 +19,9 @@ package solidstack.script.functions;
 import java.util.List;
 
 import solidstack.lang.Assert;
-import solidstack.script.FunctionInstance;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
+import solidstack.script.objects.FunctionInstance;
 
 public class Class extends FunctionInstance
 {

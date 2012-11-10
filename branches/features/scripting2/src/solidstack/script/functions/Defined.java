@@ -19,8 +19,8 @@ package solidstack.script.functions;
 import java.util.List;
 
 import solidstack.lang.Assert;
-import solidstack.script.AbstractContext.Undefined;
-import solidstack.script.FunctionInstance;
+import solidstack.script.context.AbstractContext.Undefined;
+import solidstack.script.objects.FunctionInstance;
 import solidstack.script.ThreadContext;
 
 public class Defined extends FunctionInstance
