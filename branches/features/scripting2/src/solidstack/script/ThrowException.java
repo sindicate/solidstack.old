@@ -16,6 +16,9 @@
 
 package solidstack.script;
 
+import java.io.PrintStream;
+import java.io.PrintWriter;
+
 import solidstack.io.SourceLocation;
 
 public class ThrowException extends RuntimeException
@@ -30,7 +33,7 @@ public class ThrowException extends RuntimeException
 	}
 
 	@Override
-	public synchronized Throwable initCause( Throwable cause )
+	public synchronized Throwable fillInStackTrace()
 	{
 		return null;
 	}
@@ -38,6 +41,28 @@ public class ThrowException extends RuntimeException
 	@Override
 	public String getMessage()
 	{
-		return this.object.toString() + ", at " + this.stack[ 0 ];
+		return this.object.toString();
+	}
+
+	@Override
+	public String toString()
+	{
+		return getMessage();
+	}
+
+	@Override
+	public void printStackTrace( PrintStream out )
+	{
+		PrintWriter writer = new PrintWriter( out );
+		printStackTrace( writer );
+		writer.flush();
+	}
+
+	@Override
+	public void printStackTrace( PrintWriter out )
+	{
+		out.println( toString() );
+		for( SourceLocation location : this.stack )
+			out.append( "\tat " ).append( location.toString() ).println();
 	}
 }

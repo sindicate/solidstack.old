@@ -47,7 +47,7 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<String, T>
 		Entry entry = this.entries[ index ];
 		while( entry != null ) // Loop till we find it
 		{
-			if( entry.key.equals( key ) )
+			if( entry.___key.equals( key ) )
 				return (T)entry;
 			entry = entry.___next;
 		}
@@ -67,7 +67,7 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<String, T>
 
 	public T put( T value )
 	{
-		String key = value.key;
+		String key = value.___key;
 
 		int hash = key.hashCode();
 		int index = hash & this.entries.length - 1;
@@ -76,7 +76,7 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<String, T>
 		Entry last = null;
 		while( entry != null ) // Loop till we find it
 		{
-			if( entry.key.equals( key ) )
+			if( entry.___key.equals( key ) )
 			{
 				value.___next = entry.___next; // Replace link with the new entry
 				if( last == null )
@@ -117,7 +117,7 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<String, T>
 		Entry last = null;
 		while( entry != null ) // Loop till we find it
 		{
-			if( entry.key.equals( key ) )
+			if( entry.___key.equals( key ) )
 			{
 				this.size--;
 				if( last == null )
@@ -276,17 +276,18 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<String, T>
 	 */
 	static public class Entry
 	{
-		Entry ___next; // Can't make this private, else it won't compile on Java 7. Added ___ to prevent name shadowing by subclasses.
-		private String key;
+		// Can't make this private, else it won't compile on Java 7. Added ___ to prevent name shadowing by subclasses.
+		Entry ___next;
+		String ___key;
 
 		protected Entry( String key )
 		{
-			this.key = key;
+			this.___key = key;
 		}
 
 		public String getKey()
 		{
-			return this.key;
+			return this.___key;
 		}
 	}
 }

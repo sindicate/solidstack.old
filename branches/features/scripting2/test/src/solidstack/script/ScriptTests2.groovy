@@ -119,7 +119,7 @@ with escaped newline" );
 		}
 		catch( ThrowException e )
 		{
-			Assert.assertEquals( e.message, "error, at line 3" )
+			Assert.assertEquals( e.message, "error" )
 		}
 		// assert( actual( o.f( 3 ) ) == expected( 12 ) ); // Will throw: Expected 12, got ${got}
 		// assert( x != null ); // Will throw: x must not be null
