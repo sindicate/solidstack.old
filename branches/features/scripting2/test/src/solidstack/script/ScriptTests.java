@@ -353,6 +353,19 @@ public class ScriptTests
 		fail( "TestObject = class( \"solidstack.script.ScriptTests$TestObject2\" ); TestObject#value", MissingFieldException.class, "static solidstack.script.ScriptTests$TestObject2.value" );
 	}
 
+	@Test
+	static public void test19()
+	{
+		try
+		{
+			eval( "o = class( \"solidstack.script.ScriptTests$TestObject3\" )(); o.throwException()" );
+		}
+		catch( Exception e )
+		{
+			e.printStackTrace( System.out );
+		}
+	}
+
 	// TODO Calls with named parameters
 	// TODO Use #, :, -> or :: to access static members of a class instance:
 	// . only resolves to instance members or static members of its class. So, Calendar.getInstance() does not work because Calendar is of class Class which has no getInstance().
@@ -480,5 +493,14 @@ public class ScriptTests
 		public TestObject2( int i1, int i2 ) { this.value = 1; }
 
 		public int test( int i1, int i2 ) { return 1; }
+	}
+
+	@SuppressWarnings( "unused" )
+	static public class TestObject3
+	{
+		public void throwException() throws Exception
+		{
+			throw new Exception( "test exception" );
+		}
 	}
 }

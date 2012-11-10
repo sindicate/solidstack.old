@@ -21,8 +21,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-import solidstack.script.ScriptException;
-
 public class MethodCall implements Cloneable
 {
 	static public Class[] NO_PARAMETERS = new Class[ 0 ];
@@ -62,18 +60,15 @@ public class MethodCall implements Cloneable
 				return this.constructor.newInstance( this.args );
 			return this.method.invoke( this.object, this.args );
 		}
-		catch( IllegalAccessException e )
-		{
-			throw new ScriptException( e );
-		}
 		catch( InvocationTargetException e )
 		{
-			throw new ScriptException( e.getCause() );
+			Java.throwUnchecked( e.getCause() );
 		}
-		catch( InstantiationException e ) // Constructor
+		catch( Exception e )
 		{
-			throw new ScriptException( e.getCause() );
+			Java.throwUnchecked( e );
 		}
+		return null;
 	}
 
 	public String getName()

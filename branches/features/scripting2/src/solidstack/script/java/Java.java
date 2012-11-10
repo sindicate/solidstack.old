@@ -19,10 +19,22 @@ package solidstack.script.java;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
+import solidstack.script.ScriptException;
 
 
+/**
+ * Contains methods to call methods an objects, get or set fields on objects.
+ */
 public class Java
 {
+	/**
+	 * Invokes a method on an object. Exceptions are passed through as-is, even checked exceptions.
+	 *
+	 * @param object An object instance.
+	 * @param name The method name.
+	 * @param args The arguments to the method.
+	 * @return The result of calling the method.
+	 */
 	static public Object invoke( Object object, String name, Object... args )
 	{
 		CallContext context = new CallContext( object, name, args );
@@ -32,7 +44,15 @@ public class Java
 		return call.invoke();
 	}
 
-	static public Object invokeStatic( Class type, String name, Object... args )
+	/**
+	 * Invokes a static method on a class. Exceptions are passed through as-is, even checked exceptions.
+	 *
+	 * @param type A class.
+	 * @param name The method name.
+	 * @param args The arguments to the method.
+	 * @return The result of calling the method.
+	 */
+	static public Object invokeStatic( Class<?> type, String name, Object... args )
 	{
 		CallContext context = new CallContext( type, name, args );
 		MethodCall call = Resolver.resolveMethodCall( context );
@@ -41,19 +61,37 @@ public class Java
 		return call.invoke();
 	}
 
+	/**
+	 * Reads a field of an object.
+	 *
+	 * @param object An object.
+	 * @param name The name of the field.
+	 * @return The value of the field.
+	 */
 	static public Object get( Object object, String name )
 	{
 		try
 		{
 			return object.getClass().getField( name ).get( object );
 		}
-		catch( ReflectiveOperationException e )
+		catch( IllegalAccessException e )
+		{
+			throw new ScriptException( e );
+		}
+		catch( NoSuchFieldException e )
 		{
 			throw new MissingFieldException( object, object.getClass(), name );
 		}
 	}
 
-	public static Object getStatic( Class type, String name )
+	/**
+	 * Reads a static field of a class.
+	 *
+	 * @param type A class.
+	 * @param name The name of the field.
+	 * @return The value of the field.
+	 */
+	public static Object getStatic( Class<?> type, String name )
 	{
 		try
 		{
@@ -62,18 +100,46 @@ public class Java
 				throw new MissingFieldException( null, type, name );
 			return type.getField( name ).get( null );
 		}
-		catch( ReflectiveOperationException e )
+		catch( IllegalAccessException e )
+		{
+			throw new ScriptException( e );
+		}
+		catch( NoSuchFieldException e )
 		{
 			throw new MissingFieldException( null, type, name );
 		}
 	}
 
-	static public Object construct( Class cls, Object... args )
+	/**
+	 * Instantiates an object.
+	 *
+	 * @param type The class of the object to be instantiated.
+	 * @param args The arguments to the constructor.
+	 * @return The instantiated object.
+	 */
+	static public Object construct( Class<?> type, Object... args )
 	{
-		CallContext context = new CallContext( cls, null, args );
+		CallContext context = new CallContext( type, null, args );
 		MethodCall call = Resolver.resolveConstructorCall( context );
 		if( call == null )
 			throw new MissingMethodException( context );
 		return call.invoke();
+	}
+
+	/**
+	 * Throws the given throwable without the need to declare it.
+	 *
+	 * @param throwable The throwable.
+	 */
+	static public void throwUnchecked( Throwable throwable )
+	{
+		Java.<RuntimeException>throwGeneric( throwable );
+	}
+
+	@SuppressWarnings( "unchecked" )
+	static private <T extends Throwable> void throwGeneric( Throwable exception ) throws T
+	{
+		// No 'checkcast' byte code is added, because the parameter is a Throwable and the lower bound of T is also Throwable.
+		throw (T)exception;
 	}
 }
