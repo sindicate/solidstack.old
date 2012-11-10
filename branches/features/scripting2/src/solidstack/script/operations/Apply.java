@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import solidstack.script.ClassAccess;
 import solidstack.script.Expression;
 import solidstack.script.FunctionInstance;
 import solidstack.script.Identifier;
@@ -73,10 +74,18 @@ public class Apply extends Operation
 			ObjectAccess f = (ObjectAccess)left;
 			Object pars = this.right.evaluate( thread );
 			if( pars instanceof TupleValue )
-			{
-				List<Object> list = ( (TupleValue)pars ).getValues();
-				return f.invoke( unwrapList( list ).toArray() ); // TODO unwrap array
-			}
+				return f.invoke( unwrapList( ( (TupleValue)pars ).getValues() ).toArray() ); // TODO unwrap array
+			if( pars != null )
+				return f.invoke( unwrap( pars ) );
+			return f.invoke();
+		}
+
+		if( left instanceof ClassAccess )
+		{
+			ClassAccess f = (ClassAccess)left;
+			Object pars = this.right.evaluate( thread );
+			if( pars instanceof TupleValue )
+				return f.invoke( unwrapList( ( (TupleValue)pars ).getValues() ).toArray() ); // TODO unwrap array
 			if( pars != null )
 				return f.invoke( unwrap( pars ) );
 			return f.invoke();
@@ -84,7 +93,7 @@ public class Apply extends Operation
 
 		if( left instanceof Class )
 		{
-			Class cls = (Class)left;
+			Class<?> cls = (Class<?>)left;
 			Object pars = this.right.evaluate( thread );
 			if( pars instanceof TupleValue )
 			{

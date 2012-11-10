@@ -32,15 +32,13 @@ public class MissingMethodException extends ScriptException
 	public String getMessage()
 	{
 		Object object = this.context.getObject();
-		String name = this.context.getName();
 		Object[] args = this.context.getArgs();
-		Class type = object instanceof Class ? (Class)object : object.getClass();
-		StringBuilder result = new StringBuilder();
-		result.append( "No signature of method: " );
-		result.append( object instanceof Class ? "static " : "" );
-		result.append( type.getName() );
+
+		StringBuilder result = new StringBuilder( "No such method: " );
+		result.append( object == null ? "static " : "" );
+		result.append( this.context.getType().getName() );
 		result.append( '.' );
-		result.append( name );
+		result.append( this.context.getName() );
 		result.append( "() is applicable for argument types: (" );
 		for( int i = 0; i < args.length; i++ )
 		{

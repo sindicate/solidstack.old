@@ -16,6 +16,8 @@
 
 package solidstack.script;
 
+import static org.fest.assertions.api.Assertions.assertThat;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
@@ -23,6 +25,8 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import solidstack.io.SourceException;
+import solidstack.script.java.MissingFieldException;
+import solidstack.script.java.MissingMethodException;
 
 
 @SuppressWarnings( "javadoc" )
@@ -260,7 +264,8 @@ public class ScriptTests
 		assert o1.test( new BigDecimal( 1 ), new BigDecimal( 1 ) ) == 6;
 		test( "o1.test( 1, 1 )", context, 6 );
 		test( "1.getClass()", BigDecimal.class );
-		test( "1.getClass().valueOf( 1.1 )", new BigDecimal( "1.1" ) );
+		test( "1.getClass()#valueOf( 1.1 )", new BigDecimal( "1.1" ) );
+		test( "1.valueOf( 1.1 )", new BigDecimal( "1.1" ) );
 		test( "o1.test( 1 == 1 )", context, 7 );
 
 		TestObject2 o2 = new TestObject2();
@@ -274,7 +279,9 @@ public class ScriptTests
 		Context context = new Context();
 		test( "c = class( \"solidstack.script.ScriptTests$TestObject1\" );", context, TestObject1.class );
 		test( "c().value", context, 0 );
+		test( "c.new().value", context, 0 ); // TODO Do we want this?
 		test( "c( 1 ).value", context, 2 );
+		test( "c.new( 1 ).value", context, 2 );
 		test( "c( \"string\" ).value", context, 3 );
 		test( "c( \"string\", \"string\" ).value", context, 4 );
 		test( "c( 1, 1 ).value", context, 6 );
@@ -328,7 +335,7 @@ public class ScriptTests
 	static public void test17()
 	{
 		test( "class( \"java.util.ArrayList\" );", ArrayList.class );
-		test( "c = class( \"java.util.ArrayList\" ); c();", new ArrayList() );
+		test( "c = class( \"java.util.ArrayList\" ); c();", new ArrayList<Object>() );
 		test( "l = class( \"java.util.ArrayList\" )(); l.add( \"sinterklaas\" ); l.toArray();", new Object[] { "sinterklaas" } );
 		test( "ArrayList = class( \"java.util.ArrayList\" ); l = ArrayList(); l.toArray();", new Object[ 0 ] );
 	}
@@ -338,11 +345,16 @@ public class ScriptTests
 	{
 		test( "l = class( \"java.util.ArrayList\" )(); forEach( l, fun( i; i ) )", null );
 		test( "l = class( \"java.util.ArrayList\" )(); i = 0; while( i < 10; l.add( i ), i++ ); l.each( fun( i; println( i ) ) )", new BigDecimal( 9 ) );
+		eval( "Calendar = class( \"java.util.Calendar\" ); println( Calendar#getInstance().getClass() )" );
+		test( "Calendar = class( \"java.util.Calendar\" ); Calendar#SATURDAY", 7 );
+		fail( "Calendar = class( \"java.util.Calendar\" ); Calendar#clear()", MissingMethodException.class, "static java.util.Calendar.clear()" );
+		fail( "TestObject = class( \"solidstack.script.ScriptTests$TestObject2\" ); TestObject#value", MissingFieldException.class, "static solidstack.script.ScriptTests$TestObject2.value" );
 	}
 
 	// TODO Calls with named parameters
-	// TODO Loop through collection
-	// TODO Class extension
+	// TODO Use #, :, -> or :: to access static members of a class instance:
+	// . only resolves to instance members or static members of its class. So, Calendar.getInstance() does not work because Calendar is of class Class which has no getInstance().
+	// Therefore, we must use Calendar#getInstance(), Calendar:getInstance(), Calendar->getInstance() or Calendar::getInstance().
 
 	// TODO Exceptions, catch & finally
 	// TODO MethodMissing
@@ -353,7 +365,7 @@ public class ScriptTests
 	// TODO Add methods to the datatypes and/or objects
 	// TODO DSLs
 	// TODO Underscores in number literals
-	// TODO Parameter spreading
+	// TODO Spread parameters or collection access
 	// TODO Arrays and maps with literals
 	// TODO Ranges
 	// TODO Synchronization
@@ -367,6 +379,9 @@ public class ScriptTests
 	// TODO Symbols :red
 	// TODO Mixins
 	// TODO Lazy evaluation
+	// TODO Class extension pluggable
+	// TODO Extensions: unique/each(WithIndex)/find(All)/collect/contains/every/indexOf/flatten/groupBy/inject/join/max/min/removeAll/replaceAll/reverse/sum/tail/traverse/withReader(etc)
+	// TODO with() to execute a function with a different context
 
 	static public void test( String expression, Object expected )
 	{
@@ -401,6 +416,19 @@ public class ScriptTests
 		catch( SourceException e )
 		{
 			// Expected
+		}
+	}
+
+	static public void fail( String expression, Class<? extends Throwable> throwable, String message )
+	{
+		try
+		{
+			eval( expression );
+		}
+		catch( Throwable t )
+		{
+			assertThat( t ).isExactlyInstanceOf( throwable );
+			assertThat( t ).hasMessageContaining( message );
 		}
 	}
 

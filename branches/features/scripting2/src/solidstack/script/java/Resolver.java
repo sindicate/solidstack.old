@@ -36,21 +36,27 @@ public class Resolver
 
 	static public MethodCall resolveMethodCall( CallContext context )
 	{
-		for( Method method : context.getType().getMethods() )
-			if( method.getName().equals( context.getName() ) )
-			{
-				MethodCall caller = Resolver.matchArguments( context, method.getParameterTypes(), ( method.getModifiers() & Modifier.TRANSIENT ) != 0, false );
-				if( caller != null )
-				{
-					caller.object = context.getObject();
-					caller.method = method;
-					context.addCandidate( caller );
-				}
-			}
+		boolean needStatic = context.getObject() == null;
 
-		context.setThisMode( true );
-		collectMethods( context.getType(), context );
-		context.setThisMode( false );
+		for( Method method : context.getType().getMethods() )
+			if( !needStatic || ( method.getModifiers() & Modifier.STATIC ) != 0 )
+				if( method.getName().equals( context.getName() ) )
+				{
+					MethodCall caller = Resolver.matchArguments( context, method.getParameterTypes(), ( method.getModifiers() & Modifier.TRANSIENT ) != 0, false );
+					if( caller != null )
+					{
+						caller.object = context.getObject();
+						caller.method = method;
+						context.addCandidate( caller );
+					}
+				}
+
+		if( !needStatic )
+		{
+			context.setThisMode( true );
+			collectMethods( context.getType(), context );
+			context.setThisMode( false );
+		}
 
 		return Resolver.calculateBestMethodCandidate( context.getCandidates() );
 	}
@@ -84,9 +90,14 @@ public class Resolver
 			}
 		}
 
-		cls = cls.getSuperclass();
-		if( cls != null )
-			collectMethods( cls, context );
+		if( cls.isArray() && cls != Object[].class )
+			collectMethods( Object[].class, context ); // Makes Object[] the virtual super class of all arrays
+		else
+		{
+			cls = cls.getSuperclass();
+			if( cls != null )
+				collectMethods( cls, context );
+		}
 	}
 
 	static public MethodCall resolveConstructorCall( CallContext context )

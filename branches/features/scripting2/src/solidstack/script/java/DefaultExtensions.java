@@ -16,9 +16,14 @@
 
 package solidstack.script.java;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 
+/**
+ * Default Java extensions.
+ */
 public class DefaultExtensions
 {
 	static public Object each( Collection collection, Function function )
@@ -28,5 +33,26 @@ public class DefaultExtensions
 		for( Object object : collection )
 			result = function.call( object );
 		return result;
+	}
+
+	static public List collect( Collection collection, Function function )
+	{
+		List result = new ArrayList(collection.size());
+		for( Object object : collection )
+			result.add( function.call( object ) );
+		return result;
+	}
+
+	static public List collect( Object[] array, Function function )
+	{
+		List result = new ArrayList(array.length);
+		for( Object object : array )
+			result.add( function.call( object ) );
+		return result;
+	}
+
+	static public Object _new( Class cls, Object... args )
+	{
+		return Java.construct( cls, args );
 	}
 }

@@ -17,8 +17,8 @@
 package solidstack.script.java;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
-import solidstack.script.ScriptException;
 
 
 public class Java
@@ -32,16 +32,39 @@ public class Java
 		return call.invoke();
 	}
 
+	static public Object invokeStatic( Class type, String name, Object... args )
+	{
+		CallContext context = new CallContext( type, name, args );
+		MethodCall call = Resolver.resolveMethodCall( context );
+		if( call == null )
+			throw new MissingMethodException( context );
+		return call.invoke();
+	}
+
 	static public Object get( Object object, String name )
 	{
 		try
 		{
-			Field field = object.getClass().getField( name );
-			return field.get( object );
+			return object.getClass().getField( name ).get( object );
 		}
 		catch( ReflectiveOperationException e )
 		{
-			throw new ScriptException( e );
+			throw new MissingFieldException( object, object.getClass(), name );
+		}
+	}
+
+	public static Object getStatic( Class type, String name )
+	{
+		try
+		{
+			Field field = type.getField( name );
+			if( ( field.getModifiers() & Modifier.STATIC ) == 0 )
+				throw new MissingFieldException( null, type, name );
+			return type.getField( name ).get( null );
+		}
+		catch( ReflectiveOperationException e )
+		{
+			throw new MissingFieldException( null, type, name );
 		}
 	}
 

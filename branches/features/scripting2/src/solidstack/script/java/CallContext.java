@@ -47,10 +47,15 @@ public class CallContext
 
 	public CallContext( Object object, String name, Object[] args )
 	{
+		this( object.getClass(), name, args );
 		this.object = object;
+	}
+
+	public CallContext( Class type, String name, Object[] args )
+	{
 		this.name = name;
 		this.args = args;
-		this.type = object instanceof Class ? (Class)object : object.getClass();
+		this.type = type;
 	}
 
 	public void setThisMode( boolean thisMode )
@@ -110,7 +115,6 @@ public class CallContext
 	public void addCandidate( MethodCall method )
 	{
 		this.candidates.add( method );
-//		this.candidateFound = true;
 	}
 
 	public List<MethodCall> getCandidates()
@@ -128,3 +132,4 @@ public class CallContext
 		this.interfacesDone.add( iface );
 	}
 }
+

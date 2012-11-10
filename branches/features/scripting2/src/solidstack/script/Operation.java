@@ -43,6 +43,7 @@ import solidstack.script.operations.PostDecr;
 import solidstack.script.operations.PostInc;
 import solidstack.script.operations.PreDecr;
 import solidstack.script.operations.PreInc;
+import solidstack.script.operations.StaticAccess;
 
 
 abstract public class Operation implements Expression
@@ -62,6 +63,7 @@ abstract public class Operation implements Expression
 //		precedences.put( "[", 1 ); // array index
 		precedences.put( "(", 1 ); // method call
 		precedences.put( ".", 1 ); // member access
+		precedences.put( "#", 1 ); // static access
 
 		precedences.put( "@++", 2 ); // postfix increment
 		precedences.put( "@--", 2 ); // postfix decrement
@@ -191,6 +193,11 @@ abstract public class Operation implements Expression
 			case '.':
 				if( name.equals( "." ) )
 					return new Access( name, left, right );
+				break;
+
+			case '#':
+				if( name.equals( "#" ) )
+					return new StaticAccess( name, left, right );
 				break;
 		}
 		Assert.fail( "Unknown operation " + name );

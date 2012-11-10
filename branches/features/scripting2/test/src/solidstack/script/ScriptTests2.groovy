@@ -19,6 +19,7 @@ package solidstack.script;
 import org.testng.Assert
 import org.testng.annotations.Test
 
+
 public class ScriptTests2
 {
 	@Test
@@ -124,6 +125,17 @@ with escaped newline" );
 		// assert( x != null ); // Will throw: x must not be null
 		// assert( x ); // Will throw: x must not be false/null/empty, depending on what case is found
 		// TODO assert with multiple tuples?
+	}
+
+	@Test
+	static public void test5()
+	{
+		ScriptTests.eval( '''
+			ArrayList = class( "java.util.ArrayList" );
+			l = ArrayList.getMethods().collect( fun( method; method.getName() ) );
+			l.each( fun( name; println( name ) ) );
+			'''
+		);
 	}
 
 //	@Test

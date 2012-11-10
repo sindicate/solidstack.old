@@ -22,34 +22,44 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import solidstack.lang.Assert;
 
-
+/**
+ * Extensions to Java classes.
+ */
 public class ClassExt
 {
-	static private IdentityHashMap<Class, ClassExt> extensions = new IdentityHashMap<Class, ClassExt>();
+	static private IdentityHashMap<Class<?>, ClassExt> extensions = new IdentityHashMap<Class<?>, ClassExt>();
 
 	static
 	{
 		for( Method method : DefaultExtensions.class.getMethods() )
-			if( ( method.getModifiers() & Modifier.STATIC ) != 0 )
+			if( ( method.getModifiers() & Modifier.STATIC ) != 0 ) // Only statics
 			{
-				Class[] types = method.getParameterTypes();
-				Assert.isFalse( types.length == 0 );
-				Class cls = types[ 0 ];
-				ClassExt ext = forClass( cls, true );
-				ext.addMethod( method );
+				Class<?>[] types = method.getParameterTypes();
+				if( types.length != 0 )
+				{
+					String name = method.getName().indexOf( '_' ) == 0 ? method.getName().substring( 1 ) : method.getName() ;
+					forClass( types[ 0 ] ).addMethod( name, method );
+				}
 			}
 	}
 
-	static public ClassExt forClass( Class cls )
+	/**
+	 * @param cls A class.
+	 * @return The extension for the given class. Null if it doesn't exist.
+	 */
+	static public ClassExt get( Class<?> cls )
 	{
 		return extensions.get( cls );
 	}
 
-	static public ClassExt forClass( Class cls, boolean create )
+	/**
+	 * @param cls A class.
+	 * @return The extension for the given class. A new one will be created if it doesn't exist.
+	 */
+	static public ClassExt forClass( Class<?> cls )
 	{
-		ClassExt result = forClass( cls );
+		ClassExt result = get( cls );
 		if( result != null )
 			return result;
 		result = new ClassExt();
@@ -57,11 +67,13 @@ public class ClassExt
 		return result;
 	}
 
+	// ----------
+
 	private Map<String, Method> methods = new HashMap<String, Method>();
 
-	private void addMethod( Method method )
+	private void addMethod( String name, Method method )
 	{
-		this.methods.put( method.getName(), method );
+		this.methods.put( name, method );
 	}
 
 	public Method getMethod( String name )

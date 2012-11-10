@@ -55,6 +55,8 @@ public class Script
 			return result.toString();
 		if( result instanceof ObjectAccess )
 			return ( (ObjectAccess)result ).get();
+		if( result instanceof ClassAccess )
+			return ( (ClassAccess)result ).get();
 		return result;
 	}
 }
