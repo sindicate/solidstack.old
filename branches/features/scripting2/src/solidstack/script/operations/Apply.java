@@ -63,46 +63,71 @@ public class Apply extends Operation
 				list = Collections.emptyList(); // TODO Can be a constant maybe
 
 			thread.pushStack( getLocation() );
-			Object result = f.call( list, thread );
-			thread.popStack();
-
-			return result;
+			try
+			{
+				return f.call( list, thread );
+			}
+			finally
+			{
+				thread.popStack();
+			}
 		}
 
 		if( left instanceof ObjectAccess )
 		{
 			ObjectAccess f = (ObjectAccess)left;
 			Object pars = this.right.evaluate( thread );
-			if( pars instanceof TupleValue )
-				return f.invoke( unwrapList( ( (TupleValue)pars ).getValues() ).toArray() ); // TODO unwrap array
-			if( pars != null )
-				return f.invoke( unwrap( pars ) );
-			return f.invoke();
+			thread.pushStack( getLocation() );
+			try
+			{
+				if( pars instanceof TupleValue )
+					return f.invoke(  unwrapList( ( (TupleValue)pars ).getValues() ).toArray() ); // TODO unwrap array
+				if( pars != null )
+					return f.invoke(  unwrap( pars ) );
+				return f.invoke();
+			}
+			finally
+			{
+				thread.popStack();
+			}
 		}
 
 		if( left instanceof ClassAccess )
 		{
 			ClassAccess f = (ClassAccess)left;
 			Object pars = this.right.evaluate( thread );
-			if( pars instanceof TupleValue )
-				return f.invoke( unwrapList( ( (TupleValue)pars ).getValues() ).toArray() ); // TODO unwrap array
-			if( pars != null )
-				return f.invoke( unwrap( pars ) );
-			return f.invoke();
+			thread.pushStack( getLocation() );
+			try
+			{
+				if( pars instanceof TupleValue )
+					return f.invoke( unwrapList( ( (TupleValue)pars ).getValues() ).toArray() ); // TODO unwrap array
+				if( pars != null )
+					return f.invoke( unwrap( pars ) );
+				return f.invoke();
+			}
+			finally
+			{
+				thread.popStack();
+			}
 		}
 
 		if( left instanceof Class )
 		{
 			Class<?> cls = (Class<?>)left;
 			Object pars = this.right.evaluate( thread );
-			if( pars instanceof TupleValue )
+			thread.pushStack( getLocation() );
+			try
 			{
-				List<Object> list = ( (TupleValue)pars ).getValues();
-				return Java.construct( cls, list.toArray() );
+				if( pars instanceof TupleValue )
+					return Java.construct( cls, ( (TupleValue)pars ).getValues().toArray() );
+				if( pars != null )
+					return Java.construct( cls, new Object[] { pars } );
+				return Java.construct( cls );
 			}
-			if( pars != null )
-				return Java.construct( cls, new Object[] { pars } );
-			return Java.construct( cls );
+			finally
+			{
+				thread.popStack();
+			}
 		}
 
 		throw new ScriptException( "Cannot apply parameters to a " + left.getClass().getName() );
