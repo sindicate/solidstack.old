@@ -14,38 +14,25 @@
  * limitations under the License.
  */
 
-package solidstack.script.objects;
+package solidstack.script.operations;
 
-import java.util.List;
+import solidstack.script.ThreadContext;
+import solidstack.script.expressions.Expression;
+import solidstack.script.expressions.Operation;
+import solidstack.script.objects.Labeled;
 
-public class SuperString
+
+public class Label extends Operation
 {
-	private List<Object> values;
-
-	public SuperString( List<Object> values )
+	public Label( String name, Expression left, Expression right)
 	{
-		this.values = values;
+		super( name, left, right );
 	}
 
-	@Override
-	public String toString()
+	public Object evaluate( ThreadContext thread )
 	{
-		StringBuilder result = new StringBuilder();
-		for( Object value : this.values )
-			result.append( value );
-		return result.toString();
-	}
-
-	public boolean isEmpty()
-	{
-		for( Object value : this.values )
-			if( value.toString().length() != 0 ) // TODO What about nulls?
-				return false;
-		return true;
-	}
-
-	public int size()
-	{
-		return toString().length();
+		Object left = evaluateAndUnwrap( this.left, thread );
+		Object right = evaluateAndUnwrap( this.right, thread );
+		return new Labeled( left, right );
 	}
 }

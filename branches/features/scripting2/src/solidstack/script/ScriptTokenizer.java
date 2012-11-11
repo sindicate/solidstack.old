@@ -170,7 +170,7 @@ public class ScriptTokenizer
 					}
 					in.push( ch );
 					// TODO Internalize identifier tokens
-					return new Token( Token.TYPE.IDENTIFIER, location, result.toString() );
+					return new Token( TYPE.IDENTIFIER, location, result.toString() );
 
 				// String
 				case '"':
@@ -264,7 +264,7 @@ public class ScriptTokenizer
 				case '-':
 					int ch2 = in.read();
 					if( ch2 == ch )
-						return new Token( Token.TYPE.UNAOP, location, String.valueOf( new char[] { (char)ch, (char)ch } ) );
+						return new Token( TYPE.UNAOP, location, String.valueOf( new char[] { (char)ch, (char)ch } ) );
 	//					if( ch == '-' && ch2 == '>' )
 	//						return Token.TOK_LAMBDA;
 					in.push( ch2 );
@@ -272,34 +272,34 @@ public class ScriptTokenizer
 				case '*':
 				case '.':
 				case '#':
-					return new Token( Token.TYPE.BINOP, location, String.valueOf( (char)ch ) );
+					return new Token( TYPE.BINOP, location, String.valueOf( (char)ch ) );
 				case ':':
-					return new Token( TYPE.COLON, location, ":" );
+					return new Token( TYPE.BINOP, location, ":" );
 				case '!':
 					ch = in.read();
 					if( ch == '=' )
-						return new Token( Token.TYPE.BINOP, location, "!=" );
+						return new Token( TYPE.BINOP, location, "!=" );
 					in.push( ch );
-					return new Token( Token.TYPE.UNAOP, location, "!" );
+					return new Token( TYPE.UNAOP, location, "!" );
 				case '<':
 				case '>':
-					return new Token( Token.TYPE.BINOP, location, String.valueOf( (char)ch ) );
+					return new Token( TYPE.BINOP, location, String.valueOf( (char)ch ) );
 				case '=':
 					ch = in.read();
 					if( ch == '=' )
-						return new Token( Token.TYPE.BINOP, location, "==" );
+						return new Token( TYPE.BINOP, location, "==" );
 					in.push( ch );
-					return new Token( Token.TYPE.BINOP, location, "=" ); // TODO Predefine all operator tokens
+					return new Token( TYPE.BINOP, location, "=" ); // TODO Predefine all operator tokens
 				case '&':
 					ch = in.read();
 					if( ch == '&' )
-						return new Token( Token.TYPE.BINOP, location, "&&" );
+						return new Token( TYPE.BINOP, location, "&&" );
 					in.push( ch );
 					throw new SourceException( "Unexpected character '" + (char)ch + "'", in.getLocation() );
 				case '|':
 					ch = in.read();
 					if( ch == '|' )
-						return new Token( Token.TYPE.BINOP, location, "||" );
+						return new Token( TYPE.BINOP, location, "||" );
 					in.push( ch );
 					throw new SourceException( "Unexpected character '" + (char)ch + "'", in.getLocation() );
 
@@ -308,21 +308,26 @@ public class ScriptTokenizer
 					return new Token( TYPE.PAREN_OPEN, location, "(" );
 				case ')':
 					return new Token( TYPE.PAREN_CLOSE, location, ")" );
-				case ',':
-					return new Token( TYPE.COMMA, location, "," );
-				case ';':
-					return new Token( TYPE.SEMICOLON, location, ";" );
+				case '[':
+					return new Token( TYPE.BRACKET_OPEN, location, "[" );
+				case ']':
+					return new Token( TYPE.BRACKET_CLOSE, location, "]" );
 				case '{':
 					return new Token( TYPE.BRACE_OPEN, location, "{" );
 				case '}':
 					return new Token( TYPE.BRACE_CLOSE, location, "}" );
+
+				case ',':
+					return new Token( TYPE.COMMA, location, "," );
+				case ';':
+					return new Token( TYPE.SEMICOLON, location, ";" );
 
 				case '/':
 					ch = in.read();
 					if( ch != '/' )
 					{
 						in.push( ch );
-						return new Token( Token.TYPE.BINOP, location, "/" );
+						return new Token( TYPE.BINOP, location, "/" );
 					}
 					ch = in.read();
 					while( ch != '\n' && ch != -1 )
@@ -347,7 +352,7 @@ public class ScriptTokenizer
 		 * Token types.
 		 */
 		@SuppressWarnings( "javadoc" )
-		static public enum TYPE { IDENTIFIER, NUMBER, STRING, BINOP, UNAOP, PAREN_OPEN, PAREN_CLOSE, BRACE_OPEN, BRACE_CLOSE, COMMA, SEMICOLON, COLON, EOF }
+		static public enum TYPE { IDENTIFIER, NUMBER, STRING, BINOP, UNAOP, PAREN_OPEN, PAREN_CLOSE, BRACE_OPEN, BRACE_CLOSE, BRACKET_OPEN, BRACKET_CLOSE, COMMA, SEMICOLON, EOF }
 
 		/**
 		 * The type of the token.

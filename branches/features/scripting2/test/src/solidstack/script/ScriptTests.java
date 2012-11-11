@@ -157,6 +157,8 @@ public class ScriptTests
 		test( "println( \"Hello World!\" )", "Hello World!" );
 		test( "println( upper( \"Hello World!\" ) )", "HELLO WORLD!" );
 		test( "length( \"sinterklaas\" )", 11 );
+		test( "\"sinterklaas\".length()", 11 );
+		test( "\"sinterklaas\".size()", 11 );
 		test( "defined( a )", false );
 		test( "defined( def( a ) )", true );
 		test( "defined( 1 )", true );
@@ -314,6 +316,7 @@ public class ScriptTests
 		test( "\"x\".getClass()", String.class );
 		test( "\"${1}\".getClass()", SuperString.class );
 		test( "\"x${1}x\".getClass()", SuperString.class );
+		test( "\"x${1}x\".size()", 3 );
 	}
 
 	@Test
@@ -364,6 +367,30 @@ public class ScriptTests
 		{
 			e.printStackTrace( System.out );
 		}
+	}
+
+	@Test
+	static public void test20() throws ClassNotFoundException, InstantiationException, IllegalAccessException
+	{
+		ClassLoader loader = ScriptTests.class.getClassLoader();
+		Assert.assertEquals( solidstack.script.functions.Class.forName( "java.lang.Object", loader ), Object.class );
+		Assert.assertEquals( solidstack.script.functions.Class.forName( "java.lang.Object[]", loader ), Object[].class );
+		Assert.assertEquals( solidstack.script.functions.Class.forName( "java.lang.Object[][]", loader ), Object[][].class );
+		Assert.assertEquals( solidstack.script.functions.Class.forName( "int", loader ), int.class );
+		Assert.assertEquals( solidstack.script.functions.Class.forName( "int[]", loader ), int[].class );
+		Assert.assertEquals( solidstack.script.functions.Class.forName( "int[][][][]", loader ), int[][][][].class );
+		Assert.assertEquals( solidstack.script.functions.Class.forName( "int[][]", loader ), int[][].class );
+
+		test( "list = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]; list[ 3 ]", new BigDecimal( 4 ) );
+		test( "list = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ].toArray(); list[ 3 ]", new BigDecimal( 4 ) );
+//		test( "list = []; map.size()", 0 ); // TODO java.lang.IllegalAccessException: Class solidstack.script.java.MethodCall can not access a member of class java.util.Arrays$ArrayList with modifiers "public"
+		test( "list = class( \"java.lang.reflect.Array\" )#newInstance( class( \"int\" ), 10 ); list.size()", 10 );
+		test( "map = [ 0: 1, 1: 2, 2: 3, 3: 4 ]; map[ 3 ]", new BigDecimal( 4 ) );
+		test( "map = [ \"first\": 1, \"second\": 2, \"third\": 3 ]; map[ \"second\" ]", new BigDecimal( 2 ) );
+		test( "map = [ \"fir\" + \"st\": 1, \"second\": 2, \"third\": 3 ]; map[ \"first\" ]", new BigDecimal( 1 ) );
+		test( "map = [ \"first\": 1, \"second\": 2, \"third\": 3 ]; map[ \"fourth\" ]", null );
+		test( "map = [:]; map[ \"fourth\" ]", null );
+		test( "map = [:]; map.size()", 0 );
 	}
 
 	// TODO Calls with named parameters

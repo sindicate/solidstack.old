@@ -16,36 +16,26 @@
 
 package solidstack.script.objects;
 
-import java.util.List;
 
-public class SuperString
+
+public class Labeled
 {
-	private List<Object> values;
+	private Object label;
+	private Object value;
 
-	public SuperString( List<Object> values )
+	public Labeled( Object label, Object value )
 	{
-		this.values = values;
+		this.label = label;
+		this.value = value;
 	}
 
-	@Override
-	public String toString()
+	public Object getLabel()
 	{
-		StringBuilder result = new StringBuilder();
-		for( Object value : this.values )
-			result.append( value );
-		return result.toString();
+		return this.label;
 	}
 
-	public boolean isEmpty()
+	public Object getValue()
 	{
-		for( Object value : this.values )
-			if( value.toString().length() != 0 ) // TODO What about nulls?
-				return false;
-		return true;
-	}
-
-	public int size()
-	{
-		return toString().length();
+		return this.value;
 	}
 }

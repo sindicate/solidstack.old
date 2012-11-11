@@ -81,9 +81,9 @@ public class Apply extends Operation
 			try
 			{
 				if( pars instanceof TupleValue )
-					return f.invoke(  unwrapList( ( (TupleValue)pars ).getValues() ).toArray() ); // TODO unwrap array
+					return f.invoke( unwrapList( ( (TupleValue)pars ).getValues() ).toArray() ); // TODO unwrap array
 				if( pars != null )
-					return f.invoke(  unwrap( pars ) );
+					return f.invoke( unwrap( pars ) );
 				return f.invoke();
 			}
 			finally

@@ -16,7 +16,10 @@
 
 package solidstack.script.functions;
 
+import java.lang.reflect.Array;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import solidstack.lang.Assert;
 import solidstack.script.ScriptException;
@@ -25,6 +28,20 @@ import solidstack.script.objects.FunctionInstance;
 
 public class Class extends FunctionInstance
 {
+	static private Map<String, java.lang.Class<?>> cache = new HashMap<String, java.lang.Class<?>>();
+
+	static
+	{
+		cache.put( "boolean", boolean.class );
+		cache.put( "char", char.class );
+		cache.put( "byte", byte.class );
+		cache.put( "short", short.class );
+		cache.put( "int", int.class );
+		cache.put( "long", long.class );
+		cache.put( "float", float.class );
+		cache.put( "double", double.class );
+	}
+
 	@Override
 	public Object call( List<Object> parameters, ThreadContext thread )
 	{
@@ -33,13 +50,58 @@ public class Class extends FunctionInstance
 		Assert.isTrue( object instanceof String );
 		String name = (String)object;
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
+		return forName( name, loader );
+	}
+
+	static public java.lang.Class<?> forName( String name, ClassLoader loader )
+	{
 		try
 		{
-			return loader.loadClass( name );
+			return java.lang.Class.forName( name, false, loader );
 		}
 		catch( ClassNotFoundException e )
 		{
-			throw new ScriptException( e );
+			java.lang.Class<?> result = cache.get( name );
+			if( result != null )
+				return result;
+
+			String n = name;
+			int dimensions = 0;
+			while( n.endsWith( "[]" ) )
+			{
+				dimensions++;
+				n = n.substring( 0, n.length() - 2 );
+				result = cache.get( n );
+				if( result != null )
+				{
+					while( dimensions > 0 )
+					{
+						result = Array.newInstance( result, 0 ).getClass();
+						dimensions--;
+						n = n + "[]";
+						cache.put( n, result );
+					}
+					return result;
+				}
+			}
+
+			n = "L" + n + ";";
+			while( dimensions > 0 )
+			{
+				n = "[" + n;
+				dimensions--;
+			}
+
+			try
+			{
+				result = java.lang.Class.forName( n, false, loader );
+			}
+			catch( ClassNotFoundException e1 )
+			{
+				throw new ScriptException( e );
+			}
+
+			return result;
 		}
 	}
 }

@@ -19,7 +19,6 @@ package solidstack.script.objects;
 import java.util.ArrayList;
 import java.util.List;
 
-import solidstack.script.context.AbstractContext;
 import solidstack.script.context.AbstractContext.Value;
 
 
@@ -69,5 +68,10 @@ public class TupleValue
 		if( result instanceof TupleValue )
 			return ( (TupleValue)result ).getLast();
 		return result;
+	}
+
+	public List<Object> getList()
+	{
+		return this.values;
 	}
 }

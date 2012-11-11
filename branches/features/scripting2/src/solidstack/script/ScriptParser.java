@@ -28,6 +28,7 @@ import solidstack.script.ScriptTokenizer.Token;
 import solidstack.script.ScriptTokenizer.Token.TYPE;
 import solidstack.script.expressions.Block;
 import solidstack.script.expressions.BooleanConstant;
+import solidstack.script.expressions.EmptyMap;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Expressions;
 import solidstack.script.expressions.Function;
@@ -164,6 +165,16 @@ public class ScriptParser
 						result = Operation.operation( token.getValue(), result, parameters );
 					break;
 
+				case BRACKET_OPEN:
+					oldStop = swapStops( TYPE.BRACKET_CLOSE );
+					parameters = parse();
+					swapStops( oldStop );
+					if( result instanceof Operation )
+						result = ( (Operation)result ).append( token.getValue(), parameters );
+					else
+						result = Operation.operation( token.getValue(), result, parameters );
+					break;
+
 				case UNAOP:
 					if( result instanceof Operation )
 						result = ( (Operation)result ).append( "@" + token.getValue(), null );
@@ -216,6 +227,22 @@ public class ScriptParser
 				Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.BRACE_CLOSE, "Not expecting token " + token );
 				return new Block( token.getLocation(), result );
 
+			case BRACKET_OPEN:
+				Token token2 = this.tokenizer.get();
+				if( token2.eq( ":" ) )
+				{
+					token2 = this.tokenizer.get();
+					Assert.isTrue( token2.getType() == TYPE.BRACKET_CLOSE, "Not expecting token " + token2 );
+					return new EmptyMap( token.getLocation() );
+				}
+				else
+					this.tokenizer.push();
+				oldStop = swapStops( TYPE.BRACKET_CLOSE );
+				result = parse();
+				swapStops( oldStop );
+				Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.BRACKET_CLOSE, "Not expecting token " + token );
+				return new solidstack.script.expressions.List( token.getLocation(), result );
+
 			case BINOP:
 				if( token.getValue().equals( "-" ) )
 				{
@@ -239,7 +266,7 @@ public class ScriptParser
 
 				if( token.getValue().equals( "if" ) )
 				{
-					Token token2 = this.tokenizer.get();
+					token2 = this.tokenizer.get();
 					if( token2.getType() != TYPE.PAREN_OPEN )
 						throw new SourceException( "Expected an opening parenthesis", token2.getLocation() );
 					oldStop = swapStops( TYPE.PAREN_CLOSE );
@@ -252,7 +279,7 @@ public class ScriptParser
 
 				if( token.getValue().equals( "while" ) )
 				{
-					Token token2 = this.tokenizer.get();
+					token2 = this.tokenizer.get();
 					if( token2.getType() != TYPE.PAREN_OPEN )
 						throw new SourceException( "Expected an opening parenthesis", token2.getLocation() );
 					oldStop = swapStops( TYPE.PAREN_CLOSE );
@@ -265,7 +292,7 @@ public class ScriptParser
 
 				if( token.getValue().equals( "fun" ) )
 				{
-					Token token2 = this.tokenizer.get();
+					token2 = this.tokenizer.get();
 					if( token2.getType() != TYPE.PAREN_OPEN && token2.getType() != TYPE.BRACE_OPEN )
 						throw new SourceException( "Expected one of (, {", token2.getLocation() );
 					if( token2.getType() == TYPE.PAREN_OPEN )

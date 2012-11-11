@@ -25,9 +25,9 @@ import solidstack.io.SourceLocation;
 import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.context.AbstractContext;
-import solidstack.script.context.CombinedContext;
 import solidstack.script.context.AbstractContext.Undefined;
 import solidstack.script.context.AbstractContext.Value;
+import solidstack.script.context.CombinedContext;
 import solidstack.script.objects.Null;
 import solidstack.script.objects.SuperString;
 import solidstack.script.objects.TupleValue;
@@ -37,6 +37,8 @@ import solidstack.script.operations.Apply;
 import solidstack.script.operations.Assign;
 import solidstack.script.operations.Equals;
 import solidstack.script.operations.GreaterThan;
+import solidstack.script.operations.Index;
+import solidstack.script.operations.Label;
 import solidstack.script.operations.LessThan;
 import solidstack.script.operations.Minus;
 import solidstack.script.operations.Multiply;
@@ -66,7 +68,7 @@ abstract public class Operation implements Expression
 	{
 		precedences = new HashMap<String, Integer>();
 
-//		precedences.put( "[", 1 ); // array index
+		precedences.put( "[", 1 ); // array index
 		precedences.put( "(", 1 ); // method call
 		precedences.put( ".", 1 ); // member access
 		precedences.put( "#", 1 ); // static access
@@ -113,8 +115,8 @@ abstract public class Operation implements Expression
 
 		precedences.put( "||", 13 ); // boolean OR
 
-		precedences.put( "?", 14 ); // conditional
-		precedences.put( ":", 14 ); // conditional
+//		precedences.put( "?", 14 ); // conditional
+		precedences.put( ":", 14 ); // label
 
 		precedences.put( "->", 15 ); // lambda TODO Equal to assignment precedence? Do we want that?
 
@@ -196,6 +198,11 @@ abstract public class Operation implements Expression
 					return new Apply( name, left, right );
 				break;
 
+			case '[':
+				if( name.equals( "[" ) )
+					return new Index( name, left, right );
+				break;
+
 			case '.':
 				if( name.equals( "." ) )
 					return new Access( name, left, right );
@@ -204,6 +211,11 @@ abstract public class Operation implements Expression
 			case '#':
 				if( name.equals( "#" ) )
 					return new StaticAccess( name, left, right );
+				break;
+
+			case ':':
+				if( name.equals( ":" ) )
+					return new Label( name, left, right );
 				break;
 		}
 		Assert.fail( "Unknown operation " + name );

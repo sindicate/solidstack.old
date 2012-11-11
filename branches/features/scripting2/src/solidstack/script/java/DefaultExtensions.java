@@ -51,6 +51,16 @@ public class DefaultExtensions
 		return result;
 	}
 
+	static public int size( Object[] array )
+	{
+		return array.length;
+	}
+
+	static public int size( String string )
+	{
+		return string.length();
+	}
+
 	static public Object _new( Class cls, Object... args )
 	{
 		return Java.construct( cls, args );

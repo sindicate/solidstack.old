@@ -14,38 +14,23 @@
  * limitations under the License.
  */
 
-package solidstack.script.objects;
+package solidstack.script.expressions;
 
-import java.util.List;
+import java.util.HashMap;
 
-public class SuperString
+import solidstack.io.SourceLocation;
+import solidstack.script.ThreadContext;
+
+
+public class EmptyMap extends LocalizedExpression // TODO Is this localized needed?
 {
-	private List<Object> values;
-
-	public SuperString( List<Object> values )
+	public EmptyMap( SourceLocation location )
 	{
-		this.values = values;
+		super( location );
 	}
 
-	@Override
-	public String toString()
+	public Object evaluate( ThreadContext thread )
 	{
-		StringBuilder result = new StringBuilder();
-		for( Object value : this.values )
-			result.append( value );
-		return result.toString();
-	}
-
-	public boolean isEmpty()
-	{
-		for( Object value : this.values )
-			if( value.toString().length() != 0 ) // TODO What about nulls?
-				return false;
-		return true;
-	}
-
-	public int size()
-	{
-		return toString().length();
+		return new HashMap<Object, Object>();
 	}
 }
