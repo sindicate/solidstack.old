@@ -22,7 +22,7 @@ import java.util.List;
 import solidstack.io.SourceLocation;
 import solidstack.script.Script;
 import solidstack.script.ThreadContext;
-import solidstack.script.objects.SuperString;
+import solidstack.script.objects.FunnyString;
 
 
 
@@ -36,12 +36,12 @@ public class StringExpression extends LocalizedExpression
 		super( location );
 	}
 
-	public SuperString evaluate( ThreadContext thread )
+	public FunnyString evaluate( ThreadContext thread )
 	{
 		List<Object> values = new ArrayList<Object>();
 		for( Expression expression : this.expressions )
 			values.add( Script.single( expression.evaluate( thread ) ) );
-		return new SuperString( values );
+		return new FunnyString( values );
 	}
 
 	public void append( Expression expression )

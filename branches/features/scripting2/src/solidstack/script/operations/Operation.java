@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack.script.expressions;
+package solidstack.script.operations;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -22,31 +22,8 @@ import java.util.HashMap;
 import solidstack.io.SourceLocation;
 import solidstack.lang.Assert;
 import solidstack.script.context.AbstractContext;
-import solidstack.script.context.AbstractContext.Undefined;
 import solidstack.script.context.CombinedContext;
-import solidstack.script.objects.Null;
-import solidstack.script.objects.SuperString;
-import solidstack.script.operations.Access;
-import solidstack.script.operations.And;
-import solidstack.script.operations.Apply;
-import solidstack.script.operations.Assign;
-import solidstack.script.operations.Equals;
-import solidstack.script.operations.GreaterThan;
-import solidstack.script.operations.Index;
-import solidstack.script.operations.Label;
-import solidstack.script.operations.LessThan;
-import solidstack.script.operations.Minus;
-import solidstack.script.operations.Multiply;
-import solidstack.script.operations.Negate;
-import solidstack.script.operations.Not;
-import solidstack.script.operations.NotEquals;
-import solidstack.script.operations.Or;
-import solidstack.script.operations.Plus;
-import solidstack.script.operations.PostDecr;
-import solidstack.script.operations.PostInc;
-import solidstack.script.operations.PreDecr;
-import solidstack.script.operations.PreInc;
-import solidstack.script.operations.StaticAccess;
+import solidstack.script.expressions.Expression;
 
 
 abstract public class Operation implements Expression
@@ -200,12 +177,12 @@ abstract public class Operation implements Expression
 
 			case '.':
 				if( name.equals( "." ) )
-					return new Access( name, left, right );
+					return new Member( name, left, right );
 				break;
 
 			case '#':
 				if( name.equals( "#" ) )
-					return new StaticAccess( name, left, right );
+					return new StaticMember( name, left, right );
 				break;
 
 			case ':':
@@ -291,17 +268,6 @@ abstract public class Operation implements Expression
 		Assert.isInstanceOf( left, String.class );
 		Assert.isInstanceOf( right, String.class );
 		return ( (String)left ).compareTo( (String)right );
-	}
-
-	static protected boolean isTrue( Object left )
-	{
-		if( left instanceof Boolean )
-			return (Boolean)left;
-		if( left instanceof String )
-			return ( (String)left ).length() != 0;
-		if( left instanceof SuperString )
-			return !( (SuperString)left ).isEmpty();
-		return left != null && left != Null.INSTANCE && !( left instanceof Undefined );
 	}
 
 	protected Operation( String operation, Expression left, Expression right )

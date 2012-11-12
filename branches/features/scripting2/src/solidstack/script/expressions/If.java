@@ -17,6 +17,7 @@
 package solidstack.script.expressions;
 
 import solidstack.io.SourceLocation;
+import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.objects.Null;
 
@@ -40,7 +41,7 @@ public class If extends LocalizedExpression
 
 	public Object evaluate( ThreadContext thread )
 	{
-		if( Operation.isTrue( this.condition.evaluate( thread ) ) )
+		if( Script.isTrue( this.condition.evaluate( thread ) ) )
 		{
 			if( this.left != null )
 				return this.left.evaluate( thread );

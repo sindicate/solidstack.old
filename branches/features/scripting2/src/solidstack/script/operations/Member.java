@@ -20,15 +20,15 @@ import org.springframework.util.Assert;
 
 import solidstack.script.Script;
 import solidstack.script.ThreadContext;
+import solidstack.script.context.AbstractContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
-import solidstack.script.expressions.Operation;
-import solidstack.script.objects.ClassAccess;
+import solidstack.script.objects.ObjectMember;
 
 
-public class StaticAccess extends Operation
+public class Member extends Operation
 {
-	public StaticAccess( String name, Expression left, Expression right)
+	public Member( String name, Expression left, Expression right)
 	{
 		super( name, left, right );
 	}
@@ -36,9 +36,11 @@ public class StaticAccess extends Operation
 	public Object evaluate( ThreadContext thread )
 	{
 		Object left = Script.single( this.left.evaluate( thread ) );
-		Assert.isInstanceOf( Class.class, left );
 		Assert.isInstanceOf( Identifier.class, this.right );
 		String right = ( (Identifier)this.right ).getName();
-		return new ClassAccess( (Class<?>)left, right );
+		// TODO I think these should be covered elsewhere
+		if( left instanceof AbstractContext )
+			return ( (AbstractContext)left ).get( right );
+		return new ObjectMember( left, right );
 	}
 }

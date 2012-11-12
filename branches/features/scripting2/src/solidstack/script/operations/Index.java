@@ -26,7 +26,6 @@ import solidstack.script.Script;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
-import solidstack.script.expressions.Operation;
 import solidstack.script.objects.Null;
 
 

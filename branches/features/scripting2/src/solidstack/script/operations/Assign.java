@@ -20,8 +20,7 @@ import solidstack.lang.Assert;
 import solidstack.script.context.AbstractContext.Value;
 import solidstack.script.context.AbstractContext.Variable;
 import solidstack.script.expressions.Expression;
-import solidstack.script.expressions.Operation;
-import solidstack.script.objects.TupleValue;
+import solidstack.script.objects.Tuple;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 
@@ -38,11 +37,11 @@ public class Assign extends Operation
 		Object left = this.left.evaluate( thread );
 		Object right = this.right.evaluate( thread );
 
-		if( right instanceof TupleValue )
+		if( right instanceof Tuple )
 		{
-			Assert.isInstanceOf( left, TupleValue.class );
-			TupleValue leftTuple = (TupleValue)left;
-			TupleValue rightTuple = (TupleValue)right;
+			Assert.isInstanceOf( left, Tuple.class );
+			Tuple leftTuple = (Tuple)left;
+			Tuple rightTuple = (Tuple)right;
 			int len = leftTuple.size();
 			Assert.isTrue( rightTuple.size() == len );
 			for( int i = 0; i < len; i++ )
@@ -54,7 +53,7 @@ public class Assign extends Operation
 		}
 		else
 		{
-			Assert.isFalse( left instanceof TupleValue );
+			Assert.isFalse( left instanceof Tuple );
 			assign( left, right );
 		}
 

@@ -16,9 +16,9 @@
 
 package solidstack.script.operations;
 
+import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
-import solidstack.script.expressions.Operation;
 
 
 public class Or extends Operation
@@ -31,7 +31,7 @@ public class Or extends Operation
 	public Object evaluate( ThreadContext thread )
 	{
 		Object left = this.left.evaluate( thread );
-		if( Operation.isTrue( left ) )
+		if( Script.isTrue( left ) )
 			return left;
 		return this.right.evaluate( thread );
 	}

@@ -19,7 +19,6 @@ package solidstack.script.operations;
 import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
-import solidstack.script.expressions.Operation;
 
 
 public class LessThan extends Operation

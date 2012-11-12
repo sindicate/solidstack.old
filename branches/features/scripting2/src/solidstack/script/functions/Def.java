@@ -19,10 +19,10 @@ package solidstack.script.functions;
 import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.context.AbstractContext.Value;
-import solidstack.script.objects.FunctionInstance;
+import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Null;
 
-public class Def extends FunctionInstance
+public class Def extends FunctionObject
 {
 	@Override
 	public Object call( ThreadContext thread, Object... parameters )

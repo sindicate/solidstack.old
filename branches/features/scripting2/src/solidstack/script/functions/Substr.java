@@ -21,9 +21,9 @@ import java.math.BigDecimal;
 import solidstack.lang.Assert;
 import solidstack.script.Script;
 import solidstack.script.ThreadContext;
-import solidstack.script.objects.FunctionInstance;
+import solidstack.script.objects.FunctionObject;
 
-public class Substr extends FunctionInstance
+public class Substr extends FunctionObject
 {
 	@Override
 	public Object call( ThreadContext thread, Object... parameters )

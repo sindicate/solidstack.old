@@ -19,9 +19,9 @@ package solidstack.script.operations;
 import org.springframework.util.Assert;
 
 import solidstack.io.SourceLocation;
+import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
-import solidstack.script.expressions.Operation;
 
 
 public class Not extends Operation
@@ -39,7 +39,7 @@ public class Not extends Operation
 	{
 		Assert.isNull( this.left );
 		Object right = this.right.evaluate( thread );
-		return !Operation.isTrue( right );
+		return !Script.isTrue( right );
 	}
 
 	@Override

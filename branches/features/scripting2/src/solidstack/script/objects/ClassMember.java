@@ -16,36 +16,38 @@
 
 package solidstack.script.objects;
 
-import java.util.List;
+import solidstack.script.Script;
+import solidstack.script.java.Java;
 
-public class SuperString
+
+public class ClassMember
 {
-	private List<Object> values;
+	private Class type;
+	private String name;
 
-	public SuperString( List<Object> values )
+	public ClassMember( Class type, String name )
 	{
-		this.values = values;
+		this.type = type;
+		this.name = name;
 	}
 
-	@Override
-	public String toString()
+	public Object getType()
 	{
-		StringBuilder result = new StringBuilder();
-		for( Object value : this.values )
-			result.append( value );
-		return result.toString();
+		return this.type;
 	}
 
-	public boolean isEmpty()
+	public String getName()
 	{
-		for( Object value : this.values )
-			if( value.toString().length() != 0 ) // TODO What about nulls?
-				return false;
-		return true;
+		return this.name;
 	}
 
-	public int size()
+	public Object invoke( Object... args )
 	{
-		return toString().length();
+		return Script.toScript( Java.invokeStatic( this.type, this.name, args ) );
+	}
+
+	public Object get()
+	{
+		return Script.toScript( Java.getStatic( this.type, this.name ) );
 	}
 }

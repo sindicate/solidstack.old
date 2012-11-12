@@ -22,7 +22,6 @@ import solidstack.io.SourceLocation;
 import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
-import solidstack.script.expressions.Operation;
 
 
 public class Negate extends Operation

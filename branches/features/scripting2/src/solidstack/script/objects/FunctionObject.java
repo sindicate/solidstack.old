@@ -26,16 +26,16 @@ import solidstack.script.context.Context;
 import solidstack.script.context.ParameterContext;
 import solidstack.script.expressions.Function;
 
-public class FunctionInstance implements solidstack.script.java.Function
+public class FunctionObject implements solidstack.script.java.Function
 {
 	private Function function;
 	private AbstractContext context;
 
-	public FunctionInstance()
+	public FunctionObject()
 	{
 	}
 
-	public FunctionInstance( Function function, AbstractContext context )
+	public FunctionObject( Function function, AbstractContext context )
 	{
 		this.function = function;
 		this.context = context; // FIXME Possibly need to clone the whole context hierarchy (flattened).

@@ -21,12 +21,11 @@ import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
-import solidstack.script.expressions.Operation;
 import solidstack.script.java.Java;
-import solidstack.script.objects.ClassAccess;
-import solidstack.script.objects.FunctionInstance;
+import solidstack.script.objects.ClassMember;
+import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Null;
-import solidstack.script.objects.ObjectAccess;
+import solidstack.script.objects.ObjectMember;
 
 
 public class Apply extends Operation
@@ -50,9 +49,9 @@ public class Apply extends Operation
 		if( this.right != null )
 			pars = this.right.evaluate( thread );
 
-		if( left instanceof FunctionInstance )
+		if( left instanceof FunctionObject )
 		{
-			FunctionInstance f = (FunctionInstance)left;
+			FunctionObject f = (FunctionObject)left;
 			thread.pushStack( getLocation() );
 			try
 			{
@@ -64,9 +63,9 @@ public class Apply extends Operation
 			}
 		}
 
-		if( left instanceof ObjectAccess )
+		if( left instanceof ObjectMember )
 		{
-			ObjectAccess f = (ObjectAccess)left;
+			ObjectMember f = (ObjectMember)left;
 			thread.pushStack( getLocation() );
 			try
 			{
@@ -78,9 +77,9 @@ public class Apply extends Operation
 			}
 		}
 
-		if( left instanceof ClassAccess )
+		if( left instanceof ClassMember )
 		{
-			ClassAccess f = (ClassAccess)left;
+			ClassMember f = (ClassMember)left;
 			thread.pushStack( getLocation() );
 			try
 			{

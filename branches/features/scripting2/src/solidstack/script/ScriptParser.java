@@ -36,11 +36,11 @@ import solidstack.script.expressions.Identifier;
 import solidstack.script.expressions.If;
 import solidstack.script.expressions.NullConstant;
 import solidstack.script.expressions.NumberConstant;
-import solidstack.script.expressions.Operation;
 import solidstack.script.expressions.StringConstant;
 import solidstack.script.expressions.StringExpression;
-import solidstack.script.expressions.Tuple;
+import solidstack.script.expressions.TupleExpression;
 import solidstack.script.expressions.While;
+import solidstack.script.operations.Operation;
 
 
 /**
@@ -71,11 +71,11 @@ public class ScriptParser
 	public Expressions parse()
 	{
 		Expressions results = new Expressions();
-		Tuple lastTuple = null;
+		TupleExpression lastTuple = null;
 		while( true )
 		{
 			if( lastTuple != null )
-				if( lastTuple == Tuple.EMPTY_TUPLE )
+				if( lastTuple == TupleExpression.EMPTY_TUPLE )
 					results.append( null );
 				else if( lastTuple.size() == 1 )
 					results.append( lastTuple.get( 0 ) );
@@ -88,7 +88,7 @@ public class ScriptParser
 			{
 				if( this.stop != null && last.getType() == TYPE.EOF )
 					throw new SourceException( "Unexpected " + last + ", missing " + this.stop, last.getLocation() );
-				if( lastTuple != Tuple.EMPTY_TUPLE )
+				if( lastTuple != TupleExpression.EMPTY_TUPLE )
 					if( lastTuple.size() == 1 )
 						results.append( lastTuple.get( 0 ) );
 					else
@@ -101,9 +101,9 @@ public class ScriptParser
 	}
 
 	// Parses one tuple (separated with ;)
-	private Tuple parseTuple()
+	private TupleExpression parseTuple()
 	{
-		Tuple results = new Tuple();
+		TupleExpression results = new TupleExpression();
 		while( true )
 		{
 			Expression result = parseExpression();
@@ -117,7 +117,7 @@ public class ScriptParser
 					return results;
 				result = results.get( 0 );
 				if( result == null )
-					return Tuple.EMPTY_TUPLE;
+					return TupleExpression.EMPTY_TUPLE;
 				return results;
 			}
 			Assert.isTrue( last.getType() == TYPE.COMMA, "Not expecting token " + last );
@@ -307,9 +307,9 @@ public class ScriptParser
 						throw new SourceException( "Expected 2 or more expressions", token2.getLocation() );
 					List<String> parameters = new ArrayList<String>();
 					Expression pars = expressions.remove( 0 );
-					if( pars instanceof Tuple )
+					if( pars instanceof TupleExpression )
 					{
-						for( Expression par : ( (Tuple)pars ).getExpressions() )
+						for( Expression par : ( (TupleExpression)pars ).getExpressions() )
 						{
 							if( !( par instanceof Identifier ) )
 								throw new SourceException( "Expected an identifier", token2.getLocation() ); // FIXME Use the line number from the par

@@ -21,14 +21,15 @@ import java.util.List;
 import java.util.ListIterator;
 
 import solidstack.io.ReaderSourceReader;
+import solidstack.script.context.AbstractContext.Undefined;
 import solidstack.script.context.AbstractContext.Value;
 import solidstack.script.context.Context;
 import solidstack.script.expressions.Expression;
-import solidstack.script.objects.ClassAccess;
+import solidstack.script.objects.ClassMember;
+import solidstack.script.objects.FunnyString;
 import solidstack.script.objects.Null;
-import solidstack.script.objects.ObjectAccess;
-import solidstack.script.objects.SuperString;
-import solidstack.script.objects.TupleValue;
+import solidstack.script.objects.ObjectMember;
+import solidstack.script.objects.Tuple;
 
 public class Script
 {
@@ -62,9 +63,9 @@ public class Script
 
 	static public Object single( Object value )
 	{
-		if( value instanceof TupleValue )
+		if( value instanceof Tuple )
 		{
-			TupleValue results = (TupleValue)value;
+			Tuple results = (Tuple)value;
 			if( results.size() == 0 )
 				return Null.INSTANCE;
 			value = results.getLast();
@@ -94,12 +95,12 @@ public class Script
 		Object result = single( value );
 		if( result == Null.INSTANCE )
 			return null;
-		if( result instanceof SuperString )
+		if( result instanceof FunnyString )
 			return result.toString();
-		if( result instanceof ObjectAccess )
-			return ( (ObjectAccess)result ).get();
-		if( result instanceof ClassAccess )
-			return ( (ClassAccess)result ).get();
+		if( result instanceof ObjectMember )
+			return ( (ObjectMember)result ).get();
+		if( result instanceof ClassMember )
+			return ( (ClassMember)result ).get();
 		return result;
 	}
 
@@ -133,10 +134,21 @@ public class Script
 	static public Object[] toArray( Object values )
 	{
 		Object[] result;
-		if( values instanceof TupleValue )
-			return ( (TupleValue)values ).getValues().toArray();
+		if( values instanceof Tuple )
+			return ( (Tuple)values ).getValues().toArray();
 		if( values != null )
 			return new Object[] { values };
 		return EMPTY_ARRAY;
+	}
+
+	static public boolean isTrue( Object left )
+	{
+		if( left instanceof Boolean )
+			return (Boolean)left;
+		if( left instanceof String )
+			return ( (String)left ).length() != 0;
+		if( left instanceof FunnyString )
+			return !( (FunnyString)left ).isEmpty();
+		return left != null && left != Null.INSTANCE && !( left instanceof Undefined );
 	}
 }

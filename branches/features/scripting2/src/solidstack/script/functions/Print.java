@@ -19,9 +19,9 @@ package solidstack.script.functions;
 import solidstack.lang.Assert;
 import solidstack.script.Script;
 import solidstack.script.ThreadContext;
-import solidstack.script.objects.FunctionInstance;
+import solidstack.script.objects.FunctionObject;
 
-public class Print extends FunctionInstance
+public class Print extends FunctionObject
 {
 	@Override
 	public Object call( ThreadContext thread, Object... parameters )

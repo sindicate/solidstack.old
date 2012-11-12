@@ -22,10 +22,10 @@ import java.util.Collection;
 import solidstack.lang.Assert;
 import solidstack.script.Script;
 import solidstack.script.ThreadContext;
-import solidstack.script.objects.FunctionInstance;
+import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Null;
 
-public class ForEach extends FunctionInstance
+public class ForEach extends FunctionObject
 {
 	@Override
 	public Object call( ThreadContext thread, Object... parameters )
@@ -36,9 +36,9 @@ public class ForEach extends FunctionInstance
 		Assert.isInstanceOf( o, Collection.class );
 
 		Object f = Script.deref( parameters[ 1 ] );
-		Assert.isInstanceOf( f, FunctionInstance.class );
+		Assert.isInstanceOf( f, FunctionObject.class );
 
-		FunctionInstance fun = (FunctionInstance)f;
+		FunctionObject fun = (FunctionObject)f;
 		Collection collection = (Collection)o;
 
 		Object result = Null.INSTANCE;

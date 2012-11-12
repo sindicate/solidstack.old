@@ -29,7 +29,7 @@ import solidstack.script.context.Context;
 import solidstack.script.java.Java;
 import solidstack.script.java.MissingFieldException;
 import solidstack.script.java.MissingMethodException;
-import solidstack.script.objects.SuperString;
+import solidstack.script.objects.FunnyString;
 
 
 @SuppressWarnings( "javadoc" )
@@ -315,8 +315,8 @@ public class ScriptTests
 //		test( "\"${}\"", "1" ); TODO
 		test( "\"\".getClass()", String.class );
 		test( "\"x\".getClass()", String.class );
-		test( "\"${1}\".getClass()", SuperString.class );
-		test( "\"x${1}x\".getClass()", SuperString.class );
+		test( "\"${1}\".getClass()", FunnyString.class );
+		test( "\"x${1}x\".getClass()", FunnyString.class );
 		test( "\"x${1}x\".size()", 3 );
 	}
 
@@ -384,12 +384,12 @@ public class ScriptTests
 
 		test( "list = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]; list[ 3 ]", new BigDecimal( 4 ) );
 		test( "list = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ].toArray(); list[ 3 ]", new BigDecimal( 4 ) );
-		test( "list = []; list.size()", 0 ); // TODO java.lang.IllegalAccessException: Class solidstack.script.java.MethodCall can not access a member of class java.util.Arrays$ArrayList with modifiers "public"
+		test( "list = []; list.size()", 0 );
 		test( "list = class( \"java.lang.reflect.Array\" )#newInstance( class( \"int\" ), 10 ); list.size()", 10 );
 		test( "map = [ 0: 1, 1: 2, 2: 3, 3: 4 ]; map[ 3 ]", new BigDecimal( 4 ) );
 		test( "map = [ \"first\": 1, \"second\": 2, \"third\": 3 ]; map[ \"second\" ]", new BigDecimal( 2 ) );
 		test( "map = [ \"fir\" + \"st\": 1, \"second\": 2, \"third\": 3 ]; map[ \"first\" ]", new BigDecimal( 1 ) );
-		test( "map = [ \"first\": 1, \"second\": 2, \"third\": 3 ]; map[ \"fourth\" ]", null );
+		test( "map = [ \"first\": 1, \"second\": 2, \"third\": 3 ]; map[ \"fourth\" ]", null ); // TODO Undefined? Then we assign to it too.
 		test( "map = [:]; map[ \"fourth\" ]", null );
 		test( "map = [:]; map.size()", 0 );
 		eval( "fun( a; a )( null )" );

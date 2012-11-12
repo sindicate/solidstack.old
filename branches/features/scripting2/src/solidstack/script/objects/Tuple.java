@@ -22,11 +22,11 @@ import java.util.List;
 import solidstack.script.context.AbstractContext.Value;
 
 
-public class TupleValue
+public class Tuple
 {
 	private List<Object> values = new ArrayList<Object>();
 
-	public TupleValue()
+	public Tuple()
 	{
 		// TODO Auto-generated constructor stub
 	}
@@ -41,9 +41,9 @@ public class TupleValue
 		return this.values;
 	}
 
-	public TupleValue unwrap()
+	public Tuple unwrap()
 	{
-		TupleValue result = new TupleValue();
+		Tuple result = new Tuple();
 		for( Object object : this.values )
 			if( object instanceof Value )
 				result.append( ( (Value)object ).get() );
@@ -65,8 +65,8 @@ public class TupleValue
 	public Object getLast()
 	{
 		Object result = this.values.get( this.values.size() - 1 );
-		if( result instanceof TupleValue )
-			return ( (TupleValue)result ).getLast();
+		if( result instanceof Tuple )
+			return ( (Tuple)result ).getLast();
 		return result;
 	}
 

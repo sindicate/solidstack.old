@@ -20,7 +20,7 @@ import java.util.List;
 
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
-import solidstack.script.objects.FunctionInstance;
+import solidstack.script.objects.FunctionObject;
 
 public class Function extends LocalizedExpression
 {
@@ -39,7 +39,7 @@ public class Function extends LocalizedExpression
 
 	public Object evaluate( ThreadContext thread )
 	{
-		return new FunctionInstance( this, thread.getContext() );
+		return new FunctionObject( this, thread.getContext() );
 	}
 
 	public List<String> getParameters()

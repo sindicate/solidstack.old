@@ -20,12 +20,12 @@ import solidstack.script.Script;
 import solidstack.script.java.Java;
 
 
-public class ObjectAccess
+public class ObjectMember
 {
 	private Object object;
 	private String name;
 
-	public ObjectAccess( Object object, String name )
+	public ObjectMember( Object object, String name )
 	{
 		this.object = object;
 		this.name = name;

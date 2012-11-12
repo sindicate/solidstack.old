@@ -26,7 +26,7 @@ import solidstack.lang.Assert;
 import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.objects.Labeled;
-import solidstack.script.objects.TupleValue;
+import solidstack.script.objects.Tuple;
 
 
 public class List extends LocalizedExpression // TODO Is this localized needed?
@@ -46,9 +46,9 @@ public class List extends LocalizedExpression // TODO Is this localized needed?
 		if( this.expression != null )
 			result = this.expression.evaluate( thread );
 
-		if( result instanceof TupleValue )
+		if( result instanceof Tuple )
 		{
-			java.util.List<?> list = ( (TupleValue)result ).getList();
+			java.util.List<?> list = ( (Tuple)result ).getList();
 			Object object = list.get( 0 );
 			if( object instanceof Labeled )
 			{

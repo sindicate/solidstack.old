@@ -22,19 +22,19 @@ import java.util.List;
 import solidstack.io.SourceLocation;
 import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
-import solidstack.script.objects.TupleValue;
+import solidstack.script.objects.Tuple;
 
 
-public class Tuple implements Expression
+public class TupleExpression implements Expression
 {
-	static public final Tuple EMPTY_TUPLE = new Tuple();
+	static public final TupleExpression EMPTY_TUPLE = new TupleExpression();
 
 	private List<Expression> expressions = new ArrayList<Expression>();
 
 
 	public Object evaluate( ThreadContext thread )
 	{
-		TupleValue values = new TupleValue();
+		Tuple values = new Tuple();
 		for( Expression expression : this.expressions )
 			values.append( expression.evaluate( thread ) );
 		return values;
