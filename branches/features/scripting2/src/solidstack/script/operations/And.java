@@ -16,8 +16,6 @@
 
 package solidstack.script.operations;
 
-
-
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Operation;
@@ -32,9 +30,9 @@ public class And extends Operation
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = evaluateAndUnwrap( this.left, thread );
+		Object left = this.left.evaluate( thread );
 		if( !Operation.isTrue( left ) )
 			return left;
-		return evaluateAndUnwrap( this.right, thread );
+		return this.right.evaluate( thread );
 	}
 }

@@ -93,6 +93,8 @@ public class ScriptParser
 						results.append( lastTuple.get( 0 ) );
 					else
 						results.append( lastTuple );
+				if( results.size() == 0 )
+					return null;
 				return results;
 			}
 		}

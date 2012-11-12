@@ -17,15 +17,18 @@
 package solidstack.script;
 
 import java.io.StringReader;
+import java.util.List;
+import java.util.ListIterator;
 
 import solidstack.io.ReaderSourceReader;
+import solidstack.script.context.AbstractContext.Value;
 import solidstack.script.context.Context;
 import solidstack.script.expressions.Expression;
-import solidstack.script.expressions.Operation;
 import solidstack.script.objects.ClassAccess;
 import solidstack.script.objects.Null;
 import solidstack.script.objects.ObjectAccess;
 import solidstack.script.objects.SuperString;
+import solidstack.script.objects.TupleValue;
 
 public class Script
 {
@@ -54,8 +57,41 @@ public class Script
 			context = new Context();
 
 		ThreadContext thread = ThreadContext.init( context );
+		return toJava( this.expression.evaluate( thread ) );
+	}
 
-		Object result = Operation.evaluateAndUnwrap( this.expression, thread );
+	static public Object single( Object value )
+	{
+		if( value instanceof TupleValue )
+		{
+			TupleValue results = (TupleValue)value;
+			if( results.size() == 0 )
+				return Null.INSTANCE;
+			value = results.getLast();
+		}
+		if( value instanceof Value ) // TODO Does this ever happen with tuples?
+			return ( (Value)value ).get();
+		return value;
+	}
+
+	static public Object deref( Object value )
+	{
+		if( value instanceof List )
+		{
+			// TODO Or create a new list?
+			List<Object> list = (List<Object>)value;
+			for( ListIterator<Object> i = list.listIterator(); i.hasNext(); )
+				i.set( deref( i.next() ) );
+			return list;
+		}
+		if( value instanceof Value )
+			return ( (Value)value ).get();
+		return value;
+	}
+
+	static public Object toJava( Object value )
+	{
+		Object result = single( value );
 		if( result == Null.INSTANCE )
 			return null;
 		if( result instanceof SuperString )
@@ -65,5 +101,42 @@ public class Script
 		if( result instanceof ClassAccess )
 			return ( (ClassAccess)result ).get();
 		return result;
+	}
+
+	static public Object[] toJavaParameters( Object values )
+	{
+		Object[] result = toArray( values );
+		int count = result.length;
+		for( int i = 0; i < count; i++ )
+			result[ i ] = toJava( result[ i ] );
+		return result;
+	}
+
+	static public Object toScript( Object value )
+	{
+		if( value == null )
+			return Null.INSTANCE;
+		return value;
+	}
+
+	static public Object[] toScriptParameters( Object values )
+	{
+		Object[] result = toArray( values );
+		int count = result.length;
+		for( int i = 0; i < count; i++ )
+			result[ i ] = result[ i ];
+		return result;
+	}
+
+	static public final Object[] EMPTY_ARRAY = new Object[ 0 ];
+
+	static public Object[] toArray( Object values )
+	{
+		Object[] result;
+		if( values instanceof TupleValue )
+			return ( (TupleValue)values ).getValues().toArray();
+		if( values != null )
+			return new Object[] { values };
+		return EMPTY_ARRAY;
 	}
 }

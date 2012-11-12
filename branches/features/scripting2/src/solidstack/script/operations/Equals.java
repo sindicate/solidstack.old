@@ -16,8 +16,7 @@
 
 package solidstack.script.operations;
 
-
-
+import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Operation;
@@ -32,10 +31,8 @@ public class Equals extends Operation
 
 	public Boolean evaluate( ThreadContext thread )
 	{
-		Object left = evaluateAndUnwrap( this.left, thread );
-		Object right = evaluateAndUnwrap( this.right, thread );
-		if( left == null )
-			return right == null;
-		return left.equals( right );
+		Object left = Script.single( this.left.evaluate( thread ) );
+		Object right = Script.single( this.right.evaluate( thread ) );
+		return left.equals( right ); // Never null, only Null.INSTANCE
 	}
 }

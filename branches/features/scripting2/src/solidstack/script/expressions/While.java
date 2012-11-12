@@ -18,6 +18,7 @@ package solidstack.script.expressions;
 
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
+import solidstack.script.objects.Null;
 
 
 
@@ -35,8 +36,8 @@ public class While extends LocalizedExpression
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object result = null;
-		while( Operation.isTrue( Operation.evaluateAndUnwrap( this.condition, thread ) ) )
+		Object result = Null.INSTANCE;
+		while( Operation.isTrue( this.condition.evaluate( thread ) ) )
 			result = this.left.evaluate( thread );
 		return result;
 	}

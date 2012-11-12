@@ -22,10 +22,12 @@ import java.util.List;
 import java.util.Map;
 
 import solidstack.lang.Assert;
+import solidstack.script.Script;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Operation;
+import solidstack.script.objects.Null;
 
 
 public class Index extends Operation
@@ -37,34 +39,23 @@ public class Index extends Operation
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = evaluateAndUnwrap( this.left, thread );
-		if( left == null )
+		Object left = Script.single( this.left.evaluate( thread ) ); // TODO Or index a tuple too?
+		if( left == Null.INSTANCE )
 			throw new ScriptException( "Cannot index null" );
+
+		Object pars = Script.single( this.right.evaluate( thread ) );
+
+		if( left instanceof Map )
+			return ( (Map<?,?>)left ).get( pars );
+
+		Assert.isInstanceOf( pars, BigDecimal.class );
 
 		// TODO Maybe extend these objects with a index() or at() or getAt() or item()
 		if( left instanceof List )
-		{
-			List<?> list = (List<?>)left;
-			Object pars = Operation.unwrap( this.right.evaluate( thread ) );
-			Assert.isInstanceOf( pars, BigDecimal.class );
-			// TODO Maybe return null when index of out bounds?
-			return list.get( ( (BigDecimal)pars ).intValue() );
-		}
-
-		if( left instanceof Map )
-		{
-			Map<?,?> map = (Map<?,?>)left;
-			Object pars = Operation.unwrap( this.right.evaluate( thread ) );
-			return map.get( pars );
-		}
+			return ( (List<?>)left ).get( ( (BigDecimal)pars ).intValue() ); // TODO Maybe return null when index of out bounds?
 
 		if( left.getClass().isArray() )
-		{
-			Object pars = Operation.unwrap( this.right.evaluate( thread ) );
-			Assert.isInstanceOf( pars, BigDecimal.class );
-			// TODO Maybe return null when index of out bounds?
-			return Array.get( left, ( (BigDecimal)pars ).intValue() );
-		}
+			return Array.get( left, ( (BigDecimal)pars ).intValue() ); // TODO Maybe return null when index of out bounds?
 
 		throw new ScriptException( "Cannot index a " + left.getClass().getName() );
 	}

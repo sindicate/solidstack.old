@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import solidstack.io.SourceLocation;
+import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.objects.SuperString;
 
@@ -39,7 +40,7 @@ public class StringExpression extends LocalizedExpression
 	{
 		List<Object> values = new ArrayList<Object>();
 		for( Expression expression : this.expressions )
-			values.add( Operation.evaluateAndUnwrap( expression, thread ) );
+			values.add( Script.single( expression.evaluate( thread ) ) );
 		return new SuperString( values );
 	}
 

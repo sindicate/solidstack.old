@@ -18,19 +18,14 @@ package solidstack.script.expressions;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
-import java.util.List;
-import java.util.ListIterator;
 
 import solidstack.io.SourceLocation;
 import solidstack.lang.Assert;
-import solidstack.script.ThreadContext;
 import solidstack.script.context.AbstractContext;
 import solidstack.script.context.AbstractContext.Undefined;
-import solidstack.script.context.AbstractContext.Value;
 import solidstack.script.context.CombinedContext;
 import solidstack.script.objects.Null;
 import solidstack.script.objects.SuperString;
-import solidstack.script.objects.TupleValue;
 import solidstack.script.operations.Access;
 import solidstack.script.operations.And;
 import solidstack.script.operations.Apply;
@@ -246,40 +241,6 @@ abstract public class Operation implements Expression
 		}
 		Assert.fail( "Unknown operation " + name );
 		return null;
-	}
-
-	static public Object unwrap( Object object )
-	{
-		if( object instanceof Value )
-			return ( (Value)object ).get(); // TODO These may be too late. Maybe we should bind the Value reference and the actual value.
-		return object;
-	}
-
-	static public List<Object> unwrapList( List<Object> objects )
-	{
-		// TODO These may be too late. Maybe we should bind the Value reference and the actual value.
-		for( ListIterator<Object> i = objects.listIterator(); i.hasNext(); )
-		{
-			Object object = i.next();
-			if( object instanceof Value )
-				i.set( ( (Value)object ).get() );
-		}
-		return objects;
-	}
-
-	static public Object evaluateAndUnwrap( Expression expression, ThreadContext thread )
-	{
-		Object result = expression.evaluate( thread );
-		if( result instanceof TupleValue )
-		{
-			TupleValue results = (TupleValue)result;
-			if( results.size() == 0 )
-				return null;
-			result = results.getLast();
-		}
-		if( result instanceof Value ) // TODO Does this ever happen with tuples?
-			return ( (Value)result ).get();
-		return result;
 	}
 
 	static protected Object add( Object left, Object right )

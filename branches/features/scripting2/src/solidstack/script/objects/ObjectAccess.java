@@ -16,6 +16,7 @@
 
 package solidstack.script.objects;
 
+import solidstack.script.Script;
 import solidstack.script.java.Java;
 
 
@@ -42,11 +43,11 @@ public class ObjectAccess
 
 	public Object invoke( Object... args )
 	{
-		return Java.invoke( this.object, this.name, args );
+		return Script.toScript( Java.invoke( this.object, this.name, args ) );
 	}
 
 	public Object get()
 	{
-		return Java.get( this.object, this.name );
+		return Script.toScript( Java.get( this.object, this.name ) );
 	}
 }

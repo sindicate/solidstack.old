@@ -16,21 +16,19 @@
 
 package solidstack.script.functions;
 
-import java.util.List;
-
 import solidstack.lang.Assert;
+import solidstack.script.ThreadContext;
 import solidstack.script.context.AbstractContext.Value;
 import solidstack.script.objects.FunctionInstance;
 import solidstack.script.objects.Null;
-import solidstack.script.ThreadContext;
 
 public class Val extends FunctionInstance
 {
 	@Override
-	public Object call( List<Object> parameters, ThreadContext thread )
+	public Object call( ThreadContext thread, Object... parameters )
 	{
-		Assert.isTrue( parameters.size() == 1 );
-		Object object = parameters.get( 0 );
+		Assert.isTrue( parameters.length == 1 );
+		Object object = parameters[ 0 ];
 		Assert.isInstanceOf( object, Value.class );
 		String name = ( (Value)object ).getKey();
 		return thread.getContext().val( name, Null.INSTANCE );

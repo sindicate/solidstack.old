@@ -16,8 +16,7 @@
 
 package solidstack.script.operations;
 
-
-
+import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Operation;
@@ -32,8 +31,8 @@ public class Plus extends Operation
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = evaluateAndUnwrap( this.left, thread );
-		Object right = evaluateAndUnwrap( this.right, thread );
+		Object left = Script.single( this.left.evaluate( thread ) );
+		Object right = Script.single( this.right.evaluate( thread ) );
 		return Operation.add( left, right );
 	}
 }

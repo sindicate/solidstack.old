@@ -18,33 +18,32 @@ package solidstack.script.functions;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 import solidstack.lang.Assert;
+import solidstack.script.Script;
 import solidstack.script.ThreadContext;
-import solidstack.script.expressions.Operation;
 import solidstack.script.objects.FunctionInstance;
+import solidstack.script.objects.Null;
 
 public class ForEach extends FunctionInstance
 {
 	@Override
-	public Object call( List<Object> parameters, ThreadContext thread )
+	public Object call( ThreadContext thread, Object... parameters )
 	{
-		Assert.isTrue( parameters.size() == 2 );
-		Operation.unwrapList( parameters );
+		Assert.isTrue( parameters.length == 2 );
 
-		Object o = parameters.get( 0 );
+		Object o = Script.deref( parameters[ 0 ] );
 		Assert.isInstanceOf( o, Collection.class );
 
-		Object f = parameters.get( 1 );
+		Object f = Script.deref( parameters[ 1 ] );
 		Assert.isInstanceOf( f, FunctionInstance.class );
 
 		FunctionInstance fun = (FunctionInstance)f;
 		Collection collection = (Collection)o;
 
-		Object result = null;
+		Object result = Null.INSTANCE;
 		for( Object object : collection )
-			result = fun.call( Arrays.asList( object ), thread );
+			result = fun.call( thread, Arrays.asList( object ) );
 
 		return result;
 	}

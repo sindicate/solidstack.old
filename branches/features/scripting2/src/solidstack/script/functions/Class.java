@@ -16,9 +16,8 @@
 
 package solidstack.script.functions;
 
-import java.util.List;
-
 import solidstack.lang.Assert;
+import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.java.Java;
 import solidstack.script.objects.FunctionInstance;
@@ -26,10 +25,10 @@ import solidstack.script.objects.FunctionInstance;
 public class Class extends FunctionInstance
 {
 	@Override
-	public Object call( List<Object> parameters, ThreadContext thread )
+	public Object call( ThreadContext thread, Object... parameters )
 	{
-		Assert.isTrue( parameters.size() == 1 );
-		Object object = parameters.get( 0 );
+		Assert.isTrue( parameters.length == 1 );
+		Object object = Script.toJava( parameters[ 0 ] );
 		Assert.isTrue( object instanceof String );
 		String name = (String)object;
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();

@@ -16,13 +16,14 @@
 
 package solidstack.script.expressions;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import solidstack.io.SourceLocation;
 import solidstack.lang.Assert;
+import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.objects.Labeled;
 import solidstack.script.objects.TupleValue;
@@ -41,10 +42,13 @@ public class List extends LocalizedExpression // TODO Is this localized needed?
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object result = this.expression.evaluate( thread );
+		Object result = null;
+		if( this.expression != null )
+			result = this.expression.evaluate( thread );
+
 		if( result instanceof TupleValue )
 		{
-			java.util.List<?> list = Operation.unwrapList( ( (TupleValue)result ).getList() );
+			java.util.List<?> list = ( (TupleValue)result ).getList();
 			Object object = list.get( 0 );
 			if( object instanceof Labeled )
 			{
@@ -53,20 +57,24 @@ public class List extends LocalizedExpression // TODO Is this localized needed?
 				{
 					Assert.isInstanceOf( item, Labeled.class );
 					Labeled labeled = (Labeled)item;
-					map.put( labeled.getLabel(), labeled.getValue() );
+					map.put( labeled.getLabel(), Script.deref( labeled.getValue() ) );
 				}
 				return map;
 			}
-			return list;
+			return Script.deref( list );
 		}
+
 		if( result instanceof Labeled )
 		{
 			Map<Object, Object> map = new HashMap<Object, Object>();
 			Labeled labeled = (Labeled)result;
-			map.put( labeled.getLabel(), labeled.getValue() );
+			map.put( labeled.getLabel(), Script.deref( labeled.getValue() ) );
 			return map;
 		}
-		// TODO Create a real ArrayList. But only after the unit test is fixed about the toArray() method.
-		return Arrays.asList( Operation.unwrap( result ) );
+
+		java.util.List<Object> list = new ArrayList<Object>();
+		if( result != null )
+			list.add( Script.deref( result ) );
+		return list;
 	}
 }

@@ -16,22 +16,18 @@
 
 package solidstack.script.functions;
 
-import java.util.List;
-
 import solidstack.lang.Assert;
+import solidstack.script.Script;
 import solidstack.script.ThreadContext;
-import solidstack.script.expressions.Operation;
 import solidstack.script.objects.FunctionInstance;
 
 public class Upper extends FunctionInstance
 {
 	@Override
-	public Object call( List<Object> parameters, ThreadContext thread )
+	public Object call( ThreadContext thread, Object... parameters )
 	{
-		Assert.isTrue( parameters.size() == 1 );
-		Operation.unwrapList( parameters );
-
-		Object object = parameters.get( 0 );
+		Assert.isTrue( parameters.length == 1 );
+		Object object = Script.deref( parameters[ 0 ] );
 		Assert.isInstanceOf( object, String.class );
 		return ( (String)object ).toUpperCase();
 	}

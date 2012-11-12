@@ -17,30 +17,28 @@
 package solidstack.script.functions;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import solidstack.lang.Assert;
+import solidstack.script.Script;
 import solidstack.script.ThreadContext;
-import solidstack.script.expressions.Operation;
 import solidstack.script.objects.FunctionInstance;
 
 public class Substr extends FunctionInstance
 {
 	@Override
-	public Object call( List<Object> parameters, ThreadContext thread )
+	public Object call( ThreadContext thread, Object... parameters )
 	{
-		Assert.isTrue( parameters.size() == 2 || parameters.size() == 3 );
-		Operation.unwrapList( parameters );
+		Assert.isTrue( parameters.length == 2 || parameters.length == 3 );
 
-		Object object = parameters.get( 0 );
-		Object start = parameters.get( 1 );
+		Object object = Script.deref( parameters[ 0 ] );
+		Object start = Script.deref( parameters[ 1 ] );
 		Assert.isInstanceOf( object, String.class );
 		Assert.isInstanceOf( start, BigDecimal.class );
 
-		if( parameters.size() == 2 )
+		if( parameters.length == 2 )
 			return ( (String)object ).substring( ( (BigDecimal)start ).intValue() );
 
-		Object end = parameters.get( 2 );
+		Object end = Script.deref( parameters[ 2 ] );
 		Assert.isInstanceOf( end, BigDecimal.class );
 
 		return ( (String)object ).substring( ( (BigDecimal)start ).intValue(), ( (BigDecimal)end ).intValue() );

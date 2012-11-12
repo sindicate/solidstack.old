@@ -16,16 +16,15 @@
 
 package solidstack.script.objects;
 
-import java.util.Arrays;
 import java.util.List;
 
+import solidstack.script.Script;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 import solidstack.script.context.AbstractContext;
 import solidstack.script.context.Context;
 import solidstack.script.context.ParameterContext;
 import solidstack.script.expressions.Function;
-import solidstack.script.expressions.Operation;
 
 public class FunctionInstance implements solidstack.script.java.Function
 {
@@ -44,16 +43,14 @@ public class FunctionInstance implements solidstack.script.java.Function
 
 	public Object call( Object... args )
 	{
-		ThreadContext context = ThreadContext.get();
-		return call( Arrays.asList( args ), context );
+		return call( ThreadContext.get(), args );
 	}
 
-	// FIXME Variable arg
-	public Object call( List<Object> pars, ThreadContext thread )
+	public Object call( ThreadContext thread, Object... pars )
 	{
 		List<String> parameters = this.function.getParameters();
 		int count = parameters.size();
-		if( count != pars.size() )
+		if( count != pars.length )
 			throw new ScriptException( "Parameter count mismatch" );
 
 		AbstractContext newContext;
@@ -61,20 +58,14 @@ public class FunctionInstance implements solidstack.script.java.Function
 		{
 			Context context = new Context( this.context );
 			for( int i = 0; i < count; i++ )
-			{
-				Object value = Operation.unwrap( pars.get( i ) ); // TODO If we keep the Link we get output parameters!
-				context.def( parameters.get( i ), value );
-			}
+				context.def( parameters.get( i ), pars[ i ] ); // TODO If we keep the Link we get output parameters!
 			newContext = context;
 		}
 		else if( count > 0 )
 		{
 			ParameterContext parContext = new ParameterContext( this.context );
 			for( int i = 0; i < count; i++ )
-			{
-				Object value = Operation.unwrap( pars.get( i ) ); // TODO If we keep the Link we get output parameters!
-				parContext.defParameter( parameters.get( i ), value );
-			}
+				parContext.defParameter( parameters.get( i ), Script.deref( pars[ i ] ) ); // TODO If we keep the Link we get output parameters!
 			newContext = parContext;
 		}
 		else

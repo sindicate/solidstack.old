@@ -392,6 +392,10 @@ public class ScriptTests
 		test( "map = [ \"first\": 1, \"second\": 2, \"third\": 3 ]; map[ \"fourth\" ]", null );
 		test( "map = [:]; map[ \"fourth\" ]", null );
 		test( "map = [:]; map.size()", 0 );
+		eval( "fun( a; a )( null )" );
+		eval( "fun( a; a )( if( false; 1; ) )" );
+		eval( "fun( a; a )( while( false; 1; ) )" );
+		eval( "fun( a; a )( [].each( fun( a; ; ) ) )" );
 	}
 
 	// TODO Calls with named parameters

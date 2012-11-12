@@ -19,6 +19,7 @@ package solidstack.script.operations;
 import java.math.BigDecimal;
 
 import solidstack.lang.Assert;
+import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Operation;
@@ -33,8 +34,8 @@ public class Multiply extends Operation
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = evaluateAndUnwrap( this.left, thread );
-		Object right = evaluateAndUnwrap( this.right, thread );
+		Object left = Script.single( this.left.evaluate( thread ) );
+		Object right = Script.single( this.right.evaluate( thread ) );
 		Assert.isInstanceOf( left, BigDecimal.class );
 		Assert.isInstanceOf( right, BigDecimal.class );
 		return ( (BigDecimal)left ).multiply( (BigDecimal)right );

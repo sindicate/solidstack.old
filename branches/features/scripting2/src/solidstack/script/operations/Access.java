@@ -18,6 +18,7 @@ package solidstack.script.operations;
 
 import org.springframework.util.Assert;
 
+import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.context.AbstractContext;
 import solidstack.script.expressions.Expression;
@@ -35,7 +36,7 @@ public class Access extends Operation
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = evaluateAndUnwrap( this.left, thread );
+		Object left = Script.single( this.left.evaluate( thread ) );
 		Assert.isInstanceOf( Identifier.class, this.right );
 		String right = ( (Identifier)this.right ).getName();
 		// TODO I think these should be covered elsewhere

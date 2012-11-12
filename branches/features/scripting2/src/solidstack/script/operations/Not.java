@@ -38,7 +38,7 @@ public class Not extends Operation
 	public Object evaluate( ThreadContext thread )
 	{
 		Assert.isNull( this.left );
-		Object right = evaluateAndUnwrap( this.right, thread );
+		Object right = this.right.evaluate( thread );
 		return !Operation.isTrue( right );
 	}
 

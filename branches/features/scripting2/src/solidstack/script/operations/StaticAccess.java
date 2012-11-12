@@ -18,6 +18,7 @@ package solidstack.script.operations;
 
 import org.springframework.util.Assert;
 
+import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
@@ -34,7 +35,7 @@ public class StaticAccess extends Operation
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = evaluateAndUnwrap( this.left, thread );
+		Object left = Script.single( this.left.evaluate( thread ) );
 		Assert.isInstanceOf( Class.class, left );
 		Assert.isInstanceOf( Identifier.class, this.right );
 		String right = ( (Identifier)this.right ).getName();

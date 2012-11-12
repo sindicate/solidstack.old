@@ -16,10 +16,7 @@
 
 package solidstack.script.operations;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
+import solidstack.script.Script;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
@@ -28,8 +25,8 @@ import solidstack.script.expressions.Operation;
 import solidstack.script.java.Java;
 import solidstack.script.objects.ClassAccess;
 import solidstack.script.objects.FunctionInstance;
+import solidstack.script.objects.Null;
 import solidstack.script.objects.ObjectAccess;
-import solidstack.script.objects.TupleValue;
 
 
 public class Apply extends Operation
@@ -41,31 +38,25 @@ public class Apply extends Operation
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = evaluateAndUnwrap( this.left, thread );
-		if( left == null )
+		Object left = Script.single( this.left.evaluate( thread ) );
+		if( left == Null.INSTANCE )
 		{
 			if( this.left instanceof Identifier )
 				throw new ScriptException( "Function " + ( (Identifier)this.left ).getName() + " not found" );
 			throw new ScriptException( "Cannot apply parameters to null" );
 		}
 
+		Object pars = null;
+		if( this.right != null )
+			pars = this.right.evaluate( thread );
+
 		if( left instanceof FunctionInstance )
 		{
 			FunctionInstance f = (FunctionInstance)left;
-			Object pars = this.right.evaluate( thread );
-
-			List<Object> list;
-			if( pars instanceof TupleValue )
-				list = ( (TupleValue)pars ).getValues();
-			else if( pars != null )
-				list = Arrays.asList( pars );
-			else
-				list = Collections.emptyList(); // TODO Can be a constant maybe
-
 			thread.pushStack( getLocation() );
 			try
 			{
-				return f.call( list, thread );
+				return f.call( thread, Script.toScriptParameters( pars ) );
 			}
 			finally
 			{
@@ -76,15 +67,10 @@ public class Apply extends Operation
 		if( left instanceof ObjectAccess )
 		{
 			ObjectAccess f = (ObjectAccess)left;
-			Object pars = this.right.evaluate( thread );
 			thread.pushStack( getLocation() );
 			try
 			{
-				if( pars instanceof TupleValue )
-					return f.invoke( unwrapList( ( (TupleValue)pars ).getValues() ).toArray() ); // TODO unwrap array
-				if( pars != null )
-					return f.invoke( unwrap( pars ) );
-				return f.invoke();
+				return f.invoke( Script.toJavaParameters( pars ) );
 			}
 			finally
 			{
@@ -95,15 +81,10 @@ public class Apply extends Operation
 		if( left instanceof ClassAccess )
 		{
 			ClassAccess f = (ClassAccess)left;
-			Object pars = this.right.evaluate( thread );
 			thread.pushStack( getLocation() );
 			try
 			{
-				if( pars instanceof TupleValue )
-					return f.invoke( unwrapList( ( (TupleValue)pars ).getValues() ).toArray() ); // TODO unwrap array
-				if( pars != null )
-					return f.invoke( unwrap( pars ) );
-				return f.invoke();
+				return f.invoke( Script.toJavaParameters( pars ) );
 			}
 			finally
 			{
@@ -114,15 +95,10 @@ public class Apply extends Operation
 		if( left instanceof Class )
 		{
 			Class<?> cls = (Class<?>)left;
-			Object pars = this.right.evaluate( thread );
 			thread.pushStack( getLocation() );
 			try
 			{
-				if( pars instanceof TupleValue )
-					return Java.construct( cls, ( (TupleValue)pars ).getValues().toArray() );
-				if( pars != null )
-					return Java.construct( cls, new Object[] { pars } );
-				return Java.construct( cls );
+				return Java.construct( cls, Script.toJavaParameters( pars ) );
 			}
 			finally
 			{

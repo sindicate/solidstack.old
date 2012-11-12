@@ -16,8 +16,7 @@
 
 package solidstack.script.operations;
 
-
-
+import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Operation;
@@ -32,8 +31,8 @@ public class LessThan extends Operation
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = evaluateAndUnwrap( this.left, thread );
-		Object right = evaluateAndUnwrap( this.right, thread );
+		Object left = Script.deref( this.left.evaluate( thread ) );
+		Object right = Script.deref( this.right.evaluate( thread ) );
 		return Operation.compare( left, right ) < 0;
 	}
 }

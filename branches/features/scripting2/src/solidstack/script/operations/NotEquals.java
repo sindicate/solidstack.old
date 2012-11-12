@@ -16,8 +16,6 @@
 
 package solidstack.script.operations;
 
-
-
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 
