@@ -58,6 +58,8 @@ public class MethodCall implements Cloneable
 		{
 			if( this.constructor != null )
 				return this.constructor.newInstance( this.args );
+			if( !this.method.isAccessible() )
+				this.method.setAccessible( true );
 			return this.method.invoke( this.object, this.args );
 		}
 		catch( InvocationTargetException e )

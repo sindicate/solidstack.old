@@ -16,8 +16,11 @@
 
 package solidstack.script.java;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Map;
 
 import solidstack.script.ScriptException;
 
@@ -141,5 +144,73 @@ public class Java
 	{
 		// No 'checkcast' byte code is added, because the parameter is a Throwable and the lower bound of T is also Throwable.
 		throw (T)exception;
+	}
+
+	static private Map<String, java.lang.Class<?>> primitiveCache = new HashMap<String, java.lang.Class<?>>();
+
+	static
+	{
+		primitiveCache.put( "boolean", boolean.class );
+		primitiveCache.put( "char", char.class );
+		primitiveCache.put( "byte", byte.class );
+		primitiveCache.put( "short", short.class );
+		primitiveCache.put( "int", int.class );
+		primitiveCache.put( "long", long.class );
+		primitiveCache.put( "float", float.class );
+		primitiveCache.put( "double", double.class );
+		primitiveCache.put( "void", void.class );
+	}
+
+	static public java.lang.Class<?> forName( String name, ClassLoader loader )
+	{
+		try
+		{
+			return java.lang.Class.forName( name, false, loader );
+		}
+		catch( ClassNotFoundException e )
+		{
+			java.lang.Class<?> result = primitiveCache.get( name );
+			if( result != null )
+				return result;
+
+			String n = name;
+			int dimensions = 0;
+			while( n.endsWith( "[]" ) )
+			{
+				dimensions++;
+				n = n.substring( 0, n.length() - 2 );
+				result = primitiveCache.get( n );
+				if( result != null )
+				{
+					while( dimensions > 0 )
+					{
+						result = Array.newInstance( result, 0 ).getClass();
+						dimensions--;
+						n = n + "[]";
+						primitiveCache.put( n, result );
+					}
+					return result;
+				}
+			}
+
+			n = "L" + n + ";";
+			while( dimensions > 0 )
+			{
+				n = "[" + n;
+				dimensions--;
+			}
+
+			try
+			{
+				result = java.lang.Class.forName( n, false, loader );
+			}
+			catch( ClassNotFoundException ee )
+			{
+				// TODO We can also do . -> $ replacement to search for inner classes
+				throw new ScriptException( e );
+			}
+
+			return result;
+		}
 	}
 }

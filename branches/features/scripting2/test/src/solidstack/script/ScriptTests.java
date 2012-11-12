@@ -26,6 +26,7 @@ import org.testng.annotations.Test;
 
 import solidstack.io.SourceException;
 import solidstack.script.context.Context;
+import solidstack.script.java.Java;
 import solidstack.script.java.MissingFieldException;
 import solidstack.script.java.MissingMethodException;
 import solidstack.script.objects.SuperString;
@@ -373,17 +374,17 @@ public class ScriptTests
 	static public void test20() throws ClassNotFoundException, InstantiationException, IllegalAccessException
 	{
 		ClassLoader loader = ScriptTests.class.getClassLoader();
-		Assert.assertEquals( solidstack.script.functions.Class.forName( "java.lang.Object", loader ), Object.class );
-		Assert.assertEquals( solidstack.script.functions.Class.forName( "java.lang.Object[]", loader ), Object[].class );
-		Assert.assertEquals( solidstack.script.functions.Class.forName( "java.lang.Object[][]", loader ), Object[][].class );
-		Assert.assertEquals( solidstack.script.functions.Class.forName( "int", loader ), int.class );
-		Assert.assertEquals( solidstack.script.functions.Class.forName( "int[]", loader ), int[].class );
-		Assert.assertEquals( solidstack.script.functions.Class.forName( "int[][][][]", loader ), int[][][][].class );
-		Assert.assertEquals( solidstack.script.functions.Class.forName( "int[][]", loader ), int[][].class );
+		Assert.assertEquals( Java.forName( "java.lang.Object", loader ), Object.class );
+		Assert.assertEquals( Java.forName( "java.lang.Object[]", loader ), Object[].class );
+		Assert.assertEquals( Java.forName( "java.lang.Object[][]", loader ), Object[][].class );
+		Assert.assertEquals( Java.forName( "int", loader ), int.class );
+		Assert.assertEquals( Java.forName( "int[]", loader ), int[].class );
+		Assert.assertEquals( Java.forName( "int[][][][]", loader ), int[][][][].class );
+		Assert.assertEquals( Java.forName( "int[][]", loader ), int[][].class );
 
 		test( "list = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]; list[ 3 ]", new BigDecimal( 4 ) );
 		test( "list = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ].toArray(); list[ 3 ]", new BigDecimal( 4 ) );
-//		test( "list = []; map.size()", 0 ); // TODO java.lang.IllegalAccessException: Class solidstack.script.java.MethodCall can not access a member of class java.util.Arrays$ArrayList with modifiers "public"
+		test( "list = []; list.size()", 0 ); // TODO java.lang.IllegalAccessException: Class solidstack.script.java.MethodCall can not access a member of class java.util.Arrays$ArrayList with modifiers "public"
 		test( "list = class( \"java.lang.reflect.Array\" )#newInstance( class( \"int\" ), 10 ); list.size()", 10 );
 		test( "map = [ 0: 1, 1: 2, 2: 3, 3: 4 ]; map[ 3 ]", new BigDecimal( 4 ) );
 		test( "map = [ \"first\": 1, \"second\": 2, \"third\": 3 ]; map[ \"second\" ]", new BigDecimal( 2 ) );

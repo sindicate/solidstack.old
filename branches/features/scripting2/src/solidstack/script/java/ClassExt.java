@@ -19,8 +19,8 @@ package solidstack.script.java;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 
 /**
@@ -28,7 +28,7 @@ import java.util.Map;
  */
 public class ClassExt
 {
-	static private IdentityHashMap<Class<?>, ClassExt> extensions = new IdentityHashMap<Class<?>, ClassExt>();
+	static private Map<Class<?>, ClassExt> extensions = new WeakHashMap<Class<?>, ClassExt>();
 
 	static
 	{
@@ -50,7 +50,10 @@ public class ClassExt
 	 */
 	static public ClassExt get( Class<?> cls )
 	{
-		return extensions.get( cls );
+		synchronized( extensions )
+		{
+			return extensions.get( cls );
+		}
 	}
 
 	/**
@@ -59,12 +62,15 @@ public class ClassExt
 	 */
 	static public ClassExt forClass( Class<?> cls )
 	{
-		ClassExt result = get( cls );
-		if( result != null )
+		synchronized( extensions )
+		{
+			ClassExt result = extensions.get( cls );
+			if( result != null )
+				return result;
+			result = new ClassExt();
+			extensions.put( cls, result );
 			return result;
-		result = new ClassExt();
-		extensions.put( cls, result );
-		return result;
+		}
 	}
 
 	// ----------
