@@ -121,6 +121,8 @@ abstract public class Operation implements Expression
 			case '-':
 				if( name.equals( "-" ) )
 					return new Minus( name, left, right );
+				if( name.equals( "->" ) )
+					return new Function( name, left, right );
 				break;
 
 			case '=':

@@ -17,8 +17,6 @@
 package solidstack.script;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 import solidstack.io.SourceException;
 import solidstack.io.SourceReader;
@@ -31,15 +29,15 @@ import solidstack.script.expressions.BooleanConstant;
 import solidstack.script.expressions.EmptyMap;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Expressions;
-import solidstack.script.expressions.Function;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.expressions.If;
 import solidstack.script.expressions.NullConstant;
 import solidstack.script.expressions.NumberConstant;
+import solidstack.script.expressions.Parenthesis;
 import solidstack.script.expressions.StringConstant;
 import solidstack.script.expressions.StringExpression;
 import solidstack.script.expressions.While;
-import solidstack.script.operations.BuildTuple;
+import solidstack.script.operations.Function;
 import solidstack.script.operations.Operation;
 
 
@@ -68,7 +66,22 @@ public class ScriptParser
 	 *
 	 * @return An expression.
 	 */
-	public Expressions parse()
+	public Expression parse()
+	{
+		Expressions results = parseExpressions();
+		if( results.size() == 0 )
+			return null;
+		if( results.size() == 1 )
+			return results.get( 0 );
+		return results;
+	}
+
+	/**
+	 * Parses everything.
+	 *
+	 * @return An expression.
+	 */
+	private Expressions parseExpressions()
 	{
 		Expressions results = new Expressions();
 		while( true )
@@ -81,8 +94,8 @@ public class ScriptParser
 					results.append( expression );
 				if( this.stop != null && last.getType() == TYPE.EOF )
 					throw new SourceException( "Unexpected " + last + ", missing " + this.stop, last.getLocation() );
-				if( results.size() == 0 )
-					return null;
+//				if( results.size() == 0 )
+//					return null;
 				return results;
 			}
 			results.append( expression );
@@ -186,7 +199,7 @@ public class ScriptParser
 				Expression result = parse();
 				swapStops( oldStop );
 				Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.PAREN_CLOSE, "Not expecting token " + token );
-				return result;
+				return new Parenthesis( token.getLocation(), result );
 
 			case BRACE_OPEN:
 				oldStop = swapStops( TYPE.BRACE_CLOSE );
@@ -237,7 +250,7 @@ public class ScriptParser
 					if( token2.getType() != TYPE.PAREN_OPEN )
 						throw new SourceException( "Expected an opening parenthesis", token2.getLocation() );
 					oldStop = swapStops( TYPE.PAREN_CLOSE );
-					Expressions expressions = parse();
+					Expressions expressions = parseExpressions();
 					swapStops( oldStop );
 					if( expressions.size() != 2 && expressions.size() != 3 )
 						throw new SourceException( "Expected 2 or 3 expressions", token2.getLocation() );
@@ -250,13 +263,14 @@ public class ScriptParser
 					if( token2.getType() != TYPE.PAREN_OPEN )
 						throw new SourceException( "Expected an opening parenthesis", token2.getLocation() );
 					oldStop = swapStops( TYPE.PAREN_CLOSE );
-					Expressions expressions = parse();
+					Expressions expressions = parseExpressions();
 					swapStops( oldStop );
 					if( expressions.size() < 2 ) // TODO And 1?
 						throw new SourceException( "Expected at least 2 expressions", token2.getLocation() );
 					return new While( token.getLocation(), expressions.remove( 0 ), expressions );
 				}
 
+				// TODO Remove this
 				if( token.getValue().equals( "fun" ) )
 				{
 					token2 = this.tokenizer.get();
@@ -266,28 +280,13 @@ public class ScriptParser
 						oldStop = swapStops( TYPE.PAREN_CLOSE );
 					else
 						oldStop = swapStops( TYPE.BRACE_CLOSE );
-					Expressions expressions = parse();
+					Expressions expressions = parseExpressions();
 					swapStops( oldStop );
 					if( expressions.size() < 2 ) // TODO And 1?
 						throw new SourceException( "Expected 2 or more expressions", token2.getLocation() );
-					List<String> parameters = new ArrayList<String>();
 					Expression pars = expressions.remove( 0 );
-					if( pars instanceof BuildTuple )
-					{
-						for( Expression par : ( (BuildTuple)pars ).getExpressions() )
-						{
-							if( !( par instanceof Identifier ) )
-								throw new SourceException( "Expected an identifier", token2.getLocation() ); // FIXME Use the line number from the par
-							parameters.add( ( (Identifier)par ).getName() );
-						}
-					}
-					else if( pars != null )
-					{
-						if( !( pars instanceof Identifier ) )
-							throw new SourceException( "Expected an identifier", token2.getLocation() ); // FIXME Use the line number from the par
-						parameters.add( ( (Identifier)pars ).getName() );
-					}
-					return new Function( token.getLocation(), parameters, expressions, token2.getType() == TYPE.BRACE_OPEN );
+					Expression block = token2.getType() == TYPE.BRACE_OPEN ? new Block( expressions.getLocation(), expressions ) : expressions;
+					return new Parenthesis( token2.getLocation(), new Function( "->", pars, block ) );
 				}
 
 				return new Identifier( token.getLocation(), token.getValue() );
@@ -323,8 +322,9 @@ public class ScriptParser
 			result.append( new StringConstant( string.getLocation(), fragment ) );
 		while( t.foundExpression() )
 		{
-			Expressions expressions = parse();
-			result.append( expressions );
+			Expression expression = parse();
+			if( expression != null ) // TODO Unit test
+				result.append( expression );
 			fragment = t.getFragment();
 			if( fragment.length() != 0 )
 				result.append( new StringConstant( string.getLocation(), fragment ) );

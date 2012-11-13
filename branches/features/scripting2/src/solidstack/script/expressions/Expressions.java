@@ -47,9 +47,10 @@ public class Expressions implements Expression
 		return result;
 	}
 
-	public void append( Expression expression )
+	public Expressions append( Expression expression )
 	{
 		this.expressions.add( expression );
+		return this;
 	}
 
 	public int size()

@@ -303,6 +303,8 @@ public class ScriptTests
 		test( "( a, b ) = ( 1, 2 ); a + b", new BigDecimal( 3 ) );
 		test( "( a, b ) = fun( ; 1, 2 )(); a + b", new BigDecimal( 3 ) );
 		test( "( a, b ) = ( fun( ; 1 ), fun( ; 2 ) ) ; a() + b()", new BigDecimal( 3 ) );
+		test( "( a, b ) = ( () -> ( 1, 2 ) )(); a + b", new BigDecimal( 3 ) );
+		test( "( a, b ) = ( () -> 1, () -> 2 ); a() + b()", new BigDecimal( 3 ) );
 	}
 
 	@Test
@@ -335,6 +337,12 @@ public class ScriptTests
 		test( "a = 1; ( def( a ) = 2 ); a", new BigDecimal( 2 ) ); // The block has no context of its own
 //		test( "a = 1; fun( ; val( a ) = 2 )(); a", new BigDecimal( 2 ) ); // The function has no context of its own
 		test( "a = 1; { def( a ) = 2 }; a", new BigDecimal( 1 ) ); // The block has its own context
+
+		test( "( () -> a = 1 )(); a", new BigDecimal( 1 ) ); // The function has no context of its own
+		test( "a = 1; ( a -> a++ )( a ); a;", new BigDecimal( 1 ) );
+		test( "a = 1; ( () -> def( a ) = 2 )(); a", new BigDecimal( 2 ) ); // The function has no context of its own
+//		test( "a = 1; fun( ; val( a ) = 2 )(); a", new BigDecimal( 2 ) ); // The function has no context of its own
+		test( "a = 1; f = () -> { def( a ) = 2 }; f(); a", new BigDecimal( 1 ) ); // The function has its own context
 	}
 
 	@Test
@@ -392,10 +400,36 @@ public class ScriptTests
 		test( "map = [ \"first\": 1, \"second\": 2, \"third\": 3 ]; map[ \"fourth\" ]", null ); // TODO Undefined? Then we assign to it too.
 		test( "map = [:]; map[ \"fourth\" ]", null );
 		test( "map = [:]; map.size()", 0 );
+
 		eval( "fun( a; a )( null )" );
-		eval( "fun( a; a )( if( false; 1; ) )" );
-		eval( "fun( a; a )( while( false; 1; ) )" );
-		eval( "fun( a; a )( [].each( fun( a; ; ) ) )" );
+		eval( "fun( a; a )( if( false; 1 ) )" );
+		eval( "fun( a; a )( while( false; 1 ) )" );
+		eval( "fun( a; a )( [].each( fun( a; () ) ) )" );
+
+		eval( "( a -> a )( null )" );
+		eval( "( a -> a )( if( false; 1 ) )" );
+		eval( "( a -> a )( while( false; 1 ) )" );
+		eval( "( a -> a )( [].each( a -> () ) )" );
+	}
+
+	@Test
+	static public void test21()
+	{
+		test( "f = a -> a; f( 3 )", new BigDecimal( 3 ) );
+		test( "f = a -> a * a; f( 3 )", new BigDecimal( 9 ) );
+		test( "f = ( a ) -> ( a * a ); f( 3 )", new BigDecimal( 9 ) );
+		test( "( a -> a * a )( 5 )", new BigDecimal( 25 ) );
+		test( "( a -> a( 3 ) ) ( b -> 5 * b )", new BigDecimal( 15 ) );
+		test( "( ( a, b ) -> a( 1, 2 ) * b( 3, 4 ) ) ( ( c, d ) -> c * d, ( e, f ) -> e * f )", new BigDecimal( 24 ) );
+		test( "( ( a, b ) -> a( 1, 2 ) * b( 3, 4 ) ) ( ( a, b ) -> a * b, ( a, b ) -> a * b )", new BigDecimal( 24 ) );
+		test( "f = () -> 1; f()", new BigDecimal( 1 ) );
+		test( "a = 0; ( () -> a = 1 ) (); a", new BigDecimal( 1 ) );
+		test( "( a -> a ) ( null )", null );
+		test( "f = () -> () -> 2; f()()", new BigDecimal( 2 ) );
+		test( "a = 1; f = () -> a; a = 2; f()", new BigDecimal( 2 ) );
+		test( "( a -> () -> a )( 1 )()", new BigDecimal( 1 ) );
+
+		test( "l = [ 1, 2, 3 ]; l.each( i -> println( i ) )", new BigDecimal( 3 ) );
 	}
 
 	// TODO Calls with named parameters

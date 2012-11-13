@@ -265,8 +265,8 @@ public class ScriptTokenizer
 					int ch2 = in.read();
 					if( ch2 == ch )
 						return new Token( TYPE.UNAOP, location, String.valueOf( new char[] { (char)ch, (char)ch } ) );
-	//					if( ch == '-' && ch2 == '>' )
-	//						return Token.TOK_LAMBDA;
+					if( ch == '-' && ch2 == '>' )
+						return new Token( TYPE.BINOP, location, "->" );
 					in.push( ch2 );
 					//$FALL-THROUGH$
 				case '*':

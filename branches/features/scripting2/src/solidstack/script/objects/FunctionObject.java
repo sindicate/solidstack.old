@@ -21,7 +21,7 @@ import java.util.List;
 import solidstack.script.Script;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
-import solidstack.script.expressions.Function;
+import solidstack.script.operations.Function;
 import solidstack.script.scopes.AbstractScope;
 import solidstack.script.scopes.ParameterScope;
 import solidstack.script.scopes.Scope;
