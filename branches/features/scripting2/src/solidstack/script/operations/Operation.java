@@ -21,9 +21,9 @@ import java.util.HashMap;
 
 import solidstack.io.SourceLocation;
 import solidstack.lang.Assert;
-import solidstack.script.context.AbstractContext;
-import solidstack.script.context.CombinedContext;
 import solidstack.script.expressions.Expression;
+import solidstack.script.scopes.AbstractScope;
+import solidstack.script.scopes.CombinedScope;
 
 
 abstract public class Operation implements Expression
@@ -234,10 +234,10 @@ abstract public class Operation implements Expression
 			left = new BigDecimal( (Integer)left );
 			return ( (BigDecimal)left ).add( (BigDecimal)right );
 		}
-		if( left instanceof AbstractContext )
+		if( left instanceof AbstractScope )
 		{
-			Assert.isInstanceOf( right, AbstractContext.class );
-			return new CombinedContext( (AbstractContext)left, (AbstractContext)right );
+			Assert.isInstanceOf( right, AbstractScope.class );
+			return new CombinedScope( (AbstractScope)left, (AbstractScope)right );
 		}
 		Assert.isInstanceOf( left, String.class, "Not expecting " + left.getClass() );
 		if( !( right instanceof String ) )

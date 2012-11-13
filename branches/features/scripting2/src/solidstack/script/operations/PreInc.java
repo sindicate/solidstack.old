@@ -21,8 +21,8 @@ import java.math.BigDecimal;
 import org.springframework.util.Assert;
 
 import solidstack.io.SourceLocation;
-import solidstack.script.context.AbstractContext.Variable;
 import solidstack.script.expressions.Expression;
+import solidstack.script.scopes.AbstractScope.Variable;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 

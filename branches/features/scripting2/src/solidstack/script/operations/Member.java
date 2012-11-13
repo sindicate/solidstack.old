@@ -20,10 +20,10 @@ import org.springframework.util.Assert;
 
 import solidstack.script.Script;
 import solidstack.script.ThreadContext;
-import solidstack.script.context.AbstractContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.objects.ObjectMember;
+import solidstack.script.scopes.AbstractScope;
 
 
 public class Member extends Operation
@@ -39,8 +39,8 @@ public class Member extends Operation
 		Assert.isInstanceOf( Identifier.class, this.right );
 		String right = ( (Identifier)this.right ).getName();
 		// TODO I think these should be covered elsewhere
-		if( left instanceof AbstractContext )
-			return ( (AbstractContext)left ).get( right );
+		if( left instanceof AbstractScope )
+			return ( (AbstractScope)left ).get( right );
 		return new ObjectMember( left, right );
 	}
 }

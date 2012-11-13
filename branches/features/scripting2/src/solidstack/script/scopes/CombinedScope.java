@@ -14,52 +14,41 @@
  * limitations under the License.
  */
 
-package solidstack.script.context;
-
-import solidstack.script.ValueMap;
+package solidstack.script.scopes;
 
 
 
-
-public class ParameterContext extends AbstractContext
+public class CombinedScope extends AbstractScope
 {
-	private AbstractContext parent;
+	private AbstractScope scope1, scope2;
 
-	private ValueMap<Value> values = new ValueMap<Value>();
-
-	public ParameterContext( AbstractContext parent )
+	public CombinedScope( AbstractScope scope1, AbstractScope scope2 )
 	{
-		this.parent = parent;
-	}
-
-	Value findLocalValue( String name )
-	{
-		return this.values.get( name );
+		this.scope1 = scope1;
+		this.scope2 = scope2;
 	}
 
 	@Override
 	public Value findValue( String name )
 	{
-		Value v = findLocalValue( name );
+		Value v = this.scope1.findValue( name );
 		if( v != null )
 			return v;
-		return this.parent.findValue( name );
-	}
-
-	public void defParameter( String name, Object value )
-	{
-		this.values.put( new Variable( name, value ) );
+		v = this.scope2.findValue( name );
+		if( v != null )
+			return v;
+		return null;
 	}
 
 	@Override
 	public Variable def( String name, Object value )
 	{
-		return this.parent.def( name, value );
+		return this.scope1.def( name, value );
 	}
 
 	@Override
 	public Value val( String name, Object value )
 	{
-		return this.parent.val( name, value );
+		return this.scope1.val( name, value );
 	}
 }

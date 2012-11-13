@@ -18,9 +18,9 @@ package solidstack.script.functions;
 
 import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
-import solidstack.script.context.AbstractContext.Value;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Null;
+import solidstack.script.scopes.AbstractScope.Value;
 
 public class Val extends FunctionObject
 {
@@ -31,6 +31,6 @@ public class Val extends FunctionObject
 		Object object = parameters[ 0 ];
 		Assert.isInstanceOf( object, Value.class );
 		String name = ( (Value)object ).getKey();
-		return thread.getContext().val( name, Null.INSTANCE );
+		return thread.getScope().val( name, Null.INSTANCE );
 	}
 }

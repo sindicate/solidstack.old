@@ -17,10 +17,10 @@
 package solidstack.script.operations;
 
 import solidstack.lang.Assert;
-import solidstack.script.context.AbstractContext.Value;
-import solidstack.script.context.AbstractContext.Variable;
 import solidstack.script.expressions.Expression;
 import solidstack.script.objects.Tuple;
+import solidstack.script.scopes.AbstractScope.Value;
+import solidstack.script.scopes.AbstractScope.Variable;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 

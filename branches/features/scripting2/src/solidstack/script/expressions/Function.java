@@ -26,20 +26,20 @@ public class Function extends LocalizedExpression
 {
 	private List<String> parameters;
 	private Expression block;
-	private boolean subContext;
+	private boolean subScope;
 
-	public Function( SourceLocation location, List<String> parameters, Expression block, boolean subContext )
+	public Function( SourceLocation location, List<String> parameters, Expression block, boolean subScope )
 	{
 		super( location );
 
 		this.parameters = parameters;
 		this.block = block;
-		this.subContext = subContext;
+		this.subScope = subScope;
 	}
 
 	public Object evaluate( ThreadContext thread )
 	{
-		return new FunctionObject( this, thread.getContext() );
+		return new FunctionObject( this, thread.getScope() );
 	}
 
 	public List<String> getParameters()
@@ -52,8 +52,8 @@ public class Function extends LocalizedExpression
 		return this.block;
 	}
 
-	public boolean subContext()
+	public boolean subScope()
 	{
-		return this.subContext;
+		return this.subScope;
 	}
 }

@@ -25,11 +25,11 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import solidstack.io.SourceException;
-import solidstack.script.context.Context;
 import solidstack.script.java.Java;
 import solidstack.script.java.MissingFieldException;
 import solidstack.script.java.MissingMethodException;
 import solidstack.script.objects.FunnyString;
+import solidstack.script.scopes.Scope;
 
 
 @SuppressWarnings( "javadoc" )
@@ -38,7 +38,7 @@ public class ScriptTests
 	@Test
 	static public void test1()
 	{
-		Context context = new Context();
+		Scope context = new Scope();
 		context.set( "var1", "Value" );
 		test( "var1", context, "Value" );
 		test( "", null );
@@ -47,7 +47,7 @@ public class ScriptTests
 	@Test
 	static public void test2()
 	{
-		Context context = new Context();
+		Scope context = new Scope();
 		context.set( "var1", new BigDecimal( 1 ) );
 		test( "var1 + 1", context, new BigDecimal( 2 ) );
 	}
@@ -122,7 +122,7 @@ public class ScriptTests
 	@Test
 	static public void test5()
 	{
-		Context context = new Context();
+		Scope context = new Scope();
 
 		test( "a = 1", context, new BigDecimal( 1 ) );
 		Assert.assertEquals( context.get( "a" ), new BigDecimal( 1 ) );
@@ -253,7 +253,7 @@ public class ScriptTests
 	@Test
 	static public void test13()
 	{
-		Context context = new Context();
+		Scope context = new Scope();
 		context.set( "s", "sinterklaas" );
 		test( "s.length()", context, 11 );
 		test( "s.substring( 6 )", context, "klaas" );
@@ -281,7 +281,7 @@ public class ScriptTests
 	@Test
 	static public void test13_2()
 	{
-		Context context = new Context();
+		Scope context = new Scope();
 		test( "c = class( \"solidstack.script.ScriptTests$TestObject1\" );", context, TestObject1.class );
 		test( "c().value", context, 0 );
 		test( "c.new().value", context, 0 ); // TODO Do we want this?
@@ -436,7 +436,7 @@ public class ScriptTests
 		test( expression, null, expected );
 	}
 
-	static public void test( String expression, Context context, Object expected )
+	static public void test( String expression, Scope context, Object expected )
 	{
 		Object result = eval( expression, context );
 		Assert.assertEquals( result, expected );
@@ -447,7 +447,7 @@ public class ScriptTests
 		return eval( expression, null );
 	}
 
-	static public Object eval( String expression, Context context )
+	static public Object eval( String expression, Scope context )
 	{
 		Script script = Script.compile( expression );
 //		String dump = new Dumper().dump( script );

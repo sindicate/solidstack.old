@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-package solidstack.script.context;
+package solidstack.script.scopes;
 
 import solidstack.script.ValueMap;
 
 
 
-public class Context extends AbstractContext
+public class Scope extends AbstractScope
 {
-	private AbstractContext parent;
+	private AbstractScope parent;
 
 	private ValueMap<Value> values = new ValueMap<Value>();
 
-	public Context()
+	public Scope()
 	{
 		def( "this", this );
 	}
 
-	public Context( AbstractContext parent )
+	public Scope( AbstractScope parent )
 	{
 		this();
 		this.parent = parent;
@@ -50,7 +50,7 @@ public class Context extends AbstractContext
 			return v;
 		if( this.parent != null )
 			return this.parent.findValue( name );
-		return GlobalContext.INSTANCE.findLocalValue( name );
+		return GlobalScope.INSTANCE.findLocalValue( name );
 	}
 
 	@Override

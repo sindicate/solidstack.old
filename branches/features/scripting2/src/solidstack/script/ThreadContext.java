@@ -20,17 +20,17 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import solidstack.io.SourceLocation;
-import solidstack.script.context.AbstractContext;
-import solidstack.script.context.Context;
+import solidstack.script.scopes.AbstractScope;
+import solidstack.script.scopes.Scope;
 
 public class ThreadContext
 {
 	static private ThreadLocal<ThreadContext> contexts = new ThreadLocal<ThreadContext>();
 
-	static public ThreadContext init( Context context )
+	static public ThreadContext init( Scope scope )
 	{
 //		Assert.isNull( contexts.get() );
-		ThreadContext result = new ThreadContext( context );
+		ThreadContext result = new ThreadContext( scope );
 		contexts.set( result );
 		return result;
 	}
@@ -40,23 +40,23 @@ public class ThreadContext
 		return contexts.get();
 	}
 
-	private AbstractContext context;
+	private AbstractScope scope;
 	private Deque<SourceLocation> stack = new ArrayDeque<SourceLocation>();
 
-	private ThreadContext( Context context )
+	private ThreadContext( Scope scope )
 	{
-		this.context = context;
+		this.scope = scope;
 	}
 
-	public AbstractContext getContext()
+	public AbstractScope getScope()
 	{
-		return this.context;
+		return this.scope;
 	}
 
-	public AbstractContext swapContext( AbstractContext context )
+	public AbstractScope swapScope( AbstractScope scope )
 	{
-		AbstractContext old = this.context;
-		this.context = context;
+		AbstractScope old = this.scope;
+		this.scope = scope;
 		return old;
 	}
 

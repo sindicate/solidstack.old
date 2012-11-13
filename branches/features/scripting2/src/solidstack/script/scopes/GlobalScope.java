@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack.script.context;
+package solidstack.script.scopes;
 
 import solidstack.script.functions.Abs;
 import solidstack.script.functions.Class;
@@ -33,11 +33,11 @@ import solidstack.script.functions.StripMargin;
 
 
 
-public class GlobalContext extends Context
+public class GlobalScope extends Scope
 {
-	static public final GlobalContext INSTANCE = new GlobalContext();
+	static public final GlobalScope INSTANCE = new GlobalScope();
 
-	public GlobalContext()
+	public GlobalScope()
 	{
 		val( "abs", new Abs() );
 		val( "class", new Class() );

@@ -21,15 +21,15 @@ import java.util.List;
 import java.util.ListIterator;
 
 import solidstack.io.ReaderSourceReader;
-import solidstack.script.context.AbstractContext.Undefined;
-import solidstack.script.context.AbstractContext.Value;
-import solidstack.script.context.Context;
 import solidstack.script.expressions.Expression;
 import solidstack.script.objects.ClassMember;
 import solidstack.script.objects.FunnyString;
 import solidstack.script.objects.Null;
 import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Tuple;
+import solidstack.script.scopes.Scope;
+import solidstack.script.scopes.AbstractScope.Undefined;
+import solidstack.script.scopes.AbstractScope.Value;
 
 public class Script
 {
@@ -49,15 +49,15 @@ public class Script
 		return new Script( result );
 	}
 
-	public Object execute( Context context )
+	public Object execute( Scope scope )
 	{
 		if( this.expression == null )
 			return null;
 
-		if( context == null )
-			context = new Context();
+		if( scope == null )
+			scope = new Scope();
 
-		ThreadContext thread = ThreadContext.init( context );
+		ThreadContext thread = ThreadContext.init( scope );
 		return toJava( this.expression.evaluate( thread ) );
 	}
 

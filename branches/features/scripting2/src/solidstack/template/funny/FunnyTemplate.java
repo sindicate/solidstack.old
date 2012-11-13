@@ -21,7 +21,7 @@ import java.util.Map;
 
 import solidstack.io.FatalIOException;
 import solidstack.script.Script;
-import solidstack.script.context.Context;
+import solidstack.script.scopes.Scope;
 import solidstack.template.ConvertingWriter;
 import solidstack.template.EncodingWriter;
 import solidstack.template.Template;
@@ -47,12 +47,12 @@ public class FunnyTemplate extends Template
 	{
 		ConvertingWriter out = new GroovyConvertingWriter( writer );
 
-		Context context = new Context();
-		context.def( params );
+		Scope scope = new Scope();
+		scope.def( params );
 		// TODO What about 'this'?
-		context.def( "out", out );
+		scope.def( "out", out );
 
-		this.script.execute( context );
+		this.script.execute( scope );
 
 		try
 		{

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack.script.context;
+package solidstack.script.scopes;
 
 import java.util.Map;
 
@@ -25,7 +25,7 @@ import solidstack.script.ValueMap.Entry;
 import solidstack.script.objects.Null;
 
 
-abstract public class AbstractContext
+abstract public class AbstractScope
 {
 	abstract public Value findValue( String name );
 

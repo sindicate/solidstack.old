@@ -18,8 +18,8 @@ package solidstack.script.functions;
 
 import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
-import solidstack.script.context.AbstractContext.Undefined;
 import solidstack.script.objects.FunctionObject;
+import solidstack.script.scopes.AbstractScope.Undefined;
 
 public class Defined extends FunctionObject
 {

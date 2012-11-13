@@ -39,6 +39,6 @@ public class Identifier extends LocalizedExpression
 
 	public Object evaluate( ThreadContext thread )
 	{
-		return thread.getContext().getValue( this.name );
+		return thread.getScope().getValue( this.name );
 	}
 }
