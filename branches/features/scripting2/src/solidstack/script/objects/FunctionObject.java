@@ -23,8 +23,8 @@ import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Function;
 import solidstack.script.scopes.AbstractScope;
-import solidstack.script.scopes.Scope;
 import solidstack.script.scopes.ParameterScope;
+import solidstack.script.scopes.Scope;
 
 public class FunctionObject implements solidstack.script.java.Function
 {
@@ -38,7 +38,7 @@ public class FunctionObject implements solidstack.script.java.Function
 	public FunctionObject( Function function, AbstractScope scope )
 	{
 		this.function = function;
-		this.scope = scope; // FIXME Possibly need to clone the whole context hierarchy (flattened).
+		this.scope = scope; // FIXME Possibly need to clone the whole scope hierarchy (flattened).
 	}
 
 	public Object call( Object... args )
@@ -53,25 +53,25 @@ public class FunctionObject implements solidstack.script.java.Function
 		if( count != pars.length )
 			throw new ScriptException( "Parameter count mismatch" );
 
-		AbstractScope newContext;
+		AbstractScope newScope;
 		if( this.function.subScope() )
 		{
-			Scope context = new Scope( this.scope );
+			Scope scope = new Scope( this.scope );
 			for( int i = 0; i < count; i++ )
-				context.def( parameters.get( i ), pars[ i ] ); // TODO If we keep the Link we get output parameters!
-			newContext = context;
+				scope.def( parameters.get( i ), pars[ i ] ); // TODO If we keep the Link we get output parameters!
+			newScope = scope;
 		}
 		else if( count > 0 )
 		{
-			ParameterScope parContext = new ParameterScope( this.scope );
+			ParameterScope parScope = new ParameterScope( this.scope );
 			for( int i = 0; i < count; i++ )
-				parContext.defParameter( parameters.get( i ), Script.deref( pars[ i ] ) ); // TODO If we keep the Link we get output parameters!
-			newContext = parContext;
+				parScope.defParameter( parameters.get( i ), Script.deref( pars[ i ] ) ); // TODO If we keep the Link we get output parameters!
+			newScope = parScope;
 		}
 		else
-			newContext = this.scope;
+			newScope = this.scope;
 
-		AbstractScope old = thread.swapScope( newContext );
+		AbstractScope old = thread.swapScope( newScope );
 		Object result = this.function.getBlock().evaluate( thread );
 		thread.swapScope( old );
 		return result;
