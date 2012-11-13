@@ -83,19 +83,25 @@ with escaped newline" );
 			'''
 		);
 		ScriptTests.eval( '''
+			// Creates a function. The function returns its own scope.
 			c = fun{ a;
 				f = fun( b; b * a );
 				this;
 			};
+			// Calls the function and receives the new scope. The scope contains f and a = 5.
 			o = c( 5 );
+			// Calls f in the scope o and returns 15 because a = 5.
 			if( ( got = o.f( 3 ) ) != 15;
 				throw( "Expected 15, got ${got}" )
 			);
+			// Creates a second function. The function returns the combined scope of itself and the one returned by calling c.
 			cc = fun{ ;
 				f = fun( b; b );
 				this + c( 6 );
 			};
+			// Calls cc and receives the new scope. The scope overrides f from the c scope.
 			oo = cc();
+			// Calls f in the scope oo and returns 3.
 			if( ( got = oo.f( 3 ) ) != 3;
 				throw( "Expected 3, got ${got}" )
 			);

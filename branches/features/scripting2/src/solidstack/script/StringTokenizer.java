@@ -53,11 +53,11 @@ public class StringTokenizer extends ScriptTokenizer
 		while( true )
 		{
 			int ch = in.read();
-			if( ch == -1 )
-				return result.toString();
-
 			switch( ch )
 			{
+				case -1:
+					return result.toString();
+
 				case '$':
 					int ch2 = in.read();
 					if( ch2 == '{' )
@@ -76,7 +76,6 @@ public class StringTokenizer extends ScriptTokenizer
 						ch = '$';
 					break;
 			}
-
 			result.append( (char)ch );
 		}
 	}

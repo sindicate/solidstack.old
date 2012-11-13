@@ -237,8 +237,7 @@ public class ScriptParser
 					Assert.isTrue( token2.getType() == TYPE.BRACKET_CLOSE, "Not expecting token " + token2 );
 					return new EmptyMap( token.getLocation() );
 				}
-				else
-					this.tokenizer.push();
+				this.tokenizer.push();
 				oldStop = swapStops( TYPE.BRACKET_CLOSE );
 				result = parse();
 				swapStops( oldStop );
@@ -354,16 +353,16 @@ public class ScriptParser
 		StringExpression result = new StringExpression( string.getLocation() );
 
 		String fragment = t.getFragment();
+		if( fragment.length() != 0 )
+			result.append( new StringConstant( string.getLocation(), fragment ) );
 		while( t.foundExpression() )
 		{
-			if( fragment.length() != 0 )
-				result.append( new StringConstant( string.getLocation(), fragment ) );
 			Expressions expressions = parse();
 			result.append( expressions );
 			fragment = t.getFragment();
+			if( fragment.length() != 0 )
+				result.append( new StringConstant( string.getLocation(), fragment ) );
 		}
-		if( fragment.length() != 0 )
-			result.append( new StringConstant( string.getLocation(), fragment ) );
 
 		swapStops( oldStop );
 

@@ -429,6 +429,7 @@ public class ScriptTests
 	// TODO Class extension pluggable
 	// TODO Extensions: unique/each(WithIndex)/find(All)/collect/contains/every/indexOf/flatten/groupBy/inject/join/max/min/removeAll/replaceAll/reverse/sum/tail/traverse/withReader(etc)
 	// TODO with() to execute a function with a different context
+	// TODO Currying
 
 	static public void test( String expression, Object expected )
 	{

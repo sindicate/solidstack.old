@@ -345,7 +345,7 @@ public class ScriptTokenizer
 	 *
 	 * @author René M. de Bloois
 	 */
-	// TODO Maybe we should remove this token class, and introduce the even mechanism like in JSONParser.
+	// TODO Maybe we should remove this token class, and introduce the event mechanism like in JSONParser.
 	static public class Token
 	{
 		/**
