@@ -55,7 +55,7 @@ abstract public class Operation implements Expression
 //		precedences.put( "~", 3 ); // bitwise NOT
 		precedences.put( "!@", 3 ); // boolean NOT
 //		precedences.put( "(type)", 3 ); // type cast
-////		precedences.put( "new", 3 ); // object creation
+//		precedences.put( "new", 3 ); // object creation
 
 		precedences.put( "*", 4 ); // multiplication
 		precedences.put( "/", 4 ); // division
@@ -76,22 +76,17 @@ abstract public class Operation implements Expression
 //
 		precedences.put( "==", 8 ); // equal to
 //		precedences.put( "!=", 8 ); // not equal to
-//
+
 //		precedences.put( "&", 9 ); // bitwise AND
-//
 //		precedences.put( "^", 10 ); // bitwise XOR
-//
 //		precedences.put( "|", 11 ); // bitwise OR
-
 		precedences.put( "&&", 12 ); // boolean AND
-
 		precedences.put( "||", 13 ); // boolean OR
 
 //		precedences.put( "?", 14 ); // conditional
 		precedences.put( ":", 14 ); // label
 
 		precedences.put( "->", 15 ); // lambda TODO Equal to assignment precedence? Do we want that?
-
 		precedences.put( "=", 15 ); // assignment
 //		precedences.put( "*=", 16 ); // assignment
 //		precedences.put( "/=", 16 ); // assignment
@@ -104,6 +99,8 @@ abstract public class Operation implements Expression
 //		precedences.put( "&=", 16 ); // assignment
 //		precedences.put( "^=", 16 ); // assignment
 //		precedences.put( "|=", 16 ); // assignment
+
+		precedences.put( ",", 16 ); // tuple TODO Decide about this precedence
 	}
 
 	static public Operation operation( String name, Expression left, Expression right )
@@ -188,6 +185,11 @@ abstract public class Operation implements Expression
 			case ':':
 				if( name.equals( ":" ) )
 					return new Label( name, left, right );
+				break;
+
+			case ',':
+				if( name.equals( "," ) )
+					return new BuildTuple( ",", left, right );
 				break;
 		}
 		Assert.fail( "Unknown operation " + name );
@@ -288,16 +290,39 @@ abstract public class Operation implements Expression
 		int myprec = precedences.get( this.operation );
 		Assert.isTrue( myprec > 0 );
 
-		// 14: ?:, 15: = and 16: -> go from right to left
-		if( myprec < prec || myprec == prec && myprec < 14 )
+		// 14 (label) and 15 (assignment) go from right to left
+		if( myprec < prec )
 			return Operation.operation( operation, this, expression ); // this has precedence
 
+		if( myprec == prec )
+		{
+			if( myprec < 14 )
+				return Operation.operation( operation, this, expression ); // this has precedence
+			if( myprec == 16 )
+			{
+				BuildTuple tuple = (BuildTuple)this;
+				tuple.append( expression );
+				return tuple;
+			}
+		}
+
+		Expression last = getLast();
 		// appended operation has precedence
-		if( this.right instanceof Operation )
-			this.right = ( (Operation)this.right ).append( operation, expression );
+		if( last instanceof Operation )
+			setLast( ( (Operation)last ).append( operation, expression ) );
 		else
-			this.right = Operation.operation( operation, this.right, expression );
+			setLast( Operation.operation( operation, last, expression ) );
 		return this;
+	}
+
+	protected Expression getLast()
+	{
+		return this.right;
+	}
+
+	protected void setLast( Expression expression )
+	{
+		this.right = expression;
 	}
 
 	public SourceLocation getLocation()

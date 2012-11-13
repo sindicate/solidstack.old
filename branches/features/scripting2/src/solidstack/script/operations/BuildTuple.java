@@ -14,35 +14,30 @@
  * limitations under the License.
  */
 
-package solidstack.script.expressions;
+package solidstack.script.operations;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import solidstack.io.SourceLocation;
-import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
+import solidstack.script.expressions.Expression;
 import solidstack.script.objects.Tuple;
 
 
-public class TupleExpression implements Expression
+public class BuildTuple extends Operation
 {
-	static public final TupleExpression EMPTY_TUPLE = new TupleExpression();
-
 	private List<Expression> expressions = new ArrayList<Expression>();
 
-
-	public Object evaluate( ThreadContext thread )
+	public BuildTuple( String name, Expression left, Expression right)
 	{
-		Tuple values = new Tuple();
-		for( Expression expression : this.expressions )
-			values.append( expression.evaluate( thread ) );
-		return values;
+		super( name, null, null );
+		append( left ).append( right );
 	}
 
-	public void append( Expression expression )
+	public BuildTuple append( Expression expression )
 	{
 		this.expressions.add( expression );
+		return this;
 	}
 
 	public List<Expression> getExpressions()
@@ -50,19 +45,23 @@ public class TupleExpression implements Expression
 		return this.expressions;
 	}
 
-	public int size()
+	public Object evaluate( ThreadContext thread )
 	{
-		return this.expressions.size();
+		Tuple result = new Tuple();
+		for( Expression expression : this.expressions )
+			result.append( expression.evaluate( thread ) );
+		return result;
 	}
 
-	public Expression get( int index )
+	@Override
+	protected Expression getLast()
 	{
-		return this.expressions.get( index );
+		return this.expressions.get( this.expressions.size() - 1 );
 	}
 
-	public SourceLocation getLocation()
+	@Override
+	protected void setLast( Expression expression )
 	{
-		Assert.isTrue( !this.expressions.isEmpty() );
-		return this.expressions.get( 0 ).getLocation();
+		this.expressions.set( this.expressions.size() - 1, expression );
 	}
 }

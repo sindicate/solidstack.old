@@ -19,8 +19,6 @@ package solidstack.script.objects;
 import java.util.ArrayList;
 import java.util.List;
 
-import solidstack.script.scopes.AbstractScope.Value;
-
 
 public class Tuple
 {
@@ -28,28 +26,17 @@ public class Tuple
 
 	public Tuple()
 	{
-		// TODO Auto-generated constructor stub
 	}
 
-	public void append( Object value )
+	public Tuple append( Object value )
 	{
 		this.values.add( value );
+		return this;
 	}
 
 	public List<Object> getValues()
 	{
 		return this.values;
-	}
-
-	public Tuple unwrap()
-	{
-		Tuple result = new Tuple();
-		for( Object object : this.values )
-			if( object instanceof Value )
-				result.append( ( (Value)object ).get() );
-			else
-				result.append( object );
-		return result;
 	}
 
 	public int size()

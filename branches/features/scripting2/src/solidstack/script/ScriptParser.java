@@ -38,8 +38,8 @@ import solidstack.script.expressions.NullConstant;
 import solidstack.script.expressions.NumberConstant;
 import solidstack.script.expressions.StringConstant;
 import solidstack.script.expressions.StringExpression;
-import solidstack.script.expressions.TupleExpression;
 import solidstack.script.expressions.While;
+import solidstack.script.operations.BuildTuple;
 import solidstack.script.operations.Operation;
 
 
@@ -71,56 +71,22 @@ public class ScriptParser
 	public Expressions parse()
 	{
 		Expressions results = new Expressions();
-		TupleExpression lastTuple = null;
 		while( true )
 		{
-			if( lastTuple != null )
-				if( lastTuple == TupleExpression.EMPTY_TUPLE )
-					results.append( null );
-				else if( lastTuple.size() == 1 )
-					results.append( lastTuple.get( 0 ) );
-				else
-					results.append( lastTuple );
-			lastTuple = parseTuple();
-			Assert.isTrue( lastTuple != null  );
+			Expression expression = parseExpression();
 			Token last = this.tokenizer.lastToken();
 			if( last.getType() == TYPE.EOF || last.getType() == this.stop )
 			{
+				if( expression != null )
+					results.append( expression );
 				if( this.stop != null && last.getType() == TYPE.EOF )
 					throw new SourceException( "Unexpected " + last + ", missing " + this.stop, last.getLocation() );
-				if( lastTuple != TupleExpression.EMPTY_TUPLE )
-					if( lastTuple.size() == 1 )
-						results.append( lastTuple.get( 0 ) );
-					else
-						results.append( lastTuple );
 				if( results.size() == 0 )
 					return null;
 				return results;
 			}
-		}
-	}
+			results.append( expression );
 
-	// Parses one tuple (separated with ;)
-	private TupleExpression parseTuple()
-	{
-		TupleExpression results = new TupleExpression();
-		while( true )
-		{
-			Expression result = parseExpression();
-			results.append( result ); // Can be null
-			Token last = this.tokenizer.lastToken();
-			if( last.getType() == TYPE.EOF || last.getType() == TYPE.SEMICOLON || last.getType() == this.stop )
-			{
-				if( this.stop != null && last.getType() == TYPE.EOF )
-					throw new SourceException( "Unexpected " + last + ", missing " + this.stop, last.getLocation() );
-				if( results.size() > 1 )
-					return results;
-				result = results.get( 0 );
-				if( result == null )
-					return TupleExpression.EMPTY_TUPLE;
-				return results;
-			}
-			Assert.isTrue( last.getType() == TYPE.COMMA, "Not expecting token " + last );
 		}
 	}
 
@@ -306,9 +272,9 @@ public class ScriptParser
 						throw new SourceException( "Expected 2 or more expressions", token2.getLocation() );
 					List<String> parameters = new ArrayList<String>();
 					Expression pars = expressions.remove( 0 );
-					if( pars instanceof TupleExpression )
+					if( pars instanceof BuildTuple )
 					{
-						for( Expression par : ( (TupleExpression)pars ).getExpressions() )
+						for( Expression par : ( (BuildTuple)pars ).getExpressions() )
 						{
 							if( !( par instanceof Identifier ) )
 								throw new SourceException( "Expected an identifier", token2.getLocation() ); // FIXME Use the line number from the par
