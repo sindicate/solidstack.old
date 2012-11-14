@@ -17,12 +17,12 @@
 package solidstack.script.operations;
 
 import solidstack.lang.Assert;
-import solidstack.script.expressions.Expression;
-import solidstack.script.objects.Tuple;
-import solidstack.script.scopes.AbstractScope.Value;
-import solidstack.script.scopes.AbstractScope.Variable;
+import solidstack.script.Script;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
+import solidstack.script.expressions.Expression;
+import solidstack.script.objects.Tuple;
+import solidstack.script.scopes.AbstractScope.Variable;
 
 
 public class Assign extends Operation
@@ -35,39 +35,38 @@ public class Assign extends Operation
 	public Object evaluate( ThreadContext thread )
 	{
 		Object left = this.left.evaluate( thread );
-		Object right = this.right.evaluate( thread );
+		Object right = Script.deref( this.right.evaluate( thread ) );
 
-		if( right instanceof Tuple )
+		if( left instanceof Tuple )
 		{
-			Assert.isInstanceOf( left, Tuple.class );
-			Tuple leftTuple = (Tuple)left;
-			Tuple rightTuple = (Tuple)right;
-			int len = leftTuple.size();
-			Assert.isTrue( rightTuple.size() == len );
-			for( int i = 0; i < len; i++ )
+			if( right instanceof Tuple )
 			{
-				Object l = leftTuple.get( i );
-				Object r = rightTuple.get( i );
-				assign( l, r );
+				Tuple leftTuple = (Tuple)left;
+				Tuple rightTuple = (Tuple)right;
+				int len = leftTuple.size();
+				Assert.isTrue( rightTuple.size() == len );
+				for( int i = 0; i < len; i++ )
+				{
+					Object l = leftTuple.get( i );
+					Object r = rightTuple.get( i );
+					assign( l, r );
+				}
 			}
+			else
+				throw new UnsupportedOperationException();
 		}
 		else
-		{
-			Assert.isFalse( left instanceof Tuple );
 			assign( left, right );
-		}
 
-		return right;
+		return right; // TODO Or should it be left? Or should we do assignment like this 1 => a?
 	}
 
 	static private void assign( Object var, Object value )
 	{
 		Assert.notNull( var );
 		Assert.notNull( value );
-		if( value instanceof Value )
-			value = ( (Value)value ).get();
 		if( var instanceof Variable )
-			( (Variable)var ).set( value );
+			( (Variable)var ).set( Script.deref( value ) );
 		else
 			throw new ScriptException( "Tried to assign to a immutable value" );
 	}

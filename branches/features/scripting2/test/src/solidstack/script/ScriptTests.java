@@ -429,6 +429,16 @@ public class ScriptTests
 		test( "a = 1; f = () -> a; a = 2; f()", new BigDecimal( 2 ) );
 		test( "( a -> () -> a )( 1 )()", new BigDecimal( 1 ) );
 
+		test( "f = (a,b)->a*b; g = a->f(a,3); g(5)", new BigDecimal( 15 ) );
+		test( "s = \"string\"; c = x->s.charAt(x); c(2)", 'r' );
+//		test( "l = [1,2,3]; f = (a,b,c) -> a+b+c; f(*l);", new BigDecimal( 6 ) );
+//		test( "f = *a -> a.size(); f( 1, 2, 3 );", 3 );
+		test( "f = () -> (1,2,3); (a,b,c) = f(); a+b+c;", new BigDecimal( 6 ) );
+		test( "t = (1,2,3); (a,b,c) = t; a+b+c;", new BigDecimal( 6 ) );
+//		test( "t = (1,2,3); ( (a,b,c) -> a+b+c )(t);", new BigDecimal( 6 ) );
+
+		// TODO x... -> s.charAt( *x )
+
 		test( "l = [ 1, 2, 3 ]; l.each( i -> println( i ) )", new BigDecimal( 3 ) );
 	}
 
@@ -437,6 +447,7 @@ public class ScriptTests
 	// . only resolves to instance members or static members of its class. So, Calendar.getInstance() does not work because Calendar is of class Class which has no getInstance().
 	// Therefore, we must use Calendar#getInstance(), Calendar:getInstance(), Calendar->getInstance() or Calendar::getInstance().
 
+	// TODO A function without parameters, does not need the FunctionObject. Its just an unevaluated expression.
 	// TODO Exceptions, catch & finally
 	// TODO MethodMissing
 	// TODO Default parameter values
