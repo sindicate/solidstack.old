@@ -45,9 +45,7 @@ public class Apply extends Operation
 			throw new ScriptException( "Cannot apply parameters to null" );
 		}
 
-		Object pars = null;
-		if( this.right != null )
-			pars = this.right.evaluate( thread );
+		Object[] pars = Script.toArray( this.right != null ? this.right.evaluate( thread ) : null );
 
 		if( left instanceof FunctionObject )
 		{
@@ -55,7 +53,7 @@ public class Apply extends Operation
 			thread.pushStack( getLocation() );
 			try
 			{
-				return f.call( thread, Script.toScriptParameters( pars ) );
+				return f.call( thread, pars );
 			}
 			finally
 			{
@@ -69,7 +67,7 @@ public class Apply extends Operation
 			thread.pushStack( getLocation() );
 			try
 			{
-				return f.invoke( Script.toJavaParameters( pars ) );
+				return f.invoke( pars );
 			}
 			finally
 			{

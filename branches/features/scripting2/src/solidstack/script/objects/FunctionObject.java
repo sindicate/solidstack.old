@@ -16,6 +16,7 @@
 
 package solidstack.script.objects;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import solidstack.script.Script;
@@ -48,24 +49,51 @@ public class FunctionObject implements solidstack.script.java.Function
 
 	public Object call( ThreadContext thread, Object... pars )
 	{
-		List<String> parameters = this.function.getParameters();
-		int count = parameters.size();
-		if( count != pars.length )
-			throw new ScriptException( "Parameter count mismatch" );
+		ParWalker pw = new ParWalker( pars );
+
+		String[] parameters = this.function.getParameters().toArray( new String[ 0 ] ); // TODO Put the array in the function
+		int oCount = parameters.length;
+		Object[] values = new Object[ oCount ];
+
+		int i = 0;
+		int o = 0;
+		while( o < oCount )
+		{
+			String name = parameters[ o ];
+			if( name.startsWith( "*" ) )
+			{
+				parameters[ o ] = name.substring( 1 );
+
+				values[ o ] = pw.rest();
+				o++;
+				if( o < oCount )
+					throw new ScriptException( "Collecting parameter can only be the last parameter" ); // TODO Also in the middle
+			}
+			else
+			{
+				Object par = pw.get();
+				if( par == null )
+					throw new ScriptException( "Not enough parameters given" );
+				values[ o ] = par;
+				o++;
+			}
+		}
+		if( pw.get() != null )
+			throw new ScriptException( "Too many parameters given" );
 
 		AbstractScope newScope;
 		if( this.function.subScope() )
 		{
 			Scope scope = new Scope( this.scope );
-			for( int i = 0; i < count; i++ )
-				scope.def( parameters.get( i ), pars[ i ] ); // TODO If we keep the Link we get output parameters!
+			for( i = 0; i < oCount; i++ )
+				scope.def( parameters[ i ], Script.deref( values[ i ] ) ); // TODO If we keep the Link we get output parameters!
 			newScope = scope;
 		}
-		else if( count > 0 )
+		else if( oCount > 0 )
 		{
 			ParameterScope parScope = new ParameterScope( this.scope );
-			for( int i = 0; i < count; i++ )
-				parScope.defParameter( parameters.get( i ), Script.deref( pars[ i ] ) ); // TODO If we keep the Link we get output parameters!
+			for( i = 0; i < oCount; i++ )
+				parScope.defParameter( parameters[ i ], Script.deref( values[ i ] ) ); // TODO If we keep the Link we get output parameters!
 			newScope = parScope;
 		}
 		else
@@ -75,5 +103,58 @@ public class FunctionObject implements solidstack.script.java.Function
 		Object result = this.function.getBlock().evaluate( thread );
 		thread.swapScope( old );
 		return result;
+	}
+
+	static public class ParWalker
+	{
+		private Object[] pars;
+		int current;
+		private Tuple tuple;
+		int currentInTuple;
+
+		public ParWalker( Object... pars )
+		{
+			this.pars = pars;
+		}
+
+		public Object get()
+		{
+			if( this.tuple != null )
+			{
+				Object result = this.tuple.get( this.currentInTuple++ ); // TODO deref?
+				if( this.currentInTuple >= this.tuple.size() )
+					this.tuple = null;
+				return result;
+			}
+			if( this.current >= this.pars.length )
+				return null;
+			while( true )
+			{
+				Object result = Script.deref( this.pars[ this.current++ ] );
+				if( !( result instanceof Tuple ) )
+					return result;
+				Tuple t = (Tuple)result;
+				if( t.size() > 1 )
+				{
+					this.tuple = t;
+					this.currentInTuple = 1;
+					return t.get( 0 );
+				}
+				if( t.size() > 0 )
+					return t.get( 0 );
+			}
+		}
+
+		public List<Object> rest()
+		{
+			List<Object> result = new ArrayList<Object>();
+			Object par = get();
+			while( par != null )
+			{
+				result.add( par );
+				par = get();
+			}
+			return result;
+		}
 	}
 }

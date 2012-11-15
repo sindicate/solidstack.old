@@ -39,6 +39,7 @@ import solidstack.script.expressions.StringExpression;
 import solidstack.script.expressions.While;
 import solidstack.script.operations.Function;
 import solidstack.script.operations.Operation;
+import solidstack.script.operations.Spread;
 
 
 /**
@@ -231,6 +232,8 @@ public class ScriptParser
 				}
 				if( token.getValue().equals( "+" ) )
 					return parseAtom(); // TODO Is this correct, just ignore the operation?
+				if( token.getValue().equals( "*" ) )
+					return new Spread( token.getLocation(), token.getValue(), parseAtom() );
 				throw new SourceException( "Unexpected token " + token, token.getLocation() );
 
 			case IDENTIFIER:

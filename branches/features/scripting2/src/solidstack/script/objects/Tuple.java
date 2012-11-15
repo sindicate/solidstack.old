@@ -28,6 +28,11 @@ public class Tuple
 	{
 	}
 
+	public Tuple( List<Object> values )
+	{
+		this.values = values;
+	}
+
 	public Tuple append( Object value )
 	{
 		this.values.add( value );

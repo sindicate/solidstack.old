@@ -17,19 +17,21 @@
 package solidstack.script;
 
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
 import solidstack.io.ReaderSourceReader;
 import solidstack.script.expressions.Expression;
 import solidstack.script.objects.ClassMember;
+import solidstack.script.objects.FunctionObject.ParWalker;
 import solidstack.script.objects.FunnyString;
 import solidstack.script.objects.Null;
 import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Tuple;
-import solidstack.script.scopes.Scope;
 import solidstack.script.scopes.AbstractScope.Undefined;
 import solidstack.script.scopes.AbstractScope.Value;
+import solidstack.script.scopes.Scope;
 
 public class Script
 {
@@ -104,13 +106,17 @@ public class Script
 		return result;
 	}
 
-	static public Object[] toJavaParameters( Object values )
+	static public Object[] toJavaParameters( Object[] values )
 	{
-		Object[] result = toArray( values );
-		int count = result.length;
-		for( int i = 0; i < count; i++ )
-			result[ i ] = toJava( result[ i ] );
-		return result;
+		List<Object> result = new ArrayList<Object>();
+		ParWalker pw = new ParWalker( values );
+		Object par = pw.get();
+		while( par != null )
+		{
+			result.add( toJava( par ) );
+			par = pw.get();
+		}
+		return result.toArray( new Object[ result.size() ] );
 	}
 
 	static public Object toScript( Object value )
@@ -118,15 +124,6 @@ public class Script
 		if( value == null )
 			return Null.INSTANCE;
 		return value;
-	}
-
-	static public Object[] toScriptParameters( Object values )
-	{
-		Object[] result = toArray( values );
-		int count = result.length;
-		for( int i = 0; i < count; i++ )
-			result[ i ] = result[ i ];
-		return result;
 	}
 
 	static public final Object[] EMPTY_ARRAY = new Object[ 0 ];

@@ -45,16 +45,28 @@ public class Function extends Operation
 		{
 			for( Expression par : ( (BuildTuple)args ).getExpressions() )
 			{
+				boolean spread = false;
+				if( par instanceof Spread )
+				{
+					par = ( (Spread)par ).right;
+					spread = true;
+				}
 				if( !( par instanceof Identifier ) )
 					throw new SourceException( "Expected an identifier", par.getLocation() );
-				this.parameters.add( ( (Identifier)par ).getName() );
+				this.parameters.add( ( spread ? "*" : "" ) + ( (Identifier)par ).getName() );
 			}
 		}
 		else if( args != null )
 		{
+			boolean spread = false;
+			if( args instanceof Spread )
+			{
+				args = ( (Spread)args ).right;
+				spread = true;
+			}
 			if( !( args instanceof Identifier ) )
 				throw new SourceException( "Expected an identifier", args.getLocation() );
-			this.parameters.add( ( (Identifier)args ).getName() );
+			this.parameters.add( ( spread ? "*" : "" ) + ( (Identifier)args ).getName() );
 		}
 
 		if( block instanceof Block )

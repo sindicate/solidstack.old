@@ -43,7 +43,7 @@ public class ObjectMember
 
 	public Object invoke( Object... args )
 	{
-		return Script.toScript( Java.invoke( this.object, this.name, args ) );
+		return Script.toScript( Java.invoke( this.object, this.name, Script.toJavaParameters( args ) ) );
 	}
 
 	public Object get()
