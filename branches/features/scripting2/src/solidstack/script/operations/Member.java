@@ -35,7 +35,7 @@ public class Member extends Operation
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = Script.single( this.left.evaluate( thread ) );
+		Object left = Script.deref( this.left.evaluate( thread ) );
 		Assert.isInstanceOf( Identifier.class, this.right );
 		String right = ( (Identifier)this.right ).getName();
 		// TODO I think these should be covered elsewhere

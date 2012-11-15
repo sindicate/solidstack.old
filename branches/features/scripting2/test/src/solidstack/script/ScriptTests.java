@@ -437,14 +437,27 @@ public class ScriptTests
 		test( "t = (1,2,3); (a,b,c) = t; a+b+c;", new BigDecimal( 6 ) );
 //		test( "t = (1,2,3); ( (a,b,c) -> a+b+c )(t);", new BigDecimal( 6 ) );
 
+		test( "l = [ 1, 2, 3 ]; l.each( i -> println( i ) )", new BigDecimal( 3 ) );
+	}
+
+	@Test
+	static public void test22()
+	{
 		test( "f = (a,b,c) -> a+b+c; g = (*a) -> f(*a); g(1,2,3)", new BigDecimal( 6 ) );
 		test( "f = *a -> \"sinterklaas\".charAt( *a ); f( 1 )", 'i' );
 		test( "f = *i -> class( \"java.util.Arrays\" )#asList( *i ); f( 1, 2, 3 ).size()", 3 );
 		test( "f = ( a, *b ) -> b.size(); f( 1, 2, 3 )", 2 );
 		test( "f = ( a, *b ) -> a; g = ( a, *b ) -> f( *b, a ); g( 1, 2, 3 )", new BigDecimal( 2 ) );
 
-		test( "l = [ 1, 2, 3 ]; l.each( i -> println( i ) )", new BigDecimal( 3 ) );
-//		[ 1, 2, 3 ] >< [ 4, 5, 6 ]
+		test( "( a, b, c ) = *[ 1, 2, 3 ]; a + b + c", new BigDecimal( 6 ) );
+		test( "a = *[ 1, 2, 3 ]; ( b, c, d ) = a; b + c + d", new BigDecimal( 6 ) );
+		test( "a = [ 1, 2, 3 ]; ( b, c, d ) = *a; b + c + d", new BigDecimal( 6 ) );
+		test( "a = ( 1, 2, 3 ); ( b, c, d ) = a; b + c + d", new BigDecimal( 6 ) );
+		test( "( 1, 2, 3 ).list().size()", 3 );
+//		test( "*a = ( 1, 2, 3 ); a.size()", 3 ); TODO
+		test( "a = [ 1, [ 2, 3, 4 ], 5 ]; ( (a,b,c) -> a+b+c )( *a[ 1 ] )", new BigDecimal( 9 ) );
+
+		// TODO Key value tuples for named parameters?
 	}
 
 	// TODO Calls with named parameters

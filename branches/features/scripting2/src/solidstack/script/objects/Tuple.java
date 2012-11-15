@@ -39,7 +39,7 @@ public class Tuple
 		return this;
 	}
 
-	public List<Object> getValues()
+	public List<Object> list()
 	{
 		return this.values;
 	}
@@ -60,10 +60,5 @@ public class Tuple
 		if( result instanceof Tuple )
 			return ( (Tuple)result ).getLast();
 		return result;
-	}
-
-	public List<Object> getList()
-	{
-		return this.values;
 	}
 }

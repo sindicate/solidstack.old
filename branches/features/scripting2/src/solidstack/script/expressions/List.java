@@ -48,7 +48,7 @@ public class List extends LocalizedExpression // TODO Is this localized needed?
 
 		if( result instanceof Tuple )
 		{
-			java.util.List<?> list = ( (Tuple)result ).getList();
+			java.util.List<?> list = ( (Tuple)result ).list();
 			Object object = list.get( 0 );
 			if( object instanceof Labeled )
 			{

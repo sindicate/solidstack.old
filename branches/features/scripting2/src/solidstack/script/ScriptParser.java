@@ -225,6 +225,7 @@ public class ScriptParser
 				return new solidstack.script.expressions.List( token.getLocation(), result );
 
 			case BINOP:
+				// No need to consider precedences here. Only one atom is parsed.
 				if( token.getValue().equals( "-" ) )
 				{
 					result = parseAtom(); // TODO Pre-apply

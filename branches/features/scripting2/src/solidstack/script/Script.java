@@ -132,7 +132,7 @@ public class Script
 	{
 		Object[] result;
 		if( values instanceof Tuple )
-			return ( (Tuple)values ).getValues().toArray();
+			return ( (Tuple)values ).list().toArray();
 		if( values != null )
 			return new Object[] { values };
 		return EMPTY_ARRAY;
