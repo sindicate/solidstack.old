@@ -17,6 +17,7 @@
 package solidstack.script;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.failBecauseExceptionWasNotThrown;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -431,11 +432,7 @@ public class ScriptTests
 
 		test( "f = (a,b)->a*b; g = a->f(a,3); g(5)", new BigDecimal( 15 ) );
 		test( "s = \"string\"; c = x->s.charAt(x); c(2)", 'r' );
-//		test( "l = [1,2,3]; f = (a,b,c) -> a+b+c; f(*l);", new BigDecimal( 6 ) );
-//		test( "f = *a -> a.size(); f( 1, 2, 3 );", 3 );
 		test( "f = () -> (1,2,3); (a,b,c) = f(); a+b+c;", new BigDecimal( 6 ) );
-		test( "t = (1,2,3); (a,b,c) = t; a+b+c;", new BigDecimal( 6 ) );
-//		test( "t = (1,2,3); ( (a,b,c) -> a+b+c )(t);", new BigDecimal( 6 ) );
 
 		test( "l = [ 1, 2, 3 ]; l.each( i -> println( i ) )", new BigDecimal( 3 ) );
 	}
@@ -448,14 +445,20 @@ public class ScriptTests
 		test( "f = *i -> class( \"java.util.Arrays\" )#asList( *i ); f( 1, 2, 3 ).size()", 3 );
 		test( "f = ( a, *b ) -> b.size(); f( 1, 2, 3 )", 2 );
 		test( "f = ( a, *b ) -> a; g = ( a, *b ) -> f( *b, a ); g( 1, 2, 3 )", new BigDecimal( 2 ) );
+		test( "f = *a -> a.size(); f( 1, 2, 3 );", 3 );
+		test( "l = [1,2,3]; f = (a,b,c) -> a+b+c; f(*l);", new BigDecimal( 6 ) );
 
 		test( "( a, b, c ) = *[ 1, 2, 3 ]; a + b + c", new BigDecimal( 6 ) );
-		test( "a = *[ 1, 2, 3 ]; ( b, c, d ) = a; b + c + d", new BigDecimal( 6 ) );
 		test( "a = [ 1, 2, 3 ]; ( b, c, d ) = *a; b + c + d", new BigDecimal( 6 ) );
-		test( "a = ( 1, 2, 3 ); ( b, c, d ) = a; b + c + d", new BigDecimal( 6 ) );
 		test( "( 1, 2, 3 ).list().size()", 3 );
-//		test( "*a = ( 1, 2, 3 ); a.size()", 3 ); TODO
+//		test( "*a = ( 1, 2, 3 ); a.size()", 3 ); // TODO
+//		test( "( a, *b ) = ( 1, 2, 3 )", 3 ); TODO
+//		test( "( a, *b ) = ( *[ 1, 2 ], 3 )", 3 ); TODO
 		test( "a = [ 1, [ 2, 3, 4 ], 5 ]; ( (a,b,c) -> a+b+c )( *a[ 1 ] )", new BigDecimal( 9 ) );
+
+		fail( "f = a -> (); f( 1, 2, 3 );", ScriptException.class, "Too many parameters" );
+		fail( "a = *[ 1, 2, 3 ]; ( b, c, d ) = a; b + c + d", ScriptException.class, "Tuples can't be assigned to variables" );
+		fail( "a = ( 1, 2, 3 ); ( b, c, d ) = a; b + c + d", ScriptException.class, "Tuples can't be assigned to variables" );
 
 		// TODO Key value tuples for named parameters?
 	}
@@ -526,15 +529,16 @@ public class ScriptTests
 		}
 	}
 
-	static public void fail( String expression, Class<? extends Throwable> throwable, String message )
+	static public void fail( String expression, Class<? extends Exception> exception, String message )
 	{
 		try
 		{
 			eval( expression );
+			failBecauseExceptionWasNotThrown( exception );
 		}
-		catch( Throwable t )
+		catch( Exception t )
 		{
-			assertThat( t ).isExactlyInstanceOf( throwable );
+			assertThat( t ).isExactlyInstanceOf( exception );
 			assertThat( t ).hasMessageContaining( message );
 		}
 	}

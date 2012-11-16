@@ -38,6 +38,8 @@ public class Parenthesis extends LocalizedExpression
 
 	public Object evaluate( ThreadContext thread )
 	{
-		return this.expression.evaluate( thread );
+		if( this.expression != null )
+			return this.expression.evaluate( thread );
+		return null;
 	}
 }
