@@ -469,6 +469,14 @@ public class ScriptTests
 		test( "f = (a,b,c) -> a+b+c; f( a: 1, b: 2, c: 3 )", new BigDecimal( 6 ) );
 	}
 
+	@Test
+	static public void test24()
+	{
+		test( "s = :symbol; s.toString()", "symbol" );
+		test( "s = :\"dit is ook een symbol\"; s.toString()", "dit is ook een symbol" );
+		test( "s = :red; if( s == :red; true; false )", true );
+	}
+
 	// TODO Calls with named parameters
 	// TODO A function without parameters, does not need the FunctionObject. Its just an unevaluated expression.
 	// TODO Exceptions, catch & finally

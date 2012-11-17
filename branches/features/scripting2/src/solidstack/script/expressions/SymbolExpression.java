@@ -17,29 +17,34 @@
 package solidstack.script.expressions;
 
 import solidstack.io.SourceLocation;
+import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
+import solidstack.script.objects.Symbol;
+import solidstack.script.objects.Symbols;
 
 
-
-public class StringConstant extends LocalizedExpression
+public class SymbolExpression extends LocalizedExpression
 {
-	private String value;
+	private Symbol symbol;
 
 
-	public StringConstant( SourceLocation location, String value )
+	public SymbolExpression( SourceLocation location, Object value )
 	{
 		super( location );
 
-		this.value = value;
+		String name;
+		if( value instanceof StringConstant )
+			name = ( (StringConstant)value ).getString();
+		else
+		{
+			Assert.isInstanceOf( value, Identifier.class );
+			name = ( (Identifier)value ).getName();
+		}
+		this.symbol = Symbols.forString( name );
 	}
 
-	public String getString()
+	public Object evaluate( ThreadContext thread )
 	{
-		return this.value;
-	}
-
-	public String evaluate( ThreadContext thread )
-	{
-		return this.value;
+		return this.symbol;
 	}
 }
