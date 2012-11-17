@@ -24,11 +24,11 @@ import solidstack.script.functions.ForEach;
 import solidstack.script.functions.Length;
 import solidstack.script.functions.Print;
 import solidstack.script.functions.Println;
+import solidstack.script.functions.StripMargin;
 import solidstack.script.functions.Substr;
 import solidstack.script.functions.Throw;
 import solidstack.script.functions.Upper;
 import solidstack.script.functions.Val;
-import solidstack.script.functions.StripMargin;
 
 
 
@@ -39,18 +39,18 @@ public class GlobalScope extends Scope
 
 	public GlobalScope()
 	{
-		val( "abs", new Abs() );
-		val( "class", new Class() );
-		val( "def", new Def() );
-		val( "defined", new Defined() );
-		val( "forEach", new ForEach() );
-		val( "length", new Length() );
-		val( "print", new Print() );
-		val( "println", new Println() );
-		val( "stripMargin", new StripMargin() );
-		val( "substr", new Substr() );
-		val( "throw", new Throw() );
-		val( "upper", new Upper() );
-		val( "val", new Val() );
+		val( Symbol.forString( "abs" ), new Abs() );
+		val( Symbol.forString( "class" ), new Class() );
+		val( Symbol.forString( "def" ), new Def() );
+		val( Symbol.forString( "defined" ), new Defined() );
+		val( Symbol.forString( "forEach" ), new ForEach() );
+		val( Symbol.forString( "length" ), new Length() );
+		val( Symbol.forString( "print" ), new Print() );
+		val( Symbol.forString( "println" ), new Println() );
+		val( Symbol.forString( "stripMargin" ), new StripMargin() );
+		val( Symbol.forString( "substr" ), new Substr() );
+		val( Symbol.forString( "throw" ), new Throw() );
+		val( Symbol.forString( "upper" ), new Upper() );
+		val( Symbol.forString( "val" ), new Val() );
 	}
 }

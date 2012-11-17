@@ -16,19 +16,20 @@
 
 package solidstack.script.scopes;
 
-import solidstack.script.ValueMap;
 
 
 
 public class Scope extends AbstractScope
 {
+	static public final Symbol THIS = Symbol.forString( "this" );
+
 	private AbstractScope parent;
 
 	private ValueMap<Value> values = new ValueMap<Value>();
 
 	public Scope()
 	{
-		def( "this", this );
+		def( THIS, this );
 	}
 
 	public Scope( AbstractScope parent )
@@ -37,34 +38,34 @@ public class Scope extends AbstractScope
 		this.parent = parent;
 	}
 
-	Value findLocalValue( String name )
+	Value findLocalValue( Symbol symbol )
 	{
-		return this.values.get( name );
+		return this.values.get( symbol );
 	}
 
 	@Override
-	public Value findValue( String name )
+	public Value findValue( Symbol symbol )
 	{
-		Value v = findLocalValue( name );
+		Value v = findLocalValue( symbol );
 		if( v != null )
 			return v;
 		if( this.parent != null )
-			return this.parent.findValue( name );
-		return GlobalScope.INSTANCE.findLocalValue( name );
+			return this.parent.findValue( symbol );
+		return GlobalScope.INSTANCE.findLocalValue( symbol );
 	}
 
 	@Override
-	public Variable def( String name, Object value )
+	public Variable def( Symbol symbol, Object value )
 	{
-		Variable result = new Variable( name, value );
+		Variable result = new Variable( symbol, value );
 		this.values.put( result );
 		return result;
 	}
 
 	@Override
-	public Value val( String name, Object value )
+	public Value val( Symbol symbol, Object value )
 	{
-		Value result = new Value( name, value );
+		Value result = new Value( symbol, value );
 		this.values.put( result );
 		return result;
 	}

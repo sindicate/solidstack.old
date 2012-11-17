@@ -16,55 +16,56 @@
 
 package solidstack.script.scopes;
 
-import java.util.Map;
-
 import solidstack.lang.Assert;
 import solidstack.script.ScriptException;
-import solidstack.script.ValueMap;
-import solidstack.script.ValueMap.Entry;
 import solidstack.script.objects.Null;
+import solidstack.script.scopes.ValueMap.Entry;
 
 
 abstract public class AbstractScope
 {
-	abstract public Value findValue( String name );
+	abstract public Value findValue( Symbol symbol );
 
-	public Value getValue( String name )
+	public Value getValue( Symbol symbol )
 	{
-		Value v = findValue( name );
+		Value v = findValue( symbol );
 		if( v == null )
-			return new Undefined( name );
+			return new Undefined( symbol );
 		return v;
 	}
 
-	public Object get( String name )
+	public Object get( Symbol symbol )
 	{
-		Value v = findValue( name );
+		Value v = findValue( symbol );
 		if( v == null )
 			return null;
 		return v.value;
 	}
 
-	abstract public Variable def( String name, Object value );
-
-	abstract public Value val( String name, Object value );
-
-	public void def( Map<String, Object> values )
+	public Object get( String name )
 	{
-		for( java.util.Map.Entry<String, Object> entry : values.entrySet() )
-			def( entry.getKey(), entry.getValue() );
+		return get( new TempSymbol( name ) );
 	}
+
+	abstract public Variable def( Symbol symbol, Object value );
+
+	abstract public Value val( Symbol symbol, Object value );
 
 	public void set( String name, Object value )
 	{
-		if( setIfExists( name, value ) )
-			return;
-		def( name, value );
+		set( new TempSymbol( name ), value );
 	}
 
-	public boolean setIfExists( String name, Object value )
+	public void set( Symbol symbol, Object value )
 	{
-		Value v = findValue( name );
+		if( setIfExists( symbol, value ) )
+			return;
+		def( symbol, value );
+	}
+
+	public boolean setIfExists( Symbol symbol, Object value )
+	{
+		Value v = findValue( symbol );
 		if( v == null )
 			return false;
 		if( v instanceof Variable )
@@ -72,21 +73,16 @@ abstract public class AbstractScope
 			v.value = value;
 			return true;
 		}
-		throw new ScriptException( "Cannot assign to value '" + name  + "'" );
+		throw new ScriptException( "Cannot assign to value '" + symbol  + "'" );
 	}
-
-//	public Undefined getUndefined( String name )
-//	{
-//		return new Undefined( name );
-//	}
 
 	static public class Value extends Entry
 	{
 		Object value;
 
-		Value( String name, Object value )
+		Value( Symbol symbol, Object value )
 		{
-			super( name );
+			super( symbol );
 
 			Assert.notNull( value );
 			this.value = value;
@@ -100,9 +96,9 @@ abstract public class AbstractScope
 
 	static public class Variable extends Value
 	{
-		Variable( String name, Object value )
+		Variable( Symbol symbol, Object value )
 		{
-			super( name, value );
+			super( symbol, value );
 		}
 
 		public void set( Object value )
@@ -113,9 +109,9 @@ abstract public class AbstractScope
 
 	public class Undefined extends Variable
 	{
-		Undefined( String name )
+		Undefined( Symbol symbol )
 		{
-			super( name, Null.INSTANCE );
+			super( symbol, Null.INSTANCE );
 		}
 
 		@Override

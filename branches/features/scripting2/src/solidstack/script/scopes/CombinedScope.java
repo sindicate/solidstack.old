@@ -17,7 +17,6 @@
 package solidstack.script.scopes;
 
 
-
 public class CombinedScope extends AbstractScope
 {
 	private AbstractScope scope1, scope2;
@@ -29,26 +28,26 @@ public class CombinedScope extends AbstractScope
 	}
 
 	@Override
-	public Value findValue( String name )
+	public Value findValue( Symbol symbol )
 	{
-		Value v = this.scope1.findValue( name );
+		Value v = this.scope1.findValue( symbol );
 		if( v != null )
 			return v;
-		v = this.scope2.findValue( name );
+		v = this.scope2.findValue( symbol );
 		if( v != null )
 			return v;
 		return null;
 	}
 
 	@Override
-	public Variable def( String name, Object value )
+	public Variable def( Symbol symbol, Object value )
 	{
-		return this.scope1.def( name, value );
+		return this.scope1.def( symbol, value );
 	}
 
 	@Override
-	public Value val( String name, Object value )
+	public Value val( Symbol symbol, Object value )
 	{
-		return this.scope1.val( name, value );
+		return this.scope1.val( symbol, value );
 	}
 }

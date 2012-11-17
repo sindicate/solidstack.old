@@ -30,7 +30,7 @@ public class Spread extends Operation
 {
 	private SourceLocation location;
 
-	public Spread( SourceLocation location, String name, Expression right)
+	public Spread( SourceLocation location, String name, Expression right )
 	{
 		super( name, null, right );
 
@@ -48,5 +48,10 @@ public class Spread extends Operation
 	public SourceLocation getLocation()
 	{
 		return this.location;
+	}
+
+	public Expression getExpression()
+	{
+		return this.right;
 	}
 }

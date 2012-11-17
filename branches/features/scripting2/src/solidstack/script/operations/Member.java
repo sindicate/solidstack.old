@@ -24,6 +24,7 @@ import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.objects.ObjectMember;
 import solidstack.script.scopes.AbstractScope;
+import solidstack.script.scopes.Symbol;
 
 
 public class Member extends Operation
@@ -37,10 +38,10 @@ public class Member extends Operation
 	{
 		Object left = Script.deref( this.left.evaluate( thread ) );
 		Assert.isInstanceOf( Identifier.class, this.right );
-		String right = ( (Identifier)this.right ).getName();
+		Symbol right = ( (Identifier)this.right ).getSymbol();
 		// TODO I think these should be covered elsewhere
 		if( left instanceof AbstractScope )
 			return ( (AbstractScope)left ).get( right );
-		return new ObjectMember( left, right );
+		return new ObjectMember( left, right.toString() );
 	}
 }

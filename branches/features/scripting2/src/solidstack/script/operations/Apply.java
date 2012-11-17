@@ -41,7 +41,7 @@ public class Apply extends Operation
 		if( left == Null.INSTANCE )
 		{
 			if( this.left instanceof Identifier )
-				throw new ScriptException( "Function " + ( (Identifier)this.left ).getName() + " not found" );
+				throw new ScriptException( "Function " + ( (Identifier)this.left ).getSymbol() + " not found" );
 			throw new ScriptException( "Cannot apply parameters to null" );
 		}
 

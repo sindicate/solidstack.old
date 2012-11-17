@@ -16,7 +16,6 @@
 
 package solidstack.script.scopes;
 
-import solidstack.script.ValueMap;
 
 
 
@@ -32,34 +31,34 @@ public class ParameterScope extends AbstractScope
 		this.parent = parent;
 	}
 
-	Value findLocalValue( String name )
+	Value findLocalValue( Symbol symbol )
 	{
-		return this.values.get( name );
+		return this.values.get( symbol );
 	}
 
 	@Override
-	public Value findValue( String name )
+	public Value findValue( Symbol symbol )
 	{
-		Value v = findLocalValue( name );
+		Value v = findLocalValue( symbol );
 		if( v != null )
 			return v;
-		return this.parent.findValue( name );
+		return this.parent.findValue( symbol );
 	}
 
-	public void defParameter( String name, Object value )
+	public void defParameter( Symbol symbol, Object value )
 	{
-		this.values.put( new Variable( name, value ) );
-	}
-
-	@Override
-	public Variable def( String name, Object value )
-	{
-		return this.parent.def( name, value );
+		this.values.put( new Variable( symbol, value ) );
 	}
 
 	@Override
-	public Value val( String name, Object value )
+	public Variable def( Symbol symbol, Object value )
 	{
-		return this.parent.val( name, value );
+		return this.parent.def( symbol, value );
+	}
+
+	@Override
+	public Value val( Symbol symbol, Object value )
+	{
+		return this.parent.val( symbol, value );
 	}
 }

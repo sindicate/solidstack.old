@@ -19,7 +19,8 @@ package solidstack.script.operations;
 import java.util.ArrayList;
 import java.util.List;
 
-import solidstack.io.SourceException;
+import org.springframework.util.Assert;
+
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Block;
 import solidstack.script.expressions.Expression;
@@ -30,7 +31,7 @@ import solidstack.script.objects.FunctionObject;
 
 public class Function extends Operation
 {
-	private String[] parameters;
+	private Expression[] parameters;
 	private boolean subScope;
 
 	public Function( String name, Expression args, Expression block )
@@ -40,35 +41,21 @@ public class Function extends Operation
 		while( args instanceof Parenthesis )
 			args = ( (Parenthesis)args ).getExpression();
 
-		List<String> parameters = new ArrayList<String>();
+		List<Expression> parameters = new ArrayList<Expression>();
 		if( args instanceof BuildTuple )
 		{
 			for( Expression par : ( (BuildTuple)args ).getExpressions() )
 			{
-				boolean spread = false;
-				if( par instanceof Spread )
-				{
-					par = ( (Spread)par ).right;
-					spread = true;
-				}
-				if( !( par instanceof Identifier ) )
-					throw new SourceException( "Expected an identifier", par.getLocation() );
-				parameters.add( ( spread ? "*" : "" ) + ( (Identifier)par ).getName() );
+				Assert.isTrue( par instanceof Spread || par instanceof Identifier );
+				parameters.add( par );
 			}
 		}
 		else if( args != null )
 		{
-			boolean spread = false;
-			if( args instanceof Spread )
-			{
-				args = ( (Spread)args ).right;
-				spread = true;
-			}
-			if( !( args instanceof Identifier ) )
-				throw new SourceException( "Expected an identifier", args.getLocation() );
-			parameters.add( ( spread ? "*" : "" ) + ( (Identifier)args ).getName() );
+			Assert.isTrue( args instanceof Spread || args instanceof Identifier );
+			parameters.add( args );
 		}
-		this.parameters = parameters.toArray( new String[ parameters.size() ] );
+		this.parameters = parameters.toArray( new Expression[ parameters.size() ] );
 
 		if( block instanceof Block )
 		{
@@ -82,7 +69,7 @@ public class Function extends Operation
 		return new FunctionObject( this, thread.getScope() );
 	}
 
-	public String[] getParameters()
+	public Expression[] getParameters()
 	{
 		return this.parameters;
 	}

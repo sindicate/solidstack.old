@@ -3,7 +3,9 @@ package solidstack.script;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import solidstack.script.ValueMap.Entry;
+import solidstack.script.scopes.TempSymbol;
+import solidstack.script.scopes.ValueMap;
+import solidstack.script.scopes.ValueMap.Entry;
 
 @SuppressWarnings( "javadoc" )
 public class ValueMapTests
@@ -56,7 +58,7 @@ public class ValueMapTests
 	{
 		public TestEntry( String key )
 		{
-			super( key );
+			super( new TempSymbol( key ) );
 		}
 	}
 }

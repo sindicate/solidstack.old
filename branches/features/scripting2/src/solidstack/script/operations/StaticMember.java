@@ -37,7 +37,7 @@ public class StaticMember extends Operation
 		Object left = Script.single( this.left.evaluate( thread ) );
 		Assert.isInstanceOf( Class.class, left );
 		Assert.isInstanceOf( Identifier.class, this.right );
-		String right = ( (Identifier)this.right ).getName();
+		String right = ( (Identifier)this.right ).getSymbol().toString();
 		return new ClassMember( (Class<?>)left, right );
 	}
 }

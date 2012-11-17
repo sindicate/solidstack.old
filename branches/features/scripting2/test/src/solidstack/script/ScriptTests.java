@@ -31,6 +31,8 @@ import solidstack.script.java.MissingFieldException;
 import solidstack.script.java.MissingMethodException;
 import solidstack.script.objects.FunnyString;
 import solidstack.script.scopes.Scope;
+import solidstack.script.scopes.Symbol;
+import solidstack.script.scopes.TempSymbol;
 
 
 @SuppressWarnings( "javadoc" )
@@ -472,6 +474,16 @@ public class ScriptTests
 	@Test
 	static public void test24()
 	{
+		Symbol real1 = Symbol.forString( "symbol" );
+		Symbol real2 = Symbol.forString( "symbol" );
+		Symbol temp1 = new TempSymbol( "symbol" );
+		Symbol temp2 = new TempSymbol( "symbol" );
+		assertThat( real1 ).isSameAs( real2 );
+		assertThat( real1 ).isEqualTo( real2 );
+		assertThat( real1 ).isEqualTo( temp1 );
+		assertThat( temp1 ).isEqualTo( real1 );
+		assertThat( temp1 ).isEqualTo( temp2 );
+
 		test( "s = :symbol; s.toString()", "symbol" );
 		test( "s = :\"dit is ook een symbol\"; s.toString()", "dit is ook een symbol" );
 		test( "s = :red; if( s == :red; true; false )", true );

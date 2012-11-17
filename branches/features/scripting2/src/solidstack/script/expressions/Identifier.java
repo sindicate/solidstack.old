@@ -18,27 +18,28 @@ package solidstack.script.expressions;
 
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
+import solidstack.script.scopes.Symbol;
 
 
 public class Identifier extends LocalizedExpression
 {
-	private String name;
+	private Symbol symbol;
 
 
 	public Identifier( SourceLocation location, String name )
 	{
 		super( location );
 
-		this.name = name;
+		this.symbol = Symbol.forString( name );
 	}
 
-	public String getName()
+	public Symbol getSymbol()
 	{
-		return this.name;
+		return this.symbol;
 	}
 
 	public Object evaluate( ThreadContext thread )
 	{
-		return thread.getScope().getValue( this.name );
+		return thread.getScope().getValue( this.symbol );
 	}
 }

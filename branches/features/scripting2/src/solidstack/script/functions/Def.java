@@ -20,6 +20,7 @@ import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Null;
+import solidstack.script.scopes.Symbol;
 import solidstack.script.scopes.AbstractScope.Value;
 
 public class Def extends FunctionObject
@@ -30,7 +31,7 @@ public class Def extends FunctionObject
 		Assert.isTrue( parameters.length == 1 );
 		Object object = parameters[ 0 ];
 		Assert.isInstanceOf( object, Value.class );
-		String name = ( (Value)object ).getKey();
-		return thread.getScope().def( name, Null.INSTANCE );
+		Symbol symbol = ( (Value)object ).getKey();
+		return thread.getScope().def( symbol, Null.INSTANCE );
 	}
 }

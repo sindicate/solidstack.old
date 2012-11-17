@@ -19,8 +19,7 @@ package solidstack.script.expressions;
 import solidstack.io.SourceLocation;
 import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
-import solidstack.script.objects.Symbol;
-import solidstack.script.objects.Symbols;
+import solidstack.script.scopes.Symbol;
 
 
 public class SymbolExpression extends LocalizedExpression
@@ -32,15 +31,13 @@ public class SymbolExpression extends LocalizedExpression
 	{
 		super( location );
 
-		String name;
-		if( value instanceof StringConstant )
-			name = ( (StringConstant)value ).getString();
+		if( value instanceof Identifier )
+			this.symbol = ( (Identifier)value ).getSymbol();
 		else
 		{
-			Assert.isInstanceOf( value, Identifier.class );
-			name = ( (Identifier)value ).getName();
+			Assert.isInstanceOf( value, StringConstant.class );
+			this.symbol = Symbol.forString( ( (StringConstant)value ).getString() );
 		}
-		this.symbol = Symbols.forString( name );
 	}
 
 	public Object evaluate( ThreadContext thread )

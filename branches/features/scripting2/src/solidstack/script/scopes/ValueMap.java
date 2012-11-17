@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.scopes;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+
 
 
 /**
@@ -26,7 +27,7 @@ import java.util.Set;
  *
  * @param <T> The type of the values to be stored in this map.
  */
-public class ValueMap<T extends ValueMap.Entry> implements Map<String, T>
+public class ValueMap<T extends ValueMap.Entry> implements Map<Symbol, T>
 {
 	static public final float LOAD_FACTOR = 4f;
 
@@ -40,14 +41,17 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<String, T>
 	{
 		if( key == null )
 			throw new NullPointerException( "key" );
+		if( !( key instanceof Symbol ) )
+			throw new IllegalArgumentException( "Only symbols can be keys" );
 
-		int hash = key.hashCode();
+		Symbol symbol = (Symbol)key;
+		int hash = symbol.hashCode();
 		int index = hash & this.entries.length - 1;
 
 		Entry entry = this.entries[ index ];
 		while( entry != null ) // Loop till we find it
 		{
-			if( entry.___key.equals( key ) )
+			if( entry.isKeyEqual( symbol ) )
 				return (T)entry;
 			entry = entry.___next;
 		}
@@ -55,7 +59,7 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<String, T>
 		return null;
 	}
 
-	public T put( String key, T value )
+	public T put( Symbol key, T value )
 	{
 		if( key == null )
 			throw new NullPointerException( "key" );
@@ -67,16 +71,14 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<String, T>
 
 	public T put( T value )
 	{
-		String key = value.___key;
-
-		int hash = key.hashCode();
+		int hash = value.getKeyHashCode();
 		int index = hash & this.entries.length - 1;
 
 		Entry entry = this.entries[ index ];
 		Entry last = null;
 		while( entry != null ) // Loop till we find it
 		{
-			if( entry.___key.equals( key ) )
+			if( entry.isKeyEqual( value ) )
 			{
 				value.___next = entry.___next; // Replace link with the new entry
 				if( last == null )
@@ -246,7 +248,7 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<String, T>
 		throw new UnsupportedOperationException();
 	}
 
-	public void putAll( Map<? extends String, ? extends T> m )
+	public void putAll( Map<? extends Symbol, ? extends T> m )
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -256,7 +258,7 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<String, T>
 		throw new UnsupportedOperationException();
 	}
 
-	public Set<String> keySet()
+	public Set<Symbol> keySet()
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -266,7 +268,7 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<String, T>
 		throw new UnsupportedOperationException();
 	}
 
-	public Set<java.util.Map.Entry<String, T>> entrySet()
+	public Set<java.util.Map.Entry<Symbol, T>> entrySet()
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -277,17 +279,55 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<String, T>
 	static public class Entry
 	{
 		// Can't make this private, else it won't compile on Java 7. Added ___ to prevent name shadowing by subclasses.
-		Entry ___next;
-		String ___key;
+		private Entry ___next;
+		private Symbol symbol;
+		private String ___key;
+		private int hashCode;
 
-		protected Entry( String key )
+		protected Entry( Symbol symbol )
 		{
-			this.___key = key;
+			if( symbol instanceof TempSymbol )
+			{
+				this.___key = symbol.toString();
+				this.hashCode = symbol.hashCode();
+			}
+			else
+				this.symbol = symbol;
 		}
 
-		public String getKey()
+		public Symbol getKey()
 		{
+			if( this.symbol != null )
+				return this.symbol;
+			return new TempSymbol( this.___key, this.hashCode );
+		}
+
+		public String getName()
+		{
+			if( this.symbol != null )
+				return this.symbol.toString();
 			return this.___key;
+		}
+
+		int getKeyHashCode()
+		{
+			if( this.symbol != null )
+				return this.symbol.hashCode();
+			return this.hashCode;
+		}
+
+		boolean isKeyEqual( Entry other )
+		{
+			if( other.symbol != null || this.symbol != null )
+				return this.symbol == other.symbol;
+			return getName().equals( other.getName() );
+		}
+
+		boolean isKeyEqual( Symbol symbol )
+		{
+			if( this.symbol != null )
+				return this.symbol.equals( symbol );
+			return getName().equals( symbol.toString() );
 		}
 	}
 }

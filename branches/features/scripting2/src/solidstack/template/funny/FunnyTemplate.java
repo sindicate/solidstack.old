@@ -18,10 +18,13 @@ package solidstack.template.funny;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import solidstack.io.FatalIOException;
 import solidstack.script.Script;
 import solidstack.script.scopes.Scope;
+import solidstack.script.scopes.Symbol;
+import solidstack.script.scopes.TempSymbol;
 import solidstack.template.ConvertingWriter;
 import solidstack.template.EncodingWriter;
 import solidstack.template.Template;
@@ -35,6 +38,8 @@ import solidstack.template.groovy.GroovyConvertingWriter;
  */
 public class FunnyTemplate extends Template
 {
+	static public final Symbol OUT = Symbol.forString( "out" );
+
 	private Script script;
 
 	public FunnyTemplate( Script script )
@@ -48,9 +53,10 @@ public class FunnyTemplate extends Template
 		ConvertingWriter out = new GroovyConvertingWriter( writer );
 
 		Scope scope = new Scope();
-		scope.def( params );
+		for( Entry<String, Object> entry : params.entrySet() )
+			scope.def( new TempSymbol( entry.getKey() ), entry.getValue() );
 		// TODO What about 'this'?
-		scope.def( "out", out );
+		scope.def( OUT, out );
 
 		this.script.execute( scope );
 

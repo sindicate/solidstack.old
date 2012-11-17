@@ -23,11 +23,15 @@ import solidstack.lang.Assert;
 import solidstack.script.Script;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
+import solidstack.script.expressions.Expression;
+import solidstack.script.expressions.Identifier;
 import solidstack.script.operations.Function;
+import solidstack.script.operations.Spread;
 import solidstack.script.scopes.AbstractScope;
 import solidstack.script.scopes.AbstractScope.Value;
 import solidstack.script.scopes.ParameterScope;
 import solidstack.script.scopes.Scope;
+import solidstack.script.scopes.Symbol;
 
 public class FunctionObject implements solidstack.script.java.Function
 {
@@ -51,8 +55,9 @@ public class FunctionObject implements solidstack.script.java.Function
 
 	public Object call( ThreadContext thread, Object... pars )
 	{
-		String[] parameters = this.function.getParameters();
+		Expression[] parameters = this.function.getParameters();
 		int oCount = parameters.length;
+		Symbol[] symbols = new Symbol[ oCount ];
 		Object[] values = new Object[ oCount ];
 
 		if( pars.length > 0 && pars[ 0 ] instanceof Labeled )
@@ -61,18 +66,22 @@ public class FunctionObject implements solidstack.script.java.Function
 			{
 				Assert.isTrue( par instanceof Labeled );
 				Labeled labeled = (Labeled)par;
-				Assert.isTrue( labeled.getLabel() instanceof Value );
-				String label = ( (Value)labeled.getLabel() ).getKey();
+				Assert.isTrue( labeled.getLabel() instanceof Value ); // TODO Shouldn't this be an Identifier too?;
+				Symbol label = ( (Value)labeled.getLabel() ).getKey();
 				boolean found = false;
 				for( int i = 0; i < oCount; i++ )
-					if( parameters[ i ].equals( label ) )
+				{
+					if( ( (Identifier)parameters[ i ] ).getSymbol().equals( label ) )
 					{
 						values[ i ] = labeled.getValue();
 						found = true;
 						break;
 					}
+				}
 				Assert.isTrue( found );
 			}
+			for( int i = 0; i < oCount; i++ )
+				symbols[ i ] = ( (Identifier)parameters[ i ] ).getSymbol();
 		}
 		else
 		{
@@ -82,11 +91,11 @@ public class FunctionObject implements solidstack.script.java.Function
 			int o = 0;
 			while( o < oCount )
 			{
-				String name = parameters[ o ];
-				if( name.startsWith( "*" ) )
+				Expression parameter = parameters[ o ];
+				if( parameter instanceof Spread )
 				{
-					parameters[ o ] = name.substring( 1 );
-
+					parameter = ( (Spread)parameter ).getExpression();
+					symbols[ o ] = ( (Identifier)parameter ).getSymbol();
 					values[ o ] = pw.rest();
 					o++;
 					if( o < oCount )
@@ -97,6 +106,7 @@ public class FunctionObject implements solidstack.script.java.Function
 					Object par = pw.get();
 					if( par == null )
 						throw new ScriptException( "Not enough parameters given" );
+					symbols[ o ] = ( (Identifier)parameter ).getSymbol();
 					values[ o ] = par;
 					o++;
 				}
@@ -110,14 +120,17 @@ public class FunctionObject implements solidstack.script.java.Function
 		{
 			Scope scope = new Scope( this.scope );
 			for( int i = 0; i < oCount; i++ )
-				scope.def( parameters[ i ], Script.deref( values[ i ] ) ); // TODO If we keep the Link we get output parameters!
+			{
+				Expression par = parameters[ i ];
+				scope.def( symbols[ i ], Script.deref( values[ i ] ) ); // TODO If we keep the Link we get output parameters!
+			}
 			newScope = scope;
 		}
 		else if( oCount > 0 )
 		{
 			ParameterScope parScope = new ParameterScope( this.scope );
 			for( int i = 0; i < oCount; i++ )
-				parScope.defParameter( parameters[ i ], Script.deref( values[ i ] ) ); // TODO If we keep the Link we get output parameters!
+				parScope.defParameter( symbols[ i ], Script.deref( values[ i ] ) ); // TODO If we keep the Link we get output parameters!
 			newScope = parScope;
 		}
 		else
