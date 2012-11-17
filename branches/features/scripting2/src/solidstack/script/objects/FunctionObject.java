@@ -19,11 +19,13 @@ package solidstack.script.objects;
 import java.util.ArrayList;
 import java.util.List;
 
+import solidstack.lang.Assert;
 import solidstack.script.Script;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 import solidstack.script.operations.Function;
 import solidstack.script.scopes.AbstractScope;
+import solidstack.script.scopes.AbstractScope.Value;
 import solidstack.script.scopes.ParameterScope;
 import solidstack.script.scopes.Scope;
 
@@ -49,50 +51,72 @@ public class FunctionObject implements solidstack.script.java.Function
 
 	public Object call( ThreadContext thread, Object... pars )
 	{
-		ParWalker pw = new ParWalker( pars );
-
-		String[] parameters = this.function.getParameters().toArray( new String[ 0 ] ); // TODO Put the array in the function
+		String[] parameters = this.function.getParameters();
 		int oCount = parameters.length;
 		Object[] values = new Object[ oCount ];
 
-		int i = 0;
-		int o = 0;
-		while( o < oCount )
+		if( pars.length > 0 && pars[ 0 ] instanceof Labeled )
 		{
-			String name = parameters[ o ];
-			if( name.startsWith( "*" ) )
+			for( Object par : pars )
 			{
-				parameters[ o ] = name.substring( 1 );
-
-				values[ o ] = pw.rest();
-				o++;
-				if( o < oCount )
-					throw new ScriptException( "Collecting parameter can only be the last parameter" ); // TODO Also in the middle
-			}
-			else
-			{
-				Object par = pw.get();
-				if( par == null )
-					throw new ScriptException( "Not enough parameters given" );
-				values[ o ] = par;
-				o++;
+				Assert.isTrue( par instanceof Labeled );
+				Labeled labeled = (Labeled)par;
+				Assert.isTrue( labeled.getLabel() instanceof Value );
+				String label = ( (Value)labeled.getLabel() ).getKey();
+				boolean found = false;
+				for( int i = 0; i < oCount; i++ )
+					if( parameters[ i ].equals( label ) )
+					{
+						values[ i ] = labeled.getValue();
+						found = true;
+						break;
+					}
+				Assert.isTrue( found );
 			}
 		}
-		if( pw.get() != null )
-			throw new ScriptException( "Too many parameters given" );
+		else
+		{
+			ParWalker pw = new ParWalker( pars );
+
+			int i = 0;
+			int o = 0;
+			while( o < oCount )
+			{
+				String name = parameters[ o ];
+				if( name.startsWith( "*" ) )
+				{
+					parameters[ o ] = name.substring( 1 );
+
+					values[ o ] = pw.rest();
+					o++;
+					if( o < oCount )
+						throw new ScriptException( "Collecting parameter can only be the last parameter" ); // TODO Also in the middle
+				}
+				else
+				{
+					Object par = pw.get();
+					if( par == null )
+						throw new ScriptException( "Not enough parameters given" );
+					values[ o ] = par;
+					o++;
+				}
+			}
+			if( pw.get() != null )
+				throw new ScriptException( "Too many parameters given" );
+		}
 
 		AbstractScope newScope;
 		if( this.function.subScope() )
 		{
 			Scope scope = new Scope( this.scope );
-			for( i = 0; i < oCount; i++ )
+			for( int i = 0; i < oCount; i++ )
 				scope.def( parameters[ i ], Script.deref( values[ i ] ) ); // TODO If we keep the Link we get output parameters!
 			newScope = scope;
 		}
 		else if( oCount > 0 )
 		{
 			ParameterScope parScope = new ParameterScope( this.scope );
-			for( i = 0; i < oCount; i++ )
+			for( int i = 0; i < oCount; i++ )
 				parScope.defParameter( parameters[ i ], Script.deref( values[ i ] ) ); // TODO If we keep the Link we get output parameters!
 			newScope = parScope;
 		}

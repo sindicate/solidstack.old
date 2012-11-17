@@ -30,7 +30,7 @@ import solidstack.script.objects.FunctionObject;
 
 public class Function extends Operation
 {
-	private List<String> parameters;
+	private String[] parameters;
 	private boolean subScope;
 
 	public Function( String name, Expression args, Expression block )
@@ -40,7 +40,7 @@ public class Function extends Operation
 		while( args instanceof Parenthesis )
 			args = ( (Parenthesis)args ).getExpression();
 
-		this.parameters = new ArrayList<String>();
+		List<String> parameters = new ArrayList<String>();
 		if( args instanceof BuildTuple )
 		{
 			for( Expression par : ( (BuildTuple)args ).getExpressions() )
@@ -53,7 +53,7 @@ public class Function extends Operation
 				}
 				if( !( par instanceof Identifier ) )
 					throw new SourceException( "Expected an identifier", par.getLocation() );
-				this.parameters.add( ( spread ? "*" : "" ) + ( (Identifier)par ).getName() );
+				parameters.add( ( spread ? "*" : "" ) + ( (Identifier)par ).getName() );
 			}
 		}
 		else if( args != null )
@@ -66,8 +66,9 @@ public class Function extends Operation
 			}
 			if( !( args instanceof Identifier ) )
 				throw new SourceException( "Expected an identifier", args.getLocation() );
-			this.parameters.add( ( spread ? "*" : "" ) + ( (Identifier)args ).getName() );
+			parameters.add( ( spread ? "*" : "" ) + ( (Identifier)args ).getName() );
 		}
+		this.parameters = parameters.toArray( new String[ parameters.size() ] );
 
 		if( block instanceof Block )
 		{
@@ -81,7 +82,7 @@ public class Function extends Operation
 		return new FunctionObject( this, thread.getScope() );
 	}
 
-	public List<String> getParameters()
+	public String[] getParameters()
 	{
 		return this.parameters;
 	}

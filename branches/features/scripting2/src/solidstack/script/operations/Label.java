@@ -16,7 +16,6 @@
 
 package solidstack.script.operations;
 
-import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.objects.Labeled;
@@ -31,7 +30,7 @@ public class Label extends Operation
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = Script.single( this.left.evaluate( thread ) );
+		Object left = this.left.evaluate( thread );
 		Object right = this.right.evaluate( thread );
 		return new Labeled( left, right );
 	}
