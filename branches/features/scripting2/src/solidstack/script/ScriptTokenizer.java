@@ -204,9 +204,9 @@ public class ScriptTokenizer
 											ch = in.read();
 											codePoint[ i ] = (char)ch;
 											if( !( ch >= '0' && ch <= '9' ) )
-												throw new SourceException( "Illegal escape sequence: \\u" + String.valueOf( codePoint, 0, i + 1 ), in.getLocation() );
+												throw new SourceException( "Illegal escape sequence: \\u" + new String( codePoint, 0, i + 1 ), in.getLocation() );
 										}
-										ch = Integer.valueOf( String.valueOf( codePoint ), 16 );
+										ch = Integer.valueOf( new String( codePoint ), 16 );
 										break;
 									default:
 										throw new SourceException( "Illegal escape sequence: \\" + ( ch >= 0 ? (char)ch : "" ), in.getLocation() );
@@ -264,7 +264,7 @@ public class ScriptTokenizer
 				case '-':
 					int ch2 = in.read();
 					if( ch2 == ch )
-						return new Token( TYPE.UNAOP, location, String.valueOf( new char[] { (char)ch, (char)ch } ) );
+						return new Token( TYPE.UNAOP, location, new String( new char[] { (char)ch, (char)ch } ) );
 					if( ch == '-' && ch2 == '>' )
 						return new Token( TYPE.BINOP, location, "->" );
 					in.push( ch2 );
@@ -283,6 +283,10 @@ public class ScriptTokenizer
 					return new Token( TYPE.UNAOP, location, "!" );
 				case '<':
 				case '>':
+					ch2 = in.read();
+					if( ch2 == '=' )
+						return new Token( TYPE.BINOP, location, new String( new char[] { (char)ch, (char)ch2 } ) );
+					in.push( ch2 );
 					return new Token( TYPE.BINOP, location, String.valueOf( (char)ch ) );
 				case '=':
 					ch = in.read();

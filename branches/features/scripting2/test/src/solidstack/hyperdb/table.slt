@@ -1,16 +1,16 @@
-<%@ template version="1.0" language="groovy" contentType="text/html; charset=UTF-8" %>
+<%@ template version="1.0" language="funny" contentType="text/html; charset=UTF-8" %>
 <%
-def table = args.table
+args = scope( args );
+table = args.table;
 
-include( template: "/template", title: "Table ${table}", body: {
+include( template: "/template", title: "Table ${table}", body: () -> (
 
-	def recordCount = args.count
-	def result = args.result
+	recordCount = args.count;
+	result = args.result;
 	
-	if( result.next() )
-	{
-		def meta = result.metaData
-		def count = meta.columnCount
+	if( result.next(); (
+		meta = result.metaData;
+		count = meta.columnCount;
 %>
 		<div id="popup" style="visibility: hidden; left: 0px; top: 0px;">
 			<a href="detail1">detail1</a><br/>
@@ -18,30 +18,22 @@ include( template: "/template", title: "Table ${table}", body: {
 		</div>
 		<table>
 			<tr><th colspan="${count}">Table ${table} - ${recordCount} records</th></tr>
-			<tr><% for( int i = 1; i <= count; i++ ) { %><th>${meta.getColumnLabel(i)}</th><% } %></tr>
+			<tr><% i = 1; while( i <= count; ( %><th>${meta.getColumnLabel(i++)}</th><% ) ) %></tr>
 <%
-		def recordsWritten = 0
-		def next = true
-		while( next && recordsWritten < 1000 )
-		{
+		recordsWritten = 0;
+		next = true;
+		while( next && recordsWritten < 1000;
 %>
-			<tr class="data"></td><%
-			for( int i = 1; i <= count; i++ )
-			{
-				def object = result.getObject( i )
-				if( object != null ) { %><td>${object}</td><% } else { %><td class="null"></td><% }
-			}
-			%></tr>
+			<tr class="data"></td><% i = 1; while( i <= count; object = result.getObject( i++ ); if( object != null; ( %><td>${object}</td><% ); ( %><td class="null" /><% ) ) ); %></tr>
 <%
-			recordsWritten ++
+			recordsWritten ++;
 			next = result.next()
-		}
-		if( recordsWritten >= 1000 )
-		{
+		);
+		if( recordsWritten >= 1000; (
 %>
 			<tr><td class="null" colspan="${count}">Too many records, only ${recordsWritten} displayed.</td></tr>
 <%
-		}
+		) );
 %>
 		</table>
 		<script>
@@ -71,15 +63,13 @@ include( template: "/template", title: "Table ${table}", body: {
 			)
 		</script>
 <%
-	}
-	else
-	{
+	); (
 %>
 		<table>
 			<tr><th>Table ${table}, ${recordCount} records</th></tr>
 			<tr><td class="null">No records.</td></tr>
 		</table>
 <%
-	}
+	) )
 %>
-<% } ) %>
+<% ) ) %>

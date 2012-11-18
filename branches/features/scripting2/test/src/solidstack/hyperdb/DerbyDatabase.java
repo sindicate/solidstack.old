@@ -52,58 +52,33 @@ public class DerbyDatabase extends Database
 	@Override
 	synchronized public Map< String, Schema > getSchemas( Connection connection )
 	{
-//		if( schemaCache != null )
-//			return schemaCache;
-
 		Query query = queries.getQuery( "selectSchemas.sql" );
 
-		Map< String, Schema > schemas = new LinkedHashMap< String, Schema >();
-//		Connection connection = DataSource.getConnection();
-//		try
-//		{
-			List<Object[]> users = query.listOfArrays( connection, Pars.EMPTY );
-			for( Object[] user : users )
-			{
-				String name = (String)user[ 0 ];
-				schemas.put( name, new Schema( name, 0, 0 ) );
-			}
-//			schemaCache = schemas;
-//		}
-//		finally
-//		{
-//			DataSource.release( connection );
-//		}
+		Map< String, Schema > result = new LinkedHashMap< String, Schema >();
+		List<Object[]> schemas = query.listOfArrays( connection, Pars.EMPTY );
+		for( Object[] schema : schemas )
+		{
+			String name = (String)schema[ 0 ];
+			result.put( name, new Schema( name, 0, 0 ) );
+		}
 
-		return schemas;
+		return result;
 	}
 
 	@Override
 	synchronized  public List< Table > getTables( Connection connection, String schemaName )
 	{
-		String sql = "SELECT TABLE_NAME, NUM_ROWS FROM ALL_TABLES WHERE OWNER = ? ORDER BY TABLE_NAME";
+		Query query = queries.getQuery( "selectTables.sql" );
 
-		List< Table > tables = new ArrayList< Table >();
-		try
+		List< Table > result = new ArrayList< Table >();
+		List<Object[]> users = query.listOfArrays( connection, new Pars( "schemaName", schemaName ) );
+		for( Object[] user : users )
 		{
-			PreparedStatement statement = connection.prepareStatement( sql );
-			try
-			{
-				statement.setString( 1, schemaName );
-				ResultSet result = statement.executeQuery();
-				while( result.next() )
-					tables.add( new Table( schemaName, result.getString( 1 ), result.getLong( 2 ) ) );
-			}
-			finally
-			{
-				statement.close();
-			}
-		}
-		catch( SQLException e )
-		{
-			throw new HttpException( e );
+			String name = (String)user[ 0 ];
+			result.add( new Table( schemaName, name, 0 ) );
 		}
 
-		return tables;
+		return result;
 	}
 
 	@Override

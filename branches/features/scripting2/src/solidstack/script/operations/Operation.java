@@ -70,12 +70,12 @@ abstract public class Operation implements Expression
 
 		precedences.put( "<", 7 ); // less than
 		precedences.put( ">", 7 ); // greater than
-//		precedences.put( "<=", 7 ); // less than or equal
-//		precedences.put( ">=", 7 ); // greater than or equal
+		precedences.put( "<=", 7 ); // less than or equal
+		precedences.put( ">=", 7 ); // greater than or equal
 //		precedences.put( "instanceof", 7 ); // reference test
 //
 		precedences.put( "==", 8 ); // equal to
-//		precedences.put( "!=", 8 ); // not equal to
+		precedences.put( "!=", 8 ); // not equal to
 
 //		precedences.put( "&", 9 ); // bitwise AND
 //		precedences.put( "^", 10 ); // bitwise XOR
@@ -140,11 +140,15 @@ abstract public class Operation implements Expression
 			case '<':
 				if( name.equals( "<" ) )
 					return new LessThan( name, left, right );
+				if( name.equals( "<=" ) )
+					return new LessOrEqualTo( name, left, right );
 				break;
 
 			case '>':
 				if( name.equals( ">" ) )
 					return new GreaterThan( name, left, right );
+				if( name.equals( ">=" ) )
+					return new GreaterOrEqualTo( name, left, right );
 				break;
 
 			case '@':

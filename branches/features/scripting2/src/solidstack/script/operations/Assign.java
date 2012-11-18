@@ -65,7 +65,7 @@ public class Assign extends Operation
 	{
 		Assert.notNull( var );
 		Assert.notNull( value );
-		value = Script.deref( value );
+		value = Script.finalize( value );
 		if( value instanceof Tuple )
 			throw new ScriptException( "Tuples can't be assigned to variables" );
 		( (Ref)var ).set( value );

@@ -99,6 +99,14 @@ public class Script
 		return value;
 	}
 
+	static public Object finalize( Object value )
+	{
+		value = deref( value );
+		if( value instanceof Member )
+			return ( (Member)value ).get();
+		return value;
+	}
+
 	static public Object toJava( Object value )
 	{
 		Object result = single( value );
