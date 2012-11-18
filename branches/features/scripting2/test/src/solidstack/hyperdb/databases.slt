@@ -1,7 +1,7 @@
 <%@ template version="1.0" language="funny" contentType="text/html; charset=UTF-8" %>
 <%@ template import="solidstack.hyperdb.*" %>
 <%
-include( [ "template": "/template", "title": "Databases", "body": () -> (
+include( template: "/template", title: "Databases", body: () -> (
 	config = class( "solidstack.hyperdb.Config" );
 	databases = config#getDatabases();
 %>
@@ -11,4 +11,4 @@ include( [ "template": "/template", "title": "Databases", "body": () -> (
 			<tr><td><a href="databases/${name}/connect">${name}</a></td></tr>
 <%	) ) %>
 		</table>
-<% ) ] ) %>
+<% ) ) %>

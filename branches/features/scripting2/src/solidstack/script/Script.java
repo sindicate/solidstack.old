@@ -18,20 +18,25 @@ package solidstack.script;
 
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 import solidstack.io.ReaderSourceReader;
+import solidstack.lang.Assert;
 import solidstack.script.expressions.Expression;
 import solidstack.script.objects.ClassMember;
 import solidstack.script.objects.FunctionObject.ParWalker;
 import solidstack.script.objects.FunnyString;
+import solidstack.script.objects.Labeled;
 import solidstack.script.objects.Null;
 import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Tuple;
 import solidstack.script.scopes.AbstractScope.Undefined;
 import solidstack.script.scopes.AbstractScope.Value;
 import solidstack.script.scopes.Scope;
+import solidstack.script.scopes.Symbol;
 
 public class Script
 {
@@ -106,10 +111,36 @@ public class Script
 		return result;
 	}
 
-	static public Object[] toJavaParameters( Object[] values )
+	static public Object[] toNamedParameters( Object[] pars )
 	{
+		Object[] result = new Object[ pars.length * 2 ];
+		int index = 0;
+		for( Object par : pars )
+		{
+			Assert.isTrue( par instanceof Labeled );
+			Labeled labeled = (Labeled)par;
+			Assert.isTrue( labeled.getLabel() instanceof Value ); // TODO Shouldn't this be an Identifier too?;
+			result[ index++ ] = ( (Value)labeled.getLabel() ).getKey();
+			result[ index++ ] = labeled.getValue();
+		}
+		return result;
+	}
+
+	static public Object[] toJavaParameters( Object[] pars )
+	{
+		if( pars.length > 0 && pars[ 0 ] instanceof Labeled )
+		{
+			pars = toNamedParameters( pars );
+			int count = pars.length;
+			int index = 0;
+			Map< String, Object> map = new HashMap<String, Object>();
+			while( index < count )
+				map.put( ( (Symbol)pars[ index++ ] ).toString(), pars[ index++ ] );
+			return new Object[] { map };
+		}
+
 		List<Object> result = new ArrayList<Object>();
-		ParWalker pw = new ParWalker( values );
+		ParWalker pw = new ParWalker( pars );
 		Object par = pw.get();
 		while( par != null )
 		{

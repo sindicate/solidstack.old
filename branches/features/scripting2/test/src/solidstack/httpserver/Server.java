@@ -59,6 +59,7 @@ public class Server extends Thread
 				try
 				{
 					Socket socket = server.accept();
+					log.debug( "Incoming socket, starting handler" );
 					// TODO Threadpool
 					Handler handler = new Handler( socket, this.application );
 					handler.start();

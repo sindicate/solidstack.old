@@ -28,7 +28,6 @@ import solidstack.script.expressions.Identifier;
 import solidstack.script.operations.Function;
 import solidstack.script.operations.Spread;
 import solidstack.script.scopes.AbstractScope;
-import solidstack.script.scopes.AbstractScope.Value;
 import solidstack.script.scopes.ParameterScope;
 import solidstack.script.scopes.Scope;
 import solidstack.script.scopes.Symbol;
@@ -62,22 +61,20 @@ public class FunctionObject implements solidstack.script.java.Function
 
 		if( pars.length > 0 && pars[ 0 ] instanceof Labeled )
 		{
-			for( Object par : pars )
+			pars = Script.toNamedParameters( pars );
+			int count = pars.length;
+			int index = 0;
+			while( index < count )
 			{
-				Assert.isTrue( par instanceof Labeled );
-				Labeled labeled = (Labeled)par;
-				Assert.isTrue( labeled.getLabel() instanceof Value ); // TODO Shouldn't this be an Identifier too?;
-				Symbol label = ( (Value)labeled.getLabel() ).getKey();
 				boolean found = false;
+				Symbol label = (Symbol)pars[ index++ ];
 				for( int i = 0; i < oCount; i++ )
-				{
 					if( ( (Identifier)parameters[ i ] ).getSymbol().equals( label ) )
 					{
-						values[ i ] = labeled.getValue();
+						values[ i ] = pars[ index++ ];
 						found = true;
 						break;
 					}
-				}
 				Assert.isTrue( found );
 			}
 			for( int i = 0; i < oCount; i++ )
