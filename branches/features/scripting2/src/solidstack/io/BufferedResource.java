@@ -24,6 +24,7 @@ import java.io.FileNotFoundException;
  *
  * @author René de Bloois
  */
+// TODO And a StringBufferedResource?
 public class BufferedResource extends MemoryResource
 {
 	private Resource resource;

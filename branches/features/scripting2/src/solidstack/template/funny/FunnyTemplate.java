@@ -29,7 +29,6 @@ import solidstack.script.scopes.TempSymbol;
 import solidstack.template.ConvertingWriter;
 import solidstack.template.EncodingWriter;
 import solidstack.template.Template;
-import solidstack.template.groovy.GroovyConvertingWriter;
 
 
 /**
@@ -51,7 +50,7 @@ public class FunnyTemplate extends Template
 	@Override
 	public void apply( Map< String, Object > params, EncodingWriter writer )
 	{
-		ConvertingWriter out = new GroovyConvertingWriter( writer );
+		ConvertingWriter out = new FunnyConvertingWriter( writer );
 
 		Scope scope = new Scope();
 		for( Entry<String, Object> entry : params.entrySet() )

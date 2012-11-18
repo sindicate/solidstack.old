@@ -20,7 +20,7 @@ import solidstack.script.Script;
 import solidstack.script.java.Java;
 
 
-public class ClassMember
+public class ClassMember implements Member
 {
 	private Class type;
 	private String name;

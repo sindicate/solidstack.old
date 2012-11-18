@@ -20,9 +20,9 @@ import java.util.List;
 
 public class Schema
 {
-	protected String name;
-	protected int tableCount;
-	protected int viewCount;
+	public String name;
+	public int tableCount;
+	public int viewCount;
 	protected List<Table> tables;
 	protected List<View> views;
 

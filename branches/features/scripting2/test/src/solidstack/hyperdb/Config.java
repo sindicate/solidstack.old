@@ -26,7 +26,7 @@ public class Config
 	static
 	{
 		databases = new LinkedHashMap<String, Database>();
-//		databases.put( "TAXI", new Database( "TAXI", "jdbc:oracle:thin:@192.168.0.109:1521:XE" ) );
+		databases.put( "mem", new DerbyDatabase( "mem", "jdbc:derby:memory:hyperdb;create=true" ) );
 	}
 
 	static public Map< String, Database > getDatabases()

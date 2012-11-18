@@ -37,16 +37,20 @@ public class SltServlet implements Servlet
 //		if( url.startsWith( "/" ) )
 //			url = url.substring( 1 );
 
+		Template template;
 		try
 		{
-			Template template = this.loader.getTemplate( url );
-			Pars pars = new Pars( "session", context.getSession(), "request", context.getRequest(), "args", context.getArgs() ); // TODO response
-			template.apply( pars, context.getResponse().getWriter() );
+			template = this.loader.getTemplate( url );
 		}
 		catch( TemplateNotFoundException e )
 		{
 			context.getResponse().setStatusCode( 404, "Not found" );
+			return;
 		}
+
+		// Don't want to catch TemplateNotFoundException in the lines below
+		Pars pars = new Pars( "session", context.getSession(), "request", context.getRequest(), "args", context.getArgs() ); // TODO response
+		template.apply( pars, context.getResponse().getWriter() );
 
 //		url = url.replaceAll( "[\\\\/]", "." );
 //		url = url.replaceAll( "[\\.-]", "_" );

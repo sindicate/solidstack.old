@@ -30,11 +30,11 @@ import solidstack.script.objects.ClassMember;
 import solidstack.script.objects.FunctionObject.ParWalker;
 import solidstack.script.objects.FunnyString;
 import solidstack.script.objects.Labeled;
+import solidstack.script.objects.Member;
 import solidstack.script.objects.Null;
 import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Tuple;
 import solidstack.script.scopes.AbstractScope.Ref;
-import solidstack.script.scopes.AbstractScope.Value;
 import solidstack.script.scopes.Scope;
 import solidstack.script.scopes.Symbol;
 
@@ -79,6 +79,8 @@ public class Script
 		}
 		if( value instanceof Ref ) // TODO Does this ever happen with tuples?
 			return ( (Ref)value ).get();
+		if( value instanceof Member )
+			return ( (Member)value ).get();
 		return value;
 	}
 

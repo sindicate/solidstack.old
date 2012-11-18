@@ -37,7 +37,7 @@ public class Apply extends Operation
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = Script.single( this.left.evaluate( thread ) ); // TODO Or without single()?
+		Object left = Script.deref( this.left.evaluate( thread ) );
 		if( left == Null.INSTANCE )
 		{
 			if( this.left instanceof Identifier )
