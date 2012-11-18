@@ -2,8 +2,7 @@
 <%@ template import="solidstack.hyperdb.*" %>
 <%
 include( template: "/template", title: "Databases", body: () -> (
-	config = class( "solidstack.hyperdb.Config" );
-	databases = config#getDatabases();
+	databases = class( "solidstack.hyperdb.Config" )#getDatabases();
 %>
 		<table>
 			<tr><th>Database</th></tr>

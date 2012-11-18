@@ -16,6 +16,8 @@
 
 package solidstack.script.scopes;
 
+import solidstack.script.scopes.AbstractScope.Ref;
+
 
 
 
@@ -44,13 +46,13 @@ public class Scope extends AbstractScope
 	}
 
 	@Override
-	public Value findValue( Symbol symbol )
+	public Ref findRef( Symbol symbol )
 	{
 		Value v = findLocalValue( symbol );
 		if( v != null )
 			return v;
 		if( this.parent != null )
-			return this.parent.findValue( symbol );
+			return this.parent.findRef( symbol );
 		return GlobalScope.INSTANCE.findLocalValue( symbol );
 	}
 

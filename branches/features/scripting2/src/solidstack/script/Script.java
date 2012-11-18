@@ -33,7 +33,7 @@ import solidstack.script.objects.Labeled;
 import solidstack.script.objects.Null;
 import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Tuple;
-import solidstack.script.scopes.AbstractScope.Undefined;
+import solidstack.script.scopes.AbstractScope.Ref;
 import solidstack.script.scopes.AbstractScope.Value;
 import solidstack.script.scopes.Scope;
 import solidstack.script.scopes.Symbol;
@@ -77,8 +77,8 @@ public class Script
 				return Null.INSTANCE;
 			value = results.getLast();
 		}
-		if( value instanceof Value ) // TODO Does this ever happen with tuples?
-			return ( (Value)value ).get();
+		if( value instanceof Ref ) // TODO Does this ever happen with tuples?
+			return ( (Ref)value ).get();
 		return value;
 	}
 
@@ -92,8 +92,8 @@ public class Script
 				i.set( deref( i.next() ) );
 			return list;
 		}
-		if( value instanceof Value )
-			return ( (Value)value ).get();
+		if( value instanceof Ref )
+			return ( (Ref)value ).get();
 		return value;
 	}
 
@@ -119,8 +119,8 @@ public class Script
 		{
 			Assert.isTrue( par instanceof Labeled );
 			Labeled labeled = (Labeled)par;
-			Assert.isTrue( labeled.getLabel() instanceof Value ); // TODO Shouldn't this be an Identifier too?;
-			result[ index++ ] = ( (Value)labeled.getLabel() ).getKey();
+			Assert.isTrue( labeled.getLabel() instanceof Ref ); // TODO Shouldn't this be an Identifier too?;
+			result[ index++ ] = ( (Ref)labeled.getLabel() ).getKey();
 			result[ index++ ] = labeled.getValue();
 		}
 		return result;
@@ -177,6 +177,12 @@ public class Script
 			return ( (String)left ).length() != 0;
 		if( left instanceof FunnyString )
 			return !( (FunnyString)left ).isEmpty();
-		return left != null && left != Null.INSTANCE && !( left instanceof Undefined );
+		if( left == null )
+			return false;
+		if( left == Null.INSTANCE )
+			return false;
+		if( left instanceof Ref && ( (Ref)left ).isUndefined() )
+			return false;
+		return true;
 	}
 }

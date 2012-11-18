@@ -22,7 +22,7 @@ import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.objects.Tuple;
-import solidstack.script.scopes.AbstractScope.Variable;
+import solidstack.script.scopes.AbstractScope.Ref;
 
 
 public class Assign extends Operation
@@ -68,9 +68,6 @@ public class Assign extends Operation
 		value = Script.deref( value );
 		if( value instanceof Tuple )
 			throw new ScriptException( "Tuples can't be assigned to variables" );
-		if( var instanceof Variable )
-			( (Variable)var ).set( value );
-		else
-			throw new ScriptException( "Tried to assign to a immutable value" );
+		( (Ref)var ).set( value );
 	}
 }

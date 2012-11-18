@@ -37,7 +37,7 @@ public class Apply extends Operation
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = Script.single( this.left.evaluate( thread ) );
+		Object left = Script.single( this.left.evaluate( thread ) ); // TODO Or without single()?
 		if( left == Null.INSTANCE )
 		{
 			if( this.left instanceof Identifier )

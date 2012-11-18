@@ -16,22 +16,22 @@
 
 package solidstack.script.functions;
 
+import java.util.Map;
+
 import solidstack.lang.Assert;
+import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.objects.FunctionObject;
-import solidstack.script.objects.Null;
-import solidstack.script.scopes.AbstractScope.Ref;
-import solidstack.script.scopes.Symbol;
+import solidstack.script.scopes.MapScope;
 
-public class Def extends FunctionObject
+public class Scope extends FunctionObject
 {
 	@Override
 	public Object call( ThreadContext thread, Object... parameters )
 	{
 		Assert.isTrue( parameters.length == 1 );
-		Object object = parameters[ 0 ];
-		Assert.isInstanceOf( object, Ref.class );
-		Symbol symbol = ( (Ref)object ).getKey();
-		return thread.getScope().def( symbol, Null.INSTANCE );
+		Object object = Script.deref( parameters[ 0 ] );
+		Assert.isInstanceOf( object, Map.class );
+		return new MapScope( (Map<Object, Object>)object );
 	}
 }

@@ -41,7 +41,7 @@ public class Member extends Operation
 		Symbol right = ( (Identifier)this.right ).getSymbol();
 		// TODO I think these should be covered elsewhere
 		if( left instanceof AbstractScope )
-			return ( (AbstractScope)left ).get( right );
+			return ( (AbstractScope)left ).getRef( right );
 		return new ObjectMember( left, right.toString() );
 	}
 }

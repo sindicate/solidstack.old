@@ -47,6 +47,7 @@ public class GlobalScope extends Scope
 		val( Symbol.forString( "length" ), new Length() );
 		val( Symbol.forString( "print" ), new Print() );
 		val( Symbol.forString( "println" ), new Println() );
+		val( Symbol.forString( "scope" ), new solidstack.script.functions.Scope() );
 		val( Symbol.forString( "stripMargin" ), new StripMargin() );
 		val( Symbol.forString( "substr" ), new Substr() );
 		val( Symbol.forString( "throw" ), new Throw() );

@@ -17,6 +17,7 @@
 package solidstack.script.scopes;
 
 
+
 public class CombinedScope extends AbstractScope
 {
 	private AbstractScope scope1, scope2;
@@ -28,12 +29,12 @@ public class CombinedScope extends AbstractScope
 	}
 
 	@Override
-	public Value findValue( Symbol symbol )
+	public Ref findRef( Symbol symbol )
 	{
-		Value v = this.scope1.findValue( symbol );
+		Ref v = this.scope1.findRef( symbol );
 		if( v != null )
 			return v;
-		v = this.scope2.findValue( symbol );
+		v = this.scope2.findRef( symbol );
 		if( v != null )
 			return v;
 		return null;

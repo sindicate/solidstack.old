@@ -18,17 +18,16 @@ package solidstack.script.scopes;
 
 import solidstack.lang.Assert;
 import solidstack.script.ScriptException;
-import solidstack.script.objects.Null;
 import solidstack.script.scopes.ValueMap.Entry;
 
 
 abstract public class AbstractScope
 {
-	abstract public Value findValue( Symbol symbol );
+	abstract public Ref findRef( Symbol symbol );
 
-	public Value getValue( Symbol symbol )
+	public Ref getRef( Symbol symbol )
 	{
-		Value v = findValue( symbol );
+		Ref v = findRef( symbol );
 		if( v == null )
 			return new Undefined( symbol );
 		return v;
@@ -36,10 +35,10 @@ abstract public class AbstractScope
 
 	public Object get( Symbol symbol )
 	{
-		Value v = findValue( symbol );
+		Ref v = findRef( symbol );
 		if( v == null )
 			return null;
-		return v.value;
+		return v.get();
 	}
 
 	public Object get( String name )
@@ -65,18 +64,22 @@ abstract public class AbstractScope
 
 	public boolean setIfExists( Symbol symbol, Object value )
 	{
-		Value v = findValue( symbol );
+		Ref v = findRef( symbol );
 		if( v == null )
 			return false;
-		if( v instanceof Variable )
-		{
-			v.value = value;
-			return true;
-		}
-		throw new ScriptException( "Cannot assign to value '" + symbol  + "'" );
+		v.set( value );
+		return true;
 	}
 
-	static public class Value extends Entry
+	static public interface Ref
+	{
+		Symbol getKey();
+		boolean isUndefined();
+		Object get();
+		void set( Object value );
+	}
+
+	static public class Value extends Entry implements Ref
 	{
 		Object value;
 
@@ -92,6 +95,16 @@ abstract public class AbstractScope
 		{
 			return this.value;
 		}
+
+		public void set( Object value )
+		{
+			throw new ScriptException( "'" + getKey() + "' is immutable" );
+		}
+
+		public boolean isUndefined()
+		{
+			return false;
+		}
 	}
 
 	static public class Variable extends Value
@@ -101,29 +114,33 @@ abstract public class AbstractScope
 			super( symbol, value );
 		}
 
+		@Override
 		public void set( Object value )
 		{
 			this.value = value;
 		}
 	}
 
-	public class Undefined extends Variable
+	public class Undefined extends Entry implements Ref
 	{
 		Undefined( Symbol symbol )
 		{
-			super( symbol, Null.INSTANCE );
+			super( symbol );
 		}
 
-		@Override
 		public Object get()
 		{
 			throw new ScriptException( "'" + getKey() + "' undefined" );
 		}
 
-		@Override
 		public void set( Object value )
 		{
 			def( getKey(), value );
+		}
+
+		public boolean isUndefined()
+		{
+			return true;
 		}
 	}
 }

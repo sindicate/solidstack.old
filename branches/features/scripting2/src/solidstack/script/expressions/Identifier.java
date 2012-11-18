@@ -40,6 +40,6 @@ public class Identifier extends LocalizedExpression
 
 	public Object evaluate( ThreadContext thread )
 	{
-		return thread.getScope().getValue( this.symbol );
+		return thread.getScope().getRef( this.symbol );
 	}
 }

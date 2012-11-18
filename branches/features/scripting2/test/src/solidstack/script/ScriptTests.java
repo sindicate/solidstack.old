@@ -401,6 +401,9 @@ public class ScriptTests
 		test( "map = [ \"first\": 1, \"second\": 2, \"third\": 3 ]; map[ \"second\" ]", new BigDecimal( 2 ) );
 		test( "map = [ \"fir\" + \"st\": 1, \"second\": 2, \"third\": 3 ]; map[ \"first\" ]", new BigDecimal( 1 ) );
 		test( "map = [ \"first\": 1, \"second\": 2, \"third\": 3 ]; map[ \"fourth\" ]", null ); // TODO Undefined? Then we assign to it too.
+		test( "map = scope( [ \"first\": 1, \"second\": 2, \"third\": 3 ] ); map.third", new BigDecimal( 3 ) );
+		test( "map = scope( [ \"first\": 1, \"second\": 2, \"third\": 3 ] ); map.fourth", null ); // TODO What about undefined?
+		test( "map = [:]; s = scope( map ); s.first = 1; map[ \"first\" ]", new BigDecimal( 1 ) );
 		test( "map = [:]; map[ \"fourth\" ]", null );
 		test( "map = [:]; map.size()", 0 );
 
