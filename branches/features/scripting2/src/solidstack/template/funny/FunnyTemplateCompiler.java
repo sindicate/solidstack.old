@@ -69,7 +69,9 @@ public class FunnyTemplateCompiler
 					if( !text )
 						buffer.append( "out.write(\"" );
 					text = true;
-					buffer.append( "${" ).append( event.getData() ).append( '}' );
+					buffer.append( "${" );
+					writeFunnyString( buffer, event.getData() );
+					buffer.append( '}' );
 					break;
 
 				case DIRECTIVE:

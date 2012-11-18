@@ -283,6 +283,7 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<Symbol, T>
 		private Symbol symbol;
 		private String ___key;
 		private int hashCode;
+		// TODO Replace key/hashCode with symbol when it is available during the isKeyEqual execution
 
 		protected Entry( Symbol symbol )
 		{

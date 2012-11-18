@@ -21,12 +21,17 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import solidstack.lang.SystemException;
 import solidstack.lang.ThreadInterrupted;
 
 
 public class Server extends Thread
 {
+	static final private Logger log = LoggerFactory.getLogger( Server.class );
+
 	private int port;
 	private ApplicationContext application; // TODO Make this a Map
 
@@ -47,6 +52,8 @@ public class Server extends Thread
 		{
 			ServerSocket server = new ServerSocket( this.port );
 			server.setSoTimeout( 2000 );
+			log.info( "HTTP server listening on port {}", this.port );
+
 			while( !Thread.interrupted() )
 			{
 				try

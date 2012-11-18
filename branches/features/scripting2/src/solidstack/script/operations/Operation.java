@@ -84,21 +84,21 @@ abstract public class Operation implements Expression
 		precedences.put( "||", 13 ); // boolean OR
 
 //		precedences.put( "?", 14 ); // conditional
-		precedences.put( ":", 14 ); // label
 
+		precedences.put( ":", 15 ); // label TODO 15 ok?
 		precedences.put( "->", 15 ); // lambda TODO Equal to assignment precedence? Do we want that?
 		precedences.put( "=", 15 ); // assignment
-//		precedences.put( "*=", 16 ); // assignment
-//		precedences.put( "/=", 16 ); // assignment
-//		precedences.put( "+=", 16 ); // assignment
-//		precedences.put( "-=", 16 ); // assignment
-//		precedences.put( "%=", 16 ); // assignment
-//		precedences.put( "<<=", 16 ); // assignment
-//		precedences.put( ">>=", 16 ); // assignment
-//		precedences.put( ">>>=", 16 ); // assignment
-//		precedences.put( "&=", 16 ); // assignment
-//		precedences.put( "^=", 16 ); // assignment
-//		precedences.put( "|=", 16 ); // assignment
+//		precedences.put( "*=", 15 ); // assignment
+//		precedences.put( "/=", 15 ); // assignment
+//		precedences.put( "+=", 15 ); // assignment
+//		precedences.put( "-=", 15 ); // assignment
+//		precedences.put( "%=", 15 ); // assignment
+//		precedences.put( "<<=", 15 ); // assignment
+//		precedences.put( ">>=", 15 ); // assignment
+//		precedences.put( ">>>=", 15 ); // assignment
+//		precedences.put( "&=", 15 ); // assignment
+//		precedences.put( "^=", 15 ); // assignment
+//		precedences.put( "|=", 15 ); // assignment
 
 		precedences.put( ",", 16 ); // tuple TODO Decide about this precedence
 	}
