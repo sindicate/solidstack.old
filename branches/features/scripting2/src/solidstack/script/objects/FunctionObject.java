@@ -47,6 +47,11 @@ public class FunctionObject implements solidstack.script.java.Function
 		this.scope = scope; // FIXME Possibly need to clone the whole scope hierarchy (flattened).
 	}
 
+	public Object[] getParameters()
+	{
+		return this.function.getParameters();
+	}
+
 	public Object call( Object... args )
 	{
 		return call( ThreadContext.get(), args );

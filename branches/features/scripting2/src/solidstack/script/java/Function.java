@@ -16,7 +16,10 @@
 
 package solidstack.script.java;
 
+
+// TODO Is this one still needed?
 public interface Function
 {
 	Object call( Object... args );
+	Object[] getParameters();
 }

@@ -22,7 +22,7 @@ import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
 
 
-public class EmptyMap extends LocalizedExpression // TODO Is this localized needed?
+public class EmptyMap extends LocalizedExpression
 {
 	public EmptyMap( SourceLocation location )
 	{

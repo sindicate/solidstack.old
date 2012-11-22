@@ -328,15 +328,32 @@ public class ScriptTokenizer
 
 				case '/':
 					ch = in.read();
-					if( ch != '/' )
+					if( ch == '/' )
 					{
-						in.push( ch );
-						return new Token( TYPE.BINOP, location, "/" );
-					}
-					ch = in.read();
-					while( ch != '\n' && ch != -1 )
 						ch = in.read();
-					break;
+						while( ch != '\n' && ch != -1 )
+							ch = in.read();
+						break;
+					}
+					if( ch == '*' )
+					{
+						while( true )
+						{
+							ch = in.read();
+							if( ch == -1 )
+								throw new SourceException( "Missing */", in.getLocation() );
+							if( ch == '*' )
+							{
+								ch = in.read();
+								if( ch == '/' )
+									break;
+								in.push( ch );
+							}
+						}
+						break;
+					}
+					in.push( ch );
+					return new Token( TYPE.BINOP, location, "/" );
 
 				default:
 					throw new SourceException( "Unexpected character '" + (char)ch + "'", in.getLocation() );

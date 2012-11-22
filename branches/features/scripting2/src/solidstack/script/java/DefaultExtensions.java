@@ -29,6 +29,15 @@ public class DefaultExtensions
 	static public Object each( Collection collection, Function function )
 	{
 		// TODO Or should the ThreadContext be a parameter too?
+		int count = function.getParameters().length;
+		if( count == 2 )
+		{
+			Object result = null;
+			int index = 0;
+			for( Object object : collection )
+				result = function.call( index++, object );
+			return result;
+		}
 		Object result = null;
 		for( Object object : collection )
 			result = function.call( object );

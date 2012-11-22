@@ -19,6 +19,10 @@ package solidstack.script;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.failBecauseExceptionWasNotThrown;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
@@ -492,6 +496,13 @@ public class ScriptTests
 		test( "s = :red; if( s == :red; true; false )", true );
 	}
 
+	@Test
+	static public void prims() throws IOException
+	{
+		String script = readFile( "Prim's Minimum Spanning Tree.funny" );
+		eval( script );
+	}
+
 	// TODO Calls with named parameters
 	// TODO A function without parameters, does not need the FunctionObject. Its just an unevaluated expression.
 	// TODO Exceptions, catch & finally
@@ -584,6 +595,18 @@ public class ScriptTests
 //		Script.compile( contents.toString() ).execute( null );
 //		// TODO Validate result
 //	}
+
+	static private String readFile( String file ) throws IOException
+	{
+		InputStream in = ScriptTests.class.getResourceAsStream( file );
+		Reader reader = new InputStreamReader( in );
+		char[] buffer = new char[ 1024 ];
+		StringBuilder result = new StringBuilder();
+		int len;
+		while( ( len = reader.read( buffer ) ) >= 0 )
+			result.append( buffer, 0, len );
+		return result.toString();
+	}
 
 	@SuppressWarnings( "unused" )
 	static public class TestObject1
