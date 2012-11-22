@@ -42,7 +42,7 @@ with escaped newline" );
 				i++
 			);
 			// Comment at the end''',
-			new BigDecimal( 9 )
+			9
 		);
 	}
 
@@ -138,23 +138,9 @@ with escaped newline" );
 	{
 		ScriptTests.eval( '''
 			ArrayList = class( "java.util.ArrayList" );
-			l = ArrayList.getMethods().collect( fun( method; method.getName() ) );
-			l.each( fun( name; println( name ) ) );
+			l = ArrayList.getMethods().collect( method -> method.getName() );
+			l.each( name -> println( name ) );
 			'''
 		);
 	}
-
-//	@Test
-//	static public void test3()
-//	{
-//		ScriptTests.test( '''
-//			// This syntax runs to the end of the container
-//			foo = ( f -> f( "test" ) );
-//			foo( a -> a );
-//			foo( a, b -> a ); // This has 2 parameters: a and a closure
-//			foo( a -> a, b ); // This has 1 parameter: a closure returning a tuple
-//			''',
-//			"test"
-//		);
-//	}
 }

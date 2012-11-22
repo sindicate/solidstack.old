@@ -14,20 +14,27 @@
  * limitations under the License.
  */
 
-package solidstack.script.functions;
+package solidstack.script.expressions;
 
-import solidstack.lang.Assert;
-import solidstack.script.Script;
+import java.math.BigDecimal;
+
+import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
-import solidstack.script.objects.FunctionObject;
-import solidstack.script.operations.Operation;
 
-public class Abs extends FunctionObject
+public class DecimalConstant extends LocalizedExpression
 {
-	@Override
-	public Object call( ThreadContext thread, Object... parameters )
+	private BigDecimal value;
+
+
+	public DecimalConstant( SourceLocation location, BigDecimal value )
 	{
-		Assert.isTrue( parameters.length == 1 );
-		return Operation.abs( Script.deref( parameters[ 0 ] ) );
+		super( location );
+
+		this.value = value;
+	}
+
+	public BigDecimal evaluate( ThreadContext thread )
+	{
+		return this.value;
 	}
 }

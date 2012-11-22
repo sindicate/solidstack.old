@@ -16,14 +16,12 @@
 
 package solidstack.script.operations;
 
-import java.math.BigDecimal;
-
 import org.springframework.util.Assert;
 
-import solidstack.script.expressions.Expression;
-import solidstack.script.scopes.AbstractScope.Variable;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
+import solidstack.script.expressions.Expression;
+import solidstack.script.scopes.AbstractScope.Variable;
 
 
 public class PostInc extends Operation
@@ -41,7 +39,7 @@ public class PostInc extends Operation
 			throw new ScriptException( "Tried to apply " + this.operation + " to a immutable value " + left.getClass().getName() );
 		Variable value = (Variable)left;
 		Object result = value.get();
-		value.set( add( result, new BigDecimal( 1 ) ) );
+		value.set( add( result, 1 ) );
 		return result;
 	}
 }

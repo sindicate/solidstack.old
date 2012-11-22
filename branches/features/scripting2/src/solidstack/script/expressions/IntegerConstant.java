@@ -16,24 +16,22 @@
 
 package solidstack.script.expressions;
 
-import java.math.BigDecimal;
-
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
 
-public class NumberConstant extends LocalizedExpression
+public class IntegerConstant extends LocalizedExpression
 {
-	private BigDecimal value;
+	private int value;
 
 
-	public NumberConstant( SourceLocation location, BigDecimal value )
+	public IntegerConstant( SourceLocation location, int value )
 	{
 		super( location );
 
 		this.value = value;
 	}
 
-	public BigDecimal evaluate( ThreadContext thread )
+	public Integer evaluate( ThreadContext thread )
 	{
 		return this.value;
 	}

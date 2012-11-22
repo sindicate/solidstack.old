@@ -17,7 +17,6 @@
 package solidstack.script.operations;
 
 import java.lang.reflect.Array;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -49,14 +48,14 @@ public class Index extends Operation
 		if( left instanceof Map )
 			return new MapItemRef( (Map<?,?>)left, pars );
 
-		Assert.isInstanceOf( pars, BigDecimal.class );
+		Assert.isInstanceOf( pars, Integer.class );
 
 		// TODO Maybe extend these objects with a index() or at() or getAt() or item()
 		if( left instanceof List )
-			return new ListItemRef( (List<?>)left, ( (BigDecimal)pars ).intValue() ); // TODO Maybe return null when index of out bounds?
+			return new ListItemRef( (List<?>)left, (Integer)pars ); // TODO Maybe return null when index of out bounds?
 
 		if( left.getClass().isArray() )
-			return Array.get( left, ( (BigDecimal)pars ).intValue() ); // TODO Maybe return null when index of out bounds?
+			return Array.get( left, (Integer)pars ); // TODO Maybe return null when index of out bounds?
 
 		throw new ScriptException( "Cannot index a " + left.getClass().getName() );
 	}

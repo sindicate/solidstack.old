@@ -238,6 +238,8 @@ abstract public class Operation implements Expression
 		}
 		if( left instanceof Integer )
 		{
+			if( right instanceof Integer )
+				return (Integer)left + (Integer)right;
 			Assert.isInstanceOf( right, BigDecimal.class );
 			left = new BigDecimal( (Integer)left );
 			return ( (BigDecimal)left ).add( (BigDecimal)right );
@@ -253,21 +255,46 @@ abstract public class Operation implements Expression
 		return (String)left + (String)right;
 	}
 
+	static protected Object mul( Object left, Object right )
+	{
+		// TODO Type conversions
+		if( left instanceof Integer )
+		{
+			Assert.isInstanceOf( right, Integer.class );
+			return (Integer)left * (Integer)right;
+		}
+		Assert.isInstanceOf( left, BigDecimal.class );
+		Assert.isInstanceOf( right, BigDecimal.class );
+		return ( (BigDecimal)left ).multiply( (BigDecimal)right );
+	}
+
 	static protected Object minus( Object left, Object right )
 	{
+		if( left instanceof Integer )
+		{
+			Assert.isInstanceOf( right, Integer.class );
+			return (Integer)left - (Integer)right;
+		}
 		Assert.isInstanceOf( left, BigDecimal.class );
 		Assert.isInstanceOf( right, BigDecimal.class );
 		return ( (BigDecimal)left ).subtract( (BigDecimal)right );
 	}
 
-	static public Object negate( Object object )
+	static public Object negate( Object value )
 	{
-		Assert.isInstanceOf( object, BigDecimal.class );
-		return ( (BigDecimal)object ).negate();
+		if( value instanceof Integer )
+			return - (Integer)value;
+		Assert.isInstanceOf( value, BigDecimal.class );
+		return ( (BigDecimal)value ).negate();
 	}
 
 	static protected int compare( Object left, Object right )
 	{
+		if( left instanceof Integer )
+		{
+			Assert.isInstanceOf( right, Integer.class );
+			return ( (Integer)left ).compareTo( (Integer)right );
+		}
 		if( left instanceof BigDecimal )
 		{
 			Assert.isInstanceOf( right, BigDecimal.class );
@@ -276,6 +303,14 @@ abstract public class Operation implements Expression
 		Assert.isInstanceOf( left, String.class );
 		Assert.isInstanceOf( right, String.class );
 		return ( (String)left ).compareTo( (String)right );
+	}
+
+	static public Object abs( Object value )
+	{
+		if( value instanceof Integer )
+			return Math.abs( (Integer)value );
+		Assert.isInstanceOf( value, BigDecimal.class );
+		return ( (BigDecimal)value ).abs();
 	}
 
 	protected Operation( String operation, Expression left, Expression right )

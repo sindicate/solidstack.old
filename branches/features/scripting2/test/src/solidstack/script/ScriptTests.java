@@ -55,20 +55,20 @@ public class ScriptTests
 	static public void test2()
 	{
 		Scope context = new Scope();
-		context.set( "var1", new BigDecimal( 1 ) );
-		test( "var1 + 1", context, new BigDecimal( 2 ) );
+		context.set( "var1", 1 );
+		test( "var1 + 1", context, 2 );
 	}
 
 	@Test
 	static public void test3()
 	{
-		test( "1 + 1 * 2", new BigDecimal( 3 ) );
-		test( "2 * 1 + 1", new BigDecimal( 3 ) );
-		test( "1 + 1 + 1", new BigDecimal( 3 ) );
-		test( "1 + 2 * 2 + 1", new BigDecimal( 6 ) );
-		test( "( 1 + 2 ) * 2 + 1", new BigDecimal( 7 ) );
-		test( "1 + 2 * ( 2 + 1 )", new BigDecimal( 7 ) ); // TODO These () translate to Tuple instead of Parenthesis
-		test( "( 1 + 2 ) * ( 2 + 1 )", new BigDecimal( 9 ) );
+		test( "1 + 1 * 2", 3 );
+		test( "2 * 1 + 1", 3 );
+		test( "1 + 1 + 1", 3 );
+		test( "1 + 2 * 2 + 1", 6 );
+		test( "( 1 + 2 ) * 2 + 1", 7 );
+		test( "1 + 2 * ( 2 + 1 )", 7 ); // TODO These () translate to Tuple instead of Parenthesis
+		test( "( 1 + 2 ) * ( 2 + 1 )", 9 );
 	}
 
 //	@Test
@@ -80,49 +80,49 @@ public class ScriptTests
 //		Assert.assertEquals( val > 0 ? 2 : val > 0 ? 3 : 4, 2 );
 //
 //		testParseFail( "1 ? 2 ; 3 : 4" );
-//		test( "1 ? 2 : 3 + 1", new BigDecimal( 2 ) );
-//		test( "( 1 ? 2 : 3 ) + 1", new BigDecimal( 3 ) );
-//		test( "1 + 1 ? 2 : 3 + 1", new BigDecimal( 2 ) );
-//		test( "1 + ( 1 ? 2 : 3 ) + 1", new BigDecimal( 4 ) );
-//		test( "1 + ( 1 ? 2 : 3 + 1 )", new BigDecimal( 3 ) );
-//		test( "( 1 + 1 ? 2 : 3 ) + 1", new BigDecimal( 3 ) );
-//		test( "0 ? 2 : 3 + 4 * 5", new BigDecimal( 23 ) );
-//		test( "0 ? 2 : ( 3 + 4 ) * 5", new BigDecimal( 35 ) );
-//		test( "( 0 ? 2 : 3 ) + 4 * 5", new BigDecimal( 23 ) );
-//		test( "( ( 0 ? 2 : 3 ) + 4 ) * 5", new BigDecimal( 35 ) );
-//		test( "1 ? 1 ? 2 : 3 : 4", new BigDecimal( 2 ) );
-//		test( "1 ? 0 ? 2 : 3 : 4", new BigDecimal( 3 ) );
-//		test( "0 ? 0 ? 2 : 3 : 4", new BigDecimal( 4 ) );
-//		test( "1 ? 2 : 1 ? 3 : 4", new BigDecimal( 2 ) );
-//		test( "( 1 ? 2 : 1 ) ? 3 : 4", new BigDecimal( 3 ) );
-//		test( "0 ? 2 : 1 ? 3 : 4", new BigDecimal( 3 ) );
-//		test( "0 ? 2 : 0 ? 3 : 4", new BigDecimal( 4 ) );
-//		test( "1 ? 2 : 3 + 4 ? 5 : 6", new BigDecimal( 2 ) );
-//		test( "( 1 ? 2 : 3 ) + 4 ? 5 : 6", new BigDecimal( 5 ) );
-//		test( "1 ? 2 : 3 + ( 4 ? 5 : 6 )", new BigDecimal( 2 ) );
-//		test( "( 1 ? 2 : 3 ) + ( 4 ? 5 : 6 )", new BigDecimal( 7 ) );
-//		test( "0 ? 2 : 3 + 4 ? 5 : 6", new BigDecimal( 5 ) );
-//		test( "0 ? 2 : 3 + ( 4 ? 5 : 6 )", new BigDecimal( 8 ) );
+//		test( "1 ? 2 : 3 + 1", 2 );
+//		test( "( 1 ? 2 : 3 ) + 1", 3 );
+//		test( "1 + 1 ? 2 : 3 + 1", 2 );
+//		test( "1 + ( 1 ? 2 : 3 ) + 1", 4 );
+//		test( "1 + ( 1 ? 2 : 3 + 1 )", 3 );
+//		test( "( 1 + 1 ? 2 : 3 ) + 1", 3 );
+//		test( "0 ? 2 : 3 + 4 * 5", 23 );
+//		test( "0 ? 2 : ( 3 + 4 ) * 5", 35 );
+//		test( "( 0 ? 2 : 3 ) + 4 * 5", 23 );
+//		test( "( ( 0 ? 2 : 3 ) + 4 ) * 5", 35 );
+//		test( "1 ? 1 ? 2 : 3 : 4", 2 );
+//		test( "1 ? 0 ? 2 : 3 : 4", 3 );
+//		test( "0 ? 0 ? 2 : 3 : 4", 4 );
+//		test( "1 ? 2 : 1 ? 3 : 4", 2 );
+//		test( "( 1 ? 2 : 1 ) ? 3 : 4", 3 );
+//		test( "0 ? 2 : 1 ? 3 : 4", 3 );
+//		test( "0 ? 2 : 0 ? 3 : 4", 4 );
+//		test( "1 ? 2 : 3 + 4 ? 5 : 6", 2 );
+//		test( "( 1 ? 2 : 3 ) + 4 ? 5 : 6", 5 );
+//		test( "1 ? 2 : 3 + ( 4 ? 5 : 6 )", 2 );
+//		test( "( 1 ? 2 : 3 ) + ( 4 ? 5 : 6 )", 7 );
+//		test( "0 ? 2 : 3 + 4 ? 5 : 6", 5 );
+//		test( "0 ? 2 : 3 + ( 4 ? 5 : 6 )", 8 );
 //
-//		test( "1 + 1 == 2 ? 2 : 3", new BigDecimal( 2 ) );
-//		test( "!0 ? 2 : 3", new BigDecimal( 2 ) );
+//		test( "1 + 1 == 2 ? 2 : 3", 2 );
+//		test( "!0 ? 2 : 3", 2 );
 //	}
 
 	@Test
 	static public void test4()
 	{
-		test( "if( 1; 2; 3 + 1 )", new BigDecimal( 2 ) );
-		test( "if( !\"\"; 2; 3 )", new BigDecimal( 2 ) );
-		test( "if( !\"x\"; 2; 3 )", new BigDecimal( 3 ) );
-		test( "if( 1; 2 )", new BigDecimal( 2 ) );
+		test( "if( 1; 2; 3 + 1 )", 2 );
+		test( "if( !\"\"; 2; 3 )", 2 );
+		test( "if( !\"x\"; 2; 3 )", 3 );
+		test( "if( 1; 2 )", 2 );
 		test( "if( 1;; 2 )", null );
 		test( "if( null; 2 )", null );
-		test( "if( null;; 2 )", new BigDecimal( 2 ) );
-		test( "1 || 2", new BigDecimal( 1 ) );
-		test( "0 || 2", new BigDecimal( 0 ) );
-		test( "null || 2", new BigDecimal( 2 ) );
-		test( "1 && 2", new BigDecimal( 2 ) );
-		test( "0 && 2", new BigDecimal( 2 ) );
+		test( "if( null;; 2 )", 2 );
+		test( "1 || 2", 1 );
+		test( "0 || 2", 0 );
+		test( "null || 2", 2 );
+		test( "1 && 2", 2 );
+		test( "0 && 2", 2 );
 		test( "null && 2", null );
 	}
 
@@ -131,18 +131,18 @@ public class ScriptTests
 	{
 		Scope context = new Scope();
 
-		test( "a = 1", context, new BigDecimal( 1 ) );
-		Assert.assertEquals( context.get( "a" ), new BigDecimal( 1 ) );
+		test( "a = 1", context, 1 );
+		Assert.assertEquals( context.get( "a" ), 1 );
 
-		test( "a = b = 1", context, new BigDecimal( 1 ) );
-		Assert.assertEquals( context.get( "a" ), new BigDecimal( 1 ) );
-		Assert.assertEquals( context.get( "b" ), new BigDecimal( 1 ) );
+		test( "a = b = 1", context, 1 );
+		Assert.assertEquals( context.get( "a" ), 1 );
+		Assert.assertEquals( context.get( "b" ), 1 );
 
-		test( "1 + ( a = 1 )", context, new BigDecimal( 2 ) );
-		Assert.assertEquals( context.get( "a" ), new BigDecimal( 1 ) );
+		test( "1 + ( a = 1 )", context, 2 );
+		Assert.assertEquals( context.get( "a" ), 1 );
 
-		test( "1 + ( a = 1 ) + a", context, new BigDecimal( 3 ) );
-		Assert.assertEquals( context.get( "a" ), new BigDecimal( 1 ) );
+		test( "1 + ( a = 1 ) + a", context, 3 );
+		Assert.assertEquals( context.get( "a" ), 1 );
 	}
 
 	@Test
@@ -155,9 +155,9 @@ public class ScriptTests
 	@Test
 	static public void test7()
 	{
-		test( "abs( +1 )", new BigDecimal( 1 ) );
-		test( "abs( -1 )", new BigDecimal( 1 ) );
-		test( "abs( 1 + -2 )", new BigDecimal( 1 ) );
+		test( "abs( +1 )", 1 );
+		test( "abs( -1 )", 1 );
+		test( "abs( 1 + -2 )", 1 );
 
 		test( "substr( \"sinterklaas\", 1 + 2 * 1, 9 - 1 - 1 )", "terk" );
 		test( "substr( \"sinterklaas\", 6 )", "klaas" );
@@ -217,44 +217,44 @@ public class ScriptTests
 	@Test
 	static public void test10()
 	{
-		test( "2; 3", new BigDecimal( 3 ) );
-		test( "a = 0; b = 1", new BigDecimal( 1 ) );
-		test( "a = 0;", new BigDecimal( 0 ) );
+		test( "2; 3", 3 );
+		test( "a = 0; b = 1", 1 );
+		test( "a = 0;", 0 );
 		test( ";", null );
 		test( "", null );
-		test( ";;; a = 0;;;; b = 1;;;", new BigDecimal( 1 ) );
+		test( ";;; a = 0;;;; b = 1;;;", 1 );
 		test( ";;;;", null );
 	}
 
 	@Test
 	static public void test11()
 	{
-		test( "( 2; 3 )", new BigDecimal( 3 ) );
-		test( "a = 1; a + a + a++", new BigDecimal( 3 ) );
-		test( "a = 1; a + a + ++a", new BigDecimal( 4 ) );
-		test( "a = 0; if( true; a++, a++ )", new BigDecimal( 1 ) );
-		test( "if( a = 1, b = a, b; 3; 4 )", new BigDecimal( 3 ) );
-		test( "a = 0; if( false; a++, a++; ++a, ++a )", new BigDecimal( 2 ) );
-		test( "i = 0; while( i < 10; println( i++ ) )", new BigDecimal( 9 ) );
-		test( "i = 0; while( i++ < 10; println( i ) )", new BigDecimal( 10 ) );
+		test( "( 2; 3 )", 3 );
+		test( "a = 1; a + a + a++", 3 );
+		test( "a = 1; a + a + ++a", 4 );
+		test( "a = 0; if( true; a++, a++ )", 1 );
+		test( "if( a = 1, b = a, b; 3; 4 )", 3 );
+		test( "a = 0; if( false; a++, a++; ++a, ++a )", 2 );
+		test( "i = 0; while( i < 10; println( i++ ) )", 9 );
+		test( "i = 0; while( i++ < 10; println( i ) )", 10 );
 	}
 
 	@Test
 	static public void test12()
 	{
 		testParseFail( "println( 1 " );
-		test( "f = fun( a; a * a ); f( 3 )", new BigDecimal( 9 ) );
-		test( "fun( a; a * a ) ( 5 )", new BigDecimal( 25 ) );
-		test( "b = 8; fun( a; a ) ( b )", new BigDecimal( 8 ) );
-		test( "fun( a; a( 3 ) ) ( fun( b; 5 * b ) )", new BigDecimal( 15 ) );
-		test( "fun( a, b; a( 1, 2 ) * b( 3, 4 ) ) ( fun( c, d; c * d ), fun( e, f; e * f ) )", new BigDecimal( 24 ) );
-		test( "fun( a, b; a( 1, 2 ) * b( 3, 4 ) ) ( fun( a, b; a * b ), fun( a, b; a * b ) )", new BigDecimal( 24 ) );
-		test( "f = fun( ; 1 ); f()", new BigDecimal( 1 ) );
-		test( "a = 0; fun( ; a = 1 ) (); a", new BigDecimal( 1 ) );
+		test( "f = fun( a; a * a ); f( 3 )", 9 );
+		test( "fun( a; a * a ) ( 5 )", 25 );
+		test( "b = 8; fun( a; a ) ( b )", 8 );
+		test( "fun( a; a( 3 ) ) ( fun( b; 5 * b ) )", 15 );
+		test( "fun( a, b; a( 1, 2 ) * b( 3, 4 ) ) ( fun( c, d; c * d ), fun( e, f; e * f ) )", 24 );
+		test( "fun( a, b; a( 1, 2 ) * b( 3, 4 ) ) ( fun( a, b; a * b ), fun( a, b; a * b ) )", 24 );
+		test( "f = fun( ; 1 ); f()", 1 );
+		test( "a = 0; fun( ; a = 1 ) (); a", 1 );
 		test( "fun( a; a ) ( null )", null );
-		test( "f = fun( ; fun( ; 2 ) ); f()()", new BigDecimal( 2 ) );
-		test( "a = 1; f = fun( ; a ); a = 2; f()", new BigDecimal( 2 ) );
-		test( "fun(a;fun(;a))(1)()", new BigDecimal( 1 ) );
+		test( "f = fun( ; fun( ; 2 ) ); f()()", 2 );
+		test( "a = 1; f = fun( ; a ); a = 2; f()", 2 );
+		test( "fun(a;fun(;a))(1)()", 1 );
 	}
 
 	@Test
@@ -270,14 +270,15 @@ public class ScriptTests
 		TestObject1 o1 = new TestObject1();
 		context.set( "o1", o1 );
 		test( "o1.test()", context, 0 );
-		test( "o1.test( 1 )", context, 2 );
+		test( "o1.test( 1.0 )", context, 2 );
 		test( "o1.test( \"string\" )", context, 3 );
 		test( "o1.test( \"string\", \"string\" )", context, 4 );
 		assert o1.test( new BigDecimal( 1 ), new BigDecimal( 1 ) ) == 6;
 		test( "o1.test( 1, 1 )", context, 6 );
-		test( "1.getClass()", BigDecimal.class );
-		test( "1.getClass()#valueOf( 1.1 )", new BigDecimal( "1.1" ) );
-		test( "1.valueOf( 1.1 )", new BigDecimal( "1.1" ) );
+		test( "1.getClass()", Integer.class );
+		test( "1.1.getClass()", BigDecimal.class );
+		test( "1.0.getClass()#valueOf( 1.1 )", new BigDecimal( "1.1" ) );
+		test( "1.00.valueOf( 1.1 )", new BigDecimal( "1.1" ) );
 		test( "o1.test( 1 == 1 )", context, 7 );
 
 		TestObject2 o2 = new TestObject2();
@@ -292,8 +293,8 @@ public class ScriptTests
 		test( "c = class( \"solidstack.script.ScriptTests$TestObject1\" );", context, TestObject1.class );
 		test( "c().value", context, 0 );
 		test( "c.new().value", context, 0 ); // TODO Do we want this?
-		test( "c( 1 ).value", context, 2 );
-		test( "c.new( 1 ).value", context, 2 );
+		test( "c( 3.14 ).value", context, 2 );
+		test( "c.new( 0.123E-10 ).value", context, 2 );
 		test( "c( \"string\" ).value", context, 3 );
 		test( "c( \"string\", \"string\" ).value", context, 4 );
 		test( "c( 1, 1 ).value", context, 6 );
@@ -306,12 +307,12 @@ public class ScriptTests
 	@Test
 	static public void test14()
 	{
-		test( "( a, b ) = ( 1, 2 ); a + b", new BigDecimal( 3 ) );
-		test( "( a, b ) = ( 1, 2 ); a + b", new BigDecimal( 3 ) );
-		test( "( a, b ) = fun( ; 1, 2 )(); a + b", new BigDecimal( 3 ) );
-		test( "( a, b ) = ( fun( ; 1 ), fun( ; 2 ) ) ; a() + b()", new BigDecimal( 3 ) );
-		test( "( a, b ) = ( () -> ( 1, 2 ) )(); a + b", new BigDecimal( 3 ) );
-		test( "( a, b ) = ( () -> 1, () -> 2 ); a() + b()", new BigDecimal( 3 ) );
+		test( "( a, b ) = ( 1, 2 ); a + b", 3 );
+		test( "( a, b ) = ( 1, 2 ); a + b", 3 );
+		test( "( a, b ) = fun( ; 1, 2 )(); a + b", 3 );
+		test( "( a, b ) = ( fun( ; 1 ), fun( ; 2 ) ) ; a() + b()", 3 );
+		test( "( a, b ) = ( () -> ( 1, 2 ) )(); a + b", 3 );
+		test( "( a, b ) = ( () -> 1, () -> 2 ); a() + b()", 3 );
 	}
 
 	@Test
@@ -332,24 +333,24 @@ public class ScriptTests
 	@Test
 	static public void test16()
 	{
-		test( "def( a ) = 1;", new BigDecimal( 1 ) );
+		test( "def( a ) = 1;", 1 );
 
-		test( "fun( ; a = 1 )(); a", new BigDecimal( 1 ) ); // The function has no context of its own
-		test( "a = 1; fun( a; a++ )( a ); a;", new BigDecimal( 1 ) );
-		test( "a = 1; fun( ; def( a ) = 2 )(); a", new BigDecimal( 2 ) ); // The function has no context of its own
-//		test( "a = 1; fun( ; val( a ) = 2 )(); a", new BigDecimal( 2 ) ); // The function has no context of its own
-		test( "a = 1; fun{ ; def( a ) = 2 }(); a", new BigDecimal( 1 ) ); // The function has its own context
+		test( "fun( ; a = 1 )(); a", 1 ); // The function has no context of its own
+		test( "a = 1; fun( a; a++ )( a ); a;", 1 );
+		test( "a = 1; fun( ; def( a ) = 2 )(); a", 2 ); // The function has no context of its own
+//		test( "a = 1; fun( ; val( a ) = 2 )(); a", 2 ); // The function has no context of its own
+		test( "a = 1; fun{ ; def( a ) = 2 }(); a", 1 ); // The function has its own context
 
-		test( "( a = 1 ); a", new BigDecimal( 1 ) ); // The block has no context of its own
-		test( "a = 1; ( def( a ) = 2 ); a", new BigDecimal( 2 ) ); // The block has no context of its own
-//		test( "a = 1; fun( ; val( a ) = 2 )(); a", new BigDecimal( 2 ) ); // The function has no context of its own
-		test( "a = 1; { def( a ) = 2 }; a", new BigDecimal( 1 ) ); // The block has its own context
+		test( "( a = 1 ); a", 1 ); // The block has no context of its own
+		test( "a = 1; ( def( a ) = 2 ); a", 2 ); // The block has no context of its own
+//		test( "a = 1; fun( ; val( a ) = 2 )(); a", 2 ); // The function has no context of its own
+		test( "a = 1; { def( a ) = 2 }; a", 1 ); // The block has its own context
 
-		test( "( () -> a = 1 )(); a", new BigDecimal( 1 ) ); // The function has no context of its own
-		test( "a = 1; ( a -> a++ )( a ); a;", new BigDecimal( 1 ) );
-		test( "a = 1; ( () -> def( a ) = 2 )(); a", new BigDecimal( 2 ) ); // The function has no context of its own
-//		test( "a = 1; fun( ; val( a ) = 2 )(); a", new BigDecimal( 2 ) ); // The function has no context of its own
-		test( "a = 1; f = () -> { def( a ) = 2 }; f(); a", new BigDecimal( 1 ) ); // The function has its own context
+		test( "( () -> a = 1 )(); a", 1 ); // The function has no context of its own
+		test( "a = 1; ( a -> a++ )( a ); a;", 1 );
+		test( "a = 1; ( () -> def( a ) = 2 )(); a", 2 ); // The function has no context of its own
+//		test( "a = 1; fun( ; val( a ) = 2 )(); a", 2 ); // The function has no context of its own
+		test( "a = 1; f = () -> { def( a ) = 2 }; f(); a", 1 ); // The function has its own context
 	}
 
 	@Test
@@ -365,7 +366,7 @@ public class ScriptTests
 	static public void test18()
 	{
 		test( "l = class( \"java.util.ArrayList\" )(); forEach( l, fun( i; i ) )", null );
-		test( "l = class( \"java.util.ArrayList\" )(); i = 0; while( i < 10; l.add( i ), i++ ); l.each( fun( i; println( i ) ) )", new BigDecimal( 9 ) );
+		test( "l = class( \"java.util.ArrayList\" )(); i = 0; while( i < 10; l.add( i ), i++ ); l.each( fun( i; println( i ) ) )", 9 );
 		eval( "Calendar = class( \"java.util.Calendar\" ); println( Calendar#getInstance().getClass() )" );
 		test( "Calendar = class( \"java.util.Calendar\" ); Calendar#SATURDAY", 7 );
 		fail( "Calendar = class( \"java.util.Calendar\" ); Calendar#clear()", MissingMethodException.class, "static java.util.Calendar.clear()" );
@@ -397,17 +398,17 @@ public class ScriptTests
 		Assert.assertEquals( Java.forName( "int[][][][]", loader ), int[][][][].class );
 		Assert.assertEquals( Java.forName( "int[][]", loader ), int[][].class );
 
-		test( "list = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]; list[ 3 ]", new BigDecimal( 4 ) );
-		test( "list = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ].toArray(); list[ 3 ]", new BigDecimal( 4 ) );
+		test( "list = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]; list[ 3 ]", 4 );
+		test( "list = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ].toArray(); list[ 3 ]", 4 );
 		test( "list = []; list.size()", 0 );
 		test( "list = class( \"java.lang.reflect.Array\" )#newInstance( class( \"int\" ), 10 ); list.size()", 10 );
-		test( "map = [ 0: 1, 1: 2, 2: 3, 3: 4 ]; map[ 3 ]", new BigDecimal( 4 ) );
-		test( "map = [ \"first\": 1, \"second\": 2, \"third\": 3 ]; map[ \"second\" ]", new BigDecimal( 2 ) );
-		test( "map = [ \"fir\" + \"st\": 1, \"second\": 2, \"third\": 3 ]; map[ \"first\" ]", new BigDecimal( 1 ) );
+		test( "map = [ 0: 1, 1: 2, 2: 3, 3: 4 ]; map[ 3 ]", 4 );
+		test( "map = [ \"first\": 1, \"second\": 2, \"third\": 3 ]; map[ \"second\" ]", 2 );
+		test( "map = [ \"fir\" + \"st\": 1, \"second\": 2, \"third\": 3 ]; map[ \"first\" ]", 1 );
 		test( "map = [ \"first\": 1, \"second\": 2, \"third\": 3 ]; map[ \"fourth\" ]", null ); // TODO Undefined? Then we assign to it too.
-		test( "map = scope( [ \"first\": 1, \"second\": 2, \"third\": 3 ] ); map.third", new BigDecimal( 3 ) );
+		test( "map = scope( [ \"first\": 1, \"second\": 2, \"third\": 3 ] ); map.third", 3 );
 		test( "map = scope( [ \"first\": 1, \"second\": 2, \"third\": 3 ] ); map.fourth", null ); // TODO What about undefined?
-		test( "map = [:]; s = scope( map ); s.first = 1; map[ \"first\" ]", new BigDecimal( 1 ) );
+		test( "map = [:]; s = scope( map ); s.first = 1; map[ \"first\" ]", 1 );
 		test( "map = [:]; map[ \"fourth\" ]", null );
 		test( "map = [:]; map.size()", 0 );
 
@@ -425,45 +426,45 @@ public class ScriptTests
 	@Test
 	static public void test21()
 	{
-		test( "f = a -> a; f( 3 )", new BigDecimal( 3 ) );
-		test( "f = a -> a * a; f( 3 )", new BigDecimal( 9 ) );
-		test( "f = ( a ) -> ( a * a ); f( 3 )", new BigDecimal( 9 ) );
-		test( "( a -> a * a )( 5 )", new BigDecimal( 25 ) );
-		test( "( a -> a( 3 ) ) ( b -> 5 * b )", new BigDecimal( 15 ) );
-		test( "( ( a, b ) -> a( 1, 2 ) * b( 3, 4 ) ) ( ( c, d ) -> c * d, ( e, f ) -> e * f )", new BigDecimal( 24 ) );
-		test( "( ( a, b ) -> a( 1, 2 ) * b( 3, 4 ) ) ( ( a, b ) -> a * b, ( a, b ) -> a * b )", new BigDecimal( 24 ) );
-		test( "f = () -> 1; f()", new BigDecimal( 1 ) );
-		test( "a = 0; ( () -> a = 1 ) (); a", new BigDecimal( 1 ) );
+		test( "f = a -> a; f( 3 )", 3 );
+		test( "f = a -> a * a; f( 3 )", 9 );
+		test( "f = ( a ) -> ( a * a ); f( 3 )", 9 );
+		test( "( a -> a * a )( 5 )", 25 );
+		test( "( a -> a( 3 ) ) ( b -> 5 * b )", 15 );
+		test( "( ( a, b ) -> a( 1, 2 ) * b( 3, 4 ) ) ( ( c, d ) -> c * d, ( e, f ) -> e * f )", 24 );
+		test( "( ( a, b ) -> a( 1, 2 ) * b( 3, 4 ) ) ( ( a, b ) -> a * b, ( a, b ) -> a * b )", 24 );
+		test( "f = () -> 1; f()", 1 );
+		test( "a = 0; ( () -> a = 1 ) (); a", 1 );
 		test( "( a -> a ) ( null )", null );
-		test( "f = () -> () -> 2; f()()", new BigDecimal( 2 ) );
-		test( "a = 1; f = () -> a; a = 2; f()", new BigDecimal( 2 ) );
-		test( "( a -> () -> a )( 1 )()", new BigDecimal( 1 ) );
+		test( "f = () -> () -> 2; f()()", 2 );
+		test( "a = 1; f = () -> a; a = 2; f()", 2 );
+		test( "( a -> () -> a )( 1 )()", 1 );
 
-		test( "f = (a,b)->a*b; g = a->f(a,3); g(5)", new BigDecimal( 15 ) );
+		test( "f = (a,b)->a*b; g = a->f(a,3); g(5)", 15 );
 		test( "s = \"string\"; c = x->s.charAt(x); c(2)", 'r' );
-		test( "f = () -> (1,2,3); (a,b,c) = f(); a+b+c;", new BigDecimal( 6 ) );
+		test( "f = () -> (1,2,3); (a,b,c) = f(); a+b+c;", 6 );
 
-		test( "l = [ 1, 2, 3 ]; l.each( i -> println( i ) )", new BigDecimal( 3 ) );
+		test( "l = [ 1, 2, 3 ]; l.each( i -> println( i ) )", 3 );
 	}
 
 	@Test
 	static public void test22()
 	{
-		test( "f = (a,b,c) -> a+b+c; g = (*a) -> f(*a); g(1,2,3)", new BigDecimal( 6 ) );
+		test( "f = (a,b,c) -> a+b+c; g = (*a) -> f(*a); g(1,2,3)", 6 );
 		test( "f = *a -> \"sinterklaas\".charAt( *a ); f( 1 )", 'i' );
 		test( "f = *i -> class( \"java.util.Arrays\" )#asList( *i ); f( 1, 2, 3 ).size()", 3 );
 		test( "f = ( a, *b ) -> b.size(); f( 1, 2, 3 )", 2 );
-		test( "f = ( a, *b ) -> a; g = ( a, *b ) -> f( *b, a ); g( 1, 2, 3 )", new BigDecimal( 2 ) );
+		test( "f = ( a, *b ) -> a; g = ( a, *b ) -> f( *b, a ); g( 1, 2, 3 )", 2 );
 		test( "f = *a -> a.size(); f( 1, 2, 3 );", 3 );
-		test( "l = [1,2,3]; f = (a,b,c) -> a+b+c; f(*l);", new BigDecimal( 6 ) );
+		test( "l = [1,2,3]; f = (a,b,c) -> a+b+c; f(*l);", 6 );
 
-		test( "( a, b, c ) = *[ 1, 2, 3 ]; a + b + c", new BigDecimal( 6 ) );
-		test( "a = [ 1, 2, 3 ]; ( b, c, d ) = *a; b + c + d", new BigDecimal( 6 ) );
+		test( "( a, b, c ) = *[ 1, 2, 3 ]; a + b + c", 6 );
+		test( "a = [ 1, 2, 3 ]; ( b, c, d ) = *a; b + c + d", 6 );
 		test( "( 1, 2, 3 ).list().size()", 3 );
 //		test( "*a = ( 1, 2, 3 ); a.size()", 3 ); // TODO
 //		test( "( a, *b ) = ( 1, 2, 3 )", 3 ); TODO
 //		test( "( a, *b ) = ( *[ 1, 2 ], 3 )", 3 ); TODO
-		test( "a = [ 1, [ 2, 3, 4 ], 5 ]; ( (a,b,c) -> a+b+c )( *a[ 1 ] )", new BigDecimal( 9 ) );
+		test( "a = [ 1, [ 2, 3, 4 ], 5 ]; ( (a,b,c) -> a+b+c )( *a[ 1 ] )", 9 );
 
 		fail( "f = a -> (); f( 1, 2, 3 );", ScriptException.class, "Too many parameters" );
 		fail( "a = *[ 1, 2, 3 ]; ( b, c, d ) = a; b + c + d", ScriptException.class, "Tuples can't be assigned to variables" );
@@ -475,7 +476,7 @@ public class ScriptTests
 	@Test
 	static public void test23()
 	{
-		test( "f = (a,b,c) -> a+b+c; f( a: 1, b: 2, c: 3 )", new BigDecimal( 6 ) );
+		test( "f = (a,b,c) -> a+b+c; f( a: 1, b: 2, c: 3 )", 6 );
 	}
 
 	@Test

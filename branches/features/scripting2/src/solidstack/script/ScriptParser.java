@@ -26,13 +26,14 @@ import solidstack.script.ScriptTokenizer.Token;
 import solidstack.script.ScriptTokenizer.Token.TYPE;
 import solidstack.script.expressions.Block;
 import solidstack.script.expressions.BooleanConstant;
+import solidstack.script.expressions.DecimalConstant;
 import solidstack.script.expressions.EmptyMap;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Expressions;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.expressions.If;
+import solidstack.script.expressions.IntegerConstant;
 import solidstack.script.expressions.NullConstant;
-import solidstack.script.expressions.NumberConstant;
 import solidstack.script.expressions.Parenthesis;
 import solidstack.script.expressions.StringConstant;
 import solidstack.script.expressions.StringExpression;
@@ -190,8 +191,11 @@ public class ScriptParser
 			case SEMICOLON:
 				return null;
 
-			case NUMBER:
-				return new NumberConstant( token.getLocation(), new BigDecimal( token.getValue() ) );
+			case DECIMAL:
+				return new DecimalConstant( token.getLocation(), new BigDecimal( token.getValue() ) );
+
+			case INT:
+				return new IntegerConstant( token.getLocation(), Integer.valueOf( token.getValue() ) );
 
 			case STRING:
 				return parseString( token );

@@ -223,21 +223,23 @@ public class ScriptTokenizer
 						result.append( (char)ch );
 						ch = in.read();
 					}
+					boolean decimal = false;
 					if( ch == '.' )
 					{
-						result.append( (char)ch );
 						ch = in.read();
 						if( !( ch >= '0' && ch <= '9' ) )
 						{
 							in.push( ch );
 							in.push( '.' );
-							return new Token( TYPE.NUMBER, location, result.toString() );
+							return new Token( TYPE.INT, location, result.toString() );
 						}
+						result.append( '.' );
 						while( ch >= '0' && ch <= '9' )
 						{
 							result.append( (char)ch );
 							ch = in.read();
 						}
+						decimal = true;
 					}
 					if( ch == 'E' || ch == 'e' )
 					{
@@ -255,9 +257,10 @@ public class ScriptTokenizer
 							result.append( (char)ch );
 							ch = in.read();
 						}
+						decimal = true;
 					}
 					in.push( ch );
-					return new Token( TYPE.NUMBER, location, result.toString() );
+					return new Token( decimal ? TYPE.DECIMAL : TYPE.INT, location, result.toString() );
 
 				// Operators
 				case '+':
@@ -373,7 +376,7 @@ public class ScriptTokenizer
 		 * Token types.
 		 */
 		@SuppressWarnings( "javadoc" )
-		static public enum TYPE { IDENTIFIER, NUMBER, STRING, BINOP, UNAOP, PAREN_OPEN, PAREN_CLOSE, BRACE_OPEN, BRACE_CLOSE, BRACKET_OPEN, BRACKET_CLOSE, COMMA, SEMICOLON, EOF }
+		static public enum TYPE { IDENTIFIER, DECIMAL, INT, STRING, BINOP, UNAOP, PAREN_OPEN, PAREN_CLOSE, BRACE_OPEN, BRACE_CLOSE, BRACKET_OPEN, BRACKET_CLOSE, COMMA, SEMICOLON, EOF }
 
 		/**
 		 * The type of the token.

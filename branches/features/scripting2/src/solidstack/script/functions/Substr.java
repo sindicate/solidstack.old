@@ -16,8 +16,6 @@
 
 package solidstack.script.functions;
 
-import java.math.BigDecimal;
-
 import solidstack.lang.Assert;
 import solidstack.script.Script;
 import solidstack.script.ThreadContext;
@@ -33,14 +31,14 @@ public class Substr extends FunctionObject
 		Object object = Script.deref( parameters[ 0 ] );
 		Object start = Script.deref( parameters[ 1 ] );
 		Assert.isInstanceOf( object, String.class );
-		Assert.isInstanceOf( start, BigDecimal.class );
+		Assert.isInstanceOf( start, Integer.class );
 
 		if( parameters.length == 2 )
-			return ( (String)object ).substring( ( (BigDecimal)start ).intValue() );
+			return ( (String)object ).substring( (Integer)start );
 
 		Object end = Script.deref( parameters[ 2 ] );
-		Assert.isInstanceOf( end, BigDecimal.class );
+		Assert.isInstanceOf( end, Integer.class );
 
-		return ( (String)object ).substring( ( (BigDecimal)start ).intValue(), ( (BigDecimal)end ).intValue() );
+		return ( (String)object ).substring( (Integer)start, (Integer)end );
 	}
 }

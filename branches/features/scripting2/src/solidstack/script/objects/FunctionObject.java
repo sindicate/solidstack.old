@@ -89,7 +89,6 @@ public class FunctionObject implements solidstack.script.java.Function
 		{
 			ParWalker pw = new ParWalker( pars );
 
-			int i = 0;
 			int o = 0;
 			while( o < oCount )
 			{
@@ -122,10 +121,7 @@ public class FunctionObject implements solidstack.script.java.Function
 		{
 			Scope scope = new Scope( this.scope );
 			for( int i = 0; i < oCount; i++ )
-			{
-				Expression par = parameters[ i ];
 				scope.def( symbols[ i ], Script.deref( values[ i ] ) ); // TODO If we keep the Link we get output parameters!
-			}
 			newScope = scope;
 		}
 		else if( oCount > 0 )

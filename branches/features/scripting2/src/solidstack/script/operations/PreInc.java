@@ -16,15 +16,13 @@
 
 package solidstack.script.operations;
 
-import java.math.BigDecimal;
-
 import org.springframework.util.Assert;
 
 import solidstack.io.SourceLocation;
-import solidstack.script.expressions.Expression;
-import solidstack.script.scopes.AbstractScope.Variable;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
+import solidstack.script.expressions.Expression;
+import solidstack.script.scopes.AbstractScope.Variable;
 
 
 public class PreInc extends Operation
@@ -45,7 +43,7 @@ public class PreInc extends Operation
 		if( !( right instanceof Variable ) )
 			throw new ScriptException( "Tried to apply " + this.operation + " to a immutable value " + right.getClass().getName() );
 		Variable value = (Variable)right;
-		Object result = add( value.get(), new BigDecimal( 1 ) );
+		Object result = add( value.get(), 1 );
 		value.set( result );
 		return result;
 	}
