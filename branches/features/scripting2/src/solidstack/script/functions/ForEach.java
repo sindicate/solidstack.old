@@ -20,10 +20,10 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import solidstack.lang.Assert;
-import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Null;
+import solidstack.script.objects.Util;
 
 public class ForEach extends FunctionObject
 {
@@ -32,10 +32,10 @@ public class ForEach extends FunctionObject
 	{
 		Assert.isTrue( parameters.length == 2 );
 
-		Object o = Script.deref( parameters[ 0 ] );
+		Object o = Util.deref( parameters[ 0 ] );
 		Assert.isInstanceOf( o, Collection.class );
 
-		Object f = Script.deref( parameters[ 1 ] );
+		Object f = Util.deref( parameters[ 1 ] );
 		Assert.isInstanceOf( f, FunctionObject.class );
 
 		FunctionObject fun = (FunctionObject)f;

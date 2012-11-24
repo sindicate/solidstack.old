@@ -17,10 +17,10 @@
 package solidstack.script.functions;
 
 import solidstack.lang.Assert;
-import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.java.Java;
 import solidstack.script.objects.FunctionObject;
+import solidstack.script.objects.Util;
 
 public class Class extends FunctionObject
 {
@@ -28,7 +28,7 @@ public class Class extends FunctionObject
 	public Object call( ThreadContext thread, Object... parameters )
 	{
 		Assert.isTrue( parameters.length == 1 );
-		Object object = Script.toJava( parameters[ 0 ] );
+		Object object = Util.toJava( parameters[ 0 ] );
 		Assert.isTrue( object instanceof String );
 		String name = (String)object;
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();

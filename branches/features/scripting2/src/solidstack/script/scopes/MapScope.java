@@ -20,15 +20,13 @@ public class MapScope extends AbstractScope
 	@Override
 	public Variable def( Symbol symbol, Object value )
 	{
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Value val( Symbol symbol, Object value )
 	{
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	public class MapRef implements Ref

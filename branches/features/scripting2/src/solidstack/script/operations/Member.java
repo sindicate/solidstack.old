@@ -17,12 +17,12 @@
 package solidstack.script.operations;
 
 import solidstack.lang.Assert;
-import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.objects.Null;
 import solidstack.script.objects.ObjectMember;
+import solidstack.script.objects.Util;
 import solidstack.script.scopes.AbstractScope;
 import solidstack.script.scopes.Symbol;
 
@@ -36,7 +36,7 @@ public class Member extends Operation
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = Script.deref( this.left.evaluate( thread ) );
+		Object left = Util.deref( this.left.evaluate( thread ) );
 		Assert.isInstanceOf( this.right, Identifier.class );
 		Symbol right = ( (Identifier)this.right ).getSymbol();
 		Assert.isFalse( left == Null.INSTANCE, "member: " + right.toString() );

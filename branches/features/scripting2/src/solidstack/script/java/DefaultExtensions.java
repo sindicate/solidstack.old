@@ -19,6 +19,8 @@ package solidstack.script.java;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 
 /**
@@ -41,6 +43,22 @@ public class DefaultExtensions
 		Object result = null;
 		for( Object object : collection )
 			result = function.call( object );
+		return result;
+	}
+
+	static public Object each( Map<?,?> map, Function function )
+	{
+		Object result = null;
+		for( Entry<?,?> entry : map.entrySet() )
+			result = function.call( entry.getKey(), entry.getValue() );
+		return result;
+	}
+
+	static public Object eachKey( Map<?,?> map, Function function )
+	{
+		Object result = null;
+		for( Object key : map.keySet() )
+			result = function.call( key );
 		return result;
 	}
 

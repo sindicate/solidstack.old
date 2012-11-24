@@ -19,9 +19,9 @@ package solidstack.script.functions;
 import java.util.Map;
 
 import solidstack.lang.Assert;
-import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.objects.FunctionObject;
+import solidstack.script.objects.Util;
 import solidstack.script.scopes.MapScope;
 
 public class Scope extends FunctionObject
@@ -30,7 +30,7 @@ public class Scope extends FunctionObject
 	public Object call( ThreadContext thread, Object... parameters )
 	{
 		Assert.isTrue( parameters.length == 1 );
-		Object object = Script.deref( parameters[ 0 ] );
+		Object object = Util.deref( parameters[ 0 ] );
 		Assert.isInstanceOf( object, Map.class );
 		return new MapScope( (Map<Object, Object>)object );
 	}

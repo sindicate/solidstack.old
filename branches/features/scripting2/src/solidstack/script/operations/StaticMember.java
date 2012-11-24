@@ -18,11 +18,11 @@ package solidstack.script.operations;
 
 import org.springframework.util.Assert;
 
-import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.objects.ClassMember;
+import solidstack.script.objects.Util;
 
 
 public class StaticMember extends Operation
@@ -34,7 +34,7 @@ public class StaticMember extends Operation
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = Script.single( this.left.evaluate( thread ) );
+		Object left = Util.single( this.left.evaluate( thread ) );
 		Assert.isInstanceOf( Class.class, left );
 		Assert.isInstanceOf( Identifier.class, this.right );
 		String right = ( (Identifier)this.right ).getSymbol().toString();

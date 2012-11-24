@@ -17,19 +17,14 @@
 package solidstack.script;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.fest.assertions.api.Assertions.failBecauseExceptionWasNotThrown;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import solidstack.io.SourceException;
 import solidstack.script.java.Java;
 import solidstack.script.java.MissingFieldException;
 import solidstack.script.java.MissingMethodException;
@@ -40,7 +35,7 @@ import solidstack.script.scopes.TempSymbol;
 
 
 @SuppressWarnings( "javadoc" )
-public class ScriptTests
+public class ScriptTests extends Util
 {
 	@Test
 	static public void test1()
@@ -452,7 +447,7 @@ public class ScriptTests
 	{
 		test( "f = (a,b,c) -> a+b+c; g = (*a) -> f(*a); g(1,2,3)", 6 );
 		test( "f = *a -> \"sinterklaas\".charAt( *a ); f( 1 )", 'i' );
-		test( "f = *i -> class( \"java.util.Arrays\" )#asList( *i ); f( 1, 2, 3 ).size()", 3 );
+		test( "Arrays = class( \"java.util.Arrays\" ); asList = *i -> Arrays#asList( *i ); list = asList( 1, 2, 3 ); list.size()", 3 );
 		test( "f = ( a, *b ) -> b.size(); f( 1, 2, 3 )", 2 );
 		test( "f = ( a, *b ) -> a; g = ( a, *b ) -> f( *b, a ); g( 1, 2, 3 )", 2 );
 		test( "f = *a -> a.size(); f( 1, 2, 3 );", 3 );
@@ -533,81 +528,7 @@ public class ScriptTests
 	// TODO Extensions: unique/each(WithIndex)/find(All)/collect/contains/every/indexOf/flatten/groupBy/inject/join/max/min/removeAll/replaceAll/reverse/sum/tail/traverse/withReader(etc)
 	// TODO with() to execute a function with a different context
 	// TODO Currying
-
-	static public void test( String expression, Object expected )
-	{
-		test( expression, null, expected );
-	}
-
-	static public void test( String expression, Scope context, Object expected )
-	{
-		Object result = eval( expression, context );
-		Assert.assertEquals( result, expected );
-	}
-
-	static public Object eval( String expression )
-	{
-		return eval( expression, null );
-	}
-
-	static public Object eval( String expression, Scope context )
-	{
-		Script script = Script.compile( expression );
-//		String dump = new Dumper().dump( script );
-		return script.execute( context );
-	}
-
-	static public void testParseFail( String expression )
-	{
-		try
-		{
-			Script.compile( expression );
-			Assert.fail( "Expected a SourceException" );
-		}
-		catch( SourceException e )
-		{
-			// Expected
-		}
-	}
-
-	static public void fail( String expression, Class<? extends Exception> exception, String message )
-	{
-		try
-		{
-			eval( expression );
-			failBecauseExceptionWasNotThrown( exception );
-		}
-		catch( Exception t )
-		{
-			assertThat( t ).isExactlyInstanceOf( exception );
-			assertThat( t ).hasMessageContaining( message );
-		}
-	}
-
-//	static private void test( String file ) throws IOException
-//	{
-//		InputStream in = ScriptTests.class.getResourceAsStream( file );
-//		Reader reader = new InputStreamReader( in );
-//		char[] buffer = new char[ 1024 ];
-//		StringBuilder contents = new StringBuilder();
-//		int len;
-//		while( ( len = reader.read( buffer ) ) >= 0 )
-//			contents.append( buffer, 0, len );
-//		Script.compile( contents.toString() ).execute( null );
-//		// TODO Validate result
-//	}
-
-	static private String readFile( String file ) throws IOException
-	{
-		InputStream in = ScriptTests.class.getResourceAsStream( file );
-		Reader reader = new InputStreamReader( in );
-		char[] buffer = new char[ 1024 ];
-		StringBuilder result = new StringBuilder();
-		int len;
-		while( ( len = reader.read( buffer ) ) >= 0 )
-			result.append( buffer, 0, len );
-		return result.toString();
-	}
+	// TODO Global namespaces
 
 	@SuppressWarnings( "unused" )
 	static public class TestObject1

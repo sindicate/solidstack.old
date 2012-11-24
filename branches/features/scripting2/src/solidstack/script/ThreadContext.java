@@ -21,13 +21,12 @@ import java.util.Deque;
 
 import solidstack.io.SourceLocation;
 import solidstack.script.scopes.AbstractScope;
-import solidstack.script.scopes.Scope;
 
 public class ThreadContext
 {
 	static private ThreadLocal<ThreadContext> contexts = new ThreadLocal<ThreadContext>();
 
-	static public ThreadContext init( Scope scope )
+	static public ThreadContext init( AbstractScope scope )
 	{
 //		Assert.isNull( contexts.get() );
 		ThreadContext result = new ThreadContext( scope );
@@ -43,7 +42,7 @@ public class ThreadContext
 	private AbstractScope scope;
 	private Deque<SourceLocation> stack = new ArrayDeque<SourceLocation>();
 
-	private ThreadContext( Scope scope )
+	private ThreadContext( AbstractScope scope )
 	{
 		this.scope = scope;
 	}
@@ -73,5 +72,13 @@ public class ThreadContext
 	public SourceLocation[] cloneStack()
 	{
 		return this.stack.toArray( new SourceLocation[ this.stack.size() ] );
+	}
+
+	public SourceLocation[] cloneStack( SourceLocation last )
+	{
+		pushStack( last );
+		SourceLocation[] result = cloneStack();
+		popStack();
+		return result;
 	}
 }

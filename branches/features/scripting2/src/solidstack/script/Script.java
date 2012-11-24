@@ -17,26 +17,18 @@
 package solidstack.script;
 
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.Collection;
 import java.util.Map;
 
 import solidstack.io.ReaderSourceReader;
-import solidstack.lang.Assert;
+import solidstack.io.SourceReader;
 import solidstack.script.expressions.Expression;
-import solidstack.script.objects.ClassMember;
-import solidstack.script.objects.FunctionObject.ParWalker;
 import solidstack.script.objects.FunnyString;
-import solidstack.script.objects.Labeled;
-import solidstack.script.objects.Member;
 import solidstack.script.objects.Null;
-import solidstack.script.objects.ObjectMember;
-import solidstack.script.objects.Tuple;
+import solidstack.script.objects.Util;
+import solidstack.script.scopes.AbstractScope;
 import solidstack.script.scopes.AbstractScope.Ref;
 import solidstack.script.scopes.Scope;
-import solidstack.script.scopes.Symbol;
 
 public class Script
 {
@@ -47,16 +39,17 @@ public class Script
 		this.expression = expression;
 	}
 
-	// TODO Add location
 	static public Script compile( String script )
 	{
-		ScriptTokenizer t = new ScriptTokenizer( new ReaderSourceReader( new StringReader( script ) ) );
-		ScriptParser p = new ScriptParser( t );
-		Expression result = p.parse();
-		return new Script( result );
+		return compile( new ReaderSourceReader( new StringReader( script ) ) );
 	}
 
-	public Object execute( Scope scope )
+	static public Script compile( SourceReader reader )
+	{
+		return new Script( new ScriptParser( new ScriptTokenizer( reader ) ).parse() );
+	}
+
+	public Object execute( AbstractScope scope )
 	{
 		if( this.expression == null )
 			return null;
@@ -65,134 +58,31 @@ public class Script
 			scope = new Scope();
 
 		ThreadContext thread = ThreadContext.init( scope );
-		return toJava( this.expression.evaluate( thread ) );
-	}
-
-	static public Object single( Object value )
-	{
-		if( value instanceof Tuple )
-		{
-			Tuple results = (Tuple)value;
-			if( results.size() == 0 )
-				return Null.INSTANCE;
-			value = results.getLast();
-		}
-		if( value instanceof Ref ) // TODO Does this ever happen with tuples?
-			return ( (Ref)value ).get();
-		if( value instanceof Member )
-			return ( (Member)value ).get();
-		return value;
-	}
-
-	static public Object deref( Object value )
-	{
-		if( value instanceof List )
-		{
-			// TODO Or create a new list?
-			List<Object> list = (List<Object>)value;
-			for( ListIterator<Object> i = list.listIterator(); i.hasNext(); )
-				i.set( deref( i.next() ) );
-			return list;
-		}
-		if( value instanceof Ref )
-			return ( (Ref)value ).get();
-		return value;
-	}
-
-	static public Object finalize( Object value )
-	{
-		value = deref( value );
-		if( value instanceof Member )
-			return ( (Member)value ).get();
-		return value;
-	}
-
-	static public Object toJava( Object value )
-	{
-		Object result = single( value );
-		if( result == Null.INSTANCE )
-			return null;
-		if( result instanceof FunnyString )
-			return result.toString();
-		if( result instanceof ObjectMember )
-			return ( (ObjectMember)result ).get();
-		if( result instanceof ClassMember )
-			return ( (ClassMember)result ).get();
-		return result;
-	}
-
-	static public Object[] toNamedParameters( Object[] pars )
-	{
-		Object[] result = new Object[ pars.length * 2 ];
-		int index = 0;
-		for( Object par : pars )
-		{
-			Assert.isTrue( par instanceof Labeled );
-			Labeled labeled = (Labeled)par;
-			Assert.isTrue( labeled.getLabel() instanceof Ref ); // TODO Shouldn't this be an Identifier too?;
-			result[ index++ ] = ( (Ref)labeled.getLabel() ).getKey();
-			result[ index++ ] = labeled.getValue();
-		}
-		return result;
-	}
-
-	static public Object[] toJavaParameters( Object[] pars )
-	{
-		if( pars.length > 0 && pars[ 0 ] instanceof Labeled )
-		{
-			pars = toNamedParameters( pars );
-			int count = pars.length;
-			int index = 0;
-			Map< String, Object> map = new HashMap<String, Object>();
-			while( index < count )
-				map.put( ( (Symbol)pars[ index++ ] ).toString(), pars[ index++ ] );
-			return new Object[] { map };
-		}
-
-		List<Object> result = new ArrayList<Object>();
-		ParWalker pw = new ParWalker( pars );
-		Object par = pw.get();
-		while( par != null )
-		{
-			result.add( toJava( par ) );
-			par = pw.get();
-		}
-		return result.toArray( new Object[ result.size() ] );
-	}
-
-	static public Object toScript( Object value )
-	{
-		if( value == null )
-			return Null.INSTANCE;
-		return value;
-	}
-
-	static public final Object[] EMPTY_ARRAY = new Object[ 0 ];
-
-	static public Object[] toArray( Object values )
-	{
-		Object[] result;
-		if( values instanceof Tuple )
-			return ( (Tuple)values ).list().toArray();
-		if( values != null )
-			return new Object[] { values };
-		return EMPTY_ARRAY;
+		return Util.toJava( this.expression.evaluate( thread ) );
 	}
 
 	static public boolean isTrue( Object left )
 	{
-		if( left instanceof Boolean )
-			return (Boolean)left;
-		if( left instanceof String )
-			return ( (String)left ).length() != 0;
-		if( left instanceof FunnyString )
-			return !( (FunnyString)left ).isEmpty();
+		if( left instanceof Ref )
+		{
+			if( ( (Ref)left ).isUndefined() )
+				return false;
+			left = ( (Ref)left ).get();
+		}
 		if( left == null )
 			return false;
 		if( left == Null.INSTANCE )
 			return false;
-		if( left instanceof Ref && ( (Ref)left ).isUndefined() )
-			return false;
+		if( left instanceof Boolean )
+			return (Boolean)left;
+		if( left instanceof String )
+			return ( (String)left ).length() != 0;
+		if( left instanceof Collection )
+			return !( (Collection<?>)left ).isEmpty();
+		if( left instanceof Map )
+			return !( (Map<?,?>)left ).isEmpty();
+		if( left instanceof FunnyString )
+			return !( (FunnyString)left ).isEmpty();
 		return true;
 	}
 }

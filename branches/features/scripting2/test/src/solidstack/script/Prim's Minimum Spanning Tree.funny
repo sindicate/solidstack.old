@@ -32,10 +32,10 @@ graph = [
 
 prim = ( graph, start ) -> {
 	
-	queue = TreeMap();
+	queue = [:];
     parent = [];
  
- 	graph.keySet().each( k -> queue[ k ] = INFINITY );
+ 	graph.eachKey( k -> queue[ k ] = INFINITY );
  
  	queue[ start ] = 0;
  	parent[ start ] = null;
@@ -43,19 +43,20 @@ prim = ( graph, start ) -> {
  	while( queue; {
  	
         // get the minimum value
-        u = queue.keySet().iterator().next();
+        min = INFINITY; minKey = -1;
+        queue.each( ( key, value ) -> if( value < min; minKey = key, min = value ) );
 
-		graph[ u ].each( ( v, weight ) ->
+		graph[ minKey ].each( ( v, weight ) ->
             if( weight > 0 && queue.containsKey( v ) && weight < queue[ v ]; (
-                parent[ v ] = u;
+                parent[ v ] = minKey;
                 queue[ v ] = weight;
             ) )
 		);
  
- 		queue.remove( u );
+ 		queue.remove( minKey );
     } );
  
     parent
 };
  
-prim( graph, 5 );
+println( prim( graph, 5 ) );

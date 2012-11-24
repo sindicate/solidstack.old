@@ -16,9 +16,9 @@
 
 package solidstack.script.operations;
 
-import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
+import solidstack.script.objects.Util;
 
 
 public class Minus extends Operation
@@ -30,8 +30,8 @@ public class Minus extends Operation
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = Script.single( this.left.evaluate( thread ) );
-		Object right = Script.single( this.right.evaluate( thread ) );
+		Object left = Util.single( this.left.evaluate( thread ) );
+		Object right = Util.single( this.right.evaluate( thread ) );
 		return Operation.minus( left, right );
 	}
 }

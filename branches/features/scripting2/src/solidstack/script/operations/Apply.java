@@ -16,7 +16,6 @@
 
 package solidstack.script.operations;
 
-import solidstack.script.Script;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
@@ -26,6 +25,7 @@ import solidstack.script.objects.ClassMember;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Null;
 import solidstack.script.objects.ObjectMember;
+import solidstack.script.objects.Util;
 
 
 public class Apply extends Operation
@@ -37,7 +37,7 @@ public class Apply extends Operation
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = Script.deref( this.left.evaluate( thread ) );
+		Object left = Util.deref( this.left.evaluate( thread ) );
 		if( left == Null.INSTANCE )
 		{
 			if( this.left instanceof Identifier )
@@ -45,7 +45,7 @@ public class Apply extends Operation
 			throw new ScriptException( "Cannot apply parameters to null" );
 		}
 
-		Object[] pars = Script.toArray( this.right != null ? this.right.evaluate( thread ) : null );
+		Object[] pars = Util.toArray( this.right != null ? this.right.evaluate( thread ) : null );
 
 		if( left instanceof FunctionObject )
 		{
@@ -81,7 +81,7 @@ public class Apply extends Operation
 			thread.pushStack( getLocation() );
 			try
 			{
-				return f.invoke( Script.toJavaParameters( pars ) );
+				return f.invoke( Util.toJavaParameters( pars ) );
 			}
 			finally
 			{
@@ -95,7 +95,7 @@ public class Apply extends Operation
 			thread.pushStack( getLocation() );
 			try
 			{
-				return Java.construct( cls, Script.toJavaParameters( pars ) );
+				return Java.construct( cls, Util.toJavaParameters( pars ) );
 			}
 			finally
 			{

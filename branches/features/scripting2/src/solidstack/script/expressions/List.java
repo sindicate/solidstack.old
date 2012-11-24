@@ -23,10 +23,10 @@ import java.util.Map;
 
 import solidstack.io.SourceLocation;
 import solidstack.lang.Assert;
-import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.objects.Labeled;
 import solidstack.script.objects.Tuple;
+import solidstack.script.objects.Util;
 
 
 public class List extends LocalizedExpression // TODO Is this localized needed?
@@ -57,24 +57,24 @@ public class List extends LocalizedExpression // TODO Is this localized needed?
 				{
 					Assert.isInstanceOf( item, Labeled.class );
 					Labeled labeled = (Labeled)item;
-					map.put( labeled.getLabel(), Script.deref( labeled.getValue() ) );
+					map.put( labeled.getLabel(), Util.deref( labeled.getValue() ) );
 				}
 				return map;
 			}
-			return Script.deref( list );
+			return Util.deref( list );
 		}
 
 		if( result instanceof Labeled )
 		{
 			Map<Object, Object> map = new HashMap<Object, Object>();
 			Labeled labeled = (Labeled)result;
-			map.put( labeled.getLabel(), Script.deref( labeled.getValue() ) );
+			map.put( labeled.getLabel(), Util.deref( labeled.getValue() ) );
 			return map;
 		}
 
 		java.util.List<Object> list = new ArrayList<Object>();
 		if( result != null )
-			list.add( Script.deref( result ) );
+			list.add( Util.deref( result ) );
 		return list;
 	}
 }

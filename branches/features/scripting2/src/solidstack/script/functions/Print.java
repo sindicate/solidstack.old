@@ -17,9 +17,9 @@
 package solidstack.script.functions;
 
 import solidstack.lang.Assert;
-import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.objects.FunctionObject;
+import solidstack.script.objects.Util;
 
 public class Print extends FunctionObject
 {
@@ -27,7 +27,7 @@ public class Print extends FunctionObject
 	public Object call( ThreadContext thread, Object... parameters )
 	{
 		Assert.isTrue( parameters.length == 1 );
-		Object object = Script.deref( parameters[ 0 ] );
+		Object object = Util.deref( parameters[ 0 ] );
 		System.out.print( object );
 		return object;
 	}

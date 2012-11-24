@@ -17,7 +17,6 @@
 package solidstack.script.scopes;
 
 import solidstack.lang.Assert;
-import solidstack.script.ScriptException;
 import solidstack.script.scopes.ValueMap.Entry;
 
 
@@ -98,7 +97,7 @@ abstract public class AbstractScope
 
 		public void set( Object value )
 		{
-			throw new ScriptException( "'" + getKey() + "' is immutable" );
+			throw new ScopeException( "'" + getKey() + "' is immutable" );
 		}
 
 		public boolean isUndefined()
@@ -130,7 +129,7 @@ abstract public class AbstractScope
 
 		public Object get()
 		{
-			throw new ScriptException( "'" + getKey() + "' undefined" );
+			throw new ScopeException( "'" + getKey() + "' undefined" );
 		}
 
 		public void set( Object value )

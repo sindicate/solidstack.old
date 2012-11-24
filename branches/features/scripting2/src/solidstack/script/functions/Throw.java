@@ -17,10 +17,10 @@
 package solidstack.script.functions;
 
 import solidstack.lang.Assert;
-import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.objects.FunctionObject;
+import solidstack.script.objects.Util;
 
 public class Throw extends FunctionObject
 {
@@ -28,7 +28,7 @@ public class Throw extends FunctionObject
 	public Object call( ThreadContext thread, Object... parameters )
 	{
 		Assert.isTrue( parameters.length == 1 );
-		Object object = Script.deref( parameters[ 0 ] );
+		Object object = Util.deref( parameters[ 0 ] );
 		throw new ThrowException( object, thread.cloneStack() );
 	}
 }

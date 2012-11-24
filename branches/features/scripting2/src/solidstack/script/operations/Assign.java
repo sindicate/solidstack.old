@@ -17,11 +17,11 @@
 package solidstack.script.operations;
 
 import solidstack.lang.Assert;
-import solidstack.script.Script;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.objects.Tuple;
+import solidstack.script.objects.Util;
 import solidstack.script.scopes.AbstractScope.Ref;
 
 
@@ -35,7 +35,7 @@ public class Assign extends Operation
 	public Object evaluate( ThreadContext thread )
 	{
 		Object left = this.left.evaluate( thread );
-		Object right = Script.deref( this.right.evaluate( thread ) );
+		Object right = Util.deref( this.right.evaluate( thread ) );
 
 		if( left instanceof Tuple )
 		{
@@ -65,7 +65,7 @@ public class Assign extends Operation
 	{
 		Assert.notNull( var );
 		Assert.notNull( value );
-		value = Script.finalize( value );
+		value = Util.finalize( value );
 		if( value instanceof Tuple )
 			throw new ScriptException( "Tuples can't be assigned to variables" );
 		( (Ref)var ).set( value );

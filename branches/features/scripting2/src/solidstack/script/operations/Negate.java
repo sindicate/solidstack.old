@@ -19,9 +19,9 @@ package solidstack.script.operations;
 import org.springframework.util.Assert;
 
 import solidstack.io.SourceLocation;
-import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
+import solidstack.script.objects.Util;
 
 
 public class Negate extends Operation
@@ -38,7 +38,7 @@ public class Negate extends Operation
 	public Object evaluate( ThreadContext thread )
 	{
 		Assert.isNull( this.left );
-		Object right = Script.single( this.right.evaluate( thread ) ); // TODO What about tuples?
+		Object right = Util.single( this.right.evaluate( thread ) ); // TODO What about tuples?
 		return Operation.negate( right );
 	}
 

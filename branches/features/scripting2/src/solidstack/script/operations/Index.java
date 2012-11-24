@@ -21,12 +21,14 @@ import java.util.List;
 import java.util.Map;
 
 import solidstack.lang.Assert;
-import solidstack.script.Script;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
 import solidstack.script.objects.Null;
+import solidstack.script.objects.Util;
 import solidstack.script.scopes.AbstractScope.Ref;
+import solidstack.script.scopes.ScopeException;
 import solidstack.script.scopes.Symbol;
 
 
@@ -39,25 +41,32 @@ public class Index extends Operation
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = Script.single( this.left.evaluate( thread ) ); // TODO Or index a tuple too?
-		if( left == Null.INSTANCE )
-			throw new ScriptException( "Cannot index null" );
+		try
+		{
+			Object left = Util.single( this.left.evaluate( thread ) ); // TODO Or index a tuple too?
+			if( left == Null.INSTANCE )
+				throw new ScriptException( "Cannot index null" );
 
-		Object pars = Script.single( this.right.evaluate( thread ) );
+			Object pars = Util.single( this.right.evaluate( thread ) );
 
-		if( left instanceof Map )
-			return new MapItemRef( (Map<?,?>)left, pars );
+			if( left instanceof Map )
+				return new MapItemRef( (Map<?,?>)left, pars );
 
-		Assert.isInstanceOf( pars, Integer.class );
+			Assert.isInstanceOf( pars, Integer.class );
 
-		// TODO Maybe extend these objects with a index() or at() or getAt() or item()
-		if( left instanceof List )
-			return new ListItemRef( (List<?>)left, (Integer)pars ); // TODO Maybe return null when index of out bounds?
+			// TODO Maybe extend these objects with a index() or at() or getAt() or item()
+			if( left instanceof List )
+				return new ListItemRef( (List<?>)left, (Integer)pars ); // TODO Maybe return null when index of out bounds?
 
-		if( left.getClass().isArray() )
-			return Array.get( left, (Integer)pars ); // TODO Maybe return null when index of out bounds?
+			if( left.getClass().isArray() )
+				return Array.get( left, (Integer)pars ); // TODO Maybe return null when index of out bounds?
 
-		throw new ScriptException( "Cannot index a " + left.getClass().getName() );
+			throw new ScriptException( "Cannot index a " + left.getClass().getName() );
+		}
+		catch( ScopeException e )
+		{
+			throw new ThrowException( e.getMessage(), thread.cloneStack( getLocation() ) );
+		}
 	}
 
 	static class MapItemRef implements Ref

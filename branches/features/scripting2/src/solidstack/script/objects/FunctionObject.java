@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import solidstack.lang.Assert;
-import solidstack.script.Script;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
@@ -66,7 +65,7 @@ public class FunctionObject implements solidstack.script.java.Function
 
 		if( pars.length > 0 && pars[ 0 ] instanceof Labeled )
 		{
-			pars = Script.toNamedParameters( pars );
+			pars = Util.toNamedParameters( pars );
 			int count = pars.length;
 			int index = 0;
 			while( index < count )
@@ -121,14 +120,14 @@ public class FunctionObject implements solidstack.script.java.Function
 		{
 			Scope scope = new Scope( this.scope );
 			for( int i = 0; i < oCount; i++ )
-				scope.def( symbols[ i ], Script.deref( values[ i ] ) ); // TODO If we keep the Link we get output parameters!
+				scope.def( symbols[ i ], Util.deref( values[ i ] ) ); // TODO If we keep the Link we get output parameters!
 			newScope = scope;
 		}
 		else if( oCount > 0 )
 		{
 			ParameterScope parScope = new ParameterScope( this.scope );
 			for( int i = 0; i < oCount; i++ )
-				parScope.defParameter( symbols[ i ], Script.deref( values[ i ] ) ); // TODO If we keep the Link we get output parameters!
+				parScope.defParameter( symbols[ i ], Util.deref( values[ i ] ) ); // TODO If we keep the Link we get output parameters!
 			newScope = parScope;
 		}
 		else
@@ -165,7 +164,7 @@ public class FunctionObject implements solidstack.script.java.Function
 				return null;
 			while( true )
 			{
-				Object result = Script.deref( this.pars[ this.current++ ] );
+				Object result = Util.deref( this.pars[ this.current++ ] );
 				if( !( result instanceof Tuple ) )
 					return result;
 				Tuple t = (Tuple)result;

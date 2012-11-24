@@ -20,10 +20,10 @@ import java.util.List;
 
 import solidstack.io.SourceLocation;
 import solidstack.lang.Assert;
-import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.objects.Tuple;
+import solidstack.script.objects.Util;
 
 
 public class Spread extends Operation
@@ -39,7 +39,7 @@ public class Spread extends Operation
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object object = Script.deref( this.right.evaluate( thread ) );
+		Object object = Util.deref( this.right.evaluate( thread ) );
 		Assert.isInstanceOf( object, List.class );
 		return new Tuple( (List<Object>)object );
 	}

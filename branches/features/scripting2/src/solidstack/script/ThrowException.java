@@ -61,8 +61,17 @@ public class ThrowException extends RuntimeException
 	@Override
 	public void printStackTrace( PrintWriter out )
 	{
-		out.println( toString() );
+		Throwable t = null;
+		if( this.object instanceof Throwable )
+		{
+			t =(Throwable)this.object;
+			out.println( "Java exception thrown" );
+		}
+		else
+			out.println( toString() );
 		for( SourceLocation location : this.stack )
 			out.append( "\tat " ).append( location.toString() ).println();
+		if( t != null )
+			t.printStackTrace( out );
 	}
 }

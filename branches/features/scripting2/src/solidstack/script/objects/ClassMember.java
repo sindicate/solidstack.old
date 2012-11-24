@@ -16,7 +16,6 @@
 
 package solidstack.script.objects;
 
-import solidstack.script.Script;
 import solidstack.script.java.Java;
 
 
@@ -43,11 +42,11 @@ public class ClassMember implements Member
 
 	public Object invoke( Object... args )
 	{
-		return Script.toScript( Java.invokeStatic( this.type, this.name, args ) );
+		return Util.toScript( Java.invokeStatic( this.type, this.name, args ) );
 	}
 
 	public Object get()
 	{
-		return Script.toScript( Java.getStatic( this.type, this.name ) );
+		return Util.toScript( Java.getStatic( this.type, this.name ) );
 	}
 }

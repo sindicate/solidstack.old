@@ -17,9 +17,9 @@
 package solidstack.script.functions;
 
 import solidstack.lang.Assert;
-import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.objects.FunctionObject;
+import solidstack.script.objects.Util;
 import solidstack.script.operations.Operation;
 
 public class Abs extends FunctionObject
@@ -28,6 +28,6 @@ public class Abs extends FunctionObject
 	public Object call( ThreadContext thread, Object... parameters )
 	{
 		Assert.isTrue( parameters.length == 1 );
-		return Operation.abs( Script.deref( parameters[ 0 ] ) );
+		return Operation.abs( Util.deref( parameters[ 0 ] ) );
 	}
 }
