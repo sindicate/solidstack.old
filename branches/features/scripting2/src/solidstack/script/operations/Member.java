@@ -18,12 +18,14 @@ package solidstack.script.operations;
 
 import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.objects.Null;
 import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Util;
 import solidstack.script.scopes.AbstractScope;
+import solidstack.script.scopes.ScopeException;
 import solidstack.script.scopes.Symbol;
 
 
@@ -36,13 +38,20 @@ public class Member extends Operation
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = Util.deref( this.left.evaluate( thread ) );
-		Assert.isInstanceOf( this.right, Identifier.class );
-		Symbol right = ( (Identifier)this.right ).getSymbol();
-		Assert.isFalse( left == Null.INSTANCE, "member: " + right.toString() );
-		// TODO I think these should be covered elsewhere
-		if( left instanceof AbstractScope )
-			return ( (AbstractScope)left ).getRef( right );
-		return new ObjectMember( left, right.toString() );
+		try
+		{
+			Object left = Util.deref( this.left.evaluate( thread ) );
+			Assert.isInstanceOf( this.right, Identifier.class );
+			Symbol right = ( (Identifier)this.right ).getSymbol();
+			Assert.isFalse( left == Null.INSTANCE, "member: " + right.toString() );
+			// TODO I think these should be covered elsewhere
+			if( left instanceof AbstractScope )
+				return ( (AbstractScope)left ).getRef( right );
+			return new ObjectMember( left, right.toString() );
+		}
+		catch( ScopeException e )
+		{
+			throw new ThrowException( e.getMessage(), thread.cloneStack( getLocation() ) );
+		}
 	}
 }

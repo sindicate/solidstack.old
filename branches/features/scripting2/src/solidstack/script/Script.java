@@ -58,6 +58,7 @@ public class Script
 			scope = new Scope();
 
 		ThreadContext thread = ThreadContext.init( scope );
+		// TODO Catch the ScopeException and add the correct line number
 		return Util.toJava( this.expression.evaluate( thread ) );
 	}
 
