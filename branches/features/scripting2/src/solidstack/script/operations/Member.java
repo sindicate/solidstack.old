@@ -21,6 +21,7 @@ import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
+import solidstack.script.java.Java;
 import solidstack.script.objects.Null;
 import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Util;
@@ -44,9 +45,27 @@ public class Member extends Operation
 			Assert.isInstanceOf( this.right, Identifier.class );
 			Symbol right = ( (Identifier)this.right ).getSymbol();
 			Assert.isFalse( left == Null.INSTANCE, "member: " + right.toString() );
-			// TODO I think these should be covered elsewhere
-			if( left instanceof AbstractScope )
+			if( left instanceof AbstractScope ) // TODO This is part of the OO we want
 				return ( (AbstractScope)left ).getRef( right );
+			return Util.toScript( Java.get( left, right.toString() ) );
+		}
+		catch( ScopeException e )
+		{
+			throw new ThrowException( e.getMessage(), thread.cloneStack( getLocation() ) );
+		}
+	}
+
+	public Object evaluateForApply( ThreadContext thread )
+	{
+		try
+		{
+			Object left = Util.deref( this.left.evaluate( thread ) );
+			Assert.isInstanceOf( this.right, Identifier.class );
+			Symbol right = ( (Identifier)this.right ).getSymbol();
+			Assert.isFalse( left == Null.INSTANCE, "member: " + right.toString() );
+			if( left instanceof AbstractScope ) // TODO This is part of the OO we want
+				return ( (AbstractScope)left ).getRef( right );
+			// TODO Also read properties to look for Functions
 			return new ObjectMember( left, right.toString() );
 		}
 		catch( ScopeException e )

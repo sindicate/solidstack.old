@@ -51,7 +51,7 @@ public class MethodCall implements Cloneable
 		return this.method.getDeclaringClass();
 	}
 
-	public Object invoke()
+	public Object invoke() throws InvocationTargetException
 	{
 		this.args = Resolver.transformArguments( getParameterTypes(), this.args );
 		try
@@ -64,7 +64,7 @@ public class MethodCall implements Cloneable
 		}
 		catch( InvocationTargetException e )
 		{
-			Java.throwUnchecked( e.getCause() );
+			throw e;
 		}
 		catch( Exception e )
 		{

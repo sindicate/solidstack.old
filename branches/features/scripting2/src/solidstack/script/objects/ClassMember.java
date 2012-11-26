@@ -16,10 +16,9 @@
 
 package solidstack.script.objects;
 
-import solidstack.script.java.Java;
 
 
-public class ClassMember implements Member
+public class ClassMember
 {
 	private Class type;
 	private String name;
@@ -30,7 +29,7 @@ public class ClassMember implements Member
 		this.name = name;
 	}
 
-	public Object getType()
+	public Class getType()
 	{
 		return this.type;
 	}
@@ -38,15 +37,5 @@ public class ClassMember implements Member
 	public String getName()
 	{
 		return this.name;
-	}
-
-	public Object invoke( Object... args )
-	{
-		return Util.toScript( Java.invokeStatic( this.type, this.name, args ) );
-	}
-
-	public Object get()
-	{
-		return Util.toScript( Java.getStatic( this.type, this.name ) );
 	}
 }

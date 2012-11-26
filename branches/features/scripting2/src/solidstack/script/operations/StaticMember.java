@@ -21,6 +21,7 @@ import org.springframework.util.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
+import solidstack.script.java.Java;
 import solidstack.script.objects.ClassMember;
 import solidstack.script.objects.Util;
 
@@ -33,6 +34,15 @@ public class StaticMember extends Operation
 	}
 
 	public Object evaluate( ThreadContext thread )
+	{
+		Object left = Util.single( this.left.evaluate( thread ) );
+		Assert.isInstanceOf( Class.class, left );
+		Assert.isInstanceOf( Identifier.class, this.right );
+		String right = ( (Identifier)this.right ).getSymbol().toString();
+		return Util.toScript( Java.getStatic( (Class<?>)left, right.toString() ) );
+	}
+
+	public Object evaluateForApply( ThreadContext thread )
 	{
 		Object left = Util.single( this.left.evaluate( thread ) );
 		Assert.isInstanceOf( Class.class, left );

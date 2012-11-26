@@ -16,8 +16,11 @@
 
 package solidstack.script.operations;
 
+import java.lang.reflect.InvocationTargetException;
+
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.java.Java;
@@ -37,7 +40,15 @@ public class Apply extends Operation
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = Util.deref( this.left.evaluate( thread ) );
+		Object left;
+		if( this.left instanceof Member )
+			left = ( (Member)this.left ).evaluateForApply( thread );
+		else if( this.left instanceof StaticMember )
+			left = ( (StaticMember)this.left ).evaluateForApply( thread );
+		else
+			left = this.left.evaluate( thread );
+		left = Util.deref( left );
+
 		if( left == Null.INSTANCE )
 		{
 			if( this.left instanceof Identifier )
@@ -61,46 +72,57 @@ public class Apply extends Operation
 			}
 		}
 
-		if( left instanceof ObjectMember )
+		try
 		{
-			ObjectMember f = (ObjectMember)left;
-			thread.pushStack( getLocation() );
-			try
+			if( left instanceof ObjectMember )
 			{
-				return f.invoke( pars );
+				ObjectMember f = (ObjectMember)left;
+				thread.pushStack( getLocation() );
+				try
+				{
+					return Util.toScript( Java.invoke( f.getObject(), f.getName(), Util.toJavaParameters( pars ) ) );
+				}
+				finally
+				{
+					thread.popStack();
+				}
 			}
-			finally
+
+			if( left instanceof ClassMember )
 			{
-				thread.popStack();
+				ClassMember f = (ClassMember)left;
+				thread.pushStack( getLocation() );
+				try
+				{
+					return Util.toScript( Java.invokeStatic( f.getType(), f.getName(), Util.toJavaParameters( pars ) ) );
+				}
+				finally
+				{
+					thread.popStack();
+				}
+			}
+
+			if( left instanceof Class )
+			{
+				Class<?> cls = (Class<?>)left;
+				thread.pushStack( getLocation() );
+				try
+				{
+					return Java.construct( cls, Util.toJavaParameters( pars ) );
+				}
+				finally
+				{
+					thread.popStack();
+				}
 			}
 		}
-
-		if( left instanceof ClassMember )
+		catch( InvocationTargetException e )
 		{
-			ClassMember f = (ClassMember)left;
-			thread.pushStack( getLocation() );
-			try
-			{
-				return f.invoke( Util.toJavaParameters( pars ) );
-			}
-			finally
-			{
-				thread.popStack();
-			}
+			throw new ThrowException( e.getCause(), thread.cloneStack( getLocation() ) );
 		}
-
-		if( left instanceof Class )
+		catch( Exception e )
 		{
-			Class<?> cls = (Class<?>)left;
-			thread.pushStack( getLocation() );
-			try
-			{
-				return Java.construct( cls, Util.toJavaParameters( pars ) );
-			}
-			finally
-			{
-				thread.popStack();
-			}
+			throw new ThrowException( e.getMessage(), thread.cloneStack( getLocation() ) );
 		}
 
 		throw new ScriptException( "Cannot apply parameters to a " + left.getClass().getName() );

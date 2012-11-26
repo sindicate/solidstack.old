@@ -18,8 +18,6 @@ public class Util
 		value = Util.deref( value );
 		if( value == Null.INSTANCE )
 			return null;
-		if( value instanceof Member )
-			return ( (Member)value ).get();
 		return value;
 	}
 
@@ -30,10 +28,6 @@ public class Util
 			return null;
 		if( result instanceof FunnyString )
 			return result.toString();
-		if( result instanceof ObjectMember )
-			return ( (ObjectMember)result ).get();
-		if( result instanceof ClassMember )
-			return ( (ClassMember)result ).get();
 		return result;
 	}
 
@@ -122,8 +116,6 @@ public class Util
 		}
 		if( value instanceof Ref ) // TODO Does this ever happen with tuples?
 			return ( (Ref)value ).get();
-		if( value instanceof Member )
-			return ( (Member)value ).get();
 		return value;
 	}
 }

@@ -18,6 +18,7 @@ package solidstack.script.java;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,8 +38,9 @@ public class Java
 	 * @param name The method name.
 	 * @param args The arguments to the method.
 	 * @return The result of calling the method.
+	 * @throws InvocationTargetException Wraps the exception thrown by the underlying method.
 	 */
-	static public Object invoke( Object object, String name, Object... args )
+	static public Object invoke( Object object, String name, Object... args ) throws InvocationTargetException
 	{
 		CallContext context = new CallContext( object, name, args );
 		MethodCall call = Resolver.resolveMethodCall( context );
@@ -54,8 +56,9 @@ public class Java
 	 * @param name The method name.
 	 * @param args The arguments to the method.
 	 * @return The result of calling the method.
+	 * @throws InvocationTargetException Wraps the exception thrown by the underlying method.
 	 */
-	static public Object invokeStatic( Class<?> type, String name, Object... args )
+	static public Object invokeStatic( Class<?> type, String name, Object... args ) throws InvocationTargetException
 	{
 		CallContext context = new CallContext( type, name, args );
 		MethodCall call = Resolver.resolveMethodCall( context );
@@ -77,13 +80,13 @@ public class Java
 		{
 			return object.getClass().getField( name ).get( object );
 		}
-		catch( IllegalAccessException e )
-		{
-			throw new ScriptException( e );
-		}
 		catch( NoSuchFieldException e )
 		{
 			throw new MissingFieldException( object, object.getClass(), name );
+		}
+		catch( IllegalAccessException e )
+		{
+			throw throwUnchecked( e );
 		}
 	}
 
@@ -103,13 +106,13 @@ public class Java
 				throw new MissingFieldException( null, type, name );
 			return type.getField( name ).get( null );
 		}
-		catch( IllegalAccessException e )
-		{
-			throw new ScriptException( e );
-		}
 		catch( NoSuchFieldException e )
 		{
 			throw new MissingFieldException( null, type, name );
+		}
+		catch( IllegalAccessException e )
+		{
+			throw throwUnchecked( e );
 		}
 	}
 
@@ -119,8 +122,9 @@ public class Java
 	 * @param type The class of the object to be instantiated.
 	 * @param args The arguments to the constructor.
 	 * @return The instantiated object.
+	 * @throws InvocationTargetException Wraps the exception thrown by the underlying method.
 	 */
-	static public Object construct( Class<?> type, Object... args )
+	static public Object construct( Class<?> type, Object... args ) throws InvocationTargetException
 	{
 		CallContext context = new CallContext( type, null, args );
 		MethodCall call = Resolver.resolveConstructorCall( context );
@@ -133,17 +137,18 @@ public class Java
 	 * Throws the given throwable without the need to declare it.
 	 *
 	 * @param throwable The throwable.
+	 * @return RuntimeException so that you could add 'throw' and don't need to add 'return' after calling this method.
 	 */
-	static public void throwUnchecked( Throwable throwable )
+	static public RuntimeException throwUnchecked( Throwable throwable )
 	{
-		Java.<RuntimeException>throwGeneric( throwable );
+		throw Java.<RuntimeException>unchecked( throwable );
 	}
 
 	@SuppressWarnings( "unchecked" )
-	static private <T extends Throwable> void throwGeneric( Throwable exception ) throws T
+	static private <T extends Throwable> T unchecked( Throwable exception )
 	{
 		// No 'checkcast' byte code is added, because the parameter is a Throwable and the lower bound of T is also Throwable.
-		throw (T)exception;
+		return (T)exception;
 	}
 
 	static private Map<String, java.lang.Class<?>> primitiveCache = new HashMap<String, java.lang.Class<?>>();

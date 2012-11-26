@@ -16,12 +16,9 @@
 
 package solidstack.script.objects;
 
-import solidstack.script.ThreadContext;
-import solidstack.script.ThrowException;
-import solidstack.script.java.Java;
 
 
-public class ObjectMember implements Member
+public class ObjectMember
 {
 	private Object object;
 	private String name;
@@ -40,22 +37,5 @@ public class ObjectMember implements Member
 	public String getName()
 	{
 		return this.name;
-	}
-
-	public Object invoke( Object... args )
-	{
-		try
-		{
-			return Util.toScript( Java.invoke( this.object, this.name, Util.toJavaParameters( args ) ) );
-		}
-		catch( Throwable t )
-		{
-			throw new ThrowException( t, ThreadContext.get().cloneStack() );
-		}
-	}
-
-	public Object get()
-	{
-		return Util.toScript( Java.get( this.object, this.name ) );
 	}
 }

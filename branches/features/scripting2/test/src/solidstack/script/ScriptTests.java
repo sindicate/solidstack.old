@@ -27,7 +27,6 @@ import org.testng.annotations.Test;
 
 import solidstack.script.java.Java;
 import solidstack.script.java.MissingFieldException;
-import solidstack.script.java.MissingMethodException;
 import solidstack.script.objects.FunnyString;
 import solidstack.script.scopes.Scope;
 import solidstack.script.scopes.Symbol;
@@ -287,9 +286,8 @@ public class ScriptTests extends Util
 		Scope context = new Scope();
 		test( "c = class( \"solidstack.script.ScriptTests$TestObject1\" );", context, TestObject1.class );
 		test( "c().value", context, 0 );
-		test( "c.new().value", context, 0 ); // TODO Do we want this?
 		test( "c( 3.14 ).value", context, 2 );
-		test( "c.new( 0.123E-10 ).value", context, 2 );
+		test( "c( 0.123E-10 ).value", context, 2 );
 		test( "c( \"string\" ).value", context, 3 );
 		test( "c( \"string\", \"string\" ).value", context, 4 );
 		test( "c( 1, 1 ).value", context, 6 );
@@ -364,7 +362,7 @@ public class ScriptTests extends Util
 		test( "l = class( \"java.util.ArrayList\" )(); i = 0; while( i < 10; l.add( i ), i++ ); l.each( fun( i; println( i ) ) )", 9 );
 		eval( "Calendar = class( \"java.util.Calendar\" ); println( Calendar#getInstance().getClass() )" );
 		test( "Calendar = class( \"java.util.Calendar\" ); Calendar#SATURDAY", 7 );
-		fail( "Calendar = class( \"java.util.Calendar\" ); Calendar#clear()", MissingMethodException.class, "static java.util.Calendar.clear()" );
+		fail( "Calendar = class( \"java.util.Calendar\" ); Calendar#clear()", ThrowException.class, "static java.util.Calendar.clear()" );
 		fail( "TestObject = class( \"solidstack.script.ScriptTests$TestObject2\" ); TestObject#value", MissingFieldException.class, "static solidstack.script.ScriptTests$TestObject2.value" );
 	}
 

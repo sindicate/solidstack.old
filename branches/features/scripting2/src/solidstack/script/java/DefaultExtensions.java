@@ -87,9 +87,4 @@ public class DefaultExtensions
 	{
 		return string.length();
 	}
-
-	static public Object _new( Class cls, Object... args )
-	{
-		return Java.construct( cls, args );
-	}
 }
