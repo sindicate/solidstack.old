@@ -32,13 +32,6 @@ import solidstack.script.scopes.Scope;
 
 public class Script
 {
-	private Expression expression;
-
-	public Script( Expression expression )
-	{
-		this.expression = expression;
-	}
-
 	static public Script compile( String script )
 	{
 		return compile( new ReaderSourceReader( new StringReader( script ) ) );
@@ -49,17 +42,26 @@ public class Script
 		return new Script( new ScriptParser( new ScriptTokenizer( reader ) ).parse() );
 	}
 
-	public Object execute( AbstractScope scope )
+	static private Object eval0( Expression expression, AbstractScope scope )
 	{
-		if( this.expression == null )
+		if( expression == null )
 			return null;
 
 		if( scope == null )
 			scope = new Scope();
 
 		ThreadContext thread = ThreadContext.init( scope );
-		// TODO Catch the ScopeException and add the correct line number
-		return Util.toJava( this.expression.evaluate( thread ) );
+		return expression.evaluate( thread );
+	}
+
+	static public Object eval( Expression expression, AbstractScope scope )
+	{
+		return Util.toJava( eval0( expression, scope ) );
+	}
+
+	static public boolean evalBoolean( Expression expression, AbstractScope scope )
+	{
+		return isTrue( eval0( expression, scope ) );
 	}
 
 	static public boolean isTrue( Object left )
@@ -85,5 +87,24 @@ public class Script
 		if( left instanceof FunnyString )
 			return !( (FunnyString)left ).isEmpty();
 		return true;
+	}
+
+	// --- Non static members
+
+	private Expression expression;
+
+	public Script( Expression expression )
+	{
+		this.expression = expression;
+	}
+
+	public Object execute( AbstractScope scope )
+	{
+		return eval( this.expression, scope );
+	}
+
+	public boolean evalBoolean( AbstractScope scope )
+	{
+		return evalBoolean( this.expression, scope );
 	}
 }

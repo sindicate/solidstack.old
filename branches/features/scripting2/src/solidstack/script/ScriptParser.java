@@ -19,6 +19,7 @@ package solidstack.script;
 import java.math.BigDecimal;
 
 import solidstack.io.SourceException;
+import solidstack.io.SourceLocation;
 import solidstack.io.SourceReader;
 import solidstack.io.SourceReaders;
 import solidstack.lang.Assert;
@@ -315,41 +316,47 @@ public class ScriptParser
 	 * Parses a super string.
 	 *
 	 * @param s The super string to parse.
+	 * @param location The location of the super string.
 	 * @return An expression.
 	 */
-	private Expression parseString( Token string )
+	static public Expression parseString( String s, SourceLocation location )
 	{
-		SourceReader in = SourceReaders.forString( string.getValue(), string.getLocation() );
+		SourceReader in = SourceReaders.forString( s, location );
 		StringTokenizer t = new StringTokenizer( in );
-		ScriptTokenizer oldTokenizer = this.tokenizer;
-		this.tokenizer = t;
+		ScriptParser parser = new ScriptParser( t );
+		parser.swapStops( TYPE.BRACE_CLOSE );
 
-		TYPE oldStop = swapStops( TYPE.BRACE_CLOSE );
-
-		StringExpression result = new StringExpression( string.getLocation() );
+		StringExpression result = new StringExpression( location );
 
 		String fragment = t.getFragment();
 		if( fragment.length() != 0 )
-			result.append( new StringConstant( string.getLocation(), fragment ) );
+			result.append( new StringConstant( location, fragment ) );
 		while( t.foundExpression() )
 		{
-			Expression expression = parse();
+			Expression expression = parser.parse();
 			if( expression != null ) // TODO Unit test
 				result.append( expression );
 			fragment = t.getFragment();
 			if( fragment.length() != 0 )
-				result.append( new StringConstant( string.getLocation(), fragment ) );
+				result.append( new StringConstant( location, fragment ) );
 		}
 
-		swapStops( oldStop );
-
-		this.tokenizer = oldTokenizer;
-
 		if( result.size() == 0 )
-			return new StringConstant( string.getLocation(), "" );
+			return new StringConstant( location, "" );
 		if( result.size() == 1 && result.get( 0 ) instanceof StringConstant )
 			return result.get( 0 );
 		return result;
+	}
+
+	/**
+	 * Parses a super string.
+	 *
+	 * @param string The super string to parse.
+	 * @return An expression.
+	 */
+	static public Expression parseString( Token string )
+	{
+		return parseString( string.getValue(), string.getLocation() );
 	}
 
 	private TYPE swapStops( TYPE stop )

@@ -529,6 +529,7 @@ public class ScriptTests extends Util
 	// TODO with() to execute a function with a different context
 	// TODO Currying
 	// TODO Global namespaces
+	// TODO Operator calling method on first operand
 
 	@SuppressWarnings( "unused" )
 	static public class TestObject1
