@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import solidstack.lang.Assert;
 import solidstack.script.ScriptException;
 
 
@@ -38,30 +39,30 @@ public class Types
 {
 	// [ Argument value's type (vertical) ][ Argument type (horizontal) ]
 	// 0: identical, <=100 assignable, <=200 convertable
-    static public final int[][] PRIMITIVE_DISTANCES =
-    {
-    	// TODO (RMB) The conversion distances > 100 seem to be in the wrong order. Redesign all.
-		{   0,   0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 20 }, // boolean
-		{   0,   0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 20 }, // Boolean
-		{ 107, 108,   0,   0, 102, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 20 }, // char
-		{ 107, 108,   0,   0, 102, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 20 }, // Character
-		{ 107, 108, 109, 110,   0,   0,   3,   4,   1,   2,   5,   6,   8,  10,  11,  12,  13,   9,   7, 20 }, // byte
-		{ 107, 108, 109, 110,   0,   0,   3,   4,   1,   2,   5,   6,   8,  10,  11,  12,  13,   9,   7, 20 }, // Byte
-		{ 107, 108, 109, 110, 105, 106,   0,   0,   1,   2,   5,   6,   8,  10,  11,  12,  13,   9,   7, 20 }, // short
-		{ 107, 108, 109, 110, 105, 106,   0,   0,   1,   2,   5,   6,   8,  10,  11,  12,  13,   9,   7, 20 }, // Short
-		{ 107, 108, 109, 110, 105, 106, 103, 104,   0,   0,   5,   6,   8,  10,  11,  12,  13,   9,   7, 20 }, // int
-		{ 107, 108, 109, 110, 105, 106, 103, 104,   0,   0,   5,   6,   8,  10,  11,  12,  13,   9,   7, 20 }, // Integer
-		{ 107, 108, 109, 110, 105, 106, 103, 104, 101, 102,   0,   0,   8,  10,  11,  12,  13,   9,   7, 20 }, // long
-		{ 107, 108, 109, 110, 105, 106, 103, 104, 102, 102,   0,   0,   8,  10,  11,  12,  13,   9,   7, 20 }, // Long
-		{ 107, 108, 109, 110,   9,  10,   7,   8,   5,   6,   3,   4,   0,  13,  14,  11,  12,   1,   2, 20 }, // BigInteger
-		{ 114, 115, 116, 117, 112, 113, 110, 111, 108, 109, 106, 107, 105,   0,   0,   1,   2,   3,   4, 20 }, // float
-		{ 114, 115, 116, 117, 112, 113, 110, 111, 108, 109, 106, 107, 105,   0,   0,   1,   2,   3,   4, 20 }, // Float
-		{ 114, 115, 116, 117, 112, 113, 110, 111, 108, 109, 106, 107, 105, 103, 104,   0,   0,   1,   2, 20 }, // double
-		{ 114, 115, 116, 117, 112, 113, 110, 111, 108, 109, 106, 107, 105, 103, 104,   0,   0,   1,   2, 20 }, // Double
-		{ 114, 115, 116, 117, 112, 113, 110, 111, 108, 109, 106, 107, 105, 103, 104, 101, 102,   0,   1, 20 }, // BigDecimal
-		{ 101, 102, 114, 115, 114, 115, 112, 113, 110, 111, 108, 109, 107, 105, 106, 103, 104, 102,   0, 20 }, // Number
-		{ 101, 102,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  0 }, // Object
-	};
+//    static public final int[][] PRIMITIVE_DISTANCES =
+//    {
+//    	// TODO (RMB) The conversion distances > 100 seem to be in the wrong order. Redesign all.
+//		{   0,   0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 20 }, // boolean
+//		{   0,   0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 20 }, // Boolean
+//		{ 107, 108,   0,   0, 102, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 20 }, // char
+//		{ 107, 108,   0,   0, 102, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 20 }, // Character
+//		{ 107, 108, 109, 110,   0,   0,   3,   4,   1,   2,   5,   6,   8,  10,  11,  12,  13,   9,   7, 20 }, // byte
+//		{ 107, 108, 109, 110,   0,   0,   3,   4,   1,   2,   5,   6,   8,  10,  11,  12,  13,   9,   7, 20 }, // Byte
+//		{ 107, 108, 109, 110, 105, 106,   0,   0,   1,   2,   5,   6,   8,  10,  11,  12,  13,   9,   7, 20 }, // short
+//		{ 107, 108, 109, 110, 105, 106,   0,   0,   1,   2,   5,   6,   8,  10,  11,  12,  13,   9,   7, 20 }, // Short
+//		{ 107, 108, 109, 110, 105, 106, 103, 104,   0,   0,   5,   6,   8,  10,  11,  12,  13,   9,   7, 20 }, // int
+//		{ 107, 108, 109, 110, 105, 106, 103, 104,   0,   0,   5,   6,   8,  10,  11,  12,  13,   9,   7, 20 }, // Integer
+//		{ 107, 108, 109, 110, 105, 106, 103, 104, 101, 102,   0,   0,   8,  10,  11,  12,  13,   9,   7, 20 }, // long
+//		{ 107, 108, 109, 110, 105, 106, 103, 104, 102, 102,   0,   0,   8,  10,  11,  12,  13,   9,   7, 20 }, // Long
+//		{ 107, 108, 109, 110,   9,  10,   7,   8,   5,   6,   3,   4,   0,  13,  14,  11,  12,   1,   2, 20 }, // BigInteger
+//		{ 114, 115, 116, 117, 112, 113, 110, 111, 108, 109, 106, 107, 105,   0,   0,   1,   2,   3,   4, 20 }, // float
+//		{ 114, 115, 116, 117, 112, 113, 110, 111, 108, 109, 106, 107, 105,   0,   0,   1,   2,   3,   4, 20 }, // Float
+//		{ 114, 115, 116, 117, 112, 113, 110, 111, 108, 109, 106, 107, 105, 103, 104,   0,   0,   1,   2, 20 }, // double
+//		{ 114, 115, 116, 117, 112, 113, 110, 111, 108, 109, 106, 107, 105, 103, 104,   0,   0,   1,   2, 20 }, // Double
+//		{ 114, 115, 116, 117, 112, 113, 110, 111, 108, 109, 106, 107, 105, 103, 104, 101, 102,   0,   1, 20 }, // BigDecimal
+//		{ 101, 102, 114, 115, 114, 115, 112, 113, 110, 111, 108, 109, 107, 105, 106, 103, 104, 102,   0, 20 }, // Number
+//		{ 101, 102,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  0 }, // Object
+//	};
 
     // -1 = not, 0 = nop, 1 = easy, 2 = difficult, 3 = depends
     static public final int[][] PRIMITIVE_ASSIGNABILITY =
@@ -86,6 +87,32 @@ public class Types
 		{  -1,  -1,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   0,   1,  1 }, // BigDecimal
 		{  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   0,  1 }, // Number
 		{  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  0 }, // Object
+	};
+
+    // x2 = int, x3 = long, x4 = BI, x5 = float, x6 = double, x7 = BD
+    // 1x = convert right, 2x = convert left
+    static public final int[][] NUMBER_MATCHING =
+    {
+		{  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99, 99 }, // boolean
+		{  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99, 99 }, // Boolean
+		{  99,  99,   1,   1,   1,   1,   1,   1,  12,  12,  13,  13,  14,  15,  15,  16,  16,  17,  99, 99 }, // char
+		{  99,  99,   1,   1,   1,   1,   1,   1,  12,  12,  13,  13,  14,  15,  15,  16,  16,  17,  99, 99 }, // Character
+		{  99,  99,   1,   1,   1,   1,   1,   1,  12,  12,  13,  13,  14,  15,  15,  16,  16,  17,  99, 99 }, // byte
+		{  99,  99,   1,   1,   1,   1,   1,   1,  12,  12,  13,  13,  14,  15,  15,  16,  16,  17,  99, 99 }, // Byte
+		{  99,  99,   1,   1,   1,   1,   1,   1,  12,  12,  13,  13,  14,  15,  15,  16,  16,  17,  99, 99 }, // short
+		{  99,  99,   1,   1,   1,   1,   1,   1,  12,  12,  13,  13,  14,  15,  15,  16,  16,  17,  99, 99 }, // Short
+		{  99,  99,  22,  22,  22,  22,  22,  22,   2,   2,  13,  13,  14,  15,  15,  16,  16,  17,  99, 99 }, // int
+		{  99,  99,  22,  22,  22,  22,  22,  22,   2,   2,  13,  13,  14,  15,  15,  16,  16,  17,  99, 99 }, // Integer
+		{  99,  99,  23,  23,  23,  23,  23,  23,  23,  23,   3,   3,  14,  15,  15,  16,  16,  17,  99, 99 }, // long
+		{  99,  99,  23,  23,  23,  23,  23,  23,  23,  23,   3,   3,  14,  15,  15,  16,  16,  17,  99, 99 }, // Long
+		{  99,  99,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,   4,  15,  15,  16,  16,  17,  99, 99 }, // BigInteger
+		{  99,  99,  25,  25,  25,  25,  25,  25,  25,  25,  25,  25,  25,   5,   5,  16,  16,  17,  99, 99 }, // float
+		{  99,  99,  25,  25,  25,  25,  25,  25,  25,  25,  25,  25,  25,   5,   5,  16,  16,  17,  99, 99 }, // Float
+		{  99,  99,  26,  26,  26,  26,  26,  26,  26,  26,  26,  26,  26,  26,  26,   6,   6,  17,  99, 99 }, // double
+		{  99,  99,  26,  26,  26,  26,  26,  26,  26,  26,  26,  26,  26,  26,  26,   6,   6,  17,  99, 99 }, // Double
+		{  99,  99,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,   7,  99, 99 }, // BigDecimal
+		{  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99, 99 }, // Number
+		{  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99, 99 }, // Object
 	};
 
 	static public final Class[] PRIMITIVES =
@@ -122,24 +149,16 @@ public class Types
 		return result;
 	}
 
-	// TODO RMB 1.7 has a strange construct here.
-	static public Number castToNumber( Object object )
+	static public Number toNumber( Object object )
 	{
 		if( object instanceof Number )
 			return (Number)object;
 		if( object instanceof Character )
-			return new Integer( ( (Character)object ).charValue() );
+			return Integer.valueOf( ( (Character)object ).charValue() );
 		// TODO String to number?
 		throw new ClassCastException( object.getClass().getName() + " cannot be cast to java.lang.Number" );
 	}
 
-    /**
-     * Method used for coercing an object to a boolean value,
-     * thanks to an <code>asBoolean()</code> method added on types.
-     *
-     * @param object to coerce to a boolean value
-     * @return a boolean value
-     */
 	static public boolean castToBoolean( Object object )
 	{
 		if( object == null )
@@ -211,7 +230,7 @@ public class Types
 
 
 	/**
-	 * Returns -1 when not, 0 is easy, 1 is difficult.
+	 * Returns -1 when not, 0 is nop, 1 is easy.
 	 *
 	 * @param arg
 	 * @param type
@@ -274,7 +293,7 @@ public class Types
 
 
 	// SYNC isAssignableToType
-    // TODO (RMB) Maybe we should make String in GString identical (no conversion), return 0
+    // TODO (RMB) Maybe we should make String and FunnyString identical (no conversion), return 0
 	static public int compareSpecificness( Class arg, Class type )
 	{
 		if( arg == null )
@@ -302,43 +321,43 @@ public class Types
 	}
 
 
-	private static int calculateDistance( Class arg, Class type )
-	{
-		// arg can never be a primitive
-
-		if( arg == null )
-		{
-			int distance = 0;
-			while( type.isArray() )
-			{
-				distance++;
-				type = type.getComponentType();
-			}
-
-			if( type.isInterface() )
-				return distance + 1;
-
-			// Determine distance to Object (number of super classes)
-			Class superCls = type.getSuperclass();
-			while( superCls != null )
-			{
-				distance++;
-				superCls = superCls.getSuperclass();
-			}
-
-			return distance;
-		}
-
-		Integer i = TYPES.get( type );
-		if( i != null )
-		{
-			Integer j = TYPES.get( arg );
-			if( j != null )
-				return PRIMITIVE_DISTANCES[ j ][ i ];
-		}
-
-		return 0;
-	}
+//	static public int calculateDistance( Class arg, Class type )
+//	{
+//		// arg can never be a primitive
+//
+//		if( arg == null )
+//		{
+//			int distance = 0;
+//			while( type.isArray() )
+//			{
+//				distance++;
+//				type = type.getComponentType();
+//			}
+//
+//			if( type.isInterface() )
+//				return distance + 1;
+//
+//			// Determine distance to Object (number of super classes)
+//			Class superCls = type.getSuperclass();
+//			while( superCls != null )
+//			{
+//				distance++;
+//				superCls = superCls.getSuperclass();
+//			}
+//
+//			return distance;
+//		}
+//
+//		Integer i = TYPES.get( type );
+//		if( i != null )
+//		{
+//			Integer j = TYPES.get( arg );
+//			if( j != null )
+//				return PRIMITIVE_DISTANCES[ j ][ i ];
+//		}
+//
+//		return 0;
+//	}
 
 
 	// SYNC isAssignableToType()
@@ -353,29 +372,29 @@ public class Types
 				return null; // TODO Or should we throw a NullPointerException?
 
 			if( type == int.class )
-				return object instanceof Integer ? object : castToNumber( object ).intValue();
+				return object instanceof Integer ? object : toNumber( object ).intValue();
 			if( type == long.class )
-				return object instanceof Long ? object : castToNumber( object ).longValue();
+				return object instanceof Long ? object : toNumber( object ).longValue();
 			if( type == double.class )
 			{
 				if( object instanceof Double )
 					return object;
-				double d = castToNumber( object ).doubleValue();
+				double d = toNumber( object ).doubleValue();
 				if( d == Double.NEGATIVE_INFINITY || d == Double.POSITIVE_INFINITY )
 					throw new IllegalArgumentException( "Value " + object + " is out of range for a double" );
 				return d;
 			}
 			if( type == byte.class )
-				return object instanceof Byte ? object : castToNumber( object ).byteValue();
+				return object instanceof Byte ? object : Byte.valueOf( toNumber( object ).byteValue() );
 			if( type == char.class )
 				return object instanceof Character ? object : castToChar( object );
 			if( type == short.class )
-				return object instanceof Short ? object : castToNumber( object ).shortValue();
+				return object instanceof Short ? object : toNumber( object ).shortValue();
 			if( type == float.class )
 			{
 				if( object instanceof Float )
 					return object;
-				float f = castToNumber( object ).floatValue();
+				float f = toNumber( object ).floatValue();
 				if( f == Float.NEGATIVE_INFINITY || f == Float.POSITIVE_INFINITY )
 					throw new IllegalArgumentException( "Value " + object + " is out of range for a float" );
 				return f;
@@ -398,7 +417,7 @@ public class Types
 						return new BigDecimal( (BigInteger)object );
 					if( object instanceof Float || object instanceof Double )
 						return new BigDecimal( ( (Number)object ).doubleValue() ); // valueOf() behaves differently from new()
-					return BigDecimal.valueOf( castToNumber( object ).longValue() );
+					return BigDecimal.valueOf( toNumber( object ).longValue() );
 				}
 				if( type == BigInteger.class )
 				{
@@ -406,26 +425,26 @@ public class Types
 						return ( (BigDecimal)object ).toBigInteger();
 					if( object instanceof Float || object instanceof Double )
 						return new BigDecimal( ( (Number)object ).doubleValue() ).toBigInteger(); // valueOf() behaves differently from new()
-					return BigInteger.valueOf( castToNumber( object ).longValue() );
+					return BigInteger.valueOf( toNumber( object ).longValue() );
 				}
 				if( type == Integer.class )
-					return castToNumber( object ).intValue();
+					return toNumber( object ).intValue();
 				if( type == Long.class )
-					return castToNumber( object ).longValue();
+					return toNumber( object ).longValue();
 				if( type == Double.class )
 				{
-					double d = castToNumber( object ).doubleValue();
+					double d = toNumber( object ).doubleValue();
 					if( d == Double.NEGATIVE_INFINITY || d == Double.POSITIVE_INFINITY )
 						throw new IllegalArgumentException( "Value " + object + " is out of range for a double" );
 					return d;
 				}
 				if( type == Byte.class )
-					return castToNumber( object ).byteValue();
+					return toNumber( object ).byteValue();
 				if( type == Short.class )
-					return castToNumber( object ).shortValue();
+					return toNumber( object ).shortValue();
 				if( type == Float.class )
 				{
-					float f = castToNumber( object ).floatValue();
+					float f = toNumber( object ).floatValue();
 					if( f == Float.NEGATIVE_INFINITY || f == Float.POSITIVE_INFINITY )
 						throw new IllegalArgumentException( "Value " + object + " is out of range for a float" );
 					return f;
@@ -512,7 +531,7 @@ public class Types
 
 			else if( elementType == byte.class )
 				for( Iterator iter = list.iterator(); iter.hasNext(); idx++ )
-					Array.setByte( array, idx, castToNumber( iter.next() ).byteValue() );
+					Array.setByte( array, idx, toNumber( iter.next() ).byteValue() );
 
 			else if( elementType == char.class )
 				for( Iterator iter = list.iterator(); iter.hasNext(); idx++ )
@@ -520,23 +539,23 @@ public class Types
 
 			else if( elementType == double.class )
 				for( Iterator iter = list.iterator(); iter.hasNext(); idx++ )
-					Array.setDouble( array, idx, castToNumber( iter.next() ).doubleValue() );
+					Array.setDouble( array, idx, toNumber( iter.next() ).doubleValue() );
 
 			else if( elementType == float.class )
 				for( Iterator iter = list.iterator(); iter.hasNext(); idx++ )
-					Array.setFloat( array, idx, castToNumber( iter.next() ).floatValue() );
+					Array.setFloat( array, idx, toNumber( iter.next() ).floatValue() );
 
 			else if( elementType == int.class )
 				for( Iterator iter = list.iterator(); iter.hasNext(); idx++ )
-					Array.setInt( array, idx, castToNumber( iter.next() ).intValue() );
+					Array.setInt( array, idx, toNumber( iter.next() ).intValue() );
 
 			else if( elementType == long.class )
 				for( Iterator iter = list.iterator(); iter.hasNext(); idx++ )
-					Array.setLong( array, idx, castToNumber( iter.next() ).longValue() );
+					Array.setLong( array, idx, toNumber( iter.next() ).longValue() );
 
 			else if( elementType == short.class )
 				for( Iterator iter = list.iterator(); iter.hasNext(); idx++ )
-					Array.setShort( array, idx, castToNumber( iter.next() ).shortValue() );
+					Array.setShort( array, idx, toNumber( iter.next() ).shortValue() );
 
 			else
 				for( Iterator iter = list.iterator(); iter.hasNext(); idx++ )
@@ -550,27 +569,57 @@ public class Types
 		throw new ClassCastException( object.getClass().getName() + " cannot be cast to " + type.getName() );
 	}
 
-    static public int getDistance( Class arg, Class type )
+	static public Object[] match( Object left, Object right )
 	{
-		Map< Class, Integer > cache;
-		synchronized( distanceCache )
+		Integer i = TYPES.get( left.getClass() );
+		if( i != null )
 		{
-			cache = distanceCache.get( type );
-			if( cache == null )
-				distanceCache.put( type, cache = new IdentityHashMap< Class, Integer >() );
-		}
-		int result;
-		synchronized( cache )
-		{
-			Integer distance = cache.get( arg );
-			if( distance == null )
+			Integer j = TYPES.get( right.getClass() );
+			if( j != null )
 			{
-				distance = calculateDistance( arg, type );
-				cache.put( arg, distance );
+				int a = NUMBER_MATCHING[ j ][ i ];
+				if( a != 99 )
+				{
+					switch( a )
+					{
+						case 1:
+							return new Object[] { 2, convert( left, int.class ), convert( right, int.class ) };
+						case 2:
+						case 3:
+						case 4:
+						case 5:
+						case 6:
+						case 7:
+							return new Object[] { a, left, right };
+						case 12:
+							return new Object[] { 2, left, convert( right, int.class ) };
+						case 13:
+							return new Object[] { 3, left, convert( right, long.class ) };
+						case 14:
+							return new Object[] { 4, left, convert( right, BigInteger.class ) };
+						case 15:
+							return new Object[] { 5, left, convert( right, float.class ) };
+						case 16:
+							return new Object[] { 6, left, convert( right, double.class ) };
+						case 17:
+							return new Object[] { 7, left, convert( right, BigDecimal.class ) };
+						case 22:
+							return new Object[] { 2, convert( left, int.class ), right };
+						case 23:
+							return new Object[] { 3, convert( left, long.class ), right };
+						case 24:
+							return new Object[] { 4, convert( left, BigInteger.class ), right };
+						case 25:
+							return new Object[] { 5, convert( left, float.class ), right };
+						case 26:
+							return new Object[] { 6, convert( left, double.class ), right };
+						case 27:
+							return new Object[] { 7, convert( left, BigDecimal.class ), right };
+					}
+				}
 			}
-			result = distance;
 		}
 
-		return result;
+		throw Assert.fail();
 	}
 }

@@ -17,11 +17,13 @@
 package solidstack.script.operators;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.HashMap;
 
 import solidstack.io.SourceLocation;
 import solidstack.lang.Assert;
 import solidstack.script.expressions.Expression;
+import solidstack.script.java.Types;
 import solidstack.script.scopes.AbstractScope;
 import solidstack.script.scopes.CombinedScope;
 
@@ -42,8 +44,8 @@ abstract public class Operator implements Expression
 
 		precedences.put( "[", 1 ); // array index
 		precedences.put( "(", 1 ); // method call
-		precedences.put( ".", 1 ); // member access
-		precedences.put( "#", 1 ); // static access
+		precedences.put( ".", 1 ); // object member
+		precedences.put( "#", 1 ); // static member
 
 		precedences.put( "@++", 2 ); // postfix increment
 		precedences.put( "@--", 2 ); // postfix decrement
@@ -243,29 +245,39 @@ abstract public class Operator implements Expression
 
 	static protected Object add( Object left, Object right )
 	{
-		// TODO Type conversions
-		if( left instanceof BigDecimal )
-		{
-			Assert.isInstanceOf( right, BigDecimal.class );
-			return ( (BigDecimal)left ).add( (BigDecimal)right );
-		}
-		if( left instanceof Integer )
-		{
-			if( right instanceof Integer )
-				return (Integer)left + (Integer)right;
-			Assert.isInstanceOf( right, BigDecimal.class );
-			left = new BigDecimal( (Integer)left );
-			return ( (BigDecimal)left ).add( (BigDecimal)right );
-		}
+		if( left instanceof String )
+			return (String)left + right.toString(); // TODO In Java: whenever there is a string anywhere in the addition, everything becomes a string.
+
 		if( left instanceof AbstractScope )
 		{
 			Assert.isInstanceOf( right, AbstractScope.class );
 			return new CombinedScope( (AbstractScope)left, (AbstractScope)right );
 		}
-		Assert.isInstanceOf( left, String.class, "Not expecting " + left.getClass() );
-		if( !( right instanceof String ) )
-			right = right.toString();
-		return (String)left + (String)right;
+
+		Assert.isTrue( left instanceof Number || left instanceof Character );
+		Assert.isTrue( right instanceof Number || right instanceof Character );
+
+		Object[] operands = Types.match( left, right );
+		int type = (Integer)operands[ 0 ];
+		left = operands[ 1 ];
+		right = operands[ 2 ];
+		switch( type )
+		{
+			case 2:
+				return (Integer)left + (Integer)right;
+			case 3:
+				return (Long)left + (Long)right;
+			case 4:
+				return ( (BigInteger)left ).add( (BigInteger)right );
+			case 5:
+				return (Float)left + (Float)right;
+			case 6:
+				return (Double)left + (Double)right;
+			case 7:
+				return ( (BigDecimal)left ).add( (BigDecimal)right );
+		}
+
+		throw Assert.fail();
 	}
 
 	static protected Object mul( Object left, Object right )

@@ -372,25 +372,25 @@ public class Resolver
     }
 
 
-	public static int calculateArgumentsDistance( Class[] types, Object[] args )
-	{
-		// TODO (RMB) We don't have the old vararg penalty yet (x<<28)
-
-    	// Varargs are already applied by matchArguments
-
-		int ret = 0;
-		for( int i = /* includesThis ? 1 : */ 0; i < types.length; i++ )
-		{
-			// TODO (RMB) vararg distance?
-			Object arg = args[ i ];
-			int distance = Types.getDistance( arg != null ? arg.getClass() : null, types[ i ] );
-			if( distance < 0 )
-				return -1;
-			ret += distance;
-		}
-
-		return ret;
-	}
+//	public static int calculateArgumentsDistance( Class[] types, Object[] args )
+//	{
+//		// TODO (RMB) We don't have the old vararg penalty yet (x<<28)
+//
+//    	// Varargs are already applied by matchArguments
+//
+//		int ret = 0;
+//		for( int i = /* includesThis ? 1 : */ 0; i < types.length; i++ )
+//		{
+//			// TODO (RMB) vararg distance?
+//			Object arg = args[ i ];
+//			int distance = Types.calculateDistance( arg != null ? arg.getClass() : null, types[ i ] );
+//			if( distance < 0 )
+//				return -1;
+//			ret += distance;
+//		}
+//
+//		return ret;
+//	}
 
 
 	/**

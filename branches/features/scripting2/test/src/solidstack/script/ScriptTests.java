@@ -532,6 +532,31 @@ public class ScriptTests extends Util
 	}
 
 	@Test
+	static public void test26()
+	{
+		test( "1 as byte + 1 as byte", 2 );
+		test( "1 as byte + 1", 2 );
+		test( "1 as byte + 1 as long", 2L );
+		test( "1 as byte + 1 as BigInteger", new BigInteger( "2" ) );
+		test( "1 as byte + 1 as float", (float)2 );
+		test( "1 as byte + 1 as double", (double)2 );
+		test( "1 as byte + 1 as BigDecimal", new BigDecimal( "2" ) );
+
+		test( "1 + 1 as byte", 2 );
+		test( "1 as long + 1 as byte", 2L );
+		test( "1 as BigInteger + 1 as byte", new BigInteger( "2" ) );
+		test( "1 as float + 1 as byte", (float)2 );
+		test( "1 as double + 1 as byte", (double)2 );
+		test( "1 as BigDecimal + 1 as byte", new BigDecimal( "2" ) );
+
+		test( "1 as char + 1 as char", 2 );
+		test( "1 as char + 1 as long", 2L );
+
+		test( "-1 as char + -1 as char", 0x1FFFE );
+		test( "-1 as byte + -1 as byte", -2 );
+	}
+
+	@Test
 	static public void prims() throws IOException
 	{
 		String script = readFile( "Prim's Minimum Spanning Tree.funny" );
@@ -568,7 +593,7 @@ public class ScriptTests extends Util
 	// TODO with() to execute a function with a different context
 	// TODO Currying
 	// TODO Global namespaces
-	// TODO Operator calling method on first operand
+	// TODO Operator calling method on first operand, operator overloading
 
 	@SuppressWarnings( "unused" )
 	static public class TestObject1
