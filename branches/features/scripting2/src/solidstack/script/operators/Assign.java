@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script.operators;
 
 import solidstack.lang.Assert;
 import solidstack.script.ScriptException;
@@ -25,7 +25,7 @@ import solidstack.script.objects.Util;
 import solidstack.script.scopes.AbstractScope.Ref;
 
 
-public class Assign extends Operation
+public class Assign extends Operator
 {
 	public Assign( String name, Expression left, Expression right)
 	{

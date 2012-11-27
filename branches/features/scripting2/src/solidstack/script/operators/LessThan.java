@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script.operators;
 
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.objects.Util;
 
 
-public class Plus extends Operation
+public class LessThan extends Operator
 {
-	public Plus( String name, Expression left, Expression right)
+	public LessThan( String name, Expression left, Expression right)
 	{
 		super( name, left, right );
 	}
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = Util.single( this.left.evaluate( thread ) );
-		Object right = Util.single( this.right.evaluate( thread ) );
-		return Operation.add( left, right );
+		Object left = Util.deref( this.left.evaluate( thread ) );
+		Object right = Util.deref( this.right.evaluate( thread ) );
+		return Operator.compare( left, right ) < 0;
 	}
 }

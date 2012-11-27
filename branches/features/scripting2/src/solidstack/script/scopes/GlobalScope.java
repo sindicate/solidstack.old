@@ -16,6 +16,9 @@
 
 package solidstack.script.scopes;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 import solidstack.script.functions.Abs;
 import solidstack.script.functions.Class;
 import solidstack.script.functions.Def;
@@ -53,5 +56,27 @@ public class GlobalScope extends Scope
 		val( Symbol.forString( "throw" ), new Throw() );
 		val( Symbol.forString( "upper" ), new Upper() );
 		val( Symbol.forString( "val" ), new Val() );
+
+		val( Symbol.forString( "boolean" ), boolean.class );
+		val( Symbol.forString( "byte" ), byte.class );
+		val( Symbol.forString( "char" ), char.class );
+		val( Symbol.forString( "short" ), short.class );
+		val( Symbol.forString( "int" ), int.class );
+		val( Symbol.forString( "long" ), long.class );
+		val( Symbol.forString( "float" ), float.class );
+		val( Symbol.forString( "double" ), double.class );
+
+		val( Symbol.forString( "Boolean" ), Boolean.class );
+		val( Symbol.forString( "Byte" ), Byte.class );
+		val( Symbol.forString( "Character" ), Character.class );
+		val( Symbol.forString( "Short" ), Short.class );
+		val( Symbol.forString( "Integer" ), Integer.class );
+		val( Symbol.forString( "Long" ), Long.class );
+		val( Symbol.forString( "Float" ), Float.class );
+		val( Symbol.forString( "Double" ), Double.class );
+
+		val( Symbol.forString( "BigInteger" ), BigInteger.class );
+		val( Symbol.forString( "BigDecimal" ), BigDecimal.class );
+		val( Symbol.forString( "String" ), String.class );
 	}
 }

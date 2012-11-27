@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script.operators;
 
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.objects.Util;
 
 
-public class Equals extends Operation
+public class GreaterThan extends Operator
 {
-	public Equals( String name, Expression left, Expression right)
+	public GreaterThan( String name, Expression left, Expression right)
 	{
 		super( name, left, right );
 	}
 
-	public Boolean evaluate( ThreadContext thread )
+	public Object evaluate( ThreadContext thread )
 	{
 		Object left = Util.single( this.left.evaluate( thread ) );
 		Object right = Util.single( this.right.evaluate( thread ) );
-		return left.equals( right ); // Never null, only Null.INSTANCE
+		return Operator.compare( left, right ) > 0;
 	}
 }

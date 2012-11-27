@@ -14,32 +14,22 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script.operators;
 
-import org.springframework.util.Assert;
-
-import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
-import solidstack.script.scopes.AbstractScope.Variable;
 
 
-public class PostDecr extends Operation
+public class NotEquals extends Equals
 {
-	public PostDecr( String name, Expression left, Expression right)
+	public NotEquals( String name, Expression left, Expression right)
 	{
 		super( name, left, right );
 	}
 
-	public Object evaluate( ThreadContext thread )
+	@Override
+	public Boolean evaluate( ThreadContext thread )
 	{
-		Assert.isNull( this.right );
-		Object left = this.left.evaluate( thread );
-		if( !( left instanceof Variable ) )
-			throw new ScriptException( "Tried to apply " + this.operation + " to a immutable value " + left.getClass().getName() );
-		Variable value = (Variable)left;
-		Object result = value.get();
-		value.set( add( result, -1 ) );
-		return result;
+		return !super.evaluate( thread );
 	}
 }

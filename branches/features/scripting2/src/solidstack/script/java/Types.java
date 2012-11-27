@@ -129,13 +129,7 @@ public class Types
 			return (Number)object;
 		if( object instanceof Character )
 			return new Integer( ( (Character)object ).charValue() );
-		if( object instanceof String )
-		{
-			// TODO (RMB) Remove this ugly string conversion?
-			String c = (String)object;
-			if( c.length() == 1 )
-				return new Integer( c.charAt( 0 ) );
-		}
+		// TODO String to number?
 		throw new ClassCastException( object.getClass().getName() + " cannot be cast to java.lang.Number" );
 	}
 
@@ -150,6 +144,14 @@ public class Types
 	{
 		if( object == null )
 			return false;
+		if( object instanceof Boolean )
+			return (Boolean)object;
+		if( object instanceof String )
+			return ( (String)object ).length() != 0;
+		if( object instanceof Collection )
+			return !( (Collection<?>)object ).isEmpty();
+		if( object instanceof Map )
+			return !( (Map<?,?>)object ).isEmpty();
 		return true;
 		// TODO Maybe call asBoolean()
 	}
@@ -342,18 +344,16 @@ public class Types
 	// SYNC isAssignableToType()
 	static public Object convert( Object object, Class type )
 	{
-		if( object == null )
-			return null;
-
-		if( type.isInstance( object ) )
-			return object;
-
 		if( type.isPrimitive() )
 		{
+			if( type == boolean.class )
+				return castToBoolean( object );
+
+			if( object == null )
+				return null; // TODO Or should we throw a NullPointerException?
+
 			if( type == int.class )
 				return object instanceof Integer ? object : castToNumber( object ).intValue();
-			if( type == boolean.class )
-				return object instanceof Boolean ? object : castToBoolean( object );
 			if( type == long.class )
 				return object instanceof Long ? object : castToNumber( object ).longValue();
 			if( type == double.class )
@@ -383,6 +383,9 @@ public class Types
 
 			throw new ClassCastException( object.getClass().getName() + " cannot be cast to " + type.getName() );
         }
+
+		if( object == null || type.isInstance( object ) )
+			return object;
 
 		if( Number.class.isAssignableFrom( type ) )
 		{

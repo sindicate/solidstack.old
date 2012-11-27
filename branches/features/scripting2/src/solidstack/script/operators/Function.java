@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script.operators;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +29,7 @@ import solidstack.script.expressions.Parenthesis;
 import solidstack.script.objects.FunctionObject;
 
 
-public class Function extends Operation
+public class Function extends Operator
 {
 	private Expression[] parameters;
 	private boolean subScope;

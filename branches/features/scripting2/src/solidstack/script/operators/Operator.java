@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script.operators;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -26,12 +26,12 @@ import solidstack.script.scopes.AbstractScope;
 import solidstack.script.scopes.CombinedScope;
 
 
-abstract public class Operation implements Expression
+abstract public class Operator implements Expression
 {
 	static private final HashMap<String, Integer> precedences;
 
 	// TODO Make private
-	protected String operation;
+	protected String operator;
 	protected Expression left;
 	protected Expression middle;
 	protected Expression right;
@@ -55,6 +55,7 @@ abstract public class Operation implements Expression
 //		precedences.put( "~", 3 ); // bitwise NOT
 		precedences.put( "!@", 3 ); // boolean NOT
 //		precedences.put( "(type)", 3 ); // type cast
+		precedences.put( "as", 3 ); // type cast
 //		precedences.put( "new", 3 ); // object creation
 
 		precedences.put( "*", 4 ); // multiplication
@@ -67,6 +68,8 @@ abstract public class Operation implements Expression
 //		precedences.put( "<<", 6 ); // signed bit shift left
 //		precedences.put( ">>", 6 ); // signed bit shift right
 //		precedences.put( ">>>", 6 ); // unsigned bit shift right
+
+		// In Groovy: .. and ... are between here
 
 		precedences.put( "<", 7 ); // less than
 		precedences.put( ">", 7 ); // greater than
@@ -103,7 +106,7 @@ abstract public class Operation implements Expression
 		precedences.put( ",", 16 ); // tuple TODO Decide about this precedence
 	}
 
-	static public Operation operation( String name, Expression left, Expression right )
+	static public Operator operator( String name, Expression left, Expression right )
 	{
 		// TODO The ifs are not all necessary, for example * is always just *
 		switch( name.charAt( 0 ) )
@@ -197,12 +200,17 @@ abstract public class Operation implements Expression
 				if( name.equals( "," ) )
 					return new BuildTuple( ",", left, right );
 				break;
+
+			case 'a':
+				if( name.equals( "as" ) )
+					return new As( "as", left, right );
+				break;
 		}
-		Assert.fail( "Unknown operation " + name );
+		Assert.fail( "Unknown operator " + name );
 		return null;
 	}
 
-	static public Operation preOp( SourceLocation location, String name, Expression right )
+	static public Operator preOp( SourceLocation location, String name, Expression right )
 	{
 		// TODO The ifs are not all necessary, for example * is always just *
 		switch( name.charAt( 0 ) )
@@ -224,7 +232,7 @@ abstract public class Operation implements Expression
 					return new Not( location, name, right );
 				break;
 		}
-		Assert.fail( "Unknown operation " + name );
+		Assert.fail( "Unknown operator " + name );
 		return null;
 	}
 
@@ -313,32 +321,32 @@ abstract public class Operation implements Expression
 		return ( (BigDecimal)value ).abs();
 	}
 
-	protected Operation( String operation, Expression left, Expression right )
+	protected Operator( String operator, Expression left, Expression right )
 	{
-		this.operation = operation;
+		this.operator = operator;
 		this.left = left;
 		this.right = right;
 	}
 
-	public Operation append( String operation, Expression expression )
+	public Operator append( String operator, Expression expression )
 	{
-		Assert.isTrue( precedences.containsKey( operation ), "Unexpected operation " + operation );
-		Assert.isTrue( precedences.containsKey( this.operation ), "Unexpected operation " + this.operation );
+		Assert.isTrue( precedences.containsKey( operator ), "Unexpected operator " + operator );
+		Assert.isTrue( precedences.containsKey( this.operator ), "Unexpected operator " + this.operator );
 
-		int prec = precedences.get( operation );
+		int prec = precedences.get( operator );
 		Assert.isTrue( prec > 0 );
 
-		int myprec = precedences.get( this.operation );
+		int myprec = precedences.get( this.operator );
 		Assert.isTrue( myprec > 0 );
 
 		// 14 (label) and 15 (assignment) go from right to left
 		if( myprec < prec )
-			return Operation.operation( operation, this, expression ); // this has precedence
+			return Operator.operator( operator, this, expression ); // this has precedence
 
 		if( myprec == prec )
 		{
 			if( myprec < 14 )
-				return Operation.operation( operation, this, expression ); // this has precedence
+				return Operator.operator( operator, this, expression ); // this has precedence
 			if( myprec == 16 )
 			{
 				BuildTuple tuple = (BuildTuple)this;
@@ -348,11 +356,11 @@ abstract public class Operation implements Expression
 		}
 
 		Expression last = getLast();
-		// appended operation has precedence
-		if( last instanceof Operation )
-			setLast( ( (Operation)last ).append( operation, expression ) );
+		// appended operator has precedence
+		if( last instanceof Operator )
+			setLast( ( (Operator)last ).append( operator, expression ) );
 		else
-			setLast( Operation.operation( operation, last, expression ) );
+			setLast( Operator.operator( operator, last, expression ) );
 		return this;
 	}
 

@@ -212,7 +212,7 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<Symbol, T>
 
 	private void resize()
 	{
-		System.out.println( "size = " + this.size );
+//		System.out.println( "size = " + this.size );
 
 		Entry[] oldEntries = this.entries;
 
@@ -220,7 +220,7 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<Symbol, T>
 		this.size = 0;
 		this.threshold *= 2;
 
-		System.out.println( "resizing to " + this.entries.length );
+//		System.out.println( "resizing to " + this.entries.length );
 
 		for( Entry entry : oldEntries )
 		{

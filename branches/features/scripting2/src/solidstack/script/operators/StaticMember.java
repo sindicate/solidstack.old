@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script.operators;
 
 import org.springframework.util.Assert;
 
@@ -26,7 +26,7 @@ import solidstack.script.objects.ClassMember;
 import solidstack.script.objects.Util;
 
 
-public class StaticMember extends Operation
+public class StaticMember extends Operator
 {
 	public StaticMember( String name, Expression left, Expression right)
 	{

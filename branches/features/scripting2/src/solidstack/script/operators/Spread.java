@@ -14,24 +14,44 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script.operators;
 
+import java.util.List;
+
+import solidstack.io.SourceLocation;
+import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
+import solidstack.script.objects.Tuple;
 import solidstack.script.objects.Util;
 
 
-public class LessThan extends Operation
+public class Spread extends Operator
 {
-	public LessThan( String name, Expression left, Expression right)
+	private SourceLocation location;
+
+	public Spread( SourceLocation location, String name, Expression right )
 	{
-		super( name, left, right );
+		super( name, null, right );
+
+		this.location = location;
 	}
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = Util.deref( this.left.evaluate( thread ) );
-		Object right = Util.deref( this.right.evaluate( thread ) );
-		return Operation.compare( left, right ) < 0;
+		Object object = Util.deref( this.right.evaluate( thread ) );
+		Assert.isInstanceOf( object, List.class );
+		return new Tuple( (List<Object>)object );
+	}
+
+	@Override
+	public SourceLocation getLocation()
+	{
+		return this.location;
+	}
+
+	public Expression getExpression()
+	{
+		return this.right;
 	}
 }

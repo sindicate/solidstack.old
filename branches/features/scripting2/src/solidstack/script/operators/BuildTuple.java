@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script.operators;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,7 @@ import solidstack.script.expressions.Expression;
 import solidstack.script.objects.Tuple;
 
 
-public class BuildTuple extends Operation
+public class BuildTuple extends Operator
 {
 	private List<Expression> expressions = new ArrayList<Expression>();
 

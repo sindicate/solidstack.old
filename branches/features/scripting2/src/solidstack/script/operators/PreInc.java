@@ -14,23 +14,22 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script.operators;
 
-import java.util.List;
+import org.springframework.util.Assert;
 
 import solidstack.io.SourceLocation;
-import solidstack.lang.Assert;
+import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
-import solidstack.script.objects.Tuple;
-import solidstack.script.objects.Util;
+import solidstack.script.scopes.AbstractScope.Variable;
 
 
-public class Spread extends Operation
+public class PreInc extends Operator
 {
 	private SourceLocation location;
 
-	public Spread( SourceLocation location, String name, Expression right )
+	public PreInc( SourceLocation location, String name, Expression right)
 	{
 		super( name, null, right );
 
@@ -39,19 +38,19 @@ public class Spread extends Operation
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object object = Util.deref( this.right.evaluate( thread ) );
-		Assert.isInstanceOf( object, List.class );
-		return new Tuple( (List<Object>)object );
+		Assert.isNull( this.left );
+		Object right = this.right.evaluate( thread );
+		if( !( right instanceof Variable ) )
+			throw new ScriptException( "Tried to apply " + this.operator + " to a immutable value " + right.getClass().getName() );
+		Variable value = (Variable)right;
+		Object result = add( value.get(), 1 );
+		value.set( result );
+		return result;
 	}
 
 	@Override
 	public SourceLocation getLocation()
 	{
 		return this.location;
-	}
-
-	public Expression getExpression()
-	{
-		return this.right;
 	}
 }

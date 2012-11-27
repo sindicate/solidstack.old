@@ -14,22 +14,24 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script.operators;
 
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
+import solidstack.script.objects.Util;
 
 
-public class NotEquals extends Equals
+public class LessOrEqualTo extends Operator
 {
-	public NotEquals( String name, Expression left, Expression right)
+	public LessOrEqualTo( String name, Expression left, Expression right)
 	{
 		super( name, left, right );
 	}
 
-	@Override
-	public Boolean evaluate( ThreadContext thread )
+	public Object evaluate( ThreadContext thread )
 	{
-		return !super.evaluate( thread );
+		Object left = Util.deref( this.left.evaluate( thread ) );
+		Object right = Util.deref( this.right.evaluate( thread ) );
+		return Operator.compare( left, right ) <= 0;
 	}
 }

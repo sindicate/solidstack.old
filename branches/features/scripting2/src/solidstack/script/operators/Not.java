@@ -14,24 +14,37 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script.operators;
 
+import org.springframework.util.Assert;
+
+import solidstack.io.SourceLocation;
+import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
-import solidstack.script.objects.Util;
 
 
-public class GreaterThan extends Operation
+public class Not extends Operator
 {
-	public GreaterThan( String name, Expression left, Expression right)
+	private SourceLocation location;
+
+	public Not( SourceLocation location, String name, Expression right)
 	{
-		super( name, left, right );
+		super( name, null, right );
+
+		this.location = location;
 	}
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = Util.single( this.left.evaluate( thread ) );
-		Object right = Util.single( this.right.evaluate( thread ) );
-		return Operation.compare( left, right ) > 0;
+		Assert.isNull( this.left );
+		Object right = this.right.evaluate( thread );
+		return !Script.isTrue( right );
+	}
+
+	@Override
+	public SourceLocation getLocation()
+	{
+		return this.location;
 	}
 }

@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script.operators;
 
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.objects.Util;
 
 
-public class GreaterOrEqualTo extends Operation
+public class Minus extends Operator
 {
-	public GreaterOrEqualTo( String name, Expression left, Expression right)
+	public Minus( String name, Expression left, Expression right)
 	{
 		super( name, left, right );
 	}
@@ -32,6 +32,6 @@ public class GreaterOrEqualTo extends Operation
 	{
 		Object left = Util.single( this.left.evaluate( thread ) );
 		Object right = Util.single( this.right.evaluate( thread ) );
-		return Operation.compare( left, right ) >= 0;
+		return Operator.minus( left, right );
 	}
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script.operators;
 
 import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
@@ -30,7 +30,7 @@ import solidstack.script.scopes.ScopeException;
 import solidstack.script.scopes.Symbol;
 
 
-public class Member extends Operation
+public class Member extends Operator
 {
 	public Member( String name, Expression left, Expression right)
 	{

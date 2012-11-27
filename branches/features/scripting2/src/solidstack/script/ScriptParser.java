@@ -40,9 +40,9 @@ import solidstack.script.expressions.StringConstant;
 import solidstack.script.expressions.StringExpression;
 import solidstack.script.expressions.SymbolExpression;
 import solidstack.script.expressions.While;
-import solidstack.script.operations.Function;
-import solidstack.script.operations.Operation;
-import solidstack.script.operations.Spread;
+import solidstack.script.operators.Function;
+import solidstack.script.operators.Operator;
+import solidstack.script.operators.Spread;
 
 
 /**
@@ -107,7 +107,7 @@ public class ScriptParser
 		}
 	}
 
-	// Parses on expression (separated with commas)
+	// Parses on expression (ends with ; or EOF)
 	private Expression parseExpression()
 	{
 		Expression result = parseAtom();
@@ -127,49 +127,62 @@ public class ScriptParser
 					if( this.stop != null )
 						throw new SourceException( "Unexpected " + token + ", missing " + this.stop, token.getLocation() );
 					//$FALL-THROUGH$
+
 				case SEMICOLON:
-				case COMMA:
 					return result;
 
 				case BINOP:
 					Expression right = parseAtom();
 					Assert.notNull( right );
-					if( result instanceof Operation )
-						result = ( (Operation)result ).append( token.getValue(), right );
-					else
-						result = Operation.operation( token.getValue(), result, right );
-					break;
-
-				case PAREN_OPEN:
-					TYPE oldStop = swapStops( TYPE.PAREN_CLOSE );
-					Expression parameters = parse();
-					swapStops( oldStop );
-					if( result instanceof Operation )
-						result = ( (Operation)result ).append( token.getValue(), parameters );
-					else
-						result = Operation.operation( token.getValue(), result, parameters );
+					result = appendOperator( result, token.getValue(), right );
 					break;
 
 				case BRACKET_OPEN:
-					oldStop = swapStops( TYPE.BRACKET_CLOSE );
-					parameters = parse();
+				case PAREN_OPEN:
+					TYPE oldStop = swapStops( inverse( type ) );
+					Expression parameters = parse();
 					swapStops( oldStop );
-					if( result instanceof Operation )
-						result = ( (Operation)result ).append( token.getValue(), parameters );
-					else
-						result = Operation.operation( token.getValue(), result, parameters );
+					result = appendOperator( result, token.getValue(), parameters );
 					break;
 
 				case UNAOP:
-					if( result instanceof Operation )
-						result = ( (Operation)result ).append( "@" + token.getValue(), null );
-					else
-						result = Operation.operation( "@" + token.getValue(), result, null );
+					result = appendOperator( result, "@" + token.getValue(), null );
 					break;
+
+				case IDENTIFIER:
+					if( token.getValue().equals( "as" ) )
+					{
+						right = parseAtom();
+						Assert.notNull( right );
+						result = appendOperator( result, token.getValue(), right );
+						break;
+					} //$FALL-THROUGH$
 
 				default:
 					throw new SourceException( "Unexpected token '" + token + "'", token.getLocation() );
 			}
+		}
+	}
+
+	private Expression appendOperator( Expression result, String operator, Expression operand )
+	{
+		if( result instanceof Operator )
+			return ( (Operator)result ).append( operator, operand );
+		return Operator.operator( operator, result, operand );
+	}
+
+	private TYPE inverse( TYPE type )
+	{
+		switch( type )
+		{
+			case BRACE_OPEN:
+				return TYPE.BRACE_CLOSE;
+			case BRACKET_OPEN:
+				return TYPE.BRACKET_CLOSE;
+			case PAREN_OPEN:
+				return TYPE.PAREN_CLOSE;
+			default:
+				throw new AssertionError();
 		}
 	}
 
@@ -205,14 +218,12 @@ public class ScriptParser
 				TYPE oldStop = swapStops( TYPE.PAREN_CLOSE );
 				Expression result = parse();
 				swapStops( oldStop );
-				Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.PAREN_CLOSE, "Not expecting token " + token );
 				return new Parenthesis( token.getLocation(), result );
 
 			case BRACE_OPEN:
 				oldStop = swapStops( TYPE.BRACE_CLOSE );
 				result = parse();
 				swapStops( oldStop );
-				Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.BRACE_CLOSE, "Not expecting token " + token );
 				return new Block( token.getLocation(), result );
 
 			case BRACKET_OPEN:
@@ -227,7 +238,6 @@ public class ScriptParser
 				oldStop = swapStops( TYPE.BRACKET_CLOSE );
 				result = parse();
 				swapStops( oldStop );
-				Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.BRACKET_CLOSE, "Not expecting token " + token );
 				return new solidstack.script.expressions.List( token.getLocation(), result );
 
 			case BINOP:
@@ -235,10 +245,10 @@ public class ScriptParser
 				if( token.getValue().equals( "-" ) )
 				{
 					result = parseAtom(); // TODO Pre-apply
-					return Operation.preOp( token.getLocation(), "-@", result );
+					return Operator.preOp( token.getLocation(), "-@", result );
 				}
 				if( token.getValue().equals( "+" ) )
-					return parseAtom(); // TODO Is this correct, just ignore the operation?
+					return parseAtom(); // TODO Is this correct, just ignore the operator?
 				if( token.getValue().equals( "*" ) )
 					return new Spread( token.getLocation(), token.getValue(), parseAtom() );
 				if( token.getValue().equals( ":" ) )
@@ -305,7 +315,7 @@ public class ScriptParser
 
 			case UNAOP:
 				result = parseAtom();
-				return Operation.preOp( token.getLocation(), token.getValue() + "@", result ); // TODO Pre-apply
+				return Operator.preOp( token.getLocation(), token.getValue() + "@", result ); // TODO Pre-apply
 
 			default:
 				throw new SourceException( "Unexpected token " + token, token.getLocation() );

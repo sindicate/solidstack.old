@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script.operators;
 
 import java.lang.reflect.Array;
 import java.util.List;
@@ -32,7 +32,7 @@ import solidstack.script.scopes.ScopeException;
 import solidstack.script.scopes.Symbol;
 
 
-public class Index extends Operation
+public class Index extends Operator
 {
 	public Index( String name, Expression left, Expression right )
 	{

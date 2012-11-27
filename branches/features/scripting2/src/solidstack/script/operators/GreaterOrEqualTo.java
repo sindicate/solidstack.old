@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script.operators;
 
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
-import solidstack.script.objects.Labeled;
+import solidstack.script.objects.Util;
 
 
-public class Label extends Operation
+public class GreaterOrEqualTo extends Operator
 {
-	public Label( String name, Expression left, Expression right)
+	public GreaterOrEqualTo( String name, Expression left, Expression right)
 	{
 		super( name, left, right );
 	}
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = this.left.evaluate( thread );
-		Object right = this.right.evaluate( thread );
-		return new Labeled( left, right );
+		Object left = Util.single( this.left.evaluate( thread ) );
+		Object right = Util.single( this.right.evaluate( thread ) );
+		return Operator.compare( left, right ) >= 0;
 	}
 }

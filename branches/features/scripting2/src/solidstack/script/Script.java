@@ -17,14 +17,11 @@
 package solidstack.script;
 
 import java.io.StringReader;
-import java.util.Collection;
-import java.util.Map;
 
 import solidstack.io.ReaderSourceReader;
 import solidstack.io.SourceReader;
 import solidstack.script.expressions.Expression;
-import solidstack.script.objects.FunnyString;
-import solidstack.script.objects.Null;
+import solidstack.script.java.Types;
 import solidstack.script.objects.Util;
 import solidstack.script.scopes.AbstractScope;
 import solidstack.script.scopes.AbstractScope.Ref;
@@ -51,7 +48,18 @@ public class Script
 			scope = new Scope();
 
 		ThreadContext thread = ThreadContext.init( scope );
-		return expression.evaluate( thread );
+		try
+		{
+			return expression.evaluate( thread );
+		}
+		catch( ThrowException e )
+		{
+			throw new ScriptException( e );
+		}
+//		catch( JavaException e )
+//		{
+//			throw new ScriptException( e );
+//		}
 	}
 
 	static public Object eval( Expression expression, AbstractScope scope )
@@ -64,29 +72,15 @@ public class Script
 		return isTrue( eval0( expression, scope ) );
 	}
 
-	static public boolean isTrue( Object left )
+	static public boolean isTrue( Object object )
 	{
-		if( left instanceof Ref )
+		if( object instanceof Ref )
 		{
-			if( ( (Ref)left ).isUndefined() )
+			if( ( (Ref)object ).isUndefined() )
 				return false;
-			left = ( (Ref)left ).get();
+			object = ( (Ref)object ).get();
 		}
-		if( left == null )
-			return false;
-		if( left == Null.INSTANCE )
-			return false;
-		if( left instanceof Boolean )
-			return (Boolean)left;
-		if( left instanceof String )
-			return ( (String)left ).length() != 0;
-		if( left instanceof Collection )
-			return !( (Collection<?>)left ).isEmpty();
-		if( left instanceof Map )
-			return !( (Map<?,?>)left ).isEmpty();
-		if( left instanceof FunnyString )
-			return !( (FunnyString)left ).isEmpty();
-		return true;
+		return Types.castToBoolean( Util.toJava( object ) );
 	}
 
 	// --- Non static members

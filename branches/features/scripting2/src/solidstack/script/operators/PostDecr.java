@@ -14,43 +14,32 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script.operators;
 
 import org.springframework.util.Assert;
 
-import solidstack.io.SourceLocation;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.scopes.AbstractScope.Variable;
 
 
-public class PreDecr extends Operation
+public class PostDecr extends Operator
 {
-	private SourceLocation location;
-
-	public PreDecr( SourceLocation location, String name, Expression right)
+	public PostDecr( String name, Expression left, Expression right)
 	{
-		super( name, null, right );
-
-		this.location = location;
+		super( name, left, right );
 	}
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Assert.isNull( this.left );
-		Object right = this.right.evaluate( thread );
-		if( !( right instanceof Variable ) )
-			throw new ScriptException( "Tried to apply " + this.operation + " to a immutable value " + right.getClass().getName() );
-		Variable value = (Variable)right;
-		Object result = add( value.get(), -1 );
-		value.set( result );
+		Assert.isNull( this.right );
+		Object left = this.left.evaluate( thread );
+		if( !( left instanceof Variable ) )
+			throw new ScriptException( "Tried to apply " + this.operator + " to a immutable value " + left.getClass().getName() );
+		Variable value = (Variable)left;
+		Object result = value.get();
+		value.set( add( result, -1 ) );
 		return result;
-	}
-
-	@Override
-	public SourceLocation getLocation()
-	{
-		return this.location;
 	}
 }

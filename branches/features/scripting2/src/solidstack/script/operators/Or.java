@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script.operators;
 
+import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
-import solidstack.script.objects.Util;
 
 
-public class LessOrEqualTo extends Operation
+public class Or extends Operator
 {
-	public LessOrEqualTo( String name, Expression left, Expression right)
+	public Or( String name, Expression left, Expression right)
 	{
 		super( name, left, right );
 	}
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = Util.deref( this.left.evaluate( thread ) );
-		Object right = Util.deref( this.right.evaluate( thread ) );
-		return Operation.compare( left, right ) <= 0;
+		Object left = this.left.evaluate( thread );
+		if( Script.isTrue( left ) )
+			return left;
+		return this.right.evaluate( thread );
 	}
 }

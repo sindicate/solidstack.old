@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
-package solidstack.script.functions;
+package solidstack.script.operators;
 
-import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
-import solidstack.script.objects.FunctionObject;
+import solidstack.script.expressions.Expression;
 import solidstack.script.objects.Util;
-import solidstack.script.operators.Operator;
 
-public class Abs extends FunctionObject
+
+public class Plus extends Operator
 {
-	@Override
-	public Object call( ThreadContext thread, Object... parameters )
+	public Plus( String name, Expression left, Expression right)
 	{
-		Assert.isTrue( parameters.length == 1 );
-		return Operator.abs( Util.deref( parameters[ 0 ] ) );
+		super( name, left, right );
+	}
+
+	public Object evaluate( ThreadContext thread )
+	{
+		Object left = Util.single( this.left.evaluate( thread ) );
+		Object right = Util.single( this.right.evaluate( thread ) );
+		return Operator.add( left, right );
 	}
 }

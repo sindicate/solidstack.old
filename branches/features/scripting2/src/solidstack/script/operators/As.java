@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script.operators;
 
-import solidstack.script.Script;
+import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
+import solidstack.script.java.Types;
+import solidstack.script.objects.Util;
 
 
-public class And extends Operation
+public class As extends Operator
 {
-	public And( String name, Expression left, Expression right)
+	public As( String name, Expression left, Expression right)
 	{
 		super( name, left, right );
 	}
@@ -31,8 +33,8 @@ public class And extends Operation
 	public Object evaluate( ThreadContext thread )
 	{
 		Object left = this.left.evaluate( thread );
-		if( !Script.isTrue( left ) )
-			return left;
-		return this.right.evaluate( thread );
+		Object right = Util.toJava( this.right.evaluate( thread ) );
+		Assert.isInstanceOf( right, Class.class );
+		return Types.convert( Util.toJava( left ), (Class)right );
 	}
 }

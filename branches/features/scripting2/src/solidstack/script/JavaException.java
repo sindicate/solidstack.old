@@ -14,24 +14,27 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script;
 
-import solidstack.script.ThreadContext;
-import solidstack.script.expressions.Expression;
-import solidstack.script.objects.Util;
+import solidstack.io.SourceLocation;
 
-
-public class Minus extends Operation
+public class JavaException extends RuntimeException
 {
-	public Minus( String name, Expression left, Expression right)
+	private SourceLocation[] stack;
+
+	public JavaException( Throwable cause, SourceLocation[] stack )
 	{
-		super( name, left, right );
+		super( cause );
+		this.stack = stack;
 	}
 
-	public Object evaluate( ThreadContext thread )
+	@Override
+	public String toString()
 	{
-		Object left = Util.single( this.left.evaluate( thread ) );
-		Object right = Util.single( this.right.evaluate( thread ) );
-		return Operation.minus( left, right );
+		StringBuilder result = new StringBuilder();
+		result.append( getMessage() );
+		for( SourceLocation location : this.stack )
+			result.append( "\n- at " ).append( location.toString() );
+		return result.toString();
 	}
 }

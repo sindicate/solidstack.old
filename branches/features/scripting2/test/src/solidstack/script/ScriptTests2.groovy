@@ -16,18 +16,17 @@
 
 package solidstack.script;
 
-import org.testng.Assert
 import org.testng.annotations.Test
 
 
-public class ScriptTests2
+public class ScriptTests2 extends Util
 {
 	@Test
 	static public void test1()
 	{
 		// TODO Without the ) you get no error from the parser
 		// TODO Find a way to parse a string with | as the left border marker.
-		ScriptTests.test( '''
+		test( '''
 			println( "\\
 				Multiline strings
 				work too" );
@@ -49,7 +48,7 @@ with escaped newline" );
 	@Test
 	static public void test2()
 	{
-		ScriptTests.test( '''
+		test( '''
 			i = 0;
 			f = fun( ; println( i ); ++i );
 			while( i < 10; f() );
@@ -64,7 +63,7 @@ with escaped newline" );
 	@Test
 	static public void test3()
 	{
-		ScriptTests.eval( '''
+		eval( '''
 			o = {
 				a = 4;
 				f = fun( b; b * a );
@@ -82,7 +81,7 @@ with escaped newline" );
 			);
 			'''
 		);
-		ScriptTests.eval( '''
+		eval( '''
 			// Creates a function. The function returns its own scope.
 			c = fun{ a;
 				f = fun( b; b * a );
@@ -112,21 +111,14 @@ with escaped newline" );
 	@Test
 	static public void test4()
 	{
-		try
-		{
-			ScriptTests.eval( '''
-				f = fun(;
-					throw( "error" )
-				);
-				f();
-				'''
+		fail( '''
+			f = fun(;
+				throw( "error" )
 			);
-			Assert.fail( "Expected an exception" );
-		}
-		catch( ThrowException e )
-		{
-			Assert.assertEquals( e.message, "error" )
-		}
+			f();
+			''',
+			ScriptException, "error"
+		)
 		// assert( actual( o.f( 3 ) ) == expected( 12 ) ); // Will throw: Expected 12, got ${got}
 		// assert( x != null ); // Will throw: x must not be null
 		// assert( x ); // Will throw: x must not be false/null/empty, depending on what case is found
@@ -136,7 +128,7 @@ with escaped newline" );
 	@Test
 	static public void test5()
 	{
-		ScriptTests.eval( '''
+		eval( '''
 			ArrayList = class( "java.util.ArrayList" );
 			l = ArrayList.getMethods().collect( method -> method.getName() );
 			l.each( name -> println( name ) );

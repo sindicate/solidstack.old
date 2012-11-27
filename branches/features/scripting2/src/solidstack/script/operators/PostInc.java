@@ -14,25 +14,32 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script.operators;
 
-import solidstack.script.Script;
+import org.springframework.util.Assert;
+
+import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
+import solidstack.script.scopes.AbstractScope.Variable;
 
 
-public class Or extends Operation
+public class PostInc extends Operator
 {
-	public Or( String name, Expression left, Expression right)
+	public PostInc( String name, Expression left, Expression right)
 	{
 		super( name, left, right );
 	}
 
 	public Object evaluate( ThreadContext thread )
 	{
+		Assert.isNull( this.right );
 		Object left = this.left.evaluate( thread );
-		if( Script.isTrue( left ) )
-			return left;
-		return this.right.evaluate( thread );
+		if( !( left instanceof Variable ) )
+			throw new ScriptException( "Tried to apply " + this.operator + " to a immutable value " + left.getClass().getName() );
+		Variable value = (Variable)left;
+		Object result = value.get();
+		value.set( add( result, 1 ) );
+		return result;
 	}
 }

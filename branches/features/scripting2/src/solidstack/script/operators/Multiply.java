@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script.operators;
 
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.objects.Util;
 
 
-public class Multiply extends Operation
+public class Multiply extends Operator
 {
 	public Multiply( String name, Expression left, Expression right)
 	{

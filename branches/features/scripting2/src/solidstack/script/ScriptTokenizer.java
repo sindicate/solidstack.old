@@ -376,7 +376,7 @@ public class ScriptTokenizer
 		 * Token types.
 		 */
 		@SuppressWarnings( "javadoc" )
-		static public enum TYPE { IDENTIFIER, DECIMAL, INT, STRING, BINOP, UNAOP, PAREN_OPEN, PAREN_CLOSE, BRACE_OPEN, BRACE_CLOSE, BRACKET_OPEN, BRACKET_CLOSE, COMMA, SEMICOLON, EOF }
+		static public enum TYPE { IDENTIFIER, DECIMAL, INT, STRING, BINOP, UNAOP, PAREN_OPEN, PAREN_CLOSE, BRACE_OPEN, BRACE_CLOSE, BRACKET_OPEN, BRACKET_CLOSE, SEMICOLON, EOF }
 
 		/**
 		 * The type of the token.

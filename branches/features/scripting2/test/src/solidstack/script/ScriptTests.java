@@ -20,6 +20,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 
 import org.testng.Assert;
@@ -362,7 +363,7 @@ public class ScriptTests extends Util
 		test( "l = class( \"java.util.ArrayList\" )(); i = 0; while( i < 10; l.add( i ), i++ ); l.each( fun( i; println( i ) ) )", 9 );
 		eval( "Calendar = class( \"java.util.Calendar\" ); println( Calendar#getInstance().getClass() )" );
 		test( "Calendar = class( \"java.util.Calendar\" ); Calendar#SATURDAY", 7 );
-		fail( "Calendar = class( \"java.util.Calendar\" ); Calendar#clear()", ThrowException.class, "static java.util.Calendar.clear()" );
+		fail( "Calendar = class( \"java.util.Calendar\" ); Calendar#clear()", ScriptException.class, "static java.util.Calendar.clear()" );
 		fail( "TestObject = class( \"solidstack.script.ScriptTests$TestObject2\" ); TestObject#value", MissingFieldException.class, "static solidstack.script.ScriptTests$TestObject2.value" );
 	}
 
@@ -488,6 +489,40 @@ public class ScriptTests extends Util
 		test( "s = :symbol; s.toString()", "symbol" );
 		test( "s = :\"dit is ook een symbol\"; s.toString()", "dit is ook een symbol" );
 		test( "s = :red; if( s == :red; true; false )", true );
+	}
+
+	@Test
+	static public void test25()
+	{
+//		test( "a as boolean", false ); // TODO Should this fail or give 'false'?
+		test( "null as boolean", false );
+		test( "0 as boolean", true );
+		test( "1 as boolean", true );
+		test( "false as boolean", false );
+		test( "true as boolean", true );
+		test( "\"\" as boolean", false );
+		test( "\"x\" as boolean", true );
+		test( "[] as boolean", false );
+		test( "[1] as boolean", true );
+		test( "[:] as boolean", false );
+		test( "[1:1] as boolean", true );
+
+		test( "1 as byte", (byte)1 );
+		test( "a = 1; a as byte", (byte)1 );
+		test( "a = 1 as byte", (byte)1 );
+		test( "1 as char", (char)1 );
+		test( "1 as short", (short)1 );
+		test( "1 as int", 1 );
+		test( "1 as long", 1L );
+		test( "1.1 as float", (float)1.1 );
+		test( "1.1 as double", 1.1 );
+
+		test( "1 as BigInteger", new BigInteger( "1" ) );
+
+		test( "1 as BigInteger", new BigInteger( "1" ) );
+		test( "1 as BigDecimal", new BigDecimal( "1" ) );
+		test( "1 as String", "1" );
+		fail( "\"1\" as int", ClassCastException.class, "java.lang.String cannot be cast to java.lang.Number" ); // TODO Should be int instead of Number
 	}
 
 	@Test

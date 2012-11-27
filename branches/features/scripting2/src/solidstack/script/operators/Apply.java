@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package solidstack.script.operations;
+package solidstack.script.operators;
 
 import java.lang.reflect.InvocationTargetException;
 
+import solidstack.script.JavaException;
 import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
@@ -31,7 +32,7 @@ import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Util;
 
 
-public class Apply extends Operation
+public class Apply extends Operator
 {
 	public Apply( String name, Expression left, Expression right )
 	{
@@ -118,7 +119,7 @@ public class Apply extends Operation
 		}
 		catch( InvocationTargetException e )
 		{
-			throw new ThrowException( e.getCause(), thread.cloneStack( getLocation() ) );
+			throw new JavaException( e.getCause(), thread.cloneStack( getLocation() ) );
 		}
 		catch( Exception e )
 		{
