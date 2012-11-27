@@ -150,7 +150,7 @@ public class ScriptParser
 					break;
 
 				case IDENTIFIER:
-					if( token.getValue().equals( "as" ) )
+					if( token.getValue().equals( "as" ) || token.getValue().equals( "instanceof" ) )
 					{
 						right = parseAtom();
 						Assert.notNull( right );

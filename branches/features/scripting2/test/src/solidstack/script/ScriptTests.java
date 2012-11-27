@@ -523,6 +523,12 @@ public class ScriptTests extends Util
 		test( "1 as BigDecimal", new BigDecimal( "1" ) );
 		test( "1 as String", "1" );
 		fail( "\"1\" as int", ClassCastException.class, "java.lang.String cannot be cast to java.lang.Number" ); // TODO Should be int instead of Number
+
+		test( "1 instanceof Integer", true );
+		test( "1 instanceof int", false );
+		test( "\"1\" instanceof class( \"java.lang.CharSequence\" )", true );
+		test( "\"1\" instanceof String", true );
+		test( "null instanceof Byte", false );
 	}
 
 	@Test

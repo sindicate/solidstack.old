@@ -55,7 +55,7 @@ abstract public class Operator implements Expression
 //		precedences.put( "~", 3 ); // bitwise NOT
 		precedences.put( "!@", 3 ); // boolean NOT
 //		precedences.put( "(type)", 3 ); // type cast
-		precedences.put( "as", 3 ); // type cast
+		precedences.put( "as", 3 ); // type cast TODO Same precedence as instanceof?
 //		precedences.put( "new", 3 ); // object creation
 
 		precedences.put( "*", 4 ); // multiplication
@@ -75,8 +75,8 @@ abstract public class Operator implements Expression
 		precedences.put( ">", 7 ); // greater than
 		precedences.put( "<=", 7 ); // less than or equal
 		precedences.put( ">=", 7 ); // greater than or equal
-//		precedences.put( "instanceof", 7 ); // reference test
-//
+		precedences.put( "instanceof", 7 ); // reference test
+
 		precedences.put( "==", 8 ); // equal to
 		precedences.put( "!=", 8 ); // not equal to
 
@@ -204,6 +204,11 @@ abstract public class Operator implements Expression
 			case 'a':
 				if( name.equals( "as" ) )
 					return new As( "as", left, right );
+				break;
+
+			case 'i':
+				if( name.equals( "instanceof" ) )
+					return new InstanceOf( "instanceof", left, right );
 				break;
 		}
 		Assert.fail( "Unknown operator " + name );
