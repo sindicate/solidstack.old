@@ -264,15 +264,15 @@ abstract public class Operator implements Expression
 		switch( type )
 		{
 			case 2:
-				return (Integer)left + (Integer)right;
+				return ( (Number)left ).intValue() + ( (Number)right ).intValue();
 			case 3:
-				return (Long)left + (Long)right;
+				return ( (Number)left ).longValue() + ( (Number)right ).longValue();
 			case 4:
 				return ( (BigInteger)left ).add( (BigInteger)right );
 			case 5:
-				return (Float)left + (Float)right;
+				return ( (Number)left ).floatValue() + ( (Number)right ).floatValue();
 			case 6:
-				return (Double)left + (Double)right;
+				return ( (Number)left ).doubleValue() + ( (Number)right ).doubleValue();
 			case 7:
 				return ( (BigDecimal)left ).add( (BigDecimal)right );
 		}
