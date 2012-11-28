@@ -32,6 +32,6 @@ public class Multiply extends Operator
 	{
 		Object left = Util.single( this.left.evaluate( thread ) );
 		Object right = Util.single( this.right.evaluate( thread ) );
-		return mul( left, right );
+		return multiply( left, right );
 	}
 }

@@ -21,9 +21,9 @@ import solidstack.script.expressions.Expression;
 import solidstack.script.objects.Util;
 
 
-public class Minus extends Operator
+public class Divide extends Operator
 {
-	public Minus( String name, Expression left, Expression right)
+	public Divide( String name, Expression left, Expression right)
 	{
 		super( name, left, right );
 	}
@@ -32,6 +32,6 @@ public class Minus extends Operator
 	{
 		Object left = Util.single( this.left.evaluate( thread ) );
 		Object right = Util.single( this.right.evaluate( thread ) );
-		return Operator.subtract( left, right );
+		return divide( left, right );
 	}
 }

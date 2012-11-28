@@ -275,9 +275,10 @@ public class ScriptTokenizer
 				case '*':
 				case '.':
 				case '#':
-					return new Token( TYPE.BINOP, location, String.valueOf( (char)ch ) );
+				case '%':
 				case ':':
-					return new Token( TYPE.BINOP, location, ":" );
+				case ',':
+					return new Token( TYPE.BINOP, location, String.valueOf( (char)ch ) );
 				case '!':
 					ch = in.read();
 					if( ch == '=' )
@@ -309,8 +310,6 @@ public class ScriptTokenizer
 						return new Token( TYPE.BINOP, location, "||" );
 					in.push( ch );
 					throw new SourceException( "Unexpected character '" + (char)ch + "'", in.getLocation() );
-				case ',':
-					return new Token( TYPE.BINOP, location, "," );
 
 				// Others
 				case '(':
@@ -325,7 +324,6 @@ public class ScriptTokenizer
 					return new Token( TYPE.BRACE_OPEN, location, "{" );
 				case '}':
 					return new Token( TYPE.BRACE_CLOSE, location, "}" );
-
 				case ';':
 					return new Token( TYPE.SEMICOLON, location, ";" );
 

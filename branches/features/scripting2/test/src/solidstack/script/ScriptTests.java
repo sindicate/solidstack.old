@@ -538,15 +538,15 @@ public class ScriptTests extends Util
 		test( "1 as byte + 1", 2 );
 		test( "1 as byte + 1 as long", 2L );
 		test( "1 as byte + 1 as BigInteger", new BigInteger( "2" ) );
-		test( "1 as byte + 1 as float", (float)2 );
-		test( "1 as byte + 1 as double", (double)2 );
+		test( "1 as byte + 1 as float", 2f );
+		test( "1 as byte + 1 as double", 2d );
 		test( "1 as byte + 1 as BigDecimal", new BigDecimal( "2" ) );
 
 		test( "1 + 1 as byte", 2 );
 		test( "1 as long + 1 as byte", 2L );
 		test( "1 as BigInteger + 1 as byte", new BigInteger( "2" ) );
-		test( "1 as float + 1 as byte", (float)2 );
-		test( "1 as double + 1 as byte", (double)2 );
+		test( "1 as float + 1 as byte", 2f );
+		test( "1 as double + 1 as byte", 2d );
 		test( "1 as BigDecimal + 1 as byte", new BigDecimal( "2" ) );
 
 		test( "1 as char + 1 as char", 2 );
@@ -554,6 +554,59 @@ public class ScriptTests extends Util
 
 		test( "-1 as char + -1 as char", 0x1FFFE );
 		test( "-1 as byte + -1 as byte", -2 );
+
+		test( "16 as byte - 16 as byte", 0 );
+		test( "16 as byte * 16 as byte", 256 );
+		test( "16 as byte / 16 as byte", 1 );
+		test( "16 as byte % 15 as byte", 1 );
+
+		assertThat( -3 % 2 ).isEqualTo( -1 ); // So this is not mod but remainder
+		assertThat( new BigInteger( "-3" ).mod( new BigInteger( "2" ) ) ).isEqualTo( new BigInteger( "1" ) );
+		assertThat( new BigInteger( "-3" ).remainder( new BigInteger( "2" ) ) ).isEqualTo( new BigInteger( "-1" ) );
+
+		test( "16 as float / 15 as byte", (float)16 / 15 );
+		test( "16 as float % 15 as byte", (float)1 );
+
+		test( "-15 as byte", (byte)-15 );
+		test( "-15 as char", (char)-15 );
+		test( "-(15 as byte)", -15 );
+		test( "-(15 as char)", -15 );
+		test( "-(1.5 as float)", -1.5f );
+
+		test( "abs( -15 as byte )", 15 );
+		test( "abs( -15 as char )", 65521 );
+		test( "abs( -15 )", 15 );
+		test( "abs( -1.5 as float )", 1.5f );
+
+		test( "1 as byte < 2 as byte", true );
+		test( "1 as char < 2 as char", true );
+		test( "1 as short < 2 as short", true );
+		test( "1 as int < 2 as int", true );
+		test( "1 as long < 2 as long", true );
+		test( "1 as float < 2 as float", true );
+		test( "1 as double < 2 as double", true );
+		test( "1 as BigInteger < 2 as BigInteger", true );
+		test( "1 as BigDecimal < 2 as BigDecimal", true );
+
+		test( "1 as byte < 2 as byte", true );
+		test( "1 as byte < 2 as char", true );
+		test( "1 as byte < 2 as short", true );
+		test( "1 as byte < 2 as int", true );
+		test( "1 as byte < 2 as long", true );
+		test( "1 as byte < 2 as float", true );
+		test( "1 as byte < 2 as double", true );
+		test( "1 as byte < 2 as BigInteger", true );
+		test( "1 as byte < 2 as BigDecimal", true );
+
+		test( "1 as byte == 1 as byte", true );
+		test( "1 as byte == 1 as char", true );
+		test( "1 as byte == 1 as short", true );
+		test( "1 as byte == 1 as int", true );
+		test( "1 as byte == 1 as long", true );
+		test( "1 as byte == 1 as float", true );
+		test( "1 as byte == 1 as double", true );
+		test( "1 as byte == 1 as BigInteger", true );
+		test( "1 as byte == 1 as BigDecimal", true );
 	}
 
 	@Test

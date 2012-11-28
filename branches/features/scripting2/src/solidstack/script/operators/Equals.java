@@ -32,6 +32,8 @@ public class Equals extends Operator
 	{
 		Object left = Util.single( this.left.evaluate( thread ) );
 		Object right = Util.single( this.right.evaluate( thread ) );
+		if( ( left instanceof Number || left instanceof Character ) && ( left instanceof Number || left instanceof Character ) )
+			return Operator.compare( left, right ) == 0;
 		return left.equals( right ); // Never null, only Null.INSTANCE
 	}
 }

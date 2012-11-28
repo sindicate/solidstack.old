@@ -118,6 +118,16 @@ abstract public class Operator implements Expression
 					return new Multiply( name, left, right );
 				break;
 
+			case '/':
+				if( name.equals( "/" ) )
+					return new Divide( name, left, right );
+				break;
+
+			case '%':
+				if( name.equals( "%" ) )
+					return new Remainder( name, left, right );
+				break;
+
 			case '+':
 				if( name.equals( "+" ) )
 					return new Plus( name, left, right );
@@ -280,62 +290,196 @@ abstract public class Operator implements Expression
 		throw Assert.fail();
 	}
 
-	static protected Object mul( Object left, Object right )
+	static protected Object subtract( Object left, Object right )
 	{
-		// TODO Type conversions
-		if( left instanceof Integer )
+		Assert.isTrue( left instanceof Number || left instanceof Character );
+		Assert.isTrue( right instanceof Number || right instanceof Character );
+
+		Object[] operands = Types.match( left, right );
+		int type = (Integer)operands[ 0 ];
+		left = operands[ 1 ];
+		right = operands[ 2 ];
+		switch( type )
 		{
-			Assert.isInstanceOf( right, Integer.class );
-			return (Integer)left * (Integer)right;
+			case 2:
+				return ( (Number)left ).intValue() - ( (Number)right ).intValue();
+			case 3:
+				return ( (Number)left ).longValue() - ( (Number)right ).longValue();
+			case 4:
+				return ( (BigInteger)left ).subtract( (BigInteger)right );
+			case 5:
+				return ( (Number)left ).floatValue() - ( (Number)right ).floatValue();
+			case 6:
+				return ( (Number)left ).doubleValue() - ( (Number)right ).doubleValue();
+			case 7:
+				return ( (BigDecimal)left ).subtract( (BigDecimal)right );
 		}
-		Assert.isInstanceOf( left, BigDecimal.class );
-		Assert.isInstanceOf( right, BigDecimal.class );
-		return ( (BigDecimal)left ).multiply( (BigDecimal)right );
+
+		throw Assert.fail();
 	}
 
-	static protected Object minus( Object left, Object right )
+	static protected Object multiply( Object left, Object right )
 	{
-		if( left instanceof Integer )
+		Assert.isTrue( left instanceof Number || left instanceof Character );
+		Assert.isTrue( right instanceof Number || right instanceof Character );
+
+		Object[] operands = Types.match( left, right );
+		int type = (Integer)operands[ 0 ];
+		left = operands[ 1 ];
+		right = operands[ 2 ];
+		switch( type )
 		{
-			Assert.isInstanceOf( right, Integer.class );
-			return (Integer)left - (Integer)right;
+			case 2:
+				return ( (Number)left ).intValue() * ( (Number)right ).intValue();
+			case 3:
+				return ( (Number)left ).longValue() * ( (Number)right ).longValue();
+			case 4:
+				return ( (BigInteger)left ).multiply( (BigInteger)right );
+			case 5:
+				return ( (Number)left ).floatValue() * ( (Number)right ).floatValue();
+			case 6:
+				return ( (Number)left ).doubleValue() * ( (Number)right ).doubleValue();
+			case 7:
+				return ( (BigDecimal)left ).multiply( (BigDecimal)right );
 		}
-		Assert.isInstanceOf( left, BigDecimal.class );
-		Assert.isInstanceOf( right, BigDecimal.class );
-		return ( (BigDecimal)left ).subtract( (BigDecimal)right );
+
+		throw Assert.fail();
 	}
 
-	static public Object negate( Object value )
+	static protected Object divide( Object left, Object right )
 	{
-		if( value instanceof Integer )
-			return - (Integer)value;
-		Assert.isInstanceOf( value, BigDecimal.class );
-		return ( (BigDecimal)value ).negate();
+		Assert.isTrue( left instanceof Number || left instanceof Character );
+		Assert.isTrue( right instanceof Number || right instanceof Character );
+
+		Object[] operands = Types.match( left, right );
+		int type = (Integer)operands[ 0 ];
+		left = operands[ 1 ];
+		right = operands[ 2 ];
+		switch( type )
+		{
+			case 2:
+				return ( (Number)left ).intValue() / ( (Number)right ).intValue();
+			case 3:
+				return ( (Number)left ).longValue() / ( (Number)right ).longValue();
+			case 4:
+				return ( (BigInteger)left ).divide( (BigInteger)right );
+			case 5:
+				return ( (Number)left ).floatValue() / ( (Number)right ).floatValue();
+			case 6:
+				return ( (Number)left ).doubleValue() / ( (Number)right ).doubleValue();
+			case 7:
+				return ( (BigDecimal)left ).divide( (BigDecimal)right );
+		}
+
+		throw Assert.fail();
+	}
+
+	static protected Object remainder( Object left, Object right )
+	{
+		Assert.isTrue( left instanceof Number || left instanceof Character );
+		Assert.isTrue( right instanceof Number || right instanceof Character );
+
+		Object[] operands = Types.match( left, right );
+		int type = (Integer)operands[ 0 ];
+		left = operands[ 1 ];
+		right = operands[ 2 ];
+		switch( type )
+		{
+			case 2:
+				return ( (Number)left ).intValue() % ( (Number)right ).intValue();
+			case 3:
+				return ( (Number)left ).longValue() % ( (Number)right ).longValue();
+			case 4:
+				return ( (BigInteger)left ).remainder( (BigInteger)right );
+			case 5:
+				return ( (Number)left ).floatValue() % ( (Number)right ).floatValue();
+			case 6:
+				return ( (Number)left ).doubleValue() % ( (Number)right ).doubleValue();
+			case 7:
+				return ( (BigDecimal)left ).remainder( (BigDecimal)right );
+		}
+
+		throw Assert.fail();
+	}
+
+	static public Object negate( Object right )
+	{
+		Assert.isTrue( right instanceof Number || right instanceof Character );
+
+		Object[] operands = Types.match( right, right );
+		int type = (Integer)operands[ 0 ];
+		right = operands[ 2 ];
+		switch( type )
+		{
+			case 2:
+				return - ( (Number)right ).intValue();
+			case 3:
+				return - ( (Number)right ).longValue();
+			case 4:
+				return ( (BigInteger)right ).negate();
+			case 5:
+				return - ( (Number)right ).floatValue();
+			case 6:
+				return - ( (Number)right ).doubleValue();
+			case 7:
+				return ( (BigDecimal)right ).negate();
+		}
+
+		throw Assert.fail();
+	}
+
+	static public Object abs( Object right )
+	{
+		Assert.isTrue( right instanceof Number || right instanceof Character );
+
+		Object[] operands = Types.match( right, right );
+		int type = (Integer)operands[ 0 ];
+		right = operands[ 2 ];
+		switch( type )
+		{
+			case 2:
+				return Math.abs( ( (Number)right ).intValue() );
+			case 3:
+				return Math.abs( ( (Number)right ).longValue() );
+			case 4:
+				return ( (BigInteger)right ).abs();
+			case 5:
+				return Math.abs( ( (Number)right ).floatValue() );
+			case 6:
+				return Math.abs( ( (Number)right ).doubleValue() );
+			case 7:
+				return ( (BigDecimal)right ).abs();
+		}
+
+		throw Assert.fail();
 	}
 
 	static protected int compare( Object left, Object right )
 	{
-		if( left instanceof Integer )
-		{
-			Assert.isInstanceOf( right, Integer.class );
-			return ( (Integer)left ).compareTo( (Integer)right );
-		}
-		if( left instanceof BigDecimal )
-		{
-			Assert.isInstanceOf( right, BigDecimal.class );
-			return ( (BigDecimal)left ).compareTo( (BigDecimal)right );
-		}
-		Assert.isInstanceOf( left, String.class );
-		Assert.isInstanceOf( right, String.class );
-		return ( (String)left ).compareTo( (String)right );
-	}
+		Assert.isTrue( left instanceof Number || left instanceof Character );
+		Assert.isTrue( right instanceof Number || right instanceof Character );
 
-	static public Object abs( Object value )
-	{
-		if( value instanceof Integer )
-			return Math.abs( (Integer)value );
-		Assert.isInstanceOf( value, BigDecimal.class );
-		return ( (BigDecimal)value ).abs();
+		Object[] operands = Types.match( left, right );
+		int type = (Integer)operands[ 0 ];
+		left = operands[ 1 ];
+		right = operands[ 2 ];
+		switch( type )
+		{
+			case 2:
+				return Integer.compare( ( (Number)left ).intValue(), ( (Number)right ).intValue() );
+			case 3:
+				return Long.compare( ( (Number)left ).longValue(), ( (Number)right ).longValue() );
+			case 4:
+				return ( (BigInteger)left ).compareTo( (BigInteger)right );
+			case 5:
+				return Float.compare( ( (Number)left ).floatValue(), ( (Number)right ).floatValue() );
+			case 6:
+				return Double.compare( ( (Number)left ).doubleValue(), ( (Number)right ).doubleValue() );
+			case 7:
+				return ( (BigDecimal)left ).compareTo( (BigDecimal)right );
+		}
+
+		throw Assert.fail();
 	}
 
 	protected Operator( String operator, Expression left, Expression right )
