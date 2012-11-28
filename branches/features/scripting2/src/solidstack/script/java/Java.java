@@ -23,8 +23,6 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
-import solidstack.script.ScriptException;
-
 
 /**
  * Contains methods to call methods an objects, get or set fields on objects.
@@ -39,8 +37,9 @@ public class Java
 	 * @param args The arguments to the method.
 	 * @return The result of calling the method.
 	 * @throws InvocationTargetException Wraps the exception thrown by the underlying method.
+	 * @throws MissingMethodException
 	 */
-	static public Object invoke( Object object, String name, Object... args ) throws InvocationTargetException
+	static public Object invoke( Object object, String name, Object... args ) throws InvocationTargetException, MissingMethodException
 	{
 		CallContext context = new CallContext( object, name, args );
 		MethodCall call = Resolver.resolveMethodCall( context );
@@ -57,8 +56,9 @@ public class Java
 	 * @param args The arguments to the method.
 	 * @return The result of calling the method.
 	 * @throws InvocationTargetException Wraps the exception thrown by the underlying method.
+	 * @throws MissingMethodException
 	 */
-	static public Object invokeStatic( Class<?> type, String name, Object... args ) throws InvocationTargetException
+	static public Object invokeStatic( Class<?> type, String name, Object... args ) throws InvocationTargetException, MissingMethodException
 	{
 		CallContext context = new CallContext( type, name, args );
 		MethodCall call = Resolver.resolveMethodCall( context );
@@ -73,8 +73,9 @@ public class Java
 	 * @param object An object.
 	 * @param name The name of the field.
 	 * @return The value of the field.
+	 * @throws MissingFieldException
 	 */
-	static public Object get( Object object, String name )
+	static public Object get( Object object, String name ) throws MissingFieldException
 	{
 		try
 		{
@@ -96,8 +97,9 @@ public class Java
 	 * @param type A class.
 	 * @param name The name of the field.
 	 * @return The value of the field.
+	 * @throws MissingFieldException
 	 */
-	public static Object getStatic( Class<?> type, String name )
+	public static Object getStatic( Class<?> type, String name ) throws MissingFieldException
 	{
 		try
 		{
@@ -123,8 +125,9 @@ public class Java
 	 * @param args The arguments to the constructor.
 	 * @return The instantiated object.
 	 * @throws InvocationTargetException Wraps the exception thrown by the underlying method.
+	 * @throws MissingMethodException
 	 */
-	static public Object construct( Class<?> type, Object... args ) throws InvocationTargetException
+	static public Object construct( Class<?> type, Object... args ) throws InvocationTargetException, MissingMethodException
 	{
 		CallContext context = new CallContext( type, null, args );
 		MethodCall call = Resolver.resolveConstructorCall( context );
@@ -166,7 +169,7 @@ public class Java
 		primitiveCache.put( "void", void.class );
 	}
 
-	static public java.lang.Class<?> forName( String name, ClassLoader loader )
+	static public java.lang.Class<?> forName( String name, ClassLoader loader ) throws ClassNotFoundException
 	{
 		try
 		{
@@ -212,7 +215,7 @@ public class Java
 			catch( ClassNotFoundException ee )
 			{
 				// TODO We can also do . -> $ replacement to search for inner classes
-				throw new ScriptException( e );
+				throw e; // Throw the original
 			}
 
 			return result;

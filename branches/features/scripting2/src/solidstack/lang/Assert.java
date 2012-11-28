@@ -133,9 +133,9 @@ public class Assert
 	 * @param errorMessage
 	 *            The error message.
 	 */
-	static public void fail( String errorMessage )
+	static public AssertionError fail( String errorMessage )
 	{
-		throwAssertionFailure( errorMessage, 2 );
+		return throwAssertionFailure( errorMessage, 2 );
 	}
 
 	/**

@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import solidstack.script.ScriptException;
+import solidstack.lang.Assert;
 
 
 
@@ -208,7 +208,7 @@ public class Resolver
 	// ---- STEP 2: Used to calculate the best candidate
 
 	// TODO (RMB) Can we exchange precedence for the specificity of 'this'
-    static public MethodCall calculateBestMethodCandidate( List<MethodCall> candidates )
+    static public MethodCall calculateBestMethodCandidate( List<MethodCall> candidates ) throws ResolverException
     {
 		if( candidates.size() == 0 )
 			return null;
@@ -434,29 +434,29 @@ public class Resolver
 		}
 
 		if( !varArg1 )
+		{
 			if( i1 > last1 ) // Are we over the last argument?
 			{
 				if( varArg2 )
 					return 1;
 				if( i2 > last2 )
 					return 0;
-				throw new ScriptException( "impossible1" );
+				throw Assert.fail();
 			}
-			else
-			{
-				type1 = call1[ i1 ];
-				arg1 = args1[ i1 ];
-			}
+			type1 = call1[ i1 ];
+			arg1 = args1[ i1 ];
+		}
 
 		if( !varArg2 )
+		{
 			if( i2 > last2 ) // Are we over the last argument?
 			{
 				if( varArg1 )
 					return -1; // call2 is bigger then call1 (call1 has an unused vararg)
 				return 1; // call1 is bigger then call2 (call1 has more arguments)
 			}
-			else
-				type2 = call2[ i2 ];
+			type2 = call2[ i2 ];
+		}
 
 		while( true )
 		{
@@ -533,13 +533,13 @@ public class Resolver
 			{
 				if( varArg2 || type2 == null )
 					break;
-				throw new ScriptException( "impossible5" );
+				throw Assert.fail();
 			}
 			else if( type2 == null )
 			{
 				if( varArg1 )
 					break;
-				throw new ScriptException( "impossible6" );
+				throw Assert.fail();
 			}
 		}
 

@@ -16,10 +16,9 @@
 
 package solidstack.script.java;
 
-import solidstack.script.ScriptException;
 
 
-public class MissingMethodException extends ScriptException
+public class MissingMethodException extends Exception
 {
 	public CallContext context;
 

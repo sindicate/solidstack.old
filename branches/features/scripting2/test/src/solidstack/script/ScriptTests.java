@@ -27,7 +27,6 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import solidstack.script.java.Java;
-import solidstack.script.java.MissingFieldException;
 import solidstack.script.objects.FunnyString;
 import solidstack.script.scopes.Scope;
 import solidstack.script.scopes.Symbol;
@@ -364,7 +363,7 @@ public class ScriptTests extends Util
 		eval( "Calendar = class( \"java.util.Calendar\" ); println( Calendar#getInstance().getClass() )" );
 		test( "Calendar = class( \"java.util.Calendar\" ); Calendar#SATURDAY", 7 );
 		fail( "Calendar = class( \"java.util.Calendar\" ); Calendar#clear()", ScriptException.class, "static java.util.Calendar.clear()" );
-		fail( "TestObject = class( \"solidstack.script.ScriptTests$TestObject2\" ); TestObject#value", MissingFieldException.class, "static solidstack.script.ScriptTests$TestObject2.value" );
+		fail( "TestObject = class( \"solidstack.script.ScriptTests$TestObject2\" ); TestObject#value", ScriptException.class, "static solidstack.script.ScriptTests$TestObject2.value" );
 	}
 
 	@Test
@@ -607,6 +606,15 @@ public class ScriptTests extends Util
 		test( "1 as byte == 1 as double", true );
 		test( "1 as byte == 1 as BigInteger", true );
 		test( "1 as byte == 1 as BigDecimal", true );
+	}
+
+	@Test
+	static public void test27()
+	{
+		fail( "class( \"xxx\" )", ScriptException.class, "No such class: xxx" );
+		fail( "1.xxx", ScriptException.class, "No such field: java.lang.Integer.xxx" );
+		fail( "class( \"java.lang.Integer\" )#xxx", ScriptException.class, "No such field: static java.lang.Integer.xxx" );
+		fail( "class( \"java.lang.String\" )#valueOf( null )", ScriptException.class, "valueOf(char[])" );
 	}
 
 	@Test

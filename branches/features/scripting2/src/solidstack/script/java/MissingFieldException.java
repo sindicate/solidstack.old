@@ -16,10 +16,9 @@
 
 package solidstack.script.java;
 
-import solidstack.script.ScriptException;
 
 
-public class MissingFieldException extends ScriptException
+public class MissingFieldException extends Exception
 {
 	private Object object;
 	private Class<?> type;

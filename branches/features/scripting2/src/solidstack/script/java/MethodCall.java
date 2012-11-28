@@ -18,6 +18,7 @@ package solidstack.script.java;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -71,6 +72,13 @@ public class MethodCall implements Cloneable
 			Java.throwUnchecked( e );
 		}
 		return null;
+	}
+
+	public Member getMember()
+	{
+		if( this.constructor != null )
+			return this.constructor;
+		return this.method;
 	}
 
 	public String getName()

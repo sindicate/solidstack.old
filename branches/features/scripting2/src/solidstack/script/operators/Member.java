@@ -22,6 +22,7 @@ import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.java.Java;
+import solidstack.script.java.MissingFieldException;
 import solidstack.script.objects.Null;
 import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Util;
@@ -47,7 +48,14 @@ public class Member extends Operator
 			Assert.isFalse( left == Null.INSTANCE, "member: " + right.toString() );
 			if( left instanceof AbstractScope ) // TODO This is part of the OO we want
 				return ( (AbstractScope)left ).getRef( right );
-			return Util.toScript( Java.get( left, right.toString() ) );
+			try
+			{
+				return Util.toScript( Java.get( left, right.toString() ) );
+			}
+			catch( MissingFieldException e )
+			{
+				throw new ThrowException( e.getMessage(), thread.cloneStack( getLocation() ) );
+			}
 		}
 		catch( ScopeException e )
 		{

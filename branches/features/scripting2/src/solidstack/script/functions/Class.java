@@ -18,6 +18,7 @@ package solidstack.script.functions;
 
 import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
 import solidstack.script.java.Java;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Util;
@@ -32,6 +33,13 @@ public class Class extends FunctionObject
 		Assert.isTrue( object instanceof String );
 		String name = (String)object;
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
-		return Java.forName( name, loader );
+		try
+		{
+			return Java.forName( name, loader );
+		}
+		catch( ClassNotFoundException e )
+		{
+			throw new ThrowException( "No such class: " + e.getMessage(), thread.cloneStack() );
+		}
 	}
 }

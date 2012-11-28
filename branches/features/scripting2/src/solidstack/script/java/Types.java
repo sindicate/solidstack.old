@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Set;
 
 import solidstack.lang.Assert;
-import solidstack.script.ScriptException;
 
 
 public class Types
@@ -279,7 +278,7 @@ public class Types
 						return -1;
 				}
 				else
-					throw new ScriptException( "Unexpected type " + type.getName() );
+					throw Assert.fail( "Unexpected type " + type.getName() );
 				return 1;
 			}
 			catch( ArithmeticException e )
@@ -288,7 +287,7 @@ public class Types
 			}
 		}
 
-		throw new ScriptException( "Unexpected arg " + arg.getClass().getName() );
+		throw Assert.fail( "Unexpected arg " + arg.getClass().getName() );
 	}
 
 
