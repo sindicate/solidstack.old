@@ -675,6 +675,13 @@ public class ScriptTests extends Util
 		eval( script );
 	}
 
+	@Test
+	static public void sql() throws IOException
+	{
+		String script = readFile( "SqlTests.funny" );
+		eval( script );
+	}
+
 	// DONE Calls with named parameters
 	// TODO A function without parameters, does not need the FunctionObject. Its just an unevaluated expression.
 	// TODO Exceptions, catch & finally

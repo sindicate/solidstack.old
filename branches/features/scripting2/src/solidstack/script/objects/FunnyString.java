@@ -18,6 +18,8 @@ package solidstack.script.objects;
 
 import java.util.List;
 
+
+// FIXME So how do we know what was part of the string and what was a substituted value?
 public class FunnyString
 {
 	private List<Object> values;

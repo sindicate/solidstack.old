@@ -32,12 +32,22 @@ public class MissingMethodException extends Exception
 	{
 		Object object = this.context.getObject();
 		Object[] args = this.context.getArgs();
+		boolean method = this.context.getName() != null;
 
-		StringBuilder result = new StringBuilder( "No such method: " );
-		result.append( object == null ? "static " : "" );
+		StringBuilder result = new StringBuilder();
+		if( method )
+		{
+			result.append( "No such method: " );
+			result.append( object == null ? "static " : "" );
+		}
+		else
+			result.append( "No such constructor: " );
 		result.append( this.context.getType().getName() );
-		result.append( '.' );
-		result.append( this.context.getName() );
+		if( method )
+		{
+			result.append( '.' );
+			result.append( this.context.getName() );
+		}
 		result.append( "() is applicable for argument types: (" );
 		for( int i = 0; i < args.length; i++ )
 		{

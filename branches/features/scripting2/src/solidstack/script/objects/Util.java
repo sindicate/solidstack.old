@@ -3,7 +3,6 @@ package solidstack.script.objects;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 
 import solidstack.script.ThreadContext;
@@ -95,15 +94,15 @@ public class Util
 
 	static public Object deref( Object value )
 	{
-		if( value instanceof List )
-		{
-			// TODO Deep deref?
-			// TODO Or create a new list?
-			List<Object> list = (List<Object>)value;
-			for( ListIterator<Object> i = list.listIterator(); i.hasNext(); )
-				i.set( deref( i.next() ) );
-			return list;
-		}
+//		if( value instanceof List )
+//		{
+//			// TODO Deep deref?
+//			// TODO Or create a new list?
+//			List<Object> list = (List<Object>)value;
+//			for( ListIterator<Object> i = list.listIterator(); i.hasNext(); )
+//				i.set( deref( i.next() ) );
+//			return list;
+//		}
 		if( value instanceof Ref )
 			return ( (Ref)value ).get();
 		return value;

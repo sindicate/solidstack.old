@@ -288,14 +288,8 @@ public class Query
 			ResultSet resultSet = resultSet( connection, args );
 			try
 			{
-				ResultSetMetaData metaData = resultSet.getMetaData();
-				int columnCount = metaData.getColumnCount();
-
 				// DETERMINE THE LOWERCASE NAMES IN ADVANCE!!! Otherwise the names will not be shared in memory.
-				Map< String, Integer > names = new HashMap< String, Integer >();
-				for( int col = 0; col < columnCount; col++ )
-					names.put( metaData.getColumnLabel( col + 1 ).toLowerCase( Locale.ENGLISH ), col );
-
+				Map< String, Integer > names = getColumnLabelMap( resultSet.getMetaData() );
 				List< Object[] > result = listOfArrays( resultSet, this.flyWeight );
 				return new ResultList( result, names );
 			}
@@ -303,6 +297,24 @@ public class Query
 			{
 				close( resultSet );
 			}
+		}
+		catch( SQLException e )
+		{
+			throw new QuerySQLException( e );
+		}
+	}
+
+	static public Map< String, Integer > getColumnLabelMap( ResultSetMetaData metaData )
+	{
+		try
+		{
+			int columnCount = metaData.getColumnCount();
+
+			Map< String, Integer > names = new HashMap< String, Integer >();
+			for( int col = 0; col < columnCount; col++ )
+				names.put( metaData.getColumnLabel( col + 1 ).toLowerCase( Locale.ENGLISH ), col );
+
+			return names;
 		}
 		catch( SQLException e )
 		{
