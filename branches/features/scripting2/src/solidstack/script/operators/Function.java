@@ -74,7 +74,7 @@ public class Function extends Operator
 		return this.parameters;
 	}
 
-	public Expression getBlock()
+	public Expression getExpression()
 	{
 		return this.right;
 	}

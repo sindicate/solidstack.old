@@ -16,28 +16,35 @@
 
 package solidstack.script.functions;
 
-import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Util;
 
+
+// TODO Need to catch the java exceptions (index out of range)
 public class Substr extends FunctionObject
 {
 	@Override
 	public Object call( ThreadContext thread, Object... parameters )
 	{
-		Assert.isTrue( parameters.length == 2 || parameters.length == 3 );
+		if( parameters.length != 2 && parameters.length != 3 )
+			throw new ThrowException( "substr() needs 2 or 3 parameters", thread.cloneStack() );
 
 		Object object = Util.deref( parameters[ 0 ] );
+		if( !( object instanceof String ) )
+			throw new ThrowException( "substr() needs a string as first parameter", thread.cloneStack() );
+
 		Object start = Util.deref( parameters[ 1 ] );
-		Assert.isInstanceOf( object, String.class );
-		Assert.isInstanceOf( start, Integer.class );
+		if( !( start instanceof Integer ) )
+			throw new ThrowException( "substr() needs an integer as second parameter", thread.cloneStack() );
 
 		if( parameters.length == 2 )
 			return ( (String)object ).substring( (Integer)start );
 
 		Object end = Util.deref( parameters[ 2 ] );
-		Assert.isInstanceOf( end, Integer.class );
+		if( !( end instanceof Integer ) )
+			throw new ThrowException( "substr() needs an integer as third parameter", thread.cloneStack() );
 
 		return ( (String)object ).substring( (Integer)start, (Integer)end );
 	}

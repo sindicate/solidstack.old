@@ -23,7 +23,6 @@ import solidstack.script.functions.Abs;
 import solidstack.script.functions.Class;
 import solidstack.script.functions.Def;
 import solidstack.script.functions.Defined;
-import solidstack.script.functions.ForEach;
 import solidstack.script.functions.Length;
 import solidstack.script.functions.Print;
 import solidstack.script.functions.Println;
@@ -46,7 +45,6 @@ public class GlobalScope extends Scope
 		val( Symbol.forString( "class" ), new Class() );
 		val( Symbol.forString( "def" ), new Def() );
 		val( Symbol.forString( "defined" ), new Defined() );
-		val( Symbol.forString( "forEach" ), new ForEach() );
 		val( Symbol.forString( "length" ), new Length() );
 		val( Symbol.forString( "print" ), new Print() );
 		val( Symbol.forString( "println" ), new Println() );

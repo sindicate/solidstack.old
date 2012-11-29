@@ -16,21 +16,24 @@
 
 package solidstack.script.functions;
 
-import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Null;
-import solidstack.script.scopes.Symbol;
+import solidstack.script.scopes.AbstractScope.Ref;
 import solidstack.script.scopes.AbstractScope.Value;
+import solidstack.script.scopes.Symbol;
 
 public class Val extends FunctionObject
 {
 	@Override
 	public Object call( ThreadContext thread, Object... parameters )
 	{
-		Assert.isTrue( parameters.length == 1 );
+		if( parameters.length != 1 ) // TODO Maybe this could be more than one
+			throw new ThrowException( "val() needs exactly one parameter", thread.cloneStack() );
 		Object object = parameters[ 0 ];
-		Assert.isInstanceOf( object, Value.class );
+		if( !( object instanceof Ref ) )
+			throw new ThrowException( "val() needs a variable identifier as parameter", thread.cloneStack() );
 		Symbol symbol = ( (Value)object ).getKey();
 		return thread.getScope().val( symbol, Null.INSTANCE );
 	}

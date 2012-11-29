@@ -19,7 +19,6 @@ package solidstack.script.objects;
 import java.util.ArrayList;
 import java.util.List;
 
-import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
@@ -51,6 +50,11 @@ public class FunctionObject implements solidstack.script.java.Function
 		return this.function.getParameters();
 	}
 
+	public Function getFunction()
+	{
+		return this.function;
+	}
+
 	public Object call( Object... args )
 	{
 		return call( ThreadContext.get(), args );
@@ -65,7 +69,7 @@ public class FunctionObject implements solidstack.script.java.Function
 
 		if( pars.length > 0 && pars[ 0 ] instanceof Labeled )
 		{
-			pars = Util.toNamedParameters( pars );
+			pars = Util.toNamedParameters( pars, thread );
 			int count = pars.length;
 			int index = 0;
 			while( index < count )
@@ -79,7 +83,8 @@ public class FunctionObject implements solidstack.script.java.Function
 						found = true;
 						break;
 					}
-				Assert.isTrue( found );
+				if( !found )
+					throw new ThrowException( "Parameter '" + label + "' undefined", thread.cloneStack() );
 			}
 			for( int i = 0; i < oCount; i++ )
 				symbols[ i ] = ( (Identifier)parameters[ i ] ).getSymbol();
@@ -134,7 +139,7 @@ public class FunctionObject implements solidstack.script.java.Function
 			newScope = this.scope;
 
 		AbstractScope old = thread.swapScope( newScope );
-		Object result = this.function.getBlock().evaluate( thread );
+		Object result = this.function.getExpression().evaluate( thread );
 		thread.swapScope( old );
 		return result;
 	}

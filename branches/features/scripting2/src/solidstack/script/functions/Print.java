@@ -16,8 +16,8 @@
 
 package solidstack.script.functions;
 
-import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Util;
 
@@ -26,7 +26,8 @@ public class Print extends FunctionObject
 	@Override
 	public Object call( ThreadContext thread, Object... parameters )
 	{
-		Assert.isTrue( parameters.length == 1 );
+		if( parameters.length != 1 ) // TODO Maybe this could be more than one
+			throw new ThrowException( "print() needs exactly one parameter", thread.cloneStack() );
 		Object object = Util.deref( parameters[ 0 ] );
 		System.out.print( object );
 		return object;

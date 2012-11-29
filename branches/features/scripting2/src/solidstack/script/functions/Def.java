@@ -16,8 +16,8 @@
 
 package solidstack.script.functions;
 
-import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Null;
 import solidstack.script.scopes.AbstractScope.Ref;
@@ -28,9 +28,11 @@ public class Def extends FunctionObject
 	@Override
 	public Object call( ThreadContext thread, Object... parameters )
 	{
-		Assert.isTrue( parameters.length == 1 );
+		if( parameters.length != 1 ) // TODO Maybe this could be more than one
+			throw new ThrowException( "def() needs exactly one parameter", thread.cloneStack() );
 		Object object = parameters[ 0 ];
-		Assert.isInstanceOf( object, Ref.class );
+		if( !( object instanceof Ref ) )
+			throw new ThrowException( "def() needs a variable identifier as parameter", thread.cloneStack() );
 		Symbol symbol = ( (Ref)object ).getKey();
 		return thread.getScope().def( symbol, Null.INSTANCE );
 	}

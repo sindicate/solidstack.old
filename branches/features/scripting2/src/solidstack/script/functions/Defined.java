@@ -16,9 +16,10 @@
 
 package solidstack.script.functions;
 
-import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
 import solidstack.script.objects.FunctionObject;
+import solidstack.script.scopes.AbstractScope.Ref;
 import solidstack.script.scopes.AbstractScope.Undefined;
 
 public class Defined extends FunctionObject
@@ -26,8 +27,11 @@ public class Defined extends FunctionObject
 	@Override
 	public Object call( ThreadContext thread, Object... parameters )
 	{
-		Assert.isTrue( parameters.length == 1 );
+		if( parameters.length != 1 ) // TODO Maybe this could be more than one
+			throw new ThrowException( "defined() needs exactly one parameter", thread.cloneStack() );
 		Object object = parameters[ 0 ];
+		if( !( object instanceof Ref ) )
+			throw new ThrowException( "defined() needs a variable identifier as parameter", thread.cloneStack() );
 		return !( object instanceof Undefined );
 	}
 }

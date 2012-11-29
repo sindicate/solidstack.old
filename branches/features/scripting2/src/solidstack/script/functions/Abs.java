@@ -16,8 +16,8 @@
 
 package solidstack.script.functions;
 
-import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Util;
 import solidstack.script.operators.Operator;
@@ -27,7 +27,8 @@ public class Abs extends FunctionObject
 	@Override
 	public Object call( ThreadContext thread, Object... parameters )
 	{
-		Assert.isTrue( parameters.length == 1 );
+		if( parameters.length != 1 )
+			throw new ThrowException( "abs() needs exactly one parameter", thread.cloneStack() );
 		return Operator.abs( Util.deref( parameters[ 0 ] ) );
 	}
 }

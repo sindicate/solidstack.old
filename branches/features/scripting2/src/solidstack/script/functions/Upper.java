@@ -16,19 +16,23 @@
 
 package solidstack.script.functions;
 
-import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Util;
 
+
+// TODO And lower()?
 public class Upper extends FunctionObject
 {
 	@Override
 	public Object call( ThreadContext thread, Object... parameters )
 	{
-		Assert.isTrue( parameters.length == 1 );
+		if( parameters.length != 1 )
+			throw new ThrowException( "upper() needs exactly one parameter", thread.cloneStack() );
 		Object object = Util.deref( parameters[ 0 ] );
-		Assert.isInstanceOf( object, String.class );
+		if( !( object instanceof String ) )
+			throw new ThrowException( "upper() needs a string parameter", thread.cloneStack() );
 		return ( (String)object ).toUpperCase();
 	}
 }

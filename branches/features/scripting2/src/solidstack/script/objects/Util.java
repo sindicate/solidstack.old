@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
-import solidstack.lang.Assert;
+import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
 import solidstack.script.objects.FunctionObject.ParWalker;
 import solidstack.script.scopes.AbstractScope.Ref;
 import solidstack.script.scopes.Symbol;
@@ -31,26 +32,29 @@ public class Util
 		return result;
 	}
 
-	static public Object[] toNamedParameters( Object[] pars )
+	static public Object[] toNamedParameters( Object[] pars, ThreadContext thread )
 	{
 		Object[] result = new Object[ pars.length * 2 ];
 		int index = 0;
 		for( Object par : pars )
 		{
-			Assert.isTrue( par instanceof Labeled );
+			if( !( par instanceof Labeled ) )
+				throw new ThrowException( "All parameters must be named", thread.cloneStack() );
 			Labeled labeled = (Labeled)par;
-			Assert.isTrue( labeled.getLabel() instanceof Ref ); // TODO Shouldn't this be an Identifier too?;
+			if( !( labeled.getLabel() instanceof Ref ) )
+				throw new ThrowException( "Parameter must be named with a variable identifier", thread.cloneStack() );
 			result[ index++ ] = ( (Ref)labeled.getLabel() ).getKey();
 			result[ index++ ] = labeled.getValue();
 		}
 		return result;
 	}
 
-	static public Object[] toJavaParameters( Object[] pars )
+	static public Object[] toJavaParameters( Object[] pars, ThreadContext thread )
 	{
+		// TODO Not all parameters need to be named here: example method( String, String, Map )
 		if( pars.length > 0 && pars[ 0 ] instanceof Labeled )
 		{
-			pars = toNamedParameters( pars );
+			pars = toNamedParameters( pars, thread );
 			int count = pars.length;
 			int index = 0;
 			Map< String, Object> map = new HashMap<String, Object>();

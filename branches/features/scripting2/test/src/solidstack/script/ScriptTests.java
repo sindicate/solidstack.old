@@ -22,10 +22,12 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Map;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import solidstack.io.SourceException;
 import solidstack.script.java.Java;
 import solidstack.script.objects.FunnyString;
 import solidstack.script.scopes.Scope;
@@ -164,7 +166,7 @@ public class ScriptTests extends Util
 		test( "\"sinterklaas\".size()", 11 );
 		test( "defined( a )", false );
 		test( "defined( def( a ) )", true );
-		test( "defined( 1 )", true );
+		test( "a = null; defined( a )", true );
 		test( "if( a; a )", null ); // TODO Ponder over this once more
 //		test( "a && a", null ); TODO And this?
 	}
@@ -275,6 +277,7 @@ public class ScriptTests extends Util
 		test( "1.0.getClass()#valueOf( 1.1 )", new BigDecimal( "1.1" ) );
 		test( "1.00.valueOf( 1.1 )", new BigDecimal( "1.1" ) );
 		test( "o1.test( 1 == 1 )", context, 7 );
+		test( "o1.test( a: 1, b: 2 )", context, 8 );
 
 		TestObject2 o2 = new TestObject2();
 		context.set( "o2", o2 );
@@ -293,6 +296,7 @@ public class ScriptTests extends Util
 		test( "c( \"string\", \"string\" ).value", context, 4 );
 		test( "c( 1, 1 ).value", context, 6 );
 		test( "c( 1 == 1 ).value", context, 7 );
+		test( "c( a: 1, b: 2 ).value", context, 8 );
 
 		test( "c2 = class( \"solidstack.script.ScriptTests$TestObject2\" );", context, TestObject2.class );
 		test( "c2( 1, 1 ).value", context, 1 );
@@ -359,7 +363,6 @@ public class ScriptTests extends Util
 	@Test
 	static public void test18()
 	{
-		test( "l = class( \"java.util.ArrayList\" )(); forEach( l, fun( i; i ) )", null );
 		test( "l = class( \"java.util.ArrayList\" )(); i = 0; while( i < 10; l.add( i ), i++ ); l.each( fun( i; println( i ) ) )", 9 );
 		eval( "Calendar = class( \"java.util.Calendar\" ); println( Calendar#getInstance().getClass() )" );
 		test( "Calendar = class( \"java.util.Calendar\" ); Calendar#SATURDAY", 7 );
@@ -634,6 +637,35 @@ public class ScriptTests extends Util
 		fail( "++null", ScriptException.class, "Can't apply ++ to a null" );
 		fail( "null--", ScriptException.class, "Can't apply -- to a null" );
 		fail( "null++", ScriptException.class, "Can't apply ++ to a null" );
+		fail( "[ a: 1, 2 ]", ScriptException.class, "All items in a map must be labeled" );
+		fail( ":1", SourceException.class, "Symbol must be an identifier or a string" );
+		fail( "abs()", ScriptException.class, "abs() needs exactly one parameter" );
+		fail( "class()", ScriptException.class, "class() needs exactly one parameter" );
+		fail( "class( 1 )", ScriptException.class, "class() needs a string parameter" );
+		fail( "def()", ScriptException.class, "def() needs exactly one parameter" );
+		fail( "def( 1 )", ScriptException.class, "def() needs a variable identifier as parameter" );
+		fail( "defined()", ScriptException.class, "defined() needs exactly one parameter" );
+		fail( "defined( 1 )", ScriptException.class, "defined() needs a variable identifier as parameter" );
+		fail( "length()", ScriptException.class, "length() needs exactly one parameter" );
+		fail( "length( 1 )", ScriptException.class, "length() needs a string parameter" );
+		fail( "print()", ScriptException.class, "print() needs exactly one parameter" );
+		fail( "println()", ScriptException.class, "println() needs exactly one parameter" );
+		fail( "scope()", ScriptException.class, "scope() needs exactly one parameter" );
+		fail( "scope( 1 )", ScriptException.class, "scope() needs a map parameter" );
+		fail( "stripMargin()", ScriptException.class, "stripMargin() needs exactly one parameter" );
+		fail( "stripMargin( 1 )", ScriptException.class, "stripMargin() needs a string parameter" );
+		fail( "substr()", ScriptException.class, "substr() needs 2 or 3 parameters" );
+		fail( "substr( 1, 1 )", ScriptException.class, "substr() needs a string as first parameter" );
+		fail( "substr( \"\", \"\" )", ScriptException.class, "substr() needs an integer as second parameter" );
+		fail( "substr( \"\", 1, \"\" )", ScriptException.class, "substr() needs an integer as third parameter" );
+		fail( "throw()", ScriptException.class, "throw() needs exactly one parameter" );
+		fail( "upper()", ScriptException.class, "upper() needs exactly one parameter" );
+		fail( "upper( 1 )", ScriptException.class, "upper() needs a string parameter" );
+		fail( "val()", ScriptException.class, "val() needs exactly one parameter" );
+		fail( "val( 1 )", ScriptException.class, "val() needs a variable identifier as parameter" );
+		fail( "f = ( a ) -> (); f( b: 1 )", ScriptException.class, "Parameter 'b' undefined" );
+		fail( "f = ( a, b ) -> (); f( a: 1, 2 )", ScriptException.class, "All parameters must be named" );
+		fail( "f = ( a ) -> (); f( \"a\": 1 )", ScriptException.class, "Parameter must be named with a variable identifier" );
 	}
 
 	@Test
@@ -643,7 +675,7 @@ public class ScriptTests extends Util
 		eval( script );
 	}
 
-	// TODO Calls with named parameters
+	// DONE Calls with named parameters
 	// TODO A function without parameters, does not need the FunctionObject. Its just an unevaluated expression.
 	// TODO Exceptions, catch & finally
 	// TODO MethodMissing
@@ -651,29 +683,33 @@ public class ScriptTests extends Util
 	// TODO def & val
 	// TODO Store tuples in variables?
 	// TODO Binary and hexadecimal literals
-	// TODO Add methods to the datatypes and/or objects
+	// DONE Add methods to the datatypes and/or objects
 	// TODO DSLs
 	// TODO Underscores in number literals
-	// TODO Spread parameters or collection access
-	// TODO Arrays and maps with literals
+	// DONE Spread parameters or collection access
+	// DONE Arrays and maps with literals
 	// TODO Ranges
 	// TODO Synchronization
 	// TODO Return, switch, break, continue
 	// TODO Threads & sleep, etc
 	// TODO Assert with lazy evaluation of its arguments
 	// TODO Optional? Lazy evaluation of all arguments
-	// TODO // Comments, /* comments, /** comments which can contain /* comments
+	// DONE // Comments, /* comments
+	// TODO /** comments which can contain /* comments
 	// TODO Compile time (post processing) transformation functions, for example: removeMargins()
 	// TODO Token interceptors that work on the token stream, or custom script parsers for eval
-	// TODO Symbols :red
+	// DONE Symbols :red
 	// TODO Mixins
 	// TODO Lazy evaluation
 	// TODO Class extension pluggable
 	// TODO Extensions: unique/each(WithIndex)/find(All)/collect/contains/every/indexOf/flatten/groupBy/inject/join/max/min/removeAll/replaceAll/reverse/sum/tail/traverse/withReader(etc)
 	// TODO with() to execute a function with a different context
-	// TODO Currying
+	// DONE Currying, no need
 	// TODO Global namespaces
 	// TODO Operator calling method on first operand, operator overloading
+	// TODO Hints for null parameters: a as String which evaluates to a TypedNull object if a is null
+	// TODO Compilation errors including column number
+	// TODO Compartmentalization like Java does with classloaders. This means name spaces too.
 
 	@SuppressWarnings( "unused" )
 	static public class TestObject1
@@ -688,6 +724,7 @@ public class ScriptTests extends Util
 		public TestObject1( BigDecimal... b ) { this.value = 5; }
 		public TestObject1( BigDecimal b1, Number b2 ) { this.value = 6; }
 		public TestObject1( boolean b ) { this.value = 7; }
+		public TestObject1( Map args ) { this.value = 8; }
 
 		public int test() { return 0; }
 		public int test( int i ) { return 1; }
@@ -697,6 +734,7 @@ public class ScriptTests extends Util
 		public int test( BigDecimal... b ) { return 5; }
 		public int test( BigDecimal b1, Number b2 ) { return 6; }
 		public int test( boolean b ) { return 7; }
+		public int test( Map args ) { return 8; }
 	}
 
 	@SuppressWarnings( "unused" )

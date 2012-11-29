@@ -16,7 +16,6 @@
 
 package solidstack.script.functions;
 
-import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.java.Java;
@@ -28,9 +27,11 @@ public class Class extends FunctionObject
 	@Override
 	public Object call( ThreadContext thread, Object... parameters )
 	{
-		Assert.isTrue( parameters.length == 1 );
+		if( parameters.length != 1 )
+			throw new ThrowException( "class() needs exactly one parameter", thread.cloneStack() );
 		Object object = Util.toJava( parameters[ 0 ] );
-		Assert.isTrue( object instanceof String );
+		if( !( object instanceof String ) )
+			throw new ThrowException( "class() needs a string parameter", thread.cloneStack() );
 		String name = (String)object;
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
 		try

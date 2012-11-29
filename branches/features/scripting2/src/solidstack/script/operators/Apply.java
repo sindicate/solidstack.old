@@ -74,7 +74,7 @@ public class Apply extends Operator
 				thread.pushStack( getLocation() );
 				try
 				{
-					return Util.toScript( Java.invoke( f.getObject(), f.getName(), Util.toJavaParameters( pars ) ) );
+					return Util.toScript( Java.invoke( f.getObject(), f.getName(), Util.toJavaParameters( pars, thread ) ) );
 				}
 				finally
 				{
@@ -88,7 +88,7 @@ public class Apply extends Operator
 				thread.pushStack( getLocation() );
 				try
 				{
-					return Util.toScript( Java.invokeStatic( f.getType(), f.getName(), Util.toJavaParameters( pars ) ) );
+					return Util.toScript( Java.invokeStatic( f.getType(), f.getName(), Util.toJavaParameters( pars, thread ) ) );
 				}
 				finally
 				{
@@ -102,7 +102,7 @@ public class Apply extends Operator
 				thread.pushStack( getLocation() );
 				try
 				{
-					return Java.construct( cls, Util.toJavaParameters( pars ) );
+					return Java.construct( cls, Util.toJavaParameters( pars, thread ) );
 				}
 				finally
 				{

@@ -16,8 +16,8 @@
 
 package solidstack.script.functions;
 
-import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Util;
 
@@ -26,9 +26,11 @@ public class Length extends FunctionObject
 	@Override
 	public Object call( ThreadContext thread, Object... parameters )
 	{
-		Assert.isTrue( parameters.length == 1 );
+		if( parameters.length != 1 )
+			throw new ThrowException( "length() needs exactly one parameter", thread.cloneStack() );
 		Object object = Util.deref( parameters[ 0 ] );
-		Assert.isInstanceOf( object, String.class );
+		if( !( object instanceof String ) ) // TODO What about collections, maps, arrays?
+			throw new ThrowException( "length() needs a string parameter", thread.cloneStack() );
 		return ( (String)object ).length();
 	}
 }

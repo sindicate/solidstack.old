@@ -22,8 +22,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import solidstack.io.SourceLocation;
-import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
 import solidstack.script.objects.Labeled;
 import solidstack.script.objects.Tuple;
 import solidstack.script.objects.Util;
@@ -55,7 +55,8 @@ public class List extends LocalizedExpression // TODO Is this localized needed?
 				Map<Object, Object> map = new LinkedHashMap<Object, Object>( list.size() );
 				for( Object item : list )
 				{
-					Assert.isInstanceOf( item, Labeled.class );
+					if( !( item instanceof Labeled ) )
+						throw new ThrowException( "All items in a map must be labeled", thread.cloneStack( getLocation() ) );
 					Labeled labeled = (Labeled)item;
 					map.put( labeled.getLabel(), Util.deref( labeled.getValue() ) );
 				}
