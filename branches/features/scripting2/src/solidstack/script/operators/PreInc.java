@@ -19,9 +19,10 @@ package solidstack.script.operators;
 import org.springframework.util.Assert;
 
 import solidstack.io.SourceLocation;
-import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
+import solidstack.script.objects.Null;
 import solidstack.script.scopes.AbstractScope.Variable;
 
 
@@ -40,8 +41,10 @@ public class PreInc extends Operator
 	{
 		Assert.isNull( this.left );
 		Object right = this.right.evaluate( thread );
+		if( right == Null.INSTANCE )
+			throw new ThrowException( "Can't apply ++ to a null", thread.cloneStack( getLocation() ) );
 		if( !( right instanceof Variable ) )
-			throw new ScriptException( "Tried to apply " + this.operator + " to a immutable value " + right.getClass().getName() );
+			throw new ThrowException( "Can't apply ++ to a " + right.getClass().getName(), thread.cloneStack( getLocation() ) );
 		Variable value = (Variable)right;
 		Object result = add( value.get(), 1 );
 		value.set( result );

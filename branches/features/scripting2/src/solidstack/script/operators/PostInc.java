@@ -18,9 +18,10 @@ package solidstack.script.operators;
 
 import org.springframework.util.Assert;
 
-import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
+import solidstack.script.objects.Null;
 import solidstack.script.scopes.AbstractScope.Variable;
 
 
@@ -35,8 +36,10 @@ public class PostInc extends Operator
 	{
 		Assert.isNull( this.right );
 		Object left = this.left.evaluate( thread );
+		if( left == Null.INSTANCE )
+			throw new ThrowException( "Can't apply ++ to a null", thread.cloneStack( getLocation() ) );
 		if( !( left instanceof Variable ) )
-			throw new ScriptException( "Tried to apply " + this.operator + " to a immutable value " + left.getClass().getName() );
+			throw new ThrowException( "Can't apply ++ to a " + left.getClass().getName(), thread.cloneStack( getLocation() ) );
 		Variable value = (Variable)left;
 		Object result = value.get();
 		value.set( add( result, 1 ) );

@@ -21,11 +21,9 @@ import java.util.List;
 import java.util.Map;
 
 import solidstack.lang.Assert;
-import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
-import solidstack.script.objects.Null;
 import solidstack.script.objects.Util;
 import solidstack.script.scopes.AbstractScope.Ref;
 import solidstack.script.scopes.ScopeException;
@@ -44,8 +42,11 @@ public class Index extends Operator
 		try
 		{
 			Object left = Util.single( this.left.evaluate( thread ) ); // TODO Or index a tuple too?
-			if( left == Null.INSTANCE )
-				throw new ScriptException( "Cannot index null" );
+			if( left == null )
+				throw new ThrowException( "Null can't be indexed", thread.cloneStack( getLocation() ) );
+
+			if( this.right == null ) // TODO This could be a compile time error
+				throw new ThrowException( "Missing index", thread.cloneStack( getLocation() ) );
 
 			Object pars = Util.single( this.right.evaluate( thread ) );
 
@@ -61,7 +62,7 @@ public class Index extends Operator
 			if( left.getClass().isArray() )
 				return Array.get( left, (Integer)pars ); // TODO Maybe return null when index of out bounds?
 
-			throw new ScriptException( "Cannot index a " + left.getClass().getName() );
+			throw new ThrowException( "Can't index a " + left.getClass().getName(), thread.cloneStack( getLocation() ) );
 		}
 		catch( ScopeException e )
 		{

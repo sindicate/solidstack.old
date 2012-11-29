@@ -16,7 +16,6 @@
 
 package solidstack.script.scopes;
 
-import solidstack.lang.Assert;
 import solidstack.script.scopes.ValueMap.Entry;
 
 
@@ -86,7 +85,7 @@ abstract public class AbstractScope
 		{
 			super( symbol );
 
-			Assert.notNull( value );
+//			Assert.notNull( value );
 			this.value = value;
 		}
 

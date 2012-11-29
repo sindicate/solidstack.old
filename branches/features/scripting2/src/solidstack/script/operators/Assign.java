@@ -17,8 +17,8 @@
 package solidstack.script.operators;
 
 import solidstack.lang.Assert;
-import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
 import solidstack.script.objects.Tuple;
 import solidstack.script.objects.Util;
@@ -49,25 +49,25 @@ public class Assign extends Operator
 				{
 					Object l = leftTuple.get( i );
 					Object r = rightTuple.get( i );
-					assign( l, r );
+					assign( l, r, thread );
 				}
 			}
 			else
 				throw new UnsupportedOperationException();
 		}
 		else
-			assign( left, right );
+			assign( left, right, thread );
 
 		return right; // TODO Or should it be left? Or should we do assignment like this 1 => a?
 	}
 
-	static private void assign( Object var, Object value )
+	private void assign( Object var, Object value, ThreadContext thread )
 	{
 		Assert.notNull( var );
 		Assert.notNull( value );
 		value = Util.finalize( value );
 		if( value instanceof Tuple )
-			throw new ScriptException( "Tuples can't be assigned to variables" );
+			throw new ThrowException( "Can't assign tuples to variables", thread.cloneStack( getLocation() ) );
 		( (Ref)var ).set( value );
 	}
 }

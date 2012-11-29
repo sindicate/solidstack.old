@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import solidstack.lang.Assert;
-import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.operators.Function;
@@ -99,20 +99,20 @@ public class FunctionObject implements solidstack.script.java.Function
 					values[ o ] = pw.rest();
 					o++;
 					if( o < oCount )
-						throw new ScriptException( "Collecting parameter can only be the last parameter" ); // TODO Also in the middle
+						throw new ThrowException( "Collecting parameter must be the last parameter", thread.cloneStack() ); // TODO Also in the middle
 				}
 				else
 				{
 					Object par = pw.get();
 					if( par == null )
-						throw new ScriptException( "Not enough parameters given" );
+						throw new ThrowException( "Not enough parameters", thread.cloneStack() );
 					symbols[ o ] = ( (Identifier)parameter ).getSymbol();
 					values[ o ] = par;
 					o++;
 				}
 			}
 			if( pw.get() != null )
-				throw new ScriptException( "Too many parameters given" );
+				throw new ThrowException( "Too many parameters", thread.cloneStack() );
 		}
 
 		AbstractScope newScope;

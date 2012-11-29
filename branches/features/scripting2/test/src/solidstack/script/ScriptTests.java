@@ -29,6 +29,7 @@ import org.testng.annotations.Test;
 import solidstack.script.java.Java;
 import solidstack.script.objects.FunnyString;
 import solidstack.script.scopes.Scope;
+import solidstack.script.scopes.ScopeException;
 import solidstack.script.scopes.Symbol;
 import solidstack.script.scopes.TempSymbol;
 
@@ -460,8 +461,8 @@ public class ScriptTests extends Util
 		test( "a = [ 1, [ 2, 3, 4 ], 5 ]; ( (a,b,c) -> a+b+c )( *a[ 1 ] )", 9 );
 
 		fail( "f = a -> (); f( 1, 2, 3 );", ScriptException.class, "Too many parameters" );
-		fail( "a = *[ 1, 2, 3 ]; ( b, c, d ) = a; b + c + d", ScriptException.class, "Tuples can't be assigned to variables" );
-		fail( "a = ( 1, 2, 3 ); ( b, c, d ) = a; b + c + d", ScriptException.class, "Tuples can't be assigned to variables" );
+		fail( "a = *[ 1, 2, 3 ]; ( b, c, d ) = a; b + c + d", ScriptException.class, "Can't assign tuples to variables" );
+		fail( "a = ( 1, 2, 3 ); ( b, c, d ) = a; b + c + d", ScriptException.class, "Can't assign tuples to variables" );
 
 		// TODO Key value tuples for named parameters?
 	}
@@ -615,6 +616,24 @@ public class ScriptTests extends Util
 		fail( "1.xxx", ScriptException.class, "No such field: java.lang.Integer.xxx" );
 		fail( "class( \"java.lang.Integer\" )#xxx", ScriptException.class, "No such field: static java.lang.Integer.xxx" );
 		fail( "class( \"java.lang.String\" )#valueOf( null )", ScriptException.class, "valueOf(char[])" );
+		fail( "f = ( *b, c ) -> (); f()", ScriptException.class, "Collecting parameter must be the last parameter" );
+		fail( "f = ( a ) -> (); f()", ScriptException.class, "Not enough parameters" );
+		fail( "f = () -> (); f( 1 )", ScriptException.class, "Too many parameters" );
+		fail( "f()", ScopeException.class, "'f' undefined" );
+		fail( "f = null; f()", ScriptException.class, "Function is null" );
+		fail( "f = 1; f()", ScriptException.class, "Can't apply parameters to a java.lang.Integer" );
+		fail( "a = ( 1, 2 )", ScriptException.class, "Can't assign tuples to variables" );
+		fail( "f = null; f[]", ScriptException.class, "Null can't be indexed" );
+		fail( "f = 1; f[]", ScriptException.class, "Missing index" );
+		fail( "f = 1; f[ 1 ]", ScriptException.class, "Can't index a java.lang.Integer" );
+		fail( "--1", ScriptException.class, "Can't apply -- to a java.lang.Integer" );
+		fail( "++1", ScriptException.class, "Can't apply ++ to a java.lang.Integer" );
+		fail( "1--", ScriptException.class, "Can't apply -- to a java.lang.Integer" );
+		fail( "1++", ScriptException.class, "Can't apply ++ to a java.lang.Integer" );
+		fail( "--null", ScriptException.class, "Can't apply -- to a null" );
+		fail( "++null", ScriptException.class, "Can't apply ++ to a null" );
+		fail( "null--", ScriptException.class, "Can't apply -- to a null" );
+		fail( "null++", ScriptException.class, "Can't apply ++ to a null" );
 	}
 
 	@Test

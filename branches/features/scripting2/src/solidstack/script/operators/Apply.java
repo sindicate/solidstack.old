@@ -19,15 +19,12 @@ package solidstack.script.operators;
 import java.lang.reflect.InvocationTargetException;
 
 import solidstack.script.JavaException;
-import solidstack.script.ScriptException;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
-import solidstack.script.expressions.Identifier;
 import solidstack.script.java.Java;
 import solidstack.script.objects.ClassMember;
 import solidstack.script.objects.FunctionObject;
-import solidstack.script.objects.Null;
 import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Util;
 
@@ -50,12 +47,8 @@ public class Apply extends Operator
 			left = this.left.evaluate( thread );
 		left = Util.deref( left );
 
-		if( left == Null.INSTANCE )
-		{
-			if( this.left instanceof Identifier )
-				throw new ScriptException( "Function " + ( (Identifier)this.left ).getSymbol() + " not found" );
-			throw new ScriptException( "Cannot apply parameters to null" );
-		}
+		if( left == null )
+			throw new ThrowException( "Function is null", thread.cloneStack( getLocation() ) );
 
 		Object[] pars = Util.toArray( this.right != null ? this.right.evaluate( thread ) : null );
 
@@ -126,6 +119,6 @@ public class Apply extends Operator
 			throw new ThrowException( e.getMessage(), thread.cloneStack( getLocation() ) );
 		}
 
-		throw new ScriptException( "Cannot apply parameters to a " + left.getClass().getName() );
+		throw new ThrowException( "Can't apply parameters to a " + left.getClass().getName(), thread.cloneStack( getLocation() ) );
 	}
 }
