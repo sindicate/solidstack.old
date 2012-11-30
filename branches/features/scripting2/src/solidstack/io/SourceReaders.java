@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
  */
 public class SourceReaders
 {
+	// TODO Maybe this is different in different JVM's. If so, then just always skip the BOM.
 	static private final Pattern SKIP_BOM_PATTERN = Pattern.compile( "UTF-(8|16(BE|LE))", Pattern.CASE_INSENSITIVE );
 
 	/**

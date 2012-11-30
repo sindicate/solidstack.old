@@ -92,7 +92,7 @@ public class Script
 		this.expression = expression;
 	}
 
-	public Object execute( AbstractScope scope )
+	public Object eval( AbstractScope scope )
 	{
 		return eval( this.expression, scope );
 	}

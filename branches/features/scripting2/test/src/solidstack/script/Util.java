@@ -35,7 +35,7 @@ public class Util
 	{
 		Script script = Script.compile( expression );
 //		String dump = new Dumper().dump( script );
-		return script.execute( context );
+		return script.eval( context );
 	}
 
 	static public void testParseFail( String expression )

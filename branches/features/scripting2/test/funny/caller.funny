@@ -1,0 +1,11 @@
+called = call( "callee.funny" );
+if( !called.test; throw( "Expected called.test" ) );
+println( called.test );
+
+loaded = load( "callee.funny" );
+loaded.eval( this );
+if( !test; throw( "Expected test" ) );
+println( test );
+
+// load, call, include, import, required, optional, module
+// classpath: protocol will find 'system' modules

@@ -398,7 +398,7 @@ public class ScriptTests extends Util
 		test( "list = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]; list[ 3 ]", 4 );
 		test( "list = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ].toArray(); list[ 3 ]", 4 );
 		test( "list = []; list.size()", 0 );
-		test( "list = class( \"java.lang.reflect.Array\" )#newInstance( class( \"int\" ), 10 ); list.size()", 10 );
+
 		test( "map = [ 0: 1, 1: 2, 2: 3, 3: 4 ]; map[ 3 ]", 4 );
 		test( "map = [ \"first\": 1, \"second\": 2, \"third\": 3 ]; map[ \"second\" ]", 2 );
 		test( "map = [ \"fir\" + \"st\": 1, \"second\": 2, \"third\": 3 ]; map[ \"first\" ]", 1 );
@@ -408,6 +408,9 @@ public class ScriptTests extends Util
 		test( "map = [:]; s = scope( map ); s.first = 1; map[ \"first\" ]", 1 );
 		test( "map = [:]; map[ \"fourth\" ]", null );
 		test( "map = [:]; map.size()", 0 );
+		test( "map = [:]; map[ \"third\" ] = 3; map[ \"third\" ]", 3 );
+
+		test( "array = class( \"java.lang.reflect.Array\" )#newInstance( class( \"int\" ), 10 ); array.size()", 10 );
 
 		eval( "fun( a; a )( null )" );
 		eval( "fun( a; a )( if( false; 1 ) )" );

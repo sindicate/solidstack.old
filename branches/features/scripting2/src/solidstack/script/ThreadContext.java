@@ -69,6 +69,11 @@ public class ThreadContext
 		this.stack.pop();
 	}
 
+	public SourceLocation getStackHead()
+	{
+		return this.stack.peekFirst();
+	}
+
 	public SourceLocation[] cloneStack()
 	{
 		return this.stack.toArray( new SourceLocation[ this.stack.size() ] );

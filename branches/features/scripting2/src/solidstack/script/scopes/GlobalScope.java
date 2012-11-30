@@ -20,10 +20,12 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import solidstack.script.functions.Abs;
+import solidstack.script.functions.Call;
 import solidstack.script.functions.Class;
 import solidstack.script.functions.Def;
 import solidstack.script.functions.Defined;
 import solidstack.script.functions.Length;
+import solidstack.script.functions.Load;
 import solidstack.script.functions.Print;
 import solidstack.script.functions.Println;
 import solidstack.script.functions.StripMargin;
@@ -42,10 +44,12 @@ public class GlobalScope extends Scope
 	public GlobalScope()
 	{
 		val( Symbol.forString( "abs" ), new Abs() );
+		val( Symbol.forString( "call" ), new Call() );
 		val( Symbol.forString( "class" ), new Class() );
 		val( Symbol.forString( "def" ), new Def() );
 		val( Symbol.forString( "defined" ), new Defined() );
 		val( Symbol.forString( "length" ), new Length() );
+		val( Symbol.forString( "load" ), new Load() );
 		val( Symbol.forString( "print" ), new Print() );
 		val( Symbol.forString( "println" ), new Println() );
 		val( Symbol.forString( "scope" ), new solidstack.script.functions.Scope() );
