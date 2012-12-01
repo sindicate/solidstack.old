@@ -65,7 +65,6 @@ public class Assign extends Operator
 	private void assign( Object var, Object value, ThreadContext thread )
 	{
 		Assert.notNull( var );
-		Assert.notNull( value );
 		value = Util.finalize( value );
 		if( value instanceof Tuple )
 			throw new ThrowException( "Can't assign tuples to variables", thread.cloneStack( getLocation() ) );

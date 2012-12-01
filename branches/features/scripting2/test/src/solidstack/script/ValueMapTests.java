@@ -34,7 +34,7 @@ public class ValueMapTests
 		{
 			String key = Integer.toString( i );
 			TestEntry entry = values.remove( key );
-			Assert.assertEquals( entry.getKey(), key );
+			Assert.assertEquals( entry.getKey().toString(), key );
 		}
 		Assert.assertEquals( values.size(), 0 );
 
@@ -49,7 +49,7 @@ public class ValueMapTests
 		{
 			String key = Integer.toString( i );
 			TestEntry entry = values.remove( key );
-			Assert.assertEquals( entry.getKey(), key );
+			Assert.assertEquals( entry.getKey().toString(), key );
 		}
 		Assert.assertEquals( values.size(), 0 );
 	}

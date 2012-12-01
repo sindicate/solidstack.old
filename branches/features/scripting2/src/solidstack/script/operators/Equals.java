@@ -34,6 +34,6 @@ public class Equals extends Operator
 		Object right = Util.deref( this.right.evaluate( thread ) );
 		if( ( left instanceof Number || left instanceof Character ) && ( right instanceof Number || right instanceof Character ) )
 			return Operator.compare( left, right ) == 0;
-		return left.equals( right ); // Never null, only Null.INSTANCE
+		return left != null ? left.equals( right ) : right == null;
 	}
 }

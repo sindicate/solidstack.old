@@ -19,6 +19,7 @@ package solidstack.script.objects;
 import java.util.ArrayList;
 import java.util.List;
 
+import solidstack.lang.Assert;
 import solidstack.script.Returning;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
@@ -120,15 +121,15 @@ public class FunctionObject implements solidstack.script.java.Function
 				}
 				else
 				{
-					Object par = pw.get();
-					if( par == null )
+					if( !pw.hasNext() )
 						throw new ThrowException( "Not enough parameters", thread.cloneStack() );
+					Object par = pw.get();
 					symbols[ o ] = ( (Identifier)parameter ).getSymbol();
 					values[ o ] = par;
 					o++;
 				}
 			}
-			if( pw.get() != null )
+			if( pw.hasNext() )
 				throw new ThrowException( "Too many parameters", thread.cloneStack() );
 		}
 
@@ -179,6 +180,11 @@ public class FunctionObject implements solidstack.script.java.Function
 			this.pars = pars;
 		}
 
+		public boolean hasNext()
+		{
+			return this.tuple != null || this.current < this.pars.length;
+		}
+
 		public Object get()
 		{
 			if( this.tuple != null )
@@ -188,8 +194,7 @@ public class FunctionObject implements solidstack.script.java.Function
 					this.tuple = null;
 				return result;
 			}
-			if( this.current >= this.pars.length )
-				return null;
+			Assert.isTrue( this.current < this.pars.length );
 			while( true )
 			{
 				Object result = Util.deref( this.pars[ this.current++ ] );
@@ -210,12 +215,8 @@ public class FunctionObject implements solidstack.script.java.Function
 		public List<Object> rest()
 		{
 			List<Object> result = new ArrayList<Object>();
-			Object par = get();
-			while( par != null )
-			{
-				result.add( par );
-				par = get();
-			}
+			while( hasNext() )
+				result.add( get() );
 			return result;
 		}
 	}

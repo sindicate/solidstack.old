@@ -19,7 +19,6 @@ package solidstack.script.functions;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.objects.FunctionObject;
-import solidstack.script.objects.Null;
 import solidstack.script.scopes.AbstractScope.Ref;
 import solidstack.script.scopes.Symbol;
 
@@ -34,6 +33,6 @@ public class Def extends FunctionObject
 		if( !( object instanceof Ref ) )
 			throw new ThrowException( "def() needs a variable identifier as parameter", thread.cloneStack() );
 		Symbol symbol = ( (Ref)object ).getKey();
-		return thread.getScope().def( symbol, Null.INSTANCE );
+		return thread.getScope().def( symbol, null );
 	}
 }

@@ -18,7 +18,6 @@ package solidstack.script.expressions;
 
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
-import solidstack.script.objects.Null;
 
 
 
@@ -31,6 +30,6 @@ public class NullConstant extends LocalizedExpression
 
 	public Object evaluate( ThreadContext thread )
 	{
-		return Null.INSTANCE;
+		return null;
 	}
 }

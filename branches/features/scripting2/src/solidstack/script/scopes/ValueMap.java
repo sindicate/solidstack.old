@@ -119,7 +119,7 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<Symbol, T>
 		Entry last = null;
 		while( entry != null ) // Loop till we find it
 		{
-			if( entry.___key.equals( key ) )
+			if( entry.key.equals( key ) )
 			{
 				this.size--;
 				if( last == null )
@@ -279,9 +279,9 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<Symbol, T>
 	static public class Entry
 	{
 		// Can't make this private, else it won't compile on Java 7. Added ___ to prevent name shadowing by subclasses.
-		private Entry ___next;
+		Entry ___next;
 		private Symbol symbol;
-		private String ___key;
+		private String key;
 		private int hashCode;
 		// TODO Replace key/hashCode with symbol when it is available during the isKeyEqual execution
 
@@ -289,7 +289,7 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<Symbol, T>
 		{
 			if( symbol instanceof TempSymbol )
 			{
-				this.___key = symbol.toString();
+				this.key = symbol.toString();
 				this.hashCode = symbol.hashCode();
 			}
 			else
@@ -300,14 +300,14 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<Symbol, T>
 		{
 			if( this.symbol != null )
 				return this.symbol;
-			return new TempSymbol( this.___key, this.hashCode );
+			return new TempSymbol( this.key, this.hashCode );
 		}
 
 		public String getName()
 		{
 			if( this.symbol != null )
 				return this.symbol.toString();
-			return this.___key;
+			return this.key;
 		}
 
 		int getKeyHashCode()

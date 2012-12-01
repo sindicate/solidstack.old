@@ -43,7 +43,7 @@ public class StaticMember extends Operator
 		String right = ( (Identifier)this.right ).getSymbol().toString();
 		try
 		{
-			return Util.toScript( Java.getStatic( (Class<?>)left, right.toString() ) );
+			return Java.getStatic( (Class<?>)left, right.toString() );
 		}
 		catch( MissingFieldException e )
 		{

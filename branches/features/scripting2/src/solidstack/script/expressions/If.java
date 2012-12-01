@@ -19,7 +19,6 @@ package solidstack.script.expressions;
 import solidstack.io.SourceLocation;
 import solidstack.script.Script;
 import solidstack.script.ThreadContext;
-import solidstack.script.objects.Null;
 
 
 
@@ -51,6 +50,6 @@ public class If extends LocalizedExpression
 			if( this.right != null )
 				return this.right.evaluate( thread );
 		}
-		return Null.INSTANCE;
+		return null;
 	}
 }

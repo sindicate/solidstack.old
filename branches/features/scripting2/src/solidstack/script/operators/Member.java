@@ -23,7 +23,6 @@ import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.java.Java;
 import solidstack.script.java.MissingFieldException;
-import solidstack.script.objects.Null;
 import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Util;
 import solidstack.script.scopes.AbstractScope;
@@ -45,12 +44,12 @@ public class Member extends Operator
 			Object left = Util.deref( this.left.evaluate( thread ) );
 			Assert.isInstanceOf( this.right, Identifier.class );
 			Symbol right = ( (Identifier)this.right ).getSymbol();
-			Assert.isFalse( left == Null.INSTANCE, "member: " + right.toString() );
+			Assert.isFalse( left == null, "member: " + right.toString() );
 			if( left instanceof AbstractScope ) // TODO This is part of the OO we want
 				return ( (AbstractScope)left ).getRef( right );
 			try
 			{
-				return Util.toScript( Java.get( left, right.toString() ) );
+				return Java.get( left, right.toString() );
 			}
 			catch( MissingFieldException e )
 			{
@@ -70,7 +69,7 @@ public class Member extends Operator
 			Object left = Util.deref( this.left.evaluate( thread ) );
 			Assert.isInstanceOf( this.right, Identifier.class );
 			Symbol right = ( (Identifier)this.right ).getSymbol();
-			Assert.isFalse( left == Null.INSTANCE, "member: " + right.toString() );
+			Assert.isFalse( left == null, "member: " + right.toString() );
 			if( left instanceof AbstractScope ) // TODO This is part of the OO we want
 				return ( (AbstractScope)left ).getRef( right );
 			// TODO Also read properties to look for Functions

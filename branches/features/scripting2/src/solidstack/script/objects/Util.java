@@ -16,7 +16,7 @@ public class Util
 	static public Object finalize( Object value )
 	{
 		value = Util.deref( value );
-		if( value == Null.INSTANCE )
+		if( value == null )
 			return null;
 		return value;
 	}
@@ -26,7 +26,7 @@ public class Util
 		if( value instanceof Tuple )
 			return ( (Tuple)value ).list();
 		Object result = Util.deref( value );
-		if( result == Null.INSTANCE )
+		if( result == null )
 			return null;
 		if( result instanceof FunnyString )
 			return result.toString();
@@ -66,20 +66,9 @@ public class Util
 
 		List<Object> result = new ArrayList<Object>();
 		ParWalker pw = new ParWalker( pars );
-		Object par = pw.get();
-		while( par != null )
-		{
-			result.add( toJava( par ) );
-			par = pw.get();
-		}
+		while( pw.hasNext() )
+			result.add( toJava( pw.get() ) );
 		return result.toArray( new Object[ result.size() ] );
-	}
-
-	static public Object toScript( Object value )
-	{
-		if( value == null )
-			return Null.INSTANCE;
-		return value;
 	}
 
 	static public final Object[] EMPTY_ARRAY = new Object[ 0 ];
@@ -89,9 +78,7 @@ public class Util
 		Object[] result;
 		if( values instanceof Tuple )
 			return ( (Tuple)values ).list().toArray();
-		if( values != null )
-			return new Object[] { values };
-		return EMPTY_ARRAY;
+		return new Object[] { values };
 	}
 
 	static public Object deref( Object value )
@@ -107,8 +94,6 @@ public class Util
 //		}
 		if( value instanceof Ref )
 			value = ( (Ref)value ).get();
-		if( value == null )
-			return Null.INSTANCE;
 		return value;
 	}
 }
