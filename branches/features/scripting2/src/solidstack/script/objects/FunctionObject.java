@@ -19,6 +19,7 @@ package solidstack.script.objects;
 import java.util.ArrayList;
 import java.util.List;
 
+import solidstack.script.Returning;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
@@ -34,6 +35,7 @@ public class FunctionObject implements solidstack.script.java.Function
 {
 	private Function function;
 	private AbstractScope scope;
+	private boolean assigned; // FIXME Remove this, it does not work correctly. For example, with functions returning functions.
 
 	public FunctionObject()
 	{
@@ -43,6 +45,16 @@ public class FunctionObject implements solidstack.script.java.Function
 	{
 		this.function = function;
 		this.scope = scope; // FIXME Possibly need to clone the whole scope hierarchy (flattened).
+	}
+
+	public void setAssigned()
+	{
+		this.assigned = true;
+	}
+
+	public boolean isAssigned()
+	{
+		return this.assigned;
 	}
 
 	public Object[] getParameters()
@@ -139,9 +151,20 @@ public class FunctionObject implements solidstack.script.java.Function
 			newScope = this.scope;
 
 		AbstractScope old = thread.swapScope( newScope );
-		Object result = this.function.getExpression().evaluate( thread );
-		thread.swapScope( old );
-		return result;
+		try
+		{
+			return this.function.getExpression().evaluate( thread );
+		}
+		catch( Returning e )
+		{
+			if( this.assigned )
+				return e.getValue();
+			throw e;
+		}
+		finally
+		{
+			thread.swapScope( old );
+		}
 	}
 
 	static public class ParWalker

@@ -23,7 +23,9 @@ public class Util
 
 	static public Object toJava( Object value )
 	{
-		Object result = Util.single( value );
+		if( value instanceof Tuple )
+			return ( (Tuple)value ).list();
+		Object result = Util.deref( value );
 		if( result == Null.INSTANCE )
 			return null;
 		if( result instanceof FunnyString )
@@ -104,21 +106,9 @@ public class Util
 //			return list;
 //		}
 		if( value instanceof Ref )
-			return ( (Ref)value ).get();
-		return value;
-	}
-
-	static public Object single( Object value )
-	{
-		if( value instanceof Tuple )
-		{
-			Tuple results = (Tuple)value;
-			if( results.size() == 0 )
-				return Null.INSTANCE;
-			value = results.getLast();
-		}
-		if( value instanceof Ref ) // TODO Does this ever happen with tuples?
-			return ( (Ref)value ).get();
+			value = ( (Ref)value ).get();
+		if( value == null )
+			return Null.INSTANCE;
 		return value;
 	}
 }

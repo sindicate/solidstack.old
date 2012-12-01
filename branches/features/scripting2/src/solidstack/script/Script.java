@@ -22,6 +22,7 @@ import solidstack.io.ReaderSourceReader;
 import solidstack.io.SourceReader;
 import solidstack.script.expressions.Expression;
 import solidstack.script.java.Types;
+import solidstack.script.objects.Tuple;
 import solidstack.script.objects.Util;
 import solidstack.script.scopes.AbstractScope;
 import solidstack.script.scopes.AbstractScope.Ref;
@@ -52,6 +53,10 @@ public class Script
 		{
 			return expression.evaluate( thread );
 		}
+		catch( Returning e )
+		{
+			return e.getValue();
+		}
 		catch( ThrowException e )
 		{
 			throw new ScriptException( e );
@@ -79,6 +84,14 @@ public class Script
 			if( ( (Ref)object ).isUndefined() )
 				return false;
 			object = ( (Ref)object ).get();
+		}
+		if( object instanceof Tuple )
+		{
+			// TODO Maybe we shouldn't even do this
+			Tuple results = (Tuple)object;
+			if( results.size() == 0 )
+				return false;
+			object = results.getLast();
 		}
 		return Types.castToBoolean( Util.toJava( object ) );
 	}

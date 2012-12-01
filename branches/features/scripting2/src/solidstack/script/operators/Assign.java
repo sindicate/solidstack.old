@@ -20,6 +20,7 @@ import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
+import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Tuple;
 import solidstack.script.objects.Util;
 import solidstack.script.scopes.AbstractScope.Ref;
@@ -68,6 +69,8 @@ public class Assign extends Operator
 		value = Util.finalize( value );
 		if( value instanceof Tuple )
 			throw new ThrowException( "Can't assign tuples to variables", thread.cloneStack( getLocation() ) );
+		if( value instanceof FunctionObject )
+			( (FunctionObject)value ).setAssigned();
 		( (Ref)var ).set( value );
 	}
 }

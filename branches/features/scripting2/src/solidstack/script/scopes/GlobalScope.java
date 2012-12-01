@@ -28,6 +28,7 @@ import solidstack.script.functions.Length;
 import solidstack.script.functions.Load;
 import solidstack.script.functions.Print;
 import solidstack.script.functions.Println;
+import solidstack.script.functions.Return;
 import solidstack.script.functions.StripMargin;
 import solidstack.script.functions.Substr;
 import solidstack.script.functions.Throw;
@@ -52,6 +53,7 @@ public class GlobalScope extends Scope
 		val( Symbol.forString( "load" ), new Load() );
 		val( Symbol.forString( "print" ), new Print() );
 		val( Symbol.forString( "println" ), new Println() );
+		val( Symbol.forString( "return" ), new Return() );
 		val( Symbol.forString( "scope" ), new solidstack.script.functions.Scope() );
 		val( Symbol.forString( "stripMargin" ), new StripMargin() );
 		val( Symbol.forString( "substr" ), new Substr() );

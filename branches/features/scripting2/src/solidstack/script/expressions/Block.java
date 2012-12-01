@@ -42,8 +42,13 @@ public class Block extends LocalizedExpression // TODO Is this localized needed?
 	{
 		Scope scope = new Scope( thread.getScope() );
 		AbstractScope old = thread.swapScope( scope );
-		Object result = this.expression.evaluate( thread );
-		thread.swapScope( old );
-		return result;
+		try
+		{
+			return this.expression.evaluate( thread );
+		}
+		finally
+		{
+			thread.swapScope( old );
+		}
 	}
 }

@@ -40,7 +40,7 @@ public class StringExpression extends LocalizedExpression
 	{
 		List<Object> values = new ArrayList<Object>();
 		for( Expression expression : this.expressions )
-			values.add( Util.single( expression.evaluate( thread ) ) ); // TODO Or without single()?
+			values.add( Util.deref( expression.evaluate( thread ) ) ); // TODO Or without single()?
 		return new FunnyString( values );
 	}
 

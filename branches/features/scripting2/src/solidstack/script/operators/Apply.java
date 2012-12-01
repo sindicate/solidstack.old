@@ -19,12 +19,14 @@ package solidstack.script.operators;
 import java.lang.reflect.InvocationTargetException;
 
 import solidstack.script.JavaException;
+import solidstack.script.Returning;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
 import solidstack.script.java.Java;
 import solidstack.script.objects.ClassMember;
 import solidstack.script.objects.FunctionObject;
+import solidstack.script.objects.Null;
 import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Util;
 
@@ -47,7 +49,7 @@ public class Apply extends Operator
 			left = this.left.evaluate( thread );
 		left = Util.deref( left );
 
-		if( left == null )
+		if( left == Null.INSTANCE )
 			throw new ThrowException( "Function is null", thread.cloneStack( getLocation() ) );
 
 		Object[] pars = Util.toArray( this.right != null ? this.right.evaluate( thread ) : null );
@@ -112,7 +114,10 @@ public class Apply extends Operator
 		}
 		catch( InvocationTargetException e )
 		{
-			throw new JavaException( e.getCause(), thread.cloneStack( getLocation() ) );
+			Throwable t = e.getCause();
+			if( t instanceof Returning )
+				throw (Returning)t;
+			throw new JavaException( t, thread.cloneStack( getLocation() ) );
 		}
 		catch( Exception e )
 		{

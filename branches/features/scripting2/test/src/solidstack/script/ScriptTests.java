@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 
 import org.testng.Assert;
@@ -121,6 +122,9 @@ public class ScriptTests extends Util
 		test( "1 && 2", 2 );
 		test( "0 && 2", 2 );
 		test( "null && 2", null );
+		test( "1 && 2 || 3 + 1", 2 );
+		test( "!\"\" && 2 || 3", 2 );
+		test( "!\"x\" && 2 || 3", 3 );
 	}
 
 	@Test
@@ -168,7 +172,8 @@ public class ScriptTests extends Util
 		test( "defined( def( a ) )", true );
 		test( "a = null; defined( a )", true );
 		test( "if( a; a )", null ); // TODO Ponder over this once more
-//		test( "a && a", null ); TODO And this?
+		test( "a = null; a && a", null );
+		test( "a && 1 || 2", 2 );
 	}
 
 	@Test
@@ -229,11 +234,13 @@ public class ScriptTests extends Util
 		test( "( 2; 3 )", 3 );
 		test( "a = 1; a + a + a++", 3 );
 		test( "a = 1; a + a + ++a", 4 );
-		test( "a = 0; if( true; a++, a++ )", 1 );
+		test( "a = 0; ( b, c ) = if( true; a++, a++ )", Arrays.asList( 0, 1 ) );
 		test( "if( a = 1, b = a, b; 3; 4 )", 3 );
-		test( "a = 0; if( false; a++, a++; ++a, ++a )", 2 );
-		test( "i = 0; while( i < 10; println( i++ ) )", 9 );
-		test( "i = 0; while( i++ < 10; println( i ) )", 10 );
+		test( "if( a = null, b = a, b; 3; 4 )", 4 );
+		test( "a = 0; ( b, c ) = if( false; a++, a++; ++a, ++a )", Arrays.asList( 1, 2 ) );
+		test( "i = 0; while( i < 10; print( i++ ) )", 9 );
+		test( "i = 0; while( i++ < 10; print( i ) )", 10 );
+		test( "i = 0; while( i++ < 10 && print( i ) )", null ); // TODO Is there an example where result of condition should be returned?
 	}
 
 	@Test
@@ -672,6 +679,14 @@ public class ScriptTests extends Util
 	}
 
 	@Test
+	static public void test28()
+	{
+		test( "if( true; return( true ) ); return( false )", true );
+		test( "l = [ 1, 2, 3 ]; l.each( i -> return( i ) ); 4", 1 );
+		test( "l = [ 1, 2, 3 ]; f = i -> return( i ); l.each( f ); 4", 4 );
+	}
+
+	@Test
 	static public void prims() throws IOException
 	{
 		String script = readFile( "Prim's Minimum Spanning Tree.funny" );
@@ -720,6 +735,7 @@ public class ScriptTests extends Util
 	// TODO Hints for null parameters: a as String which evaluates to a TypedNull object if a is null
 	// TODO Compilation errors including column number
 	// TODO Compartmentalization like Java does with classloaders. This means name spaces too.
+	// TODO Adding tuples or appending values to it.
 
 	@SuppressWarnings( "unused" )
 	static public class TestObject1

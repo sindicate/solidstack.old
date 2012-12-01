@@ -24,6 +24,7 @@ import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
+import solidstack.script.objects.Null;
 import solidstack.script.objects.Util;
 import solidstack.script.scopes.AbstractScope.Ref;
 import solidstack.script.scopes.ScopeException;
@@ -41,14 +42,14 @@ public class Index extends Operator
 	{
 		try
 		{
-			Object left = Util.single( this.left.evaluate( thread ) ); // TODO Or index a tuple too?
-			if( left == null )
+			Object left = Util.deref( this.left.evaluate( thread ) ); // TODO Or index a tuple too?
+			if( left == Null.INSTANCE )
 				throw new ThrowException( "Null can't be indexed", thread.cloneStack( getLocation() ) );
 
 			if( this.right == null ) // TODO This could be a compile time error
 				throw new ThrowException( "Missing index", thread.cloneStack( getLocation() ) );
 
-			Object pars = Util.single( this.right.evaluate( thread ) );
+			Object pars = Util.deref( this.right.evaluate( thread ) );
 
 			if( left instanceof Map )
 				return new MapItemRef( (Map<?,?>)left, pars );

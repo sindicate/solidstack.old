@@ -287,8 +287,8 @@ public class ScriptParser
 					oldStop = swapStops( TYPE.PAREN_CLOSE );
 					Expressions expressions = parseExpressions();
 					swapStops( oldStop );
-					if( expressions.size() < 2 ) // TODO And 1?
-						throw new SourceException( "Expected at least 2 expressions", token2.getLocation() );
+					if( expressions.size() < 1 )
+						throw new SourceException( "Expected at least 1 expression", token2.getLocation() );
 					return new While( token.getLocation(), expressions.remove( 0 ), expressions );
 				}
 

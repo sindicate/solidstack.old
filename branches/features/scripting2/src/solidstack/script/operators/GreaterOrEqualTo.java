@@ -30,8 +30,8 @@ public class GreaterOrEqualTo extends Operator
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = Util.single( this.left.evaluate( thread ) );
-		Object right = Util.single( this.right.evaluate( thread ) );
+		Object left = Util.deref( this.left.evaluate( thread ) );
+		Object right = Util.deref( this.right.evaluate( thread ) );
 		return Operator.compare( left, right ) >= 0;
 	}
 }

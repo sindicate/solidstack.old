@@ -16,6 +16,11 @@
 
 package solidstack.script.objects;
 
+
+/*
+ * Null instance.
+ */
+// TODO Try to remove, and if not successful document why it is needed.
 public class Null
 {
 	static public final Null INSTANCE = new Null();

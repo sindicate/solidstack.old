@@ -17,6 +17,7 @@
 package solidstack.script.objects;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -26,6 +27,11 @@ public class Tuple
 
 	public Tuple()
 	{
+	}
+
+	public Tuple( Object... values )
+	{
+		Collections.addAll( this.values, values );
 	}
 
 	public Tuple( List<Object> values )

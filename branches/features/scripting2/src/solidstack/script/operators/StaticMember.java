@@ -37,7 +37,7 @@ public class StaticMember extends Operator
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = Util.single( this.left.evaluate( thread ) );
+		Object left = Util.deref( this.left.evaluate( thread ) );
 		Assert.isInstanceOf( Class.class, left );
 		Assert.isInstanceOf( Identifier.class, this.right );
 		String right = ( (Identifier)this.right ).getSymbol().toString();
@@ -53,7 +53,7 @@ public class StaticMember extends Operator
 
 	public Object evaluateForApply( ThreadContext thread )
 	{
-		Object left = Util.single( this.left.evaluate( thread ) );
+		Object left = Util.deref( this.left.evaluate( thread ) );
 		Assert.isInstanceOf( Class.class, left );
 		Assert.isInstanceOf( Identifier.class, this.right );
 		String right = ( (Identifier)this.right ).getSymbol().toString();
