@@ -466,9 +466,9 @@ abstract public class Operator implements Expression
 		switch( type )
 		{
 			case 2:
-				return Integer.compare( ( (Number)left ).intValue(), ( (Number)right ).intValue() );
+				return compareInt( ( (Number)left ).intValue(), ( (Number)right ).intValue() );
 			case 3:
-				return Long.compare( ( (Number)left ).longValue(), ( (Number)right ).longValue() );
+				return compareLong( ( (Number)left ).longValue(), ( (Number)right ).longValue() );
 			case 4:
 				return ( (BigInteger)left ).compareTo( (BigInteger)right );
 			case 5:
@@ -482,7 +482,19 @@ abstract public class Operator implements Expression
 		throw Assert.fail();
 	}
 
-	protected Operator( String operator, Expression left, Expression right )
+	// Integer.compare() only exists in Java 7 and above
+	static protected int compareInt( int int1, int int2 )
+	{
+		return int1 < int2 ? -1 : int1 == int2 ? 0 : 1;
+	}
+
+	// Long.compare() only exists in Java 7 and above
+	static protected int compareLong( long int1, long int2 )
+	{
+		return int1 < int2 ? -1 : int1 == int2 ? 0 : 1;
+	}
+
+    protected Operator( String operator, Expression left, Expression right )
 	{
 		this.operator = operator;
 		this.left = left;
