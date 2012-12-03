@@ -21,10 +21,14 @@ public class DumperTests
 		test( this.dumper.dump( null ), "<null>" );
 		test( this.dumper.dump( new ByteArrayOutputStream() ), "java.io.ByteArrayOutputStream <id=1>\n{\n\tbuf: byte[32],\n\tcount: (int)0\n}" );
 
+		Object[] array = new Object[ 4 ];
+		array[ 1 ] = new Integer( 0 );
+		array[ 2 ] = new BigDecimal( "0" );
+		test( array, "java.lang.Object[] <id=2>\n[\n\t<null>,\n\t(Integer)0,\n\t(BigDecimal)0,\n\t<null>\n]" );
+
 		this.dumper.setSingleLine( true ).hideIds( true );
 		test( this.dumper.dump( new ByteArrayOutputStream() ), "java.io.ByteArrayOutputStream { buf: byte[32], count: (int)0 }" );
-
-//		test( new Dumper(), "solidstack.reflect.Dumper { depth: (int)0, hideIds: false, hideTransients: false, id: (int)0, singleLine: false, visited: java.util.IdentityHashMap [] }" );
+		test( array, "java.lang.Object[] [ <null>, (Integer)0, (BigDecimal)0, <null> ]" );
 
 		test( (Object)"\\ \n \r \t \"", "\"\\\\ \\n \\r \\t \\\"\"" );
 		test( new StringBuilder(), "(java.lang.StringBuilder)\"\"" );
@@ -55,8 +59,6 @@ public class DumperTests
 		test( new Object(), "java.lang.Object (skipped)" );
 		this.dumper.removeSkip( "java.lang.Object" );
 		test( new Object(), "java.lang.Object {}" );
-
-
 	}
 
 	private void test( String actual, String expected )
@@ -66,6 +68,7 @@ public class DumperTests
 
 	private void test( Object object, String expected )
 	{
+		this.dumper.resetIds();
 		Assertions.assertThat( this.dumper.dump( object ) ).isEqualTo( expected );
 	}
 

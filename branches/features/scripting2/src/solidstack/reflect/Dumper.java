@@ -17,10 +17,12 @@
 package solidstack.reflect;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -37,10 +39,12 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import solidstack.lang.Assert;
+import solidstack.lang.SystemException;
+
 
 public class Dumper
 {
-	private int depth = 0;
 	private IdentityHashMap<Object, Integer> visited = new IdentityHashMap<Object, Integer>();
 	private int id;
 
@@ -95,6 +99,11 @@ public class Dumper
 		return this;
 	}
 
+	public void resetIds()
+	{
+		this.visited.clear();
+	}
+
 	public String dump( Object o )
 	{
 		Writer out = new StringWriter();
@@ -104,11 +113,17 @@ public class Dumper
 
 	public void dumpTo( Object o, Writer out )
 	{
+		DumpWriter writer = new DumpWriter( out );
+		dumpTo( o, writer );
+	}
+
+	public void dumpTo( Object o, DumpWriter out )
+	{
 		try
 		{
 			if( o == null )
 			{
-				out.write( "<null>" );
+				out.append( "<null>" );
 				return;
 			}
 			Class<?> cls = o.getClass();
@@ -125,7 +140,7 @@ public class Dumper
 			}
 			if( cls == char[].class )
 			{
-				out.write( "(char[])" );
+				out.append( "(char[])" );
 				dumpTo( String.valueOf( (char[])o ), out );
 				return;
 			}
@@ -156,7 +171,7 @@ public class Dumper
 			}
 			if( o instanceof ClassLoader )
 			{
-				out.write( o.getClass().getCanonicalName() );
+				out.append( o.getClass().getCanonicalName() );
 				return;
 			}
 
@@ -174,12 +189,9 @@ public class Dumper
 				className = cls.getName();
 			out.append( className );
 
-//			if( o instanceof org.apache.log4j.Category ) TODO
-//				return;
-
 			if( this.skip.contains( className ) || o instanceof java.lang.Thread )
 			{
-				out.write( " (skipped)" );
+				out.append( " (skipped)" );
 				return;
 			}
 
@@ -189,7 +201,7 @@ public class Dumper
 				id = ++this.id;
 				this.visited.put( o, id );
 				if( !this.hideIds )
-					out.write( " <id=" + id + ">" );
+					out.append( " <id=" + id + ">" );
 			}
 			else
 			{
@@ -197,239 +209,156 @@ public class Dumper
 				return;
 			}
 
-			this.depth++;
-			try
+			if( cls.isArray() )
 			{
-				StringBuilder tabs = new StringBuilder();
-				for( int k = 0; k < this.depth; k++ )
-					tabs.append( "\t" );
-
-				if( cls.isArray() )
-				{
-					if( Array.getLength( o ) == 0 )
-						out.write( " []" );
-					else
-					{
-						out.write( "\n" );
-						out.write( tabs.toString().substring( 1 ) );
-						out.write( "[\n" );
-						int rowCount = Array.getLength( o );
-						for( int i = 0; i < rowCount; i++ )
-						{
-							out.write( tabs.toString() );
-							Object value = Array.get( o, i );
-							dumpTo( value, out );
-							if( i < Array.getLength( o ) - 1 )
-								out.write( "," );
-							out.write( "\n" );
-						}
-						out.write( tabs.toString().substring( 1 ) );
-						out.write( "]" );
-					}
-				}
-				else if( className.equals( "java.util.ArrayList" )
-						|| className.equals( "java.util.Arrays.ArrayList" )
-						|| className.equals( "java.util.Collections.UnmodifiableRandomAccessList" )
-						|| className.equals( "java.util.LinkedHashSet" )
-						|| className.equals( "java.util.HashSet" )
-						|| className.equals( "java.util.LinkedList" )
-						|| className.equals( "java.util.Collections.SynchronizedSet" )
-						|| className.equals( "java.util.concurrent.ConcurrentLinkedQueue" ) )
-				{
-					Collection<?> list = (Collection<?>)o;
-					if( list.isEmpty() )
-						out.write( " []" );
-					else
-					{
-						out.write( "\n" );
-						out.write( tabs.toString().substring( 1 ) );
-						out.write( "[\n" );
-						for( Object value : list )
-						{
-							out.write( tabs.toString() );
-							dumpTo( value, out );
-							out.write( "," );
-							out.write( "\n" );
-						}
-						out.write( tabs.toString().substring( 1 ) );
-						out.write( "]" );
-					}
-				}
-				else if( className.equals( "java.util.LinkedHashMap" )
-						|| className.equals( "java.util.HashMap" )
-						|| className.equals( "java.util.Hashtable" )
-						|| className.equals( "java.util.Collections.UnmodifiableMap" )
-						|| className.equals( "java.util.concurrent.ConcurrentHashMap" )
-						|| className.equals( "java.util.IdentityHashMap" )
-						|| className.equals( "com.logica.pagen.lang.type.EntityType$1" ) )
-				{
-					Map<?, ?> map = (Map<?, ?>)o;
-					if( map.isEmpty() )
-						out.write( " []" );
-					else
-					{
-						out.write( "\n" );
-						out.write( tabs.toString().substring( 1 ) );
-						out.write( "[\n" );
-						for( Map.Entry<?, ?> entry : map.entrySet() )
-						{
-							out.write( tabs.toString() );
-							dumpTo( entry.getKey(), out );
-							out.write( ": " );
-							dumpTo( entry.getValue(), out );
-							out.write( ",\n" );
-						}
-						out.write( tabs.toString().substring( 1 ) );
-						out.write( "]" );
-					}
-				}
-				else if( className.equals( "java.util.Properties" ) )
-				{
-					Field def = cls.getDeclaredField( "defaults" );
-					if( !def.isAccessible() )
-						def.setAccessible( true );
-					Properties defaults = (Properties)def.get( o );
-					Hashtable<?, ?> map = (Hashtable<?, ?>)o;
-					out.write( "\n" );
-					out.write( tabs.toString().substring( 1 ) );
-					out.write( "[\n" );
-					for( Map.Entry<?, ?> entry : map.entrySet() )
-					{
-						out.write( tabs.toString() );
-						dumpTo( entry.getKey(), out );
-						out.write( ": " );
-						dumpTo( entry.getValue(), out );
-						out.write( ",\n" );
-					}
-					if( defaults != null && !defaults.isEmpty() )
-					{
-						out.write( tabs.toString() );
-						out.write( "defaults: " );
-						dumpTo( defaults, out );
-						out.write( "\n" );
-					}
-					out.write( tabs.toString().substring( 1 ) );
-					out.write( "]" );
-				}
-				else if( className.equals( "java.lang.reflect.Method" ) )
-				{
-					out.write( "\n" );
-					out.write( tabs.toString().substring( 1 ) );
-					out.write( "{\n" );
-
-					Field field = cls.getDeclaredField( "clazz" );
-					if( !field.isAccessible() )
-						field.setAccessible( true );
-					out.write( tabs.toString() );
-					out.write( "clazz" );
-					out.write( ": " );
-					Object value = field.get( o );
-					dumpTo( value, out );
-					out.write( "\n" );
-
-					field = cls.getDeclaredField( "name" );
-					if( !field.isAccessible() )
-						field.setAccessible( true );
-					out.write( tabs.toString() );
-					out.write( "name" );
-					out.write( ": " );
-					value = field.get( o );
-					dumpTo( value, out );
-					out.write( "\n" );
-
-					field = cls.getDeclaredField( "parameterTypes" );
-					if( !field.isAccessible() )
-						field.setAccessible( true );
-					out.write( tabs.toString() );
-					out.write( "parameterTypes" );
-					out.write( ": " );
-					value = field.get( o );
-					dumpTo( value, out );
-					out.write( "\n" );
-
-					field = cls.getDeclaredField( "returnType" );
-					if( !field.isAccessible() )
-						field.setAccessible( true );
-					out.write( tabs.toString() );
-					out.write( "returnType" );
-					out.write( ": " );
-					value = field.get( o );
-					dumpTo( value, out );
-					out.write( "\n" );
-
-					out.write( tabs.toString().substring( 1 ) );
-					out.write( "}" );
-				}
+				if( Array.getLength( o ) == 0 )
+					out.append( " []" );
 				else
 				{
-//					System.out.println( cls.getName() );
-					ArrayList<Field> fields = new ArrayList<Field>();
-					while( cls != Object.class )
+					out.newlineOrSpace().append( "[" ).newlineOrSpace().indent().setFirst();
+					int rowCount = Array.getLength( o );
+					for( int i = 0; i < rowCount; i++ )
 					{
-						Field[] fields2 = cls.getDeclaredFields();
-						for( Field field : fields2 )
-							fields.add( field );
-						cls = cls.getSuperclass();
+						out.comma();
+						dumpTo( Array.get( o, i ), out );
 					}
-
-					Collections.sort( fields, new Comparator<Field>()
-					{
-						public int compare( Field left, Field right )
-						{
-							return left.getName().compareTo( right.getName() );
-						}
-					} );
-
-					if( fields.isEmpty() )
-						out.write( " {}" );
-					else
-					{
-						if( !this.singleLine )
-							out.append( "\n" ).append( tabs.toString().substring( 1 ) ).append( "{" );
-						else
-							out.write( " {" );
-						boolean first = true;
-						for( Field field : fields )
-							if( ( field.getModifiers() & Modifier.STATIC ) == 0 )
-								if( !this.hideTransients || ( field.getModifiers() & Modifier.TRANSIENT ) == 0 )
-								{
-									if( !first )
-										out.write( "," );
-									else
-										first = false;
-									if( !this.singleLine )
-										out.write( "\n" );
-
-									String fName = field.getName();
-
-									if( !field.isAccessible() )
-										field.setAccessible( true );
-									if( !this.singleLine )
-										out.write( tabs.toString() );
-									else
-										out.write( " " );
-									out.write( fName );
-									out.write( ": " );
-
-									if( field.getType().isPrimitive() )
-										if( field.getType() == boolean.class )
-											out.write( field.get( o ).toString() );
-										else
-											out.append( "(" ).append( field.getType().getName() ).append( ")" ).append( field.get( o ).toString() );
-									else
-										dumpTo( field.get( o ), out );
-								}
-						if( !this.singleLine )
-							out.append( tabs.toString().substring( 1 ) ).append( "\n}" );
-						else
-							out.write( " }" );
-					}
+					out.newlineOrSpace().unIndent().append( "]" );
 				}
 			}
-			finally
+			else if( o instanceof Collection )
 			{
-				this.depth--;
+				Collection<?> list = (Collection<?>)o;
+				if( list.isEmpty() )
+					out.append( " []" );
+				else
+				{
+					out.newlineOrSpace().append( "[" ).newlineOrSpace().indent().setFirst();
+					for( Object value : list )
+					{
+						out.comma();
+						dumpTo( value, out );
+					}
+					out.newlineOrSpace().unIndent().append( "]" );
+				}
 			}
+			else if( o instanceof Properties ) // Properties is a Map, so it must come before the Map
+			{
+				Field def = cls.getDeclaredField( "defaults" );
+				if( !def.isAccessible() )
+					def.setAccessible( true );
+				Properties defaults = (Properties)def.get( o );
+				Hashtable<?, ?> map = (Hashtable<?, ?>)o;
+				out.newlineOrSpace().append( "[" ).newlineOrSpace().indent().setFirst();
+				for( Map.Entry<?, ?> entry : map.entrySet() )
+				{
+					out.comma();
+					dumpTo( entry.getKey(), out );
+					out.append( ": " );
+					dumpTo( entry.getValue(), out );
+				}
+				if( defaults != null && !defaults.isEmpty() )
+				{
+					out.comma().append( "defaults: " );
+					dumpTo( defaults, out );
+				}
+				out.newlineOrSpace().unIndent().append( "]" );
+			}
+			else if( o instanceof Map )
+			{
+				Map<?, ?> map = (Map<?, ?>)o;
+				if( map.isEmpty() )
+					out.append( " []" );
+				else
+				{
+					out.newlineOrSpace().append( "[" ).newlineOrSpace().indent().setFirst();
+					for( Map.Entry<?, ?> entry : map.entrySet() )
+					{
+						out.comma();
+						dumpTo( entry.getKey(), out );
+						out.append( ": " );
+						dumpTo( entry.getValue(), out );
+					}
+					out.newlineOrSpace().unIndent().append( "]" );
+				}
+			}
+			else if( o instanceof Method )
+			{
+				out.newlineOrSpace().append( "{" ).newlineOrSpace().indent().setFirst();
+
+				Field field = cls.getDeclaredField( "clazz" );
+				if( !field.isAccessible() )
+					field.setAccessible( true );
+				out.comma().append( "clazz" ).append( ": " );
+				dumpTo( field.get( o ), out );
+
+				field = cls.getDeclaredField( "name" );
+				if( !field.isAccessible() )
+					field.setAccessible( true );
+				out.comma().append( "name" ).append( ": " );
+				dumpTo( field.get( o ), out );
+
+				field = cls.getDeclaredField( "parameterTypes" );
+				if( !field.isAccessible() )
+					field.setAccessible( true );
+				out.comma().append( "parameterTypes" ).append( ": " );
+				dumpTo( field.get( o ), out );
+
+				field = cls.getDeclaredField( "returnType" );
+				if( !field.isAccessible() )
+					field.setAccessible( true );
+				out.comma().append( "returnType" ).append( ": " );
+				dumpTo( field.get( o ), out );
+
+				out.newlineOrSpace().unIndent().append( "}" );
+			}
+			else
+			{
+				ArrayList<Field> fields = new ArrayList<Field>();
+				while( cls != Object.class )
+				{
+					Field[] fs = cls.getDeclaredFields();
+					for( Field field : fs )
+						fields.add( field );
+					cls = cls.getSuperclass();
+				}
+
+				Collections.sort( fields, new Comparator<Field>()
+				{
+					public int compare( Field left, Field right )
+					{
+						return left.getName().compareTo( right.getName() );
+					}
+				} );
+
+				if( fields.isEmpty() )
+					out.append( " {}" );
+				else
+				{
+					out.newlineOrSpace().append( "{" ).newlineOrSpace().indent().setFirst();
+					for( Field field : fields )
+						if( ( field.getModifiers() & Modifier.STATIC ) == 0 )
+							if( !this.hideTransients || ( field.getModifiers() & Modifier.TRANSIENT ) == 0 )
+							{
+								out.comma().append( field.getName() ).append( ": " );
+
+								if( !field.isAccessible() )
+									field.setAccessible( true );
+
+								if( field.getType().isPrimitive() )
+									if( field.getType() == boolean.class ) // TODO More?
+										out.append( field.get( o ).toString() );
+									else
+										out.append( "(" ).append( field.getType().getName() ).append( ")" ).append( field.get( o ).toString() );
+								else
+									dumpTo( field.get( o ), out );
+							}
+					out.newlineOrSpace().unIndent().append( "}" );
+				}
+			}
+		}
+		catch( IOException e )
+		{
+			throw new SystemException( e );
 		}
 		catch( Exception e )
 		{
@@ -437,8 +366,70 @@ public class Dumper
 		}
 	}
 
-	static public class DumpWriter
+	public class DumpWriter
 	{
+		private Writer out;
+		private String tabs = "\t\t\t\t\t\t\t\t";
+		private int indent;
+		private boolean needIndent;
+		private boolean first;
 
+		public DumpWriter( Writer out )
+		{
+			this.out = out;
+		}
+
+		public DumpWriter append( String s ) throws IOException
+		{
+			if( this.needIndent )
+			{
+				while( this.indent > this.tabs.length() )
+					this.tabs += this.tabs;
+				this.out.write( this.tabs.substring( 0, this.indent ) );
+				this.needIndent = false;
+			}
+			this.out.write( s );
+			return this;
+		}
+
+		public DumpWriter newlineOrSpace() throws IOException
+		{
+			if( !Dumper.this.singleLine )
+			{
+				this.out.write( "\n" );
+				this.needIndent = true;
+			}
+			else
+				this.out.write( " " );
+			return this;
+		}
+
+		public DumpWriter indent()
+		{
+			this.indent ++;
+			return this;
+		}
+
+		public DumpWriter unIndent()
+		{
+			this.indent --;
+			Assert.isTrue( this.indent >= 0 );
+			return this;
+		}
+
+		public DumpWriter setFirst()
+		{
+			this.first = true;
+			return this;
+		}
+
+		public DumpWriter comma() throws IOException
+		{
+			if( this.first )
+				this.first = false;
+			else
+				append( "," ).newlineOrSpace();
+			return this;
+		}
 	}
 }
