@@ -17,34 +17,82 @@
 package solidstack.reflect;
 
 import java.io.File;
-import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 
 public class Dumper
 {
-	int depth = 0;
-	IdentityHashMap<Object, Integer> visited = new IdentityHashMap<Object, Integer>();
-	int id;
-	boolean serializableOnly;
+	private int depth = 0;
+	private IdentityHashMap<Object, Integer> visited = new IdentityHashMap<Object, Integer>();
+	private int id;
 
-	public Dumper( boolean serializableOnly )
+	private boolean hideTransients;
+	private boolean singleLine;
+	private boolean hideIds;
+
+	private Set<String> skip = new HashSet<String>();
+	private String[] skipDefault = new String[]
 	{
-		this.serializableOnly = serializableOnly;
+		"org.hibernate.internal.SessionImpl",
+		"org.springframework.beans.factory.support.DefaultListableBeanFactory",
+		"org.enhydra.jdbc.util.Logger",
+		"org.h2.jdbc.JdbcConnection",
+		"org.h2.expression.Expression[]",
+		"org.h2.engine.Session"
+	};
+
+	public Dumper()
+	{
+		for( String cls : this.skipDefault )
+			this.skip.add( cls );
+	}
+
+	public Dumper hideTransients( boolean hideTransients )
+	{
+		this.hideTransients = hideTransients;
+		return this;
+	}
+
+	public Dumper setSingleLine( boolean singleLine )
+	{
+		this.singleLine = singleLine;
+		return this;
+	}
+
+	public Dumper hideIds( boolean hideIds )
+	{
+		this.hideIds = hideIds;
+		return this;
+	}
+
+	public Dumper addSkip( String cls )
+	{
+		this.skip.add( "java.lang.Object" );
+		return this;
+	}
+
+	public Dumper removeSkip( String cls )
+	{
+		this.skip.remove( "java.lang.Object" );
+		return this;
 	}
 
 	public String dump( Object o )
@@ -63,50 +111,47 @@ public class Dumper
 				out.write( "<null>" );
 				return;
 			}
-			if( o instanceof StringBuilder || o instanceof StringBuffer )
+			Class<?> cls = o.getClass();
+			if( cls == String.class )
 			{
-				out.write( "StringBuilder( " );
+				out.append( "\"" ).append( ( (String)o ).replace( "\\", "\\\\" ).replace( "\n", "\\n" ).replace( "\r", "\\r" ).replace( "\t", "\\t" ).replace( "\"", "\\\"" ) ).append( "\"" );
+				return;
+			}
+			if( o instanceof CharSequence )
+			{
+				out.append( "(" ).append( o.getClass().getName() ).append( ")" );
 				dumpTo( o.toString(), out );
-				out.write( " )" );
 				return;
 			}
-			if( o instanceof char[] )
+			if( cls == char[].class )
 			{
-				out.write( "char[]( " );
+				out.write( "(char[])" );
 				dumpTo( String.valueOf( (char[])o ), out );
-				out.write( " )" );
 				return;
 			}
-			if( o instanceof byte[] )
+			if( cls == byte[].class )
 			{
-				out.write( "byte[ " );
-				out.write( Integer.toString( ( (byte[])o ).length ) );
-				out.write( " ]" );
+				out.append( "byte[" ).append( Integer.toString( ( (byte[])o ).length ) ).append( "]" );
 				return;
 			}
-			if( o instanceof String )
+			if( cls == Class.class )
 			{
-				out.write( "\"" + o.toString().replace( "\\", "\\\\" ).replaceAll( "\n|\r\n|\r", "\\\\n" ).replace( "\t", "\\ts" ).replace( "\"", "\\\"s" ) + "\"" );
+				out.append( ( (Class<?>)o ).getCanonicalName() ).append( ".class" );
 				return;
 			}
-			if( o instanceof Class )
+			if( cls == File.class )
 			{
-				out.write( "Class( " + ( (Class<?>)o ).getCanonicalName() + " )" );
+				out.append( "File( \"" ).append( ( (File)o ).getPath() ).append( "\" )" );
 				return;
 			}
-			if( o.getClass() == File.class )
+			if( cls == AtomicInteger.class )
 			{
-				out.write( "File( \"" + ( (File)o ).getPath() + "\" )" );
+				out.append( "AtomicInteger( " ).append( Integer.toString( ( (AtomicInteger)o ).get() ) ).append( " )" );
 				return;
 			}
-			if( o.getClass() == AtomicInteger.class )
+			if( cls == AtomicLong.class )
 			{
-				out.write( "AtomicInteger( " + ( (AtomicInteger)o ).get() + " )" );
-				return;
-			}
-			if( o.getClass() == AtomicLong.class )
-			{
-				out.write( "AtomicLong( " + ( (AtomicLong)o ).get() + " )" );
+				out.append( "AtomicLong( " ).append( Long.toString( ( (AtomicLong)o ).get() ) ).append( " )" );
 				return;
 			}
 			if( o instanceof ClassLoader )
@@ -115,49 +160,38 @@ public class Dumper
 				return;
 			}
 
-			if( o.getClass() == java.lang.Short.class || o.getClass() == java.lang.Long.class
-					|| o.getClass() == java.lang.Integer.class || o.getClass() == java.lang.Float.class
-					|| o.getClass() == java.lang.Byte.class || o.getClass() == java.lang.Character.class
-					|| o.getClass() == java.lang.Double.class || o.getClass() == java.lang.Boolean.class )
+			if( cls == java.lang.Short.class || cls == java.lang.Long.class || cls == java.lang.Integer.class
+					|| cls == java.lang.Float.class || cls == java.lang.Byte.class || cls == java.lang.Character.class
+					|| cls == java.lang.Double.class || cls == java.lang.Boolean.class || cls == BigInteger.class
+					|| cls == BigDecimal.class )
 			{
-				out.write( o.toString() );
+				out.append( "(" ).append( cls.getSimpleName() ).append( ")" ).append( o.toString() );
 				return;
 			}
 
-			if( this.serializableOnly && !( o instanceof Serializable ) )
-				return;
+			String className = cls.getCanonicalName();
+			if( className == null )
+				className = cls.getName();
+			out.append( className );
 
-			Class<?> oClass = o.getClass();
-			String oSimpleName = oClass.getCanonicalName();
-			if( oSimpleName == null )
-				oSimpleName = oClass.getName();
-
-			if( oSimpleName.equals( "org.hibernate.internal.SessionImpl" ) )
-				return;
-			if( oSimpleName.equals( "org.springframework.beans.factory.support.DefaultListableBeanFactory" ) )
-				return;
-			if( oSimpleName.equals( "org.enhydra.jdbc.util.Logger" ) )
-				return;
-			if( oSimpleName.equals( "org.h2.jdbc.JdbcConnection" ) )
-				return;
-			if( oSimpleName.equals( "org.h2.expression.Expression[]" ) )
-				return;
-			if( oSimpleName.equals( "org.h2.engine.Session" ) )
-				return;
 //			if( o instanceof org.apache.log4j.Category ) TODO
 //				return;
-			if( o instanceof java.lang.Thread )
-				return;
 
-			out.append( oSimpleName );
+			if( this.skip.contains( className ) || o instanceof java.lang.Thread )
+			{
+				out.write( " (skipped)" );
+				return;
+			}
 
 			Integer id = this.visited.get( o );
 			if( id == null )
 			{
 				id = ++this.id;
 				this.visited.put( o, id );
+				if( !this.hideIds )
+					out.write( " <id=" + id + ">" );
 			}
-			else if( !oSimpleName.equals( "java.lang.Class" ) )
+			else
 			{
 				out.append( " <refid=" + id + ">" );
 				return;
@@ -170,8 +204,7 @@ public class Dumper
 				for( int k = 0; k < this.depth; k++ )
 					tabs.append( "\t" );
 
-				out.write( " <id=" + id + ">" );
-				if( oClass.isArray() )
+				if( cls.isArray() )
 				{
 					if( Array.getLength( o ) == 0 )
 						out.write( " []" );
@@ -194,14 +227,14 @@ public class Dumper
 						out.write( "]" );
 					}
 				}
-				else if( oSimpleName.equals( "java.util.ArrayList" )
-						|| oSimpleName.equals( "java.util.Arrays.ArrayList" )
-						|| oSimpleName.equals( "java.util.Collections.UnmodifiableRandomAccessList" )
-						|| oSimpleName.equals( "java.util.LinkedHashSet" )
-						|| oSimpleName.equals( "java.util.HashSet" )
-						|| oSimpleName.equals( "java.util.LinkedList" )
-						|| oSimpleName.equals( "java.util.Collections.SynchronizedSet" )
-						|| oSimpleName.equals( "java.util.concurrent.ConcurrentLinkedQueue" ) )
+				else if( className.equals( "java.util.ArrayList" )
+						|| className.equals( "java.util.Arrays.ArrayList" )
+						|| className.equals( "java.util.Collections.UnmodifiableRandomAccessList" )
+						|| className.equals( "java.util.LinkedHashSet" )
+						|| className.equals( "java.util.HashSet" )
+						|| className.equals( "java.util.LinkedList" )
+						|| className.equals( "java.util.Collections.SynchronizedSet" )
+						|| className.equals( "java.util.concurrent.ConcurrentLinkedQueue" ) )
 				{
 					Collection<?> list = (Collection<?>)o;
 					if( list.isEmpty() )
@@ -222,12 +255,13 @@ public class Dumper
 						out.write( "]" );
 					}
 				}
-				else if( oSimpleName.equals( "java.util.LinkedHashMap" )
-						|| oSimpleName.equals( "java.util.HashMap" )
-						|| oSimpleName.equals( "java.util.Hashtable" )
-						|| oSimpleName.equals( "java.util.Collections.UnmodifiableMap" )
-						|| oSimpleName.equals( "java.util.concurrent.ConcurrentHashMap" )
-						|| oSimpleName.equals( "com.logica.pagen.lang.type.EntityType$1" ) )
+				else if( className.equals( "java.util.LinkedHashMap" )
+						|| className.equals( "java.util.HashMap" )
+						|| className.equals( "java.util.Hashtable" )
+						|| className.equals( "java.util.Collections.UnmodifiableMap" )
+						|| className.equals( "java.util.concurrent.ConcurrentHashMap" )
+						|| className.equals( "java.util.IdentityHashMap" )
+						|| className.equals( "com.logica.pagen.lang.type.EntityType$1" ) )
 				{
 					Map<?, ?> map = (Map<?, ?>)o;
 					if( map.isEmpty() )
@@ -249,9 +283,9 @@ public class Dumper
 						out.write( "]" );
 					}
 				}
-				else if( oSimpleName.equals( "java.util.Properties" ) )
+				else if( className.equals( "java.util.Properties" ) )
 				{
-					Field def = oClass.getDeclaredField( "defaults" );
+					Field def = cls.getDeclaredField( "defaults" );
 					if( !def.isAccessible() )
 						def.setAccessible( true );
 					Properties defaults = (Properties)def.get( o );
@@ -277,13 +311,13 @@ public class Dumper
 					out.write( tabs.toString().substring( 1 ) );
 					out.write( "]" );
 				}
-				else if( oSimpleName.equals( "java.lang.reflect.Method" ) )
+				else if( className.equals( "java.lang.reflect.Method" ) )
 				{
 					out.write( "\n" );
 					out.write( tabs.toString().substring( 1 ) );
 					out.write( "{\n" );
 
-					Field field = oClass.getDeclaredField( "clazz" );
+					Field field = cls.getDeclaredField( "clazz" );
 					if( !field.isAccessible() )
 						field.setAccessible( true );
 					out.write( tabs.toString() );
@@ -293,7 +327,7 @@ public class Dumper
 					dumpTo( value, out );
 					out.write( "\n" );
 
-					field = oClass.getDeclaredField( "name" );
+					field = cls.getDeclaredField( "name" );
 					if( !field.isAccessible() )
 						field.setAccessible( true );
 					out.write( tabs.toString() );
@@ -303,7 +337,7 @@ public class Dumper
 					dumpTo( value, out );
 					out.write( "\n" );
 
-					field = oClass.getDeclaredField( "parameterTypes" );
+					field = cls.getDeclaredField( "parameterTypes" );
 					if( !field.isAccessible() )
 						field.setAccessible( true );
 					out.write( tabs.toString() );
@@ -313,7 +347,7 @@ public class Dumper
 					dumpTo( value, out );
 					out.write( "\n" );
 
-					field = oClass.getDeclaredField( "returnType" );
+					field = cls.getDeclaredField( "returnType" );
 					if( !field.isAccessible() )
 						field.setAccessible( true );
 					out.write( tabs.toString() );
@@ -328,14 +362,14 @@ public class Dumper
 				}
 				else
 				{
-//					System.out.println( o.getClass().getName() );
+//					System.out.println( cls.getName() );
 					ArrayList<Field> fields = new ArrayList<Field>();
-					while( oClass != Object.class )
+					while( cls != Object.class )
 					{
-						Field[] fields2 = oClass.getDeclaredFields();
+						Field[] fields2 = cls.getDeclaredFields();
 						for( Field field : fields2 )
 							fields.add( field );
-						oClass = oClass.getSuperclass();
+						cls = cls.getSuperclass();
 					}
 
 					Collections.sort( fields, new Comparator<Field>()
@@ -350,28 +384,45 @@ public class Dumper
 						out.write( " {}" );
 					else
 					{
-						out.write( "\n" );
-						out.write( tabs.toString().substring( 1 ) );
-						out.write( "{\n" );
+						if( !this.singleLine )
+							out.append( "\n" ).append( tabs.toString().substring( 1 ) ).append( "{" );
+						else
+							out.write( " {" );
+						boolean first = true;
 						for( Field field : fields )
-						{
 							if( ( field.getModifiers() & Modifier.STATIC ) == 0 )
-							{
-								String fName = field.getName();
+								if( !this.hideTransients || ( field.getModifiers() & Modifier.TRANSIENT ) == 0 )
+								{
+									if( !first )
+										out.write( "," );
+									else
+										first = false;
+									if( !this.singleLine )
+										out.write( "\n" );
 
-								if( !field.isAccessible() )
-									field.setAccessible( true );
-								out.write( tabs.toString() );
-								out.write( fName );
-								out.write( ": " );
+									String fName = field.getName();
 
-								Object value = field.get( o );
-								dumpTo( value, out );
-								out.write( "\n" );
-							}
-						}
-						out.write( tabs.toString().substring( 1 ) );
-						out.write( "}" );
+									if( !field.isAccessible() )
+										field.setAccessible( true );
+									if( !this.singleLine )
+										out.write( tabs.toString() );
+									else
+										out.write( " " );
+									out.write( fName );
+									out.write( ": " );
+
+									if( field.getType().isPrimitive() )
+										if( field.getType() == boolean.class )
+											out.write( field.get( o ).toString() );
+										else
+											out.append( "(" ).append( field.getType().getName() ).append( ")" ).append( field.get( o ).toString() );
+									else
+										dumpTo( field.get( o ), out );
+								}
+						if( !this.singleLine )
+							out.append( tabs.toString().substring( 1 ) ).append( "\n}" );
+						else
+							out.write( " }" );
 					}
 				}
 			}
@@ -384,5 +435,10 @@ public class Dumper
 		{
 			dumpTo( e.toString(), out );
 		}
+	}
+
+	static public class DumpWriter
+	{
+
 	}
 }
