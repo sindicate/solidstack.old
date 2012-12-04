@@ -17,6 +17,7 @@
 package solidstack.reflect;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -41,6 +42,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import solidstack.lang.Assert;
 import solidstack.lang.SystemException;
+import solidstack.script.java.Java;
 
 
 public class Dumper
@@ -102,6 +104,7 @@ public class Dumper
 	public void resetIds()
 	{
 		this.visited.clear();
+		this.id = 0;
 	}
 
 	public String dump( Object o )
@@ -115,6 +118,26 @@ public class Dumper
 	{
 		DumpWriter writer = new DumpWriter( out );
 		dumpTo( o, writer );
+	}
+
+	public void dumpTo( Object o, File file )
+	{
+		try
+		{
+			Writer out = new FileWriter( file );
+			try
+			{
+				dumpTo( o, out );
+			}
+			finally
+			{
+				out.close();
+			}
+		}
+		catch( IOException e )
+		{
+			throw Java.throwUnchecked( e );
+		}
 	}
 
 	public void dumpTo( Object o, DumpWriter out )
