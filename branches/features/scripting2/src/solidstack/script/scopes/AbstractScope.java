@@ -16,6 +16,8 @@
 
 package solidstack.script.scopes;
 
+import java.util.Map;
+
 import solidstack.script.scopes.ValueMap.Entry;
 
 
@@ -67,6 +69,12 @@ abstract public class AbstractScope
 			return false;
 		v.set( value );
 		return true;
+	}
+
+	public void setAll( Map<String, ? extends Object> parameters )
+	{
+		for( java.util.Map.Entry<String, ? extends Object> entry : parameters.entrySet() )
+			set( entry.getKey(), entry.getValue() );
 	}
 
 	static public interface Ref
