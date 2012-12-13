@@ -65,6 +65,8 @@ public class Dumper
 		"org.h2.engine.Session"
 	};
 
+	private Set<String> overriddenCollection = new HashSet<String>();
+
 	public Dumper()
 	{
 		for( String cls : this.skipDefault )
@@ -89,15 +91,37 @@ public class Dumper
 		return this;
 	}
 
-	public Dumper addSkip( String cls )
+	public Dumper skip( String cls )
 	{
-		this.skip.add( "java.lang.Object" );
+		this.skip.add( cls );
 		return this;
+	}
+
+	public Set<String> getSkips()
+	{
+		return this.skip;
 	}
 
 	public Dumper removeSkip( String cls )
 	{
-		this.skip.remove( "java.lang.Object" );
+		this.skip.remove( cls );
+		return this;
+	}
+
+	public Dumper overrideCollection( String cls )
+	{
+		this.overriddenCollection.add( cls );
+		return this;
+	}
+
+	public Set<String> getCollectionOverrides()
+	{
+		return this.overriddenCollection;
+	}
+
+	public Dumper removeCollectionOverride( String cls )
+	{
+		this.overriddenCollection.remove( cls );
 		return this;
 	}
 
@@ -248,7 +272,7 @@ public class Dumper
 					out.newlineOrSpace().unIndent().append( "]" );
 				}
 			}
-			else if( o instanceof Collection )
+			else if( o instanceof Collection && !this.overriddenCollection.contains( className ) )
 			{
 				Collection<?> list = (Collection<?>)o;
 				if( list.isEmpty() )
@@ -264,7 +288,7 @@ public class Dumper
 					out.newlineOrSpace().unIndent().append( "]" );
 				}
 			}
-			else if( o instanceof Properties ) // Properties is a Map, so it must come before the Map
+			else if( o instanceof Properties && !this.overriddenCollection.contains( className ) ) // Properties is a Map, so it must come before the Map
 			{
 				Field def = cls.getDeclaredField( "defaults" );
 				if( !def.isAccessible() )
@@ -286,7 +310,7 @@ public class Dumper
 				}
 				out.newlineOrSpace().unIndent().append( "]" );
 			}
-			else if( o instanceof Map )
+			else if( o instanceof Map && !this.overriddenCollection.contains( className ) )
 			{
 				Map<?, ?> map = (Map<?, ?>)o;
 				if( map.isEmpty() )

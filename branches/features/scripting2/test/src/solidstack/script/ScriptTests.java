@@ -736,6 +736,7 @@ public class ScriptTests extends Util
 	// TODO Compilation errors including column number
 	// TODO Compartmentalization like Java does with classloaders. This means name spaces too.
 	// TODO Adding tuples or appending values to it.
+	// TODO Always remember the lexical scope. Needed if we want script file specific settings.
 
 	@SuppressWarnings( "unused" )
 	static public class TestObject1

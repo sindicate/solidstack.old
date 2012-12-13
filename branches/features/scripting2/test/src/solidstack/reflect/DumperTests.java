@@ -55,7 +55,7 @@ public class DumperTests
 		test( new SerializableObject(), "solidstack.reflect.DumperTests.SerializableObject { field: (int)0 }" );
 		this.dumper.hideTransients( false );
 
-		this.dumper.addSkip( "java.lang.Object" );
+		this.dumper.skip( "java.lang.Object" );
 		test( new Object(), "java.lang.Object (skipped)" );
 		this.dumper.removeSkip( "java.lang.Object" );
 		test( new Object(), "java.lang.Object {}" );

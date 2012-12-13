@@ -7,5 +7,14 @@ loaded.eval( this );
 if( !test; throw( "Expected test" ) );
 println( test );
 
-// load, call, include, import, required, optional, module
+// load, call, run, eval, exec, include, import, required, optional, module
 // classpath: protocol will find 'system' modules
+
+// load(string): loads and parses the given file as a script, returns a script object
+// parse(string): parses the given string as a script, returns a script object
+// script.eval(): evaluates the script in the current scope
+// eval(string): parses the string as a script, and evaluates it in the current scope
+// include(string): include expression from this file into my own? 
+// run(string): loads, parses and evaluates the given file as a script in its own scope, returns the result
+// call(string): loads, parses and evaluates the given file as a script in the current scope, returns the result
+// exec(string): == run? or an OS command?
