@@ -55,6 +55,9 @@ public class ScriptParser
 {
 	private ScriptTokenizer tokenizer;
 	private TYPE stop;
+	private boolean expectElse;
+
+	// TODO Add keywords that can't be identifiers
 
 
 	/**
@@ -111,7 +114,7 @@ public class ScriptParser
 	private Expression parseExpression()
 	{
 		Expression result = parseAtom();
-		if( result == null ) // TODO What if no atom because of ,
+		if( result == null )
 			return null;
 
 		while( true )
@@ -127,7 +130,6 @@ public class ScriptParser
 					if( this.stop != null )
 						throw new SourceException( "Unexpected " + token + ", missing " + this.stop, token.getLocation() );
 					//$FALL-THROUGH$
-
 				case SEMICOLON:
 					return result;
 
@@ -156,7 +158,13 @@ public class ScriptParser
 						Assert.notNull( right );
 						result = appendOperator( result, token.getValue(), right );
 						break;
-					} //$FALL-THROUGH$
+					}
+					else if( token.getValue().equals( "else" ) && this.expectElse )
+					{
+						this.tokenizer.push();
+						return result;
+					}
+					//$FALL-THROUGH$
 
 				default:
 					throw new SourceException( "Unexpected token '" + token + "'", token.getLocation() );
@@ -274,9 +282,19 @@ public class ScriptParser
 					oldStop = swapStops( TYPE.PAREN_CLOSE );
 					Expressions expressions = parseExpressions();
 					swapStops( oldStop );
-					if( expressions.size() != 2 && expressions.size() != 3 )
-						throw new SourceException( "Expected 2 or 3 expressions", token2.getLocation() );
-					return new If( token.getLocation(), expressions.get( 0 ), expressions.get( 1 ), expressions.size() == 3 ? expressions.get( 2 ) : null );
+					this.expectElse = true;
+					Expression left = parseExpression();
+					this.expectElse = false;
+					Expression right = null;
+					token2 = this.tokenizer.get();
+					if( token2.getType() == TYPE.IDENTIFIER && token2.eq( "else" ) )
+						right = parseExpression();
+					else
+						this.tokenizer.push();
+					token2 = this.tokenizer.lastToken();
+					Assert.isTrue( token2.getType() == this.stop || token2.getType() == TYPE.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
+					this.tokenizer.push();
+					return new If( token.getLocation(), expressions, left, right );
 				}
 
 				if( token.getValue().equals( "while" ) )

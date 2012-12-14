@@ -6,7 +6,7 @@ sql.eachResult( "SELECT * FROM SYS.SYSTABLES", ( result =>
 ) );
 
 tables = sql.list( "SELECT * FROM SYS.SYSTABLES" );
-if( !tables; throw( "Expected some tables" ) );
+if( !tables ) throw( "Expected some tables" );
 
 tables.each( table => println( table[ "tablename" ] ) );
 

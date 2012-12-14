@@ -16,6 +16,9 @@
 
 package solidstack.script;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import solidstack.io.PushbackReader;
 import solidstack.io.SourceException;
 import solidstack.io.SourceLocation;
@@ -46,10 +49,8 @@ public class ScriptTokenizer
 	 */
 	private Token last;
 
-	/**
-	 * The last token is pushed back.
-	 */
-	private boolean pushed;
+	private List<Token> window = new ArrayList<Token>();
+	private int pos;
 
 
 	/**
@@ -60,6 +61,10 @@ public class ScriptTokenizer
 	public ScriptTokenizer( SourceReader in )
 	{
 		this.in = new PushbackReader( in );
+		this.window.add( null );
+		this.window.add( null );
+		this.window.add( null );
+		this.pos = 3;
 	}
 
 	/**
@@ -75,7 +80,7 @@ public class ScriptTokenizer
 	 *
 	 * @return The cleared buffer.
 	 */
-	public StringBuilder clearBuffer()
+	protected StringBuilder clearBuffer()
 	{
 		StringBuilder buffer = this.buffer;
 		buffer.setLength( 0 );
@@ -89,12 +94,14 @@ public class ScriptTokenizer
 	 */
 	public Token get()
 	{
-		if( this.pushed )
+		if( this.pos == 3 )
 		{
-			this.pushed = false;
-			return lastToken();
+			this.window.remove( 0 );
+			Token result = get0();
+			this.window.add( result );
+			return result;
 		}
-		return this.last = get0();
+		return this.window.get( this.pos++ );
 	}
 
 	/**
@@ -102,11 +109,12 @@ public class ScriptTokenizer
 	 */
 	public Token lastToken()
 	{
-		if( this.pushed )
-			throw new IllegalStateException( "Token has been pushed back" );
-		if( this.last == null )
+		if( this.pos == 0 )
 			throw new IllegalStateException( "There is no last token" );
-		return this.last;
+		Token result = this.window.get( this.pos - 1 );
+		if( result == null )
+			throw new IllegalStateException( "The token has not been retrieved yet" );
+		return result;
 	}
 
 	/**
@@ -114,9 +122,9 @@ public class ScriptTokenizer
 	 */
 	public void push()
 	{
-		if( this.pushed )
-			throw new IllegalStateException( "Token has already been pushed back" );
-		this.pushed = true;
+		if( this.pos == 0 )
+			throw new IllegalStateException( "Can't push further" );
+		this.pos--;
 	}
 
 	private Token get0()

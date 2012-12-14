@@ -47,10 +47,10 @@ prim = ( graph, start ) => {
         queue.each( ( key, value ) => if( value < min; minKey = key, min = value ) );
 
 		graph[ minKey ].each( ( v, weight ) =>
-            if( weight > 0 && queue.containsKey( v ) && weight < queue[ v ]; (
+            if( weight > 0 && queue.containsKey( v ) && weight < queue[ v ] ) (
                 parent[ v ] = minKey;
                 queue[ v ] = weight;
-            ) )
+            )
 		);
  
  		queue.remove( minKey );

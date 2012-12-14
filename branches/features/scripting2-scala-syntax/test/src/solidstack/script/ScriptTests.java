@@ -109,13 +109,13 @@ public class ScriptTests extends Util
 	@Test
 	static public void test4()
 	{
-		test( "if( 1; 2; 3 + 1 )", 2 );
-		test( "if( !\"\"; 2; 3 )", 2 );
-		test( "if( !\"x\"; 2; 3 )", 3 );
-		test( "if( 1; 2 )", 2 );
-		test( "if( 1;; 2 )", null );
-		test( "if( null; 2 )", null );
-		test( "if( null;; 2 )", 2 );
+		test( "if( 1 ) 2 else 3 + 1", 2 );
+		test( "if( !\"\" ) 2 else 3", 2 );
+		test( "if( !\"x\" ) 2 else 3", 3 );
+		test( "if( 1 ) 2", 2 );
+		test( "if( 1 ) () else 2", null );
+		test( "if( null ) 2", null );
+		test( "if( null ) () else 2", 2 );
 		test( "1 || 2", 1 );
 		test( "0 || 2", 0 );
 		test( "null || 2", 2 );
@@ -234,10 +234,11 @@ public class ScriptTests extends Util
 		test( "( 2; 3 )", 3 );
 		test( "a = 1; a + a + a++", 3 );
 		test( "a = 1; a + a + ++a", 4 );
-		test( "a = 0; ( b, c ) = if( true; a++, a++ )", Arrays.asList( 0, 1 ) );
-		test( "if( a = 1, b = a, b; 3; 4 )", 3 );
-		test( "if( a = null, b = a, b; 3; 4 )", 4 );
-		test( "a = 0; ( b, c ) = if( false; a++, a++; ++a, ++a )", Arrays.asList( 1, 2 ) );
+		// TODO If should stop at the comma just as with the ;
+		test( "a = 0; ( b, c ) = if( true ) ( a++, a++ )", Arrays.asList( 0, 1 ) );
+		test( "if( a = 1, b = a, b ) 3 else 4", 3 );
+		test( "if( a = null, b = a, b ) 3 else 4", 4 );
+		test( "a = 0; ( b, c ) = if( false ) ( a++, a++ ) else ( ++a, ++a )", Arrays.asList( 1, 2 ) );
 		test( "i = 0; while( i < 10; print( i++ ) )", 9 );
 		test( "i = 0; while( i++ < 10; print( i ) )", 10 );
 		test( "i = 0; while( i++ < 10 && print( i ) )", null ); // TODO Is there an example where result of condition should be returned?
@@ -501,7 +502,7 @@ public class ScriptTests extends Util
 
 		test( "s = :symbol; s.toString()", "symbol" );
 		test( "s = :\"dit is ook een symbol\"; s.toString()", "dit is ook een symbol" );
-		test( "s = :red; if( s == :red; true; false )", true );
+		test( "s = :red; if( s == :red ) true else false", true );
 	}
 
 	@Test

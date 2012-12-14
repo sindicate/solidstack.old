@@ -69,16 +69,14 @@ with escaped newline" );
 				f = fun( b; b * a );
 				this;
 			};
-			if( ( got = o.f( 3 ) ) != 12;
-				throw( "Expected 12, got ${got}" )
-			);
+			if( ( got = o.f( 3 ) ) != 12 )
+				throw( "Expected 12, got ${got}" );
 			oo = {
 				f = fun( b; b );
 				this + o;
 			};
-			if( ( got = oo.f( 4 ) ) != 4;
-				throw( "Expected 4, got ${got}" )
-			);
+			if( ( got = oo.f( 4 ) ) != 4 )
+				throw( "Expected 4, got ${got}" );
 			'''
 		);
 		eval( '''
@@ -90,9 +88,8 @@ with escaped newline" );
 			// Calls the function and receives the new scope. The scope contains f and a = 5.
 			o = c( 5 );
 			// Calls f in the scope o and returns 15 because a = 5.
-			if( ( got = o.f( 3 ) ) != 15;
-				throw( "Expected 15, got ${got}" )
-			);
+			if( ( got = o.f( 3 ) ) != 15 )
+				throw( "Expected 15, got ${got}" );
 			// Creates a second function. The function returns the combined scope of itself and the one returned by calling c.
 			cc = fun{ ;
 				f = fun( b; b );
@@ -101,9 +98,8 @@ with escaped newline" );
 			// Calls cc and receives the new scope. The scope overrides f from the c scope.
 			oo = cc();
 			// Calls f in the scope oo and returns 3.
-			if( ( got = oo.f( 3 ) ) != 3;
-				throw( "Expected 3, got ${got}" )
-			);
+			if( ( got = oo.f( 3 ) ) != 3 )
+				throw( "Expected 3, got ${got}" );
 			'''
 		);
 	}
