@@ -30,12 +30,12 @@ graph = [
 	8: [ 8, 11,  0,  0,  0,  0,  7,  1,  0 ]
 ];
 
-prim = ( graph, start ) -> {
+prim = ( graph, start ) => {
 	
 	queue = [:];
     parent = [];
  
- 	graph.eachKey( k -> queue[ k ] = INFINITY );
+ 	graph.eachKey( k => queue[ k ] = INFINITY );
  
  	queue[ start ] = 0;
  	parent[ start ] = null;
@@ -44,9 +44,9 @@ prim = ( graph, start ) -> {
  	
         // get the minimum value
         min = INFINITY; minKey = -1;
-        queue.each( ( key, value ) -> if( value < min; minKey = key, min = value ) );
+        queue.each( ( key, value ) => if( value < min; minKey = key, min = value ) );
 
-		graph[ minKey ].each( ( v, weight ) ->
+		graph[ minKey ].each( ( v, weight ) =>
             if( weight > 0 && queue.containsKey( v ) && weight < queue[ v ]; (
                 parent[ v ] = minKey;
                 queue[ v ] = weight;

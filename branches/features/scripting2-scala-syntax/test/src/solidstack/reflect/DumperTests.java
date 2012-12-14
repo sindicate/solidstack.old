@@ -24,7 +24,7 @@ public class DumperTests
 		Object[] array = new Object[ 4 ];
 		array[ 1 ] = new Integer( 0 );
 		array[ 2 ] = new BigDecimal( "0" );
-		test( array, "java.lang.Object[] <id=2>\n[\n\t<null>,\n\t(Integer)0,\n\t(BigDecimal)0,\n\t<null>\n]" );
+		test( array, "java.lang.Object[] <id=1>\n[\n\t<null>,\n\t(Integer)0,\n\t(BigDecimal)0,\n\t<null>\n]" );
 
 		this.dumper.setSingleLine( true ).hideIds( true );
 		test( this.dumper.dump( new ByteArrayOutputStream() ), "java.io.ByteArrayOutputStream { buf: byte[32], count: (int)0 }" );

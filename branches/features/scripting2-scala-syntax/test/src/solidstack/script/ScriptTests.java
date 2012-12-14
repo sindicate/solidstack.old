@@ -316,8 +316,8 @@ public class ScriptTests extends Util
 		test( "( a, b ) = ( 1, 2 ); a + b", 3 );
 		test( "( a, b ) = fun( ; 1, 2 )(); a + b", 3 );
 		test( "( a, b ) = ( fun( ; 1 ), fun( ; 2 ) ) ; a() + b()", 3 );
-		test( "( a, b ) = ( () -> ( 1, 2 ) )(); a + b", 3 );
-		test( "( a, b ) = ( () -> 1, () -> 2 ); a() + b()", 3 );
+		test( "( a, b ) = ( () => ( 1, 2 ) )(); a + b", 3 );
+		test( "( a, b ) = ( () => 1, () => 2 ); a() + b()", 3 );
 	}
 
 	@Test
@@ -351,11 +351,11 @@ public class ScriptTests extends Util
 //		test( "a = 1; fun( ; val( a ) = 2 )(); a", 2 ); // The function has no context of its own
 		test( "a = 1; { def( a ) = 2 }; a", 1 ); // The block has its own context
 
-		test( "( () -> a = 1 )(); a", 1 ); // The function has no context of its own
-		test( "a = 1; ( a -> a++ )( a ); a;", 1 );
-		test( "a = 1; ( () -> def( a ) = 2 )(); a", 2 ); // The function has no context of its own
+		test( "( () => a = 1 )(); a", 1 ); // The function has no context of its own
+		test( "a = 1; ( a => a++ )( a ); a;", 1 );
+		test( "a = 1; ( () => def( a ) = 2 )(); a", 2 ); // The function has no context of its own
 //		test( "a = 1; fun( ; val( a ) = 2 )(); a", 2 ); // The function has no context of its own
-		test( "a = 1; f = () -> { def( a ) = 2 }; f(); a", 1 ); // The function has its own context
+		test( "a = 1; f = () => { def( a ) = 2 }; f(); a", 1 ); // The function has its own context
 	}
 
 	@Test
@@ -424,46 +424,46 @@ public class ScriptTests extends Util
 		eval( "fun( a; a )( while( false; 1 ) )" );
 		eval( "fun( a; a )( [].each( fun( a; () ) ) )" );
 
-		eval( "( a -> a )( null )" );
-		eval( "( a -> a )( if( false; 1 ) )" );
-		eval( "( a -> a )( while( false; 1 ) )" );
-		eval( "( a -> a )( [].each( a -> () ) )" );
+		eval( "( a => a )( null )" );
+		eval( "( a => a )( if( false; 1 ) )" );
+		eval( "( a => a )( while( false; 1 ) )" );
+		eval( "( a => a )( [].each( a => () ) )" );
 	}
 
 	@Test
 	static public void test21()
 	{
-		test( "f = a -> a; f( 3 )", 3 );
-		test( "f = a -> a * a; f( 3 )", 9 );
-		test( "f = ( a ) -> ( a * a ); f( 3 )", 9 );
-		test( "( a -> a * a )( 5 )", 25 );
-		test( "( a -> a( 3 ) ) ( b -> 5 * b )", 15 );
-		test( "( ( a, b ) -> a( 1, 2 ) * b( 3, 4 ) ) ( ( c, d ) -> c * d, ( e, f ) -> e * f )", 24 );
-		test( "( ( a, b ) -> a( 1, 2 ) * b( 3, 4 ) ) ( ( a, b ) -> a * b, ( a, b ) -> a * b )", 24 );
-		test( "f = () -> 1; f()", 1 );
-		test( "a = 0; ( () -> a = 1 ) (); a", 1 );
-		test( "( a -> a ) ( null )", null );
-		test( "f = () -> () -> 2; f()()", 2 );
-		test( "a = 1; f = () -> a; a = 2; f()", 2 );
-		test( "( a -> () -> a )( 1 )()", 1 );
+		test( "f = a => a; f( 3 )", 3 );
+		test( "f = a => a * a; f( 3 )", 9 );
+		test( "f = ( a ) => ( a * a ); f( 3 )", 9 );
+		test( "( a => a * a )( 5 )", 25 );
+		test( "( a => a( 3 ) ) ( b => 5 * b )", 15 );
+		test( "( ( a, b ) => a( 1, 2 ) * b( 3, 4 ) ) ( ( c, d ) => c * d, ( e, f ) => e * f )", 24 );
+		test( "( ( a, b ) => a( 1, 2 ) * b( 3, 4 ) ) ( ( a, b ) => a * b, ( a, b ) => a * b )", 24 );
+		test( "f = () => 1; f()", 1 );
+		test( "a = 0; ( () => a = 1 ) (); a", 1 );
+		test( "( a => a ) ( null )", null );
+		test( "f = () => () => 2; f()()", 2 );
+		test( "a = 1; f = () => a; a = 2; f()", 2 );
+		test( "( a => () => a )( 1 )()", 1 );
 
-		test( "f = (a,b)->a*b; g = a->f(a,3); g(5)", 15 );
-		test( "s = \"string\"; c = x->s.charAt(x); c(2)", 'r' );
-		test( "f = () -> (1,2,3); (a,b,c) = f(); a+b+c;", 6 );
+		test( "f = (a,b)=>a*b; g = a=>f(a,3); g(5)", 15 );
+		test( "s = \"string\"; c = x=>s.charAt(x); c(2)", 'r' );
+		test( "f = () => (1,2,3); (a,b,c) = f(); a+b+c;", 6 );
 
-		test( "l = [ 1, 2, 3 ]; l.each( i -> println( i ) )", 3 );
+		test( "l = [ 1, 2, 3 ]; l.each( i => println( i ) )", 3 );
 	}
 
 	@Test
 	static public void test22()
 	{
-		test( "f = (a,b,c) -> a+b+c; g = (*a) -> f(*a); g(1,2,3)", 6 );
-		test( "f = *a -> \"sinterklaas\".charAt( *a ); f( 1 )", 'i' );
-		test( "Arrays = class( \"java.util.Arrays\" ); asList = *i -> Arrays#asList( *i ); list = asList( 1, 2, 3 ); list.size()", 3 );
-		test( "f = ( a, *b ) -> b.size(); f( 1, 2, 3 )", 2 );
-		test( "f = ( a, *b ) -> a; g = ( a, *b ) -> f( *b, a ); g( 1, 2, 3 )", 2 );
-		test( "f = *a -> a.size(); f( 1, 2, 3 );", 3 );
-		test( "l = [1,2,3]; f = (a,b,c) -> a+b+c; f(*l);", 6 );
+		test( "f = (a,b,c) => a+b+c; g = (*a) => f(*a); g(1,2,3)", 6 );
+		test( "f = *a => \"sinterklaas\".charAt( *a ); f( 1 )", 'i' );
+		test( "Arrays = class( \"java.util.Arrays\" ); asList = *i => Arrays#asList( *i ); list = asList( 1, 2, 3 ); list.size()", 3 );
+		test( "f = ( a, *b ) => b.size(); f( 1, 2, 3 )", 2 );
+		test( "f = ( a, *b ) => a; g = ( a, *b ) => f( *b, a ); g( 1, 2, 3 )", 2 );
+		test( "f = *a => a.size(); f( 1, 2, 3 );", 3 );
+		test( "l = [1,2,3]; f = (a,b,c) => a+b+c; f(*l);", 6 );
 
 		test( "( a, b, c ) = *[ 1, 2, 3 ]; a + b + c", 6 );
 		test( "a = [ 1, 2, 3 ]; ( b, c, d ) = *a; b + c + d", 6 );
@@ -471,9 +471,9 @@ public class ScriptTests extends Util
 //		test( "*a = ( 1, 2, 3 ); a.size()", 3 ); // TODO
 //		test( "( a, *b ) = ( 1, 2, 3 )", 3 ); TODO
 //		test( "( a, *b ) = ( *[ 1, 2 ], 3 )", 3 ); TODO
-		test( "a = [ 1, [ 2, 3, 4 ], 5 ]; ( (a,b,c) -> a+b+c )( *a[ 1 ] )", 9 );
+		test( "a = [ 1, [ 2, 3, 4 ], 5 ]; ( (a,b,c) => a+b+c )( *a[ 1 ] )", 9 );
 
-		fail( "f = a -> (); f( 1, 2, 3 );", ScriptException.class, "Too many parameters" );
+		fail( "f = a => (); f( 1, 2, 3 );", ScriptException.class, "Too many parameters" );
 		fail( "a = *[ 1, 2, 3 ]; ( b, c, d ) = a; b + c + d", ScriptException.class, "Can't assign tuples to variables" );
 		fail( "a = ( 1, 2, 3 ); ( b, c, d ) = a; b + c + d", ScriptException.class, "Can't assign tuples to variables" );
 
@@ -483,7 +483,7 @@ public class ScriptTests extends Util
 	@Test
 	static public void test23()
 	{
-		test( "f = (a,b,c) -> a+b+c; f( a: 1, b: 2, c: 3 )", 6 );
+		test( "f = (a,b,c) => a+b+c; f( a: 1, b: 2, c: 3 )", 6 );
 	}
 
 	@Test
@@ -629,9 +629,9 @@ public class ScriptTests extends Util
 		fail( "1.xxx", ScriptException.class, "No such field: java.lang.Integer.xxx" );
 		fail( "class( \"java.lang.Integer\" )#xxx", ScriptException.class, "No such field: static java.lang.Integer.xxx" );
 		fail( "class( \"java.lang.String\" )#valueOf( null )", ScriptException.class, "valueOf(char[])" );
-		fail( "f = ( *b, c ) -> (); f()", ScriptException.class, "Collecting parameter must be the last parameter" );
-		fail( "f = ( a ) -> (); f()", ScriptException.class, "Not enough parameters" );
-		fail( "f = () -> (); f( 1 )", ScriptException.class, "Too many parameters" );
+		fail( "f = ( *b, c ) => (); f()", ScriptException.class, "Collecting parameter must be the last parameter" );
+		fail( "f = ( a ) => (); f()", ScriptException.class, "Not enough parameters" );
+		fail( "f = () => (); f( 1 )", ScriptException.class, "Too many parameters" );
 		fail( "f()", ScopeException.class, "'f' undefined" );
 		fail( "f = null; f()", ScriptException.class, "Function is null" );
 		fail( "f = 1; f()", ScriptException.class, "Can't apply parameters to a java.lang.Integer" );
@@ -673,17 +673,17 @@ public class ScriptTests extends Util
 		fail( "upper( 1 )", ScriptException.class, "upper() needs a string parameter" );
 		fail( "val()", ScriptException.class, "val() needs exactly one parameter" );
 		fail( "val( 1 )", ScriptException.class, "val() needs a variable identifier as parameter" );
-		fail( "f = ( a ) -> (); f( b: 1 )", ScriptException.class, "Parameter 'b' undefined" );
-		fail( "f = ( a, b ) -> (); f( a: 1, 2 )", ScriptException.class, "All parameters must be named" );
-		fail( "f = ( a ) -> (); f( \"a\": 1 )", ScriptException.class, "Parameter must be named with a variable identifier" );
+		fail( "f = ( a ) => (); f( b: 1 )", ScriptException.class, "Parameter 'b' undefined" );
+		fail( "f = ( a, b ) => (); f( a: 1, 2 )", ScriptException.class, "All parameters must be named" );
+		fail( "f = ( a ) => (); f( \"a\": 1 )", ScriptException.class, "Parameter must be named with a variable identifier" );
 	}
 
 	@Test
 	static public void test28()
 	{
 		test( "if( true; return( true ) ); return( false )", true );
-		test( "l = [ 1, 2, 3 ]; l.each( i -> return( i ) ); 4", 1 );
-		test( "l = [ 1, 2, 3 ]; f = i -> return( i ); l.each( f ); 4", 4 );
+		test( "l = [ 1, 2, 3 ]; l.each( i => return( i ) ); 4", 1 );
+		test( "l = [ 1, 2, 3 ]; f = i => return( i ); l.each( f ); 4", 4 );
 	}
 
 	@Test
