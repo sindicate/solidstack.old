@@ -171,7 +171,7 @@ public class ScriptTests extends Util
 		test( "defined( a )", false );
 		test( "defined( def( a ) )", true );
 		test( "a = null; defined( a )", true );
-		test( "if( a; a )", null ); // TODO Ponder over this once more
+		test( "if( a ) a", null ); // TODO Ponder over this once more
 		test( "a = null; a && a", null );
 		test( "a && 1 || 2", 2 );
 	}
@@ -239,9 +239,9 @@ public class ScriptTests extends Util
 		test( "if( a = 1, b = a, b ) 3 else 4", 3 );
 		test( "if( a = null, b = a, b ) 3 else 4", 4 );
 		test( "a = 0; ( b, c ) = if( false ) ( a++, a++ ) else ( ++a, ++a )", Arrays.asList( 1, 2 ) );
-		test( "i = 0; while( i < 10; print( i++ ) )", 9 );
-		test( "i = 0; while( i++ < 10; print( i ) )", 10 );
-		test( "i = 0; while( i++ < 10 && print( i ) )", null ); // TODO Is there an example where result of condition should be returned?
+		test( "i = 0; while( i < 10 ) print( i++ )", 9 );
+		test( "i = 0; while( i++ < 10 ) print( i )", 10 );
+		test( "i = 0; while( i++ < 10 && print( i ) ) ()", null ); // TODO Is there an example where result of condition should be returned?
 	}
 
 	@Test
@@ -371,7 +371,7 @@ public class ScriptTests extends Util
 	@Test
 	static public void test18()
 	{
-		test( "l = class( \"java.util.ArrayList\" )(); i = 0; while( i < 10; l.add( i ), i++ ); l.each( fun( i; println( i ) ) )", 9 );
+		test( "l = class( \"java.util.ArrayList\" )(); i = 0; while( i < 10 ) ( l.add( i ); i++ ); l.each( fun( i; println( i ) ) )", 9 );
 		eval( "Calendar = class( \"java.util.Calendar\" ); println( Calendar#getInstance().getClass() )" );
 		test( "Calendar = class( \"java.util.Calendar\" ); Calendar#SATURDAY", 7 );
 		fail( "Calendar = class( \"java.util.Calendar\" ); Calendar#clear()", ScriptException.class, "static java.util.Calendar.clear()" );
@@ -422,12 +422,12 @@ public class ScriptTests extends Util
 
 		eval( "fun( a; a )( null )" );
 		eval( "fun( a; a )( if( false; 1 ) )" );
-		eval( "fun( a; a )( while( false; 1 ) )" );
+		eval( "fun( a; a )( while( false ) 1 )" );
 		eval( "fun( a; a )( [].each( fun( a; () ) ) )" );
 
 		eval( "( a => a )( null )" );
 		eval( "( a => a )( if( false; 1 ) )" );
-		eval( "( a => a )( while( false; 1 ) )" );
+		eval( "( a => a )( while( false ) 1 )" );
 		eval( "( a => a )( [].each( a => () ) )" );
 	}
 

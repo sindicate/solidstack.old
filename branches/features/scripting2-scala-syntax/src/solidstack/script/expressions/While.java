@@ -38,7 +38,8 @@ public class While extends LocalizedExpression
 	{
 		Object result = null;
 		while( Script.isTrue( this.condition.evaluate( thread ) ) )
-			result = this.left.evaluate( thread );
+			if( this.left != null )
+				result = this.left.evaluate( thread );
 		return result;
 	}
 }

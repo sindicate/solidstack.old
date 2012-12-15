@@ -305,9 +305,11 @@ public class ScriptParser
 					oldStop = swapStops( TYPE.PAREN_CLOSE );
 					Expressions expressions = parseExpressions();
 					swapStops( oldStop );
-					if( expressions.size() < 1 )
-						throw new SourceException( "Expected at least 1 expression", token2.getLocation() );
-					return new While( token.getLocation(), expressions.remove( 0 ), expressions );
+					Expression left = parseExpression();
+					token2 = this.tokenizer.lastToken();
+					Assert.isTrue( token2.getType() == this.stop || token2.getType() == TYPE.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
+					this.tokenizer.push();
+					return new While( token.getLocation(), expressions, left );
 				}
 
 				// TODO Remove this

@@ -40,7 +40,7 @@ prim = ( graph, start ) => {
  	queue[ start ] = 0;
  	parent[ start ] = null;
  
- 	while( queue; {
+ 	while( queue ) {
  	
         // get the minimum value
         min = INFINITY; minKey = -1;
@@ -54,7 +54,7 @@ prim = ( graph, start ) => {
 		);
  
  		queue.remove( minKey );
-    } );
+    };
  
     parent
 };

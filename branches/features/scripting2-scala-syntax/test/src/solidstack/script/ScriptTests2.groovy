@@ -36,7 +36,7 @@ with escaped newline" );
 				|Multiline |strings
 				|with indentation stripped" ) );
 			i = 0;
-			while( i < 10; // This is a comment
+			while( i < 10 ) ( // This is a comment
 				println( i );
 				i++
 			);
@@ -51,8 +51,8 @@ with escaped newline" );
 		test( '''
 			i = 0;
 			f = fun( ; println( i ); ++i );
-			while( i < 10; f() );
-			println( "total: " + while( i < 20; f() ) + " numbers" );
+			while( i < 10 ) f();
+			println( "total: " + ( while( i < 20 ) f() ) + " numbers" );
 			''',
 			"total: 20 numbers"
 		);
