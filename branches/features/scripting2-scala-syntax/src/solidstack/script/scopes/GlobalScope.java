@@ -18,6 +18,7 @@ package solidstack.script.scopes;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.List;
 
 import solidstack.script.functions.Abs;
 import solidstack.script.functions.Call;
@@ -82,5 +83,9 @@ public class GlobalScope extends Scope
 		val( Symbol.forString( "BigInteger" ), BigInteger.class );
 		val( Symbol.forString( "BigDecimal" ), BigDecimal.class );
 		val( Symbol.forString( "String" ), String.class );
+
+		val( Symbol.forString( "List" ), List.class );
+		val( Symbol.forString( "Set" ), List.class );
+		val( Symbol.forString( "Map" ), List.class );
 	}
 }

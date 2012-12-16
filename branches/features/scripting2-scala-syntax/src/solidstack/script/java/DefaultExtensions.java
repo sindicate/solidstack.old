@@ -17,6 +17,7 @@
 package solidstack.script.java;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -76,6 +77,11 @@ public class DefaultExtensions
 		for( Object object : array )
 			result.add( function.call( object ) );
 		return result;
+	}
+
+	static public List apply( Class<List> cls, Object... objects )
+	{
+		return new ArrayList( Arrays.asList( objects ) );
 	}
 
 	static public int size( Object[] array )

@@ -276,6 +276,8 @@ public class ScriptTokenizer
 					int ch2 = in.read();
 					if( ch2 == ch )
 						return new Token( TYPE.UNAOP, location, new String( new char[] { (char)ch, (char)ch } ) );
+					if( ch2 == '>' )
+						return new Token( TYPE.BINOP, location, "->" );
 					in.push( ch2 );
 					//$FALL-THROUGH$
 				case '*':

@@ -18,6 +18,8 @@ package solidstack.script.java;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -35,11 +37,18 @@ public class ClassExt
 		for( Method method : DefaultExtensions.class.getMethods() )
 			if( ( method.getModifiers() & Modifier.STATIC ) != 0 ) // Only statics
 			{
-				Class<?>[] types = method.getParameterTypes();
-				if( types.length != 0 )
+				Type[] types = method.getGenericParameterTypes();
+				if( types.length != 0 ) // Only methods with at least one argument
 				{
-					String name = method.getName().indexOf( '_' ) == 0 ? method.getName().substring( 1 ) : method.getName() ;
-					forClass( types[ 0 ] ).addMethod( name, method );
+					String name = method.getName().indexOf( '_' ) == 0 ? method.getName().substring( 1 ) : method.getName(); // Remove leading _ from name
+					Type first = types[ 0 ];
+					if( first instanceof ParameterizedType ) // Defines a static method on a Class
+					{
+						Type ttt = ( (ParameterizedType)first ).getActualTypeArguments()[ 0 ];
+						forClass( (Class<?>)ttt ).addStaticMethod( name, method );
+					}
+					else
+						forClass( (Class<?>)first ).addMethod( name, method );
 				}
 			}
 	}
@@ -76,14 +85,25 @@ public class ClassExt
 	// ----------
 
 	private Map<String, Method> methods = new HashMap<String, Method>();
+	private Map<String, Method> staticMethods = new HashMap<String, Method>();
 
 	private void addMethod( String name, Method method )
 	{
 		this.methods.put( name, method );
 	}
 
+	private void addStaticMethod( String name, Method method )
+	{
+		this.staticMethods.put( name, method );
+	}
+
 	public Method getMethod( String name )
 	{
 		return this.methods.get( name );
+	}
+
+	public Method getStaticMethod( String name )
+	{
+		return this.staticMethods.get( name );
 	}
 }

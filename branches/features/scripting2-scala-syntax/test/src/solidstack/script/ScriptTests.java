@@ -249,6 +249,7 @@ public class ScriptTests extends Util
 	{
 		testParseFail( "println( 1 " );
 		test( "f = fun( a; a * a ); f( 3 )", 9 );
+		// TODO New fun syntax
 		test( "fun( a; a * a ) ( 5 )", 25 );
 		test( "b = 8; fun( a; a ) ( b )", 8 );
 		test( "fun( a; a( 3 ) ) ( fun( b; 5 * b ) )", 15 );
@@ -285,7 +286,7 @@ public class ScriptTests extends Util
 		test( "1.0.getClass()#valueOf( 1.1 )", new BigDecimal( "1.1" ) );
 		test( "1.00.valueOf( 1.1 )", new BigDecimal( "1.1" ) );
 		test( "o1.test( 1 == 1 )", context, 7 );
-		test( "o1.test( a: 1, b: 2 )", context, 8 );
+		test( "o1.test( a -> 1, b -> 2 )", context, 8 );
 
 		TestObject2 o2 = new TestObject2();
 		context.set( "o2", o2 );
@@ -297,14 +298,14 @@ public class ScriptTests extends Util
 	{
 		Scope context = new Scope();
 		test( "c = class( \"solidstack.script.ScriptTests$TestObject1\" );", context, TestObject1.class );
-		test( "c().value", context, 0 );
+		test( "new c().value", context, 0 );
 		test( "c( 3.14 ).value", context, 2 );
 		test( "c( 0.123E-10 ).value", context, 2 );
 		test( "c( \"string\" ).value", context, 3 );
 		test( "c( \"string\", \"string\" ).value", context, 4 );
 		test( "c( 1, 1 ).value", context, 6 );
 		test( "c( 1 == 1 ).value", context, 7 );
-		test( "c( a: 1, b: 2 ).value", context, 8 );
+		test( "c( a -> 1, b -> 2 ).value", context, 8 );
 
 		test( "c2 = class( \"solidstack.script.ScriptTests$TestObject2\" );", context, TestObject2.class );
 		test( "c2( 1, 1 ).value", context, 1 );
@@ -403,16 +404,16 @@ public class ScriptTests extends Util
 		Assert.assertEquals( Java.forName( "int[][][][]", loader ), int[][][][].class );
 		Assert.assertEquals( Java.forName( "int[][]", loader ), int[][].class );
 
-		test( "list = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]; list[ 3 ]", 4 );
+		test( "list = List( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ); list( 3 )", 4 );
 		test( "list = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ].toArray(); list[ 3 ]", 4 );
 		test( "list = []; list.size()", 0 );
 
-		test( "map = [ 0: 1, 1: 2, 2: 3, 3: 4 ]; map[ 3 ]", 4 );
-		test( "map = [ \"first\": 1, \"second\": 2, \"third\": 3 ]; map[ \"second\" ]", 2 );
-		test( "map = [ \"fir\" + \"st\": 1, \"second\": 2, \"third\": 3 ]; map[ \"first\" ]", 1 );
-		test( "map = [ \"first\": 1, \"second\": 2, \"third\": 3 ]; map[ \"fourth\" ]", null ); // TODO Undefined? Then we assign to it too.
-		test( "map = scope( [ \"first\": 1, \"second\": 2, \"third\": 3 ] ); map.third", 3 );
-		test( "map = scope( [ \"first\": 1, \"second\": 2, \"third\": 3 ] ); map.fourth", null ); // TODO What about undefined?
+		test( "map = [ 0 -> 1, 1 -> 2, 2 -> 3, 3 -> 4 ]; map[ 3 ]", 4 );
+		test( "map = [ \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ]; map[ \"second\" ]", 2 );
+		test( "map = [ \"fir\" + \"st\" -> 1, \"second\" -> 2, \"third\" -> 3 ]; map[ \"first\" ]", 1 );
+		test( "map = [ \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ]; map[ \"fourth\" ]", null ); // TODO Undefined? Then we assign to it too.
+		test( "map = scope( [ \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ] ); map.third", 3 );
+		test( "map = scope( [ \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ] ); map.fourth", null ); // TODO What about undefined?
 		test( "map = [:]; s = scope( map ); s.first = 1; map[ \"first\" ]", 1 );
 		test( "map = [:]; map[ \"fourth\" ]", null );
 		test( "map = [:]; map.size()", 0 );
@@ -484,7 +485,7 @@ public class ScriptTests extends Util
 	@Test
 	static public void test23()
 	{
-		test( "f = (a,b,c) => a+b+c; f( a: 1, b: 2, c: 3 )", 6 );
+		test( "f = (a,b,c) => a+b+c; f( a -> 1, b -> 2, c -> 3 )", 6 );
 	}
 
 	@Test
@@ -519,7 +520,7 @@ public class ScriptTests extends Util
 		test( "[] as boolean", false );
 		test( "[1] as boolean", true );
 		test( "[:] as boolean", false );
-		test( "[1:1] as boolean", true );
+		test( "[1 ->1] as boolean", true );
 
 		test( "1 as byte", (byte)1 );
 		test( "a = 1; a as byte", (byte)1 );
@@ -674,9 +675,9 @@ public class ScriptTests extends Util
 		fail( "upper( 1 )", ScriptException.class, "upper() needs a string parameter" );
 		fail( "val()", ScriptException.class, "val() needs exactly one parameter" );
 		fail( "val( 1 )", ScriptException.class, "val() needs a variable identifier as parameter" );
-		fail( "f = ( a ) => (); f( b: 1 )", ScriptException.class, "Parameter 'b' undefined" );
-		fail( "f = ( a, b ) => (); f( a: 1, 2 )", ScriptException.class, "All parameters must be named" );
-		fail( "f = ( a ) => (); f( \"a\": 1 )", ScriptException.class, "Parameter must be named with a variable identifier" );
+		fail( "f = ( a ) => (); f( b -> 1 )", ScriptException.class, "Parameter 'b' undefined" );
+		fail( "f = ( a, b ) => (); f( a -> 1, 2 )", ScriptException.class, "All parameters must be named" );
+		fail( "f = ( a ) => (); f( \"a\" -> 1 )", ScriptException.class, "Parameter must be named with a variable identifier" );
 	}
 
 	@Test

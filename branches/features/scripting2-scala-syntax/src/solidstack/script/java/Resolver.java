@@ -51,12 +51,12 @@ public class Resolver
 					}
 				}
 
+		context.setThisMode( true );
 		if( !needStatic )
-		{
-			context.setThisMode( true );
 			collectMethods( context.getType(), context );
-			context.setThisMode( false );
-		}
+		else
+			collectStaticMethods( context.getType(), context );
+		context.setThisMode( false );
 
 		return Resolver.calculateBestMethodCandidate( context.getCandidates() );
 	}
@@ -97,6 +97,26 @@ public class Resolver
 			cls = cls.getSuperclass();
 			if( cls != null )
 				collectMethods( cls, context );
+		}
+	}
+
+	static public void collectStaticMethods( Class cls, CallContext context )
+	{
+		ClassExt ext = ClassExt.forClass( cls );
+		if( ext != null )
+		{
+			// TODO Multiple
+			Method method = ext.getStaticMethod( context.getName() );
+			if( method != null )
+			{
+				MethodCall caller = Resolver.matchArguments( context, method.getParameterTypes(), ( method.getModifiers() & Modifier.TRANSIENT ) != 0, true );
+				if( caller != null )
+				{
+					caller.object = context.getObject();
+					caller.method = method;
+					context.addCandidate( caller );
+				}
+			}
 		}
 	}
 

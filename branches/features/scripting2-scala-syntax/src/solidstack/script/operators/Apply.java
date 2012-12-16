@@ -103,7 +103,7 @@ public class Apply extends Operator
 				thread.pushStack( getLocation() );
 				try
 				{
-					return Java.construct( cls, Util.toJavaParameters( pars, thread ) );
+					return Java.invokeStatic( cls, "apply", Util.toJavaParameters( pars, thread ) );
 				}
 				finally
 				{
