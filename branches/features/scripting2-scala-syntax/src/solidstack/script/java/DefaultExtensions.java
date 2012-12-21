@@ -29,6 +29,11 @@ import java.util.Map.Entry;
  */
 public class DefaultExtensions
 {
+	static public int size( String string )
+	{
+		return string.length();
+	}
+
 	static public Object each( Collection collection, Function function )
 	{
 		// TODO Or should the ThreadContext be a parameter too?
@@ -47,6 +52,24 @@ public class DefaultExtensions
 		return result;
 	}
 
+	static public List collect( Collection collection, Function function )
+	{
+		List result = new ArrayList(collection.size());
+		for( Object object : collection )
+			result.add( function.call( object ) );
+		return result;
+	}
+
+	static public List apply( Class<List> cls, Object... objects )
+	{
+		return new ArrayList( Arrays.asList( objects ) );
+	}
+
+	static public Object apply( List list, int index )
+	{
+		return list.get( index );
+	}
+
 	static public Object each( Map<?,?> map, Function function )
 	{
 		Object result = null;
@@ -63,14 +86,6 @@ public class DefaultExtensions
 		return result;
 	}
 
-	static public List collect( Collection collection, Function function )
-	{
-		List result = new ArrayList(collection.size());
-		for( Object object : collection )
-			result.add( function.call( object ) );
-		return result;
-	}
-
 	static public List collect( Object[] array, Function function )
 	{
 		List result = new ArrayList(array.length);
@@ -79,18 +94,8 @@ public class DefaultExtensions
 		return result;
 	}
 
-	static public List apply( Class<List> cls, Object... objects )
-	{
-		return new ArrayList( Arrays.asList( objects ) );
-	}
-
 	static public int size( Object[] array )
 	{
 		return array.length;
-	}
-
-	static public int size( String string )
-	{
-		return string.length();
 	}
 }

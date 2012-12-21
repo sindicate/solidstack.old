@@ -42,13 +42,19 @@ public class ClassExt
 				{
 					String name = method.getName().indexOf( '_' ) == 0 ? method.getName().substring( 1 ) : method.getName(); // Remove leading _ from name
 					Type first = types[ 0 ];
-					if( first instanceof ParameterizedType ) // Defines a static method on a Class
-					{
-						Type ttt = ( (ParameterizedType)first ).getActualTypeArguments()[ 0 ];
-						forClass( (Class<?>)ttt ).addStaticMethod( name, method );
-					}
-					else
+					if( first instanceof Class )
 						forClass( (Class<?>)first ).addMethod( name, method );
+					else if( first instanceof ParameterizedType )
+					{
+						Type raw = ( (ParameterizedType)first ).getRawType();
+						if( raw == Class.class ) // Defines a static method on a Class
+						{
+							Type type = ( (ParameterizedType)first ).getActualTypeArguments()[ 0 ];
+							forClass( (Class<?>)type ).addStaticMethod( name, method );
+						}
+						else
+							forClass( (Class<?>)raw ).addMethod( name, method );
+					}
 				}
 			}
 	}

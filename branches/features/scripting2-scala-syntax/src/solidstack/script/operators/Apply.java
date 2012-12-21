@@ -110,6 +110,16 @@ public class Apply extends Operator
 					thread.popStack();
 				}
 			}
+
+			thread.pushStack( getLocation() );
+			try
+			{
+				return Java.invoke( left, "apply", Util.toJavaParameters( pars, thread ) );
+			}
+			finally
+			{
+				thread.popStack();
+			}
 		}
 		catch( InvocationTargetException e )
 		{
@@ -122,7 +132,5 @@ public class Apply extends Operator
 		{
 			throw new ThrowException( e.getMessage(), thread.cloneStack( getLocation() ) );
 		}
-
-		throw new ThrowException( "Can't apply parameters to a " + left.getClass().getName(), thread.cloneStack( getLocation() ) );
 	}
 }
