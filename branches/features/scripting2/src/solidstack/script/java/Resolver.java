@@ -29,7 +29,8 @@ import solidstack.lang.Assert;
 
 public class Resolver
 {
-	static final public Object[] EMPTY_OBJECT_ARRAY = new Object[ 0 ];
+	static public final Object[] EMPTY_OBJECT_ARRAY = new Object[ 0 ];
+	static public final Class OBJECT_ARRAY_CLASS = Object[].class;
 
 
 	static public MethodCall resolveMethodCall( CallContext context )
@@ -55,7 +56,6 @@ public class Resolver
 		return Resolver.calculateBestMethodCandidate( context.getCandidates() );
 	}
 
-	static public final Class OBJECT_ARRAY = Object[].class;
 
 	static public void collectMethods( Class cls, CallContext context )
 	{
@@ -86,7 +86,7 @@ public class Resolver
 			}
 		}
 
-		if( OBJECT_ARRAY.isAssignableFrom( cls ) && cls != OBJECT_ARRAY )
+		if( OBJECT_ARRAY_CLASS.isAssignableFrom( cls ) && cls != OBJECT_ARRAY_CLASS )
 			collectMethods( Object[].class, context ); // Makes Object[] the virtual super class of all arrays
 		else
 		{
@@ -95,6 +95,7 @@ public class Resolver
 				collectMethods( cls, context );
 		}
 	}
+
 
 	static public MethodCall resolveConstructorCall( CallContext context )
 	{
@@ -111,13 +112,6 @@ public class Resolver
 		return Resolver.calculateBestMethodCandidate( context.getCandidates() );
 	}
 
-
-
-
-
-
-
-    // ---------- STEP 1: Used to match argument values with argument types
 
 	static public MethodCall matchArguments( CallContext context, Class[] types, boolean vararg )
 	{
@@ -167,17 +161,6 @@ public class Resolver
 	}
 
 
-
-
-
-
-
-
-
-
-	// ---- STEP 2: Used to calculate the best candidate
-
-	// TODO (RMB) Can we exchange precedence for the specificity of 'this'
     static public MethodCall calculateBestMethodCandidate( List<MethodCall> candidates ) throws ResolverException
     {
 		if( candidates.size() == 0 )
@@ -187,8 +170,7 @@ public class Resolver
 
 		List< MethodCall > best = candidates;
 
-		// --------------------
-//		NestingLogger.message( "Step 3, determining no-vararg candidates, from " + best.size() + " candidates" );
+		// Filter out no-vararg candidates
 
 		ArrayList<MethodCall> best2 = new ArrayList( best );
 		for( Iterator iterator = best2.iterator(); iterator.hasNext(); )
@@ -204,26 +186,24 @@ public class Resolver
 		if( best2.size() > 0 )
 			best = best2;
 
-//		// --------------------
-////		NestingLogger.message( "Step 4, determining most specific candidate, from " + best.size() + " candidates" );
-//
+//		Determine most specific candidate
+
 		best2 = new ArrayList( best );
 		int index = 0;
 		while( index < best2.size() - 1 )
 		{
 			MethodCall candidate1 = best2.get( index );
 			MethodCall candidate2 = best2.get( index + 1 );
-			// TODO Not isVarargCall, but isVarargMethod
-			if( moreSpecificThan( candidate1.getParameterTypes(), candidate1.isVarargCall, candidate2.getParameterTypes(), candidate2.isVarargCall ) )
+			if( moreSpecificThan( candidate1.getParameterTypes(), candidate1.isVararg(), candidate2.getParameterTypes(), candidate2.isVararg() ) )
 			{
-				if( moreSpecificThan( candidate2.getParameterTypes(), candidate2.isVarargCall, candidate1.getParameterTypes(), candidate1.isVarargCall ) )
+				if( moreSpecificThan( candidate2.getParameterTypes(), candidate2.isVararg(), candidate1.getParameterTypes(), candidate1.isVararg() ) )
 					index ++;
 				else
 					best2.remove( index + 1 );
 			}
 			else
 			{
-				if( moreSpecificThan( candidate2.getParameterTypes(), candidate2.isVarargCall, candidate1.getParameterTypes(), candidate1.isVarargCall ) )
+				if( moreSpecificThan( candidate2.getParameterTypes(), candidate2.isVararg(), candidate1.getParameterTypes(), candidate1.isVararg() ) )
 				{
 					best2.remove( index );
 					if( index > 0 )
@@ -240,95 +220,11 @@ public class Resolver
 		if( best2.size() > 0 )
 			best = best2;
 
-//		// --------------------
-////		NestingLogger.message( "Step 5, calculating distances of " + best.size() + " candidates" );
-//
-//		// TODO (RMB) Also check for 2 or more smallest distances
-//		best2 = new ArrayList< MethodCall >();
-//
-//		int candidateDistance = 0;
-////		int precedence = 0;
-//		for( MethodCall method : best )
-//		{
-//			int distance = calculateArgumentsDistance( method.getParameterTypes(), method.getArgs() );
-//			if( distance >= 0 )
-//				if( best2.size() == 0 || distance < candidateDistance /* || distance == candidateDistance && method.precedence < precedence */ )
-//				{
-//					best2.clear();
-//					best2.add( method );
-//					candidateDistance = distance;
-////					precedence = method.precedence;
-//				}
-//				else if( distance == candidateDistance /* && method.precedence == precedence */ )
-//				{
-//					best2.add( method );
-//				}
-//		}
-//
-//		if( best2.size() == 1 )
-//			return best2.get( 0 );
-//
-//		if( best2.size() > 1 )
-//			best = best2;
-//
-//		if( best.size() > 1 )
-			throw new ResolverException( best );
-
-//		NestingLogger.message( "Step 4, comparing varargs for " + best.size() + " candidates");
-//
-//		List< MethodCall > best3 = new ArrayList< MethodCall >();
-//
-//		int minIndex = 0;
-//		for( MethodCall method : best2 )
-//		{
-//			int varArgIndex = method.getVarArgIndex();
-//			NestingLogger.message( "    vararg index: " + index );
-//			if( best3.size() == 0 || varArgIndex == minIndex )
-//			{
-//				best3.add( method );
-//				minIndex = varArgIndex;
-//			}
-//			else if( varArgIndex < minIndex )
-//			{
-//				best3.clear();
-//				best3.add( method );
-//				minIndex = varArgIndex;
-//			}
-//		}
-//
-//		if( best3.size() == 1 )
-//			return best3.get( 0 );
-//		if( best3.size() == 0 )
-//			return null;
-
-
-
-		// --------------------
-//		throw new ScriptException( "impossible" );
+		throw new ResolverException( best );
     }
 
 
-//	public static int calculateArgumentsDistance( Class[] types, Object[] args )
-//	{
-//		// TODO (RMB) We don't have the old vararg penalty yet (x<<28)
-//
-//    	// Varargs are already applied by matchArguments
-//
-//		int ret = 0;
-//		for( int i = /* includesThis ? 1 : */ 0; i < types.length; i++ )
-//		{
-//			// TODO (RMB) vararg distance?
-//			Object arg = args[ i ];
-//			int distance = Types.calculateDistance( arg != null ? arg.getClass() : null, types[ i ] );
-//			if( distance < 0 )
-//				return -1;
-//			ret += distance;
-//		}
-//
-//		return ret;
-//	}
-
-
+	// TODO Actually, vararg en nonvararg are currently never compared to each other
 	static public boolean moreSpecificThan( Class[] types, boolean vararg, Class[] otherTypes, boolean otherVararg )
 	{
 		int argCount = types.length;
@@ -349,7 +245,7 @@ public class Resolver
 		{
 			Class otherType = otherTypes[ lastType ].getComponentType();
 			while( i < lastArg )
-				if( !Types.assignable( types[ i ], otherType ) )
+				if( !Types.assignable( types[ i++ ], otherType ) )
 					return false;
 			if( vararg )
 			{
@@ -362,7 +258,7 @@ public class Resolver
 		{
 			Class type = types[ lastArg ].getComponentType();
 			while( i < lastType )
-				if( !Types.assignable( type, otherTypes[ i ] ) )
+				if( !Types.assignable( type, otherTypes[ i++ ] ) )
 					return false;
 			if( otherVararg )
 			{
@@ -371,33 +267,19 @@ public class Resolver
 					return false;
 			}
 		}
-		else if( vararg && otherVararg )
+		else if( vararg )
 		{
-			Class type = types[ lastArg ].getComponentType();
-			Class otherType = otherTypes[ lastType ].getComponentType();
-			if( !Types.assignable( type, otherType ) )
+			if( otherVararg )
+			{
+				Class type = types[ lastArg ].getComponentType();
+				Class otherType = otherTypes[ lastType ].getComponentType();
+				if( !Types.assignable( type, otherType ) )
+					return false;
+			}
+			else
 				return false;
 		}
 
 		return true;
-	}
-
-
-
-
-
-
-
-
-
-
-	// ---- STEP 3: Used to call the method
-
-	static public Object[] transformArguments( Class[] types, Object[] args )
-	{
-		Object[] result = new Object[ args.length ];
-		for( int i = types.length - 1; i >= 0; i-- )
-			result[ i ] = Types.convert( args[ i ], types[ i ] );
-		return result;
 	}
 }

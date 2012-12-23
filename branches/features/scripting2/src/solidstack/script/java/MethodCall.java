@@ -20,6 +20,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 public class MethodCall implements Cloneable
 {
@@ -60,7 +61,7 @@ public class MethodCall implements Cloneable
 
 	public Object invoke() throws InvocationTargetException
 	{
-		this.args = Resolver.transformArguments( getParameterTypes(), this.args );
+		this.args = Types.transformArguments( getParameterTypes(), this.args );
 		try
 		{
 			if( this.constructor != null )
@@ -106,12 +107,12 @@ public class MethodCall implements Cloneable
 //		return this.method.getName();
 //	}
 
-//	public boolean isVararg()
-//	{
-//		if( this.extMethod != null )
-//			return this.extMethod.isVararg();
-//		return ( this.method.getModifiers() & Modifier.TRANSIENT ) != 0;
-//	}
+	public boolean isVararg()
+	{
+		if( this.extMethod != null )
+			return this.extMethod.isVararg();
+		return ( this.method.getModifiers() & Modifier.TRANSIENT ) != 0;
+	}
 
 //	public Object getReturnType()
 //	{

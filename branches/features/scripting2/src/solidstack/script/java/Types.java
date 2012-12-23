@@ -258,46 +258,6 @@ public class Types
         return false;
 	}
 
-
-//	static public int calculateDistance( Class arg, Class type )
-//	{
-//		// arg can never be a primitive
-//
-//		if( arg == null )
-//		{
-//			int distance = 0;
-//			while( type.isArray() )
-//			{
-//				distance++;
-//				type = type.getComponentType();
-//			}
-//
-//			if( type.isInterface() )
-//				return distance + 1;
-//
-//			// Determine distance to Object (number of super classes)
-//			Class superCls = type.getSuperclass();
-//			while( superCls != null )
-//			{
-//				distance++;
-//				superCls = superCls.getSuperclass();
-//			}
-//
-//			return distance;
-//		}
-//
-//		Integer i = TYPES.get( type );
-//		if( i != null )
-//		{
-//			Integer j = TYPES.get( arg );
-//			if( j != null )
-//				return PRIMITIVE_DISTANCES[ j ][ i ];
-//		}
-//
-//		return 0;
-//	}
-
-
 	// SYNC isAssignableToType()
 	static public Object convert( Object object, Class type )
 	{
@@ -559,5 +519,13 @@ public class Types
 		}
 
 		throw Assert.fail();
+	}
+
+	static public Object[] transformArguments( Class[] types, Object[] args )
+	{
+		Object[] result = new Object[ args.length ];
+		for( int i = types.length - 1; i >= 0; i-- )
+			result[ i ] = Types.convert( args[ i ], types[ i ] );
+		return result;
 	}
 }
