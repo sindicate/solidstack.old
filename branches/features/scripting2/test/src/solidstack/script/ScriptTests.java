@@ -281,8 +281,8 @@ public class ScriptTests extends Util
 		test( "o1.test( 1, 1 )", context, 6 );
 		test( "1.getClass()", Integer.class );
 		test( "1.1.getClass()", BigDecimal.class );
-		test( "1.0.getClass()#valueOf( 1.1 )", new BigDecimal( "1.1" ) );
-		test( "1.00.valueOf( 1.1 )", new BigDecimal( "1.1" ) );
+		test( "1.0.getClass()#valueOf( 1.1 as double )", new BigDecimal( "1.1" ) );
+		test( "1.00.valueOf( 1.1 as double )", new BigDecimal( "1.1" ) );
 		test( "o1.test( 1 == 1 )", context, 7 );
 		test( "o1.test( a: 1, b: 2 )", context, 8 );
 
@@ -393,6 +393,13 @@ public class ScriptTests extends Util
 	@Test
 	static public void test20() throws ClassNotFoundException, InstantiationException, IllegalAccessException
 	{
+		Object test = new String[ 10 ][ 10 ];
+		assert test instanceof Object[];
+		assert ( (Object[])test )[ 0 ] instanceof Object[];
+
+		assert test.getClass().getSuperclass() == Object.class;
+		assert Object[].class.isAssignableFrom( test.getClass() );
+
 		ClassLoader loader = ScriptTests.class.getClassLoader();
 		Assert.assertEquals( Java.forName( "java.lang.Object", loader ), Object.class );
 		Assert.assertEquals( Java.forName( "java.lang.Object[]", loader ), Object[].class );
@@ -417,6 +424,7 @@ public class ScriptTests extends Util
 		test( "map = [:]; map.size()", 0 );
 		test( "map = [:]; map[ \"third\" ] = 3; map[ \"third\" ]", 3 );
 
+		test( "array = class( \"java.lang.reflect.Array\" )#newInstance( class( \"java.lang.String\" ), 10 ); array.size()", 10 );
 		test( "array = class( \"java.lang.reflect.Array\" )#newInstance( class( \"int\" ), 10 ); array.size()", 10 );
 
 		eval( "fun( a; a )( null )" );
@@ -625,10 +633,13 @@ public class ScriptTests extends Util
 	@Test
 	static public void test27()
 	{
+		Scope scope = new Scope();
+		scope.set( "o1", new TestObject1() );
+
 		fail( "class( \"xxx\" )", ScriptException.class, "No such class: xxx" );
 		fail( "1.xxx", ScriptException.class, "No such field: java.lang.Integer.xxx" );
 		fail( "class( \"java.lang.Integer\" )#xxx", ScriptException.class, "No such field: static java.lang.Integer.xxx" );
-		fail( "class( \"java.lang.String\" )#valueOf( null )", ScriptException.class, "valueOf(char[])" );
+		fail( "o1.test( null )", scope, ScriptException.class, "test(java.util.Map)" );
 		fail( "f = ( *b, c ) -> (); f()", ScriptException.class, "Collecting parameter must be the last parameter" );
 		fail( "f = ( a ) -> (); f()", ScriptException.class, "Not enough parameters" );
 		fail( "f = () -> (); f( 1 )", ScriptException.class, "Too many parameters" );

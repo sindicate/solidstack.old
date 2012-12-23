@@ -236,87 +236,26 @@ public class Types
 	 * @return
 	 */
 	// SYNC isAssignableToType
-	static public int assignable( Object arg, Class type )
+	static public boolean assignable( Class arg, Class type )
 	{
 		if( arg == null )
-			return type.isPrimitive() ? -1 : 0;
-		if( type.isInstance( arg ) )
-			return 0;
+			return !type.isPrimitive();
+		if( type.isAssignableFrom( arg ) )
+			return true;
 
 		Integer i = TYPES.get( type );
 		if( i != null )
 		{
-			Integer j = TYPES.get( arg.getClass() );
+			Integer j = TYPES.get( arg );
 			if( j != null )
 			{
 				int a = PRIMITIVE_ASSIGNABILITY[ j ][ i ];
-				if( a != 3 )
-					return a;
-				return assignable0( arg, type );
+				if( a == 0 || a == 1 )
+					return true;
 			}
 		}
 
-        return -1;
-	}
-
-
-	static private int assignable0( Object arg, Class type )
-	{
-		if( arg instanceof BigDecimal )
-		{
-			BigDecimal bd = (BigDecimal)arg;
-			try
-			{
-				if( type == int.class )
-					bd.intValueExact(); // TODO Would be nice if the resulting value is not discarded.
-				else if( type == long.class )
-					bd.longValueExact();
-				else if( type == double.class )
-				{
-					double d = bd.doubleValue();
-					if( d == Double.NEGATIVE_INFINITY || d == Double.POSITIVE_INFINITY )
-						return -1;
-				}
-				else
-					throw Assert.fail( "Unexpected type " + type.getName() );
-				return 1;
-			}
-			catch( ArithmeticException e )
-			{
-				return -1;
-			}
-		}
-
-		throw Assert.fail( "Unexpected arg " + arg.getClass().getName() );
-	}
-
-
-	// SYNC isAssignableToType
-    // TODO (RMB) Maybe we should make String and FunnyString identical (no conversion), return 0
-	static public int compareSpecificness( Class arg, Class type )
-	{
-		if( arg == null )
-			throw new IllegalArgumentException( "'arg' should not be null" );
-
-		int result = 2;
-		if( type == arg )
-			result = 0;
-		else if( type.isAssignableFrom( arg ) )
-			result = 1;
-		else if( arg.isAssignableFrom( type ) )
-			result = -1;
-		else
-		{
-			Integer i = TYPES.get( type );
-			if( i != null )
-			{
-				Integer j = TYPES.get( arg );
-				if( j != null )
-					result = PRIMITIVE_ASSIGNABILITY[ j ][ i ];
-			}
-		}
-
-        return result;
+        return false;
 	}
 
 

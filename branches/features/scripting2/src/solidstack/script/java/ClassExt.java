@@ -75,14 +75,14 @@ public class ClassExt
 
 	// ----------
 
-	private Map<String, Method> methods = new HashMap<String, Method>();
+	private Map<String, ExtMethod> methods = new HashMap<String, ExtMethod>();
 
 	private void addMethod( String name, Method method )
 	{
-		this.methods.put( name, method );
+		this.methods.put( name,  new ExtMethod( method ) );
 	}
 
-	public Method getMethod( String name )
+	public ExtMethod getMethod( String name )
 	{
 		return this.methods.get( name );
 	}

@@ -16,8 +16,6 @@
 
 package solidstack.script.java;
 
-import groovy.lang.GroovyRuntimeException;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -42,7 +40,7 @@ public class Resolver
 			if( !needStatic || ( method.getModifiers() & Modifier.STATIC ) != 0 )
 				if( method.getName().equals( context.getName() ) )
 				{
-					MethodCall caller = Resolver.matchArguments( context, method.getParameterTypes(), ( method.getModifiers() & Modifier.TRANSIENT ) != 0, false );
+					MethodCall caller = matchArguments( context, method.getParameterTypes(), ( method.getModifiers() & Modifier.TRANSIENT ) != 0 );
 					if( caller != null )
 					{
 						caller.object = context.getObject();
@@ -52,14 +50,12 @@ public class Resolver
 				}
 
 		if( !needStatic )
-		{
-			context.setThisMode( true );
 			collectMethods( context.getType(), context );
-			context.setThisMode( false );
-		}
 
 		return Resolver.calculateBestMethodCandidate( context.getCandidates() );
 	}
+
+	static public final Class OBJECT_ARRAY = Object[].class;
 
 	static public void collectMethods( Class cls, CallContext context )
 	{
@@ -67,14 +63,14 @@ public class Resolver
 		if( ext != null )
 		{
 			// TODO Multiple
-			Method method = ext.getMethod( context.getName() );
+			ExtMethod method = ext.getMethod( context.getName() );
 			if( method != null )
 			{
-				MethodCall caller = Resolver.matchArguments( context, method.getParameterTypes(), ( method.getModifiers() & Modifier.TRANSIENT ) != 0, true );
+				MethodCall caller = matchArguments( context, method.getParameterTypes(), method.isVararg() );
 				if( caller != null )
 				{
 					caller.object = context.getObject();
-					caller.method = method;
+					caller.extMethod = method;
 					context.addCandidate( caller );
 				}
 			}
@@ -90,7 +86,7 @@ public class Resolver
 			}
 		}
 
-		if( cls.isArray() && cls != Object[].class )
+		if( OBJECT_ARRAY.isAssignableFrom( cls ) && cls != OBJECT_ARRAY )
 			collectMethods( Object[].class, context ); // Makes Object[] the virtual super class of all arrays
 		else
 		{
@@ -104,7 +100,7 @@ public class Resolver
 	{
 		for( Constructor constructor : context.getType().getConstructors() )
 		{
-			MethodCall caller = Resolver.matchArguments( context, constructor.getParameterTypes(), ( constructor.getModifiers() & Modifier.TRANSIENT ) != 0, false );
+			MethodCall caller = Resolver.matchArguments( context, constructor.getParameterTypes(), ( constructor.getModifiers() & Modifier.TRANSIENT ) != 0 );
 			if( caller != null )
 			{
 				caller.constructor = constructor;
@@ -123,16 +119,14 @@ public class Resolver
 
     // ---------- STEP 1: Used to match argument values with argument types
 
-	static public MethodCall matchArguments( CallContext context, Class[] types, boolean vararg, boolean ths )
+	static public MethodCall matchArguments( CallContext context, Class[] types, boolean vararg )
 	{
 		// Initialize all used values from the context
-		Object[] args = context.getArgs();
 		Class[] argTypes = context.getArgTypes();
 
-		int argCount = args.length;
+		int argCount = argTypes.length;
 		int typeCount = types.length;
 		int lastType = typeCount - 1;
-		int start = ths ? 1 : 0;
 
 		if( vararg )
 		{
@@ -151,49 +145,25 @@ public class Resolver
 
 		if( !vararg )
 		{
-			int difficulty = 0;
-			for( int i = start; i < argCount; i++ )
-			{
-				int ret = Types.assignable( args[ i ], types[ i ] );
-				if( ret < 0 )
+			for( int i = 0; i < argCount; i++ )
+				if( !Types.assignable( argTypes[ i ], types[ i ] ) )
 					return null;
-				difficulty += ret;
-			}
-			return new MethodCall( false, difficulty, args );
+			return new MethodCall( false );
 		}
 
 		// Varargs
 
-		int difficulty = 0;
-		for( int i = start; i < lastType; i++ )
-		{
-			int ret = Types.assignable( args[ i ], types[ i ] );
-			if( ret < 0 )
+		for( int i = 0; i < lastType; i++ )
+			if( !Types.assignable( argTypes[ i ], types[ i ] ) )
 				return null;
-			difficulty += ret;
-		}
 
-		if( ths && lastType == 0 )
-			throw new GroovyRuntimeException( "Can't have vararg and includesThis, and lastType == 0" );
-
-		// Adapt the arguments to the method
-
-		Object[] newArgs = new Object[ typeCount ];
-		System.arraycopy( args, 0, newArgs, 0, lastType );
 		int diff = argCount - lastType;
 		Class componentType = types[ lastType ].getComponentType();
-		Object[] varArgs = new Object[ diff ];
 		for( int i = 0; i < diff; i++ )
-		{
-			int ret = Types.assignable( args[ i + lastType ], componentType );
-			if( ret < 0 )
+			if( !Types.assignable( argTypes[ i + lastType ], componentType ) )
 				return null;
-			difficulty += ret;
-			varArgs[ i ] = args[ i + lastType ];
-		}
 
-		newArgs[ lastType ] = varArgs;
-		return new MethodCall( true, difficulty, newArgs );
+		return new MethodCall( true );
 	}
 
 
@@ -218,33 +188,9 @@ public class Resolver
 		List< MethodCall > best = candidates;
 
 		// --------------------
-//		NestingLogger.message( "Step 1, determining conversionless candidates, from " + best.size() + " candidates" );
-
-		List< MethodCall > best2 = new ArrayList<MethodCall>( best );
-		int least = best2.get( 0 ).difficulty;
-		for( MethodCall methodCall : best2 )
-		{
-			if( methodCall.difficulty < least )
-				least = methodCall.difficulty;
-		}
-
-		for( Iterator iterator = best2.iterator(); iterator.hasNext(); )
-		{
-			MethodCall candidate = (MethodCall)iterator.next();
-			if( candidate.difficulty > least )
-				iterator.remove();
-		}
-
-		if( best2.size() == 1 )
-			return best2.get( 0 );
-
-		if( best2.size() > 0 )
-			best = best2;
-
-		// --------------------
 //		NestingLogger.message( "Step 3, determining no-vararg candidates, from " + best.size() + " candidates" );
 
-		best2 = new ArrayList( best );
+		ArrayList<MethodCall> best2 = new ArrayList( best );
 		for( Iterator iterator = best2.iterator(); iterator.hasNext(); )
 		{
 			MethodCall candidate = (MethodCall)iterator.next();
@@ -261,49 +207,39 @@ public class Resolver
 //		// --------------------
 ////		NestingLogger.message( "Step 4, determining most specific candidate, from " + best.size() + " candidates" );
 //
-//		best2 = new ArrayList( best );
-//		int index = 0;
-//		while( index < best2.size() - 1 )
-//		{
-//			MethodCall candidate1 = best2.get( index );
-//			MethodCall candidate2 = best2.get( index + 1 );
-//			int ret = compareNonConvertingCalls( candidate1.getParameterTypes(), candidate1.getArgs(), candidate1.isVarargCall, candidate2.getParameterTypes(), candidate2.isVarargCall );
-//			if( ret < 0 ) // candidate1 is not assignable to candidate2
-//			{
-//				best2.remove( index );
-//				if( index > 0 )
-//					index--;
-//			}
-//			else if( ret == 0 ) // identical
-////					if( candidate1.precedence > candidate2.precedence )
-////					{
-////						best2.remove( index );
-////						if( index > 0 )
-////							index--;
-////					}
-////					else
-//					best2.remove( index + 1 );
-//			else if( ret == 1 )
-//				best2.remove( index + 1 );
-//			else
-////				if( candidate1.precedence < candidate2.precedence )
-////					best2.remove( index + 1 );
-////				else if( candidate1.precedence > candidate2.precedence )
-////				{
-////					best2.remove( index );
-////					if( index > 0 )
-////						index--;
-////				}
-////				else
-//					index++;
-//		}
-//
-//		if( best2.size() == 1 )
-//			return best2.get( 0 );
-//
-//		if( best2.size() > 0 )
-//			best = best2;
-//
+		best2 = new ArrayList( best );
+		int index = 0;
+		while( index < best2.size() - 1 )
+		{
+			MethodCall candidate1 = best2.get( index );
+			MethodCall candidate2 = best2.get( index + 1 );
+			// TODO Not isVarargCall, but isVarargMethod
+			if( moreSpecificThan( candidate1.getParameterTypes(), candidate1.isVarargCall, candidate2.getParameterTypes(), candidate2.isVarargCall ) )
+			{
+				if( moreSpecificThan( candidate2.getParameterTypes(), candidate2.isVarargCall, candidate1.getParameterTypes(), candidate1.isVarargCall ) )
+					index ++;
+				else
+					best2.remove( index + 1 );
+			}
+			else
+			{
+				if( moreSpecificThan( candidate2.getParameterTypes(), candidate2.isVarargCall, candidate1.getParameterTypes(), candidate1.isVarargCall ) )
+				{
+					best2.remove( index );
+					if( index > 0 )
+						index--;
+				}
+				else
+					index ++;
+			}
+		}
+
+		if( best2.size() == 1 )
+			return best2.get( 0 );
+
+		if( best2.size() > 0 )
+			best = best2;
+
 //		// --------------------
 ////		NestingLogger.message( "Step 5, calculating distances of " + best.size() + " candidates" );
 //
@@ -393,179 +329,57 @@ public class Resolver
 //	}
 
 
-	/**
-	 * @return -1 if call2 is assignable to call1, 0 if calls are identical, 1 if call1 is assignable to call2, 2 if not comparable.
-	 */
-	// Only non conversion compare
-	// TODO (RMB) Is now also called for "converting calls". Should we add an if?
-	// TODO (RMB) If we make MethodCall & ConstructorCall related then we can pass that to this method.
-	static public int compareNonConvertingCalls( Class[] call1, Object[] args1, boolean call1VarArgCall, Class[] call2, boolean call2VarArgCall )
+	static public boolean moreSpecificThan( Class[] types, boolean vararg, Class[] otherTypes, boolean otherVararg )
 	{
-		// TODO (RMB) What if both varargs are not used by the call? They are still checked, not good? We need arg count too.
+		int argCount = types.length;
+		int typeCount = otherTypes.length;
 
-		int i1 = /* call1IncludesThis ? 1 : */ 0;
-		int i2 = /* call2IncludesThis ? 1 : */ 0;
+		if( !vararg && !otherVararg )
+			Assert.isTrue( argCount == typeCount );
 
-		boolean call1bigger = false;
-		boolean call2bigger = false;
-		boolean ignoredArg = false;
+		int lastArg = argCount; if( vararg ) lastArg --;
+		int lastType = typeCount; if( otherVararg ) lastType --;
 
-		boolean varArg1 = false;
-		boolean varArg2 = false;
+		int i = 0;
+		while( i < lastArg && i < lastType )
+			if( !Types.assignable( types[ i ], otherTypes[ i++ ] ) )
+				return false;
 
-		Class type1 = null;
-		Object arg1 = null;
-		Class type2 = null;
-
-		int last1 = call1.length - 1;
-		int last2 = call2.length - 1;
-
-		if( call1VarArgCall && i1 == last1 ) // Are we on the last argument?
+		if( i < lastArg )
 		{
-			type1 = call1[ i1 ].getComponentType();
-			arg1 = args1[ i1 ];
-			varArg1 = true;
-		}
-
-		if( call2VarArgCall && i2 == last2 ) // Are we on the last argument?
-		{
-			type2 = call2[ i2 ].getComponentType();
-			varArg2 = true;
-		}
-
-		if( !varArg1 )
-		{
-			if( i1 > last1 ) // Are we over the last argument?
+			Class otherType = otherTypes[ lastType ].getComponentType();
+			while( i < lastArg )
+				if( !Types.assignable( types[ i ], otherType ) )
+					return false;
+			if( vararg )
 			{
-				if( varArg2 )
-					return 1;
-				if( i2 > last2 )
-					return 0;
-				throw Assert.fail();
-			}
-			type1 = call1[ i1 ];
-			arg1 = args1[ i1 ];
-		}
-
-		if( !varArg2 )
-		{
-			if( i2 > last2 ) // Are we over the last argument?
-			{
-				if( varArg1 )
-					return -1; // call2 is bigger then call1 (call1 has an unused vararg)
-				return 1; // call1 is bigger then call2 (call1 has more arguments)
-			}
-			type2 = call2[ i2 ];
-		}
-
-		while( true )
-		{
-			// TODO (RMB) Should we add caching here or caching for this complete method?
-			int ret1 = Types.compareSpecificness( type1, type2 );
-			if( ret1 != 0 )
-			{
-				if( arg1 == null )
-					ignoredArg = true; // Don't ignore if they are equal.
-				else if( ret1 < 0 )
-				{
-					if( call1bigger )
-						return 2; // Not comparable
-					call2bigger = true;
-				}
-				else if( ret1 == 2 )
-				{
-					return 2; // Not comparable
-				}
-				else if( ret1 == 1 )
-				{
-					if( call2bigger )
-						return 2; // Not comparable
-					call1bigger = true;
-				}
-			}
-
-			// Now we jump to the next parameters
-
-			if( varArg1 )
-			{
-				if( varArg2 )
-					break; // Both on the last
-			}
-			else
-			{
-				i1++;
-				if( i1 > last1 )
-				{
-					type1 = null; // No more
-				}
-				else if( call1VarArgCall && i1 == last1 )
-				{
-					type1 = call1[ i1 ].getComponentType(); // On the vararg
-					arg1 = "whatever";
-					varArg1 = true;
-				}
-				else
-				{
-					type1 = call1[ i1 ]; // Normal
-					arg1 = args1[ i1 ];
-				}
-			}
-
-			if( !varArg2 )
-			{
-				i2++;
-				if( i2 > last2 )
-				{
-					type2 = null; // No more
-				}
-				else if( call2VarArgCall && i2 == last2 )
-				{
-					type2 = call2[ i2 ].getComponentType(); // On the vararg
-					varArg2 = true;
-				}
-				else
-					type2 = call2[ i2 ]; // Normal
-			}
-
-			// Are we finished?
-
-			if( type1 == null )
-			{
-				if( varArg2 || type2 == null )
-					break;
-				throw Assert.fail();
-			}
-			else if( type2 == null )
-			{
-				if( varArg1 )
-					break;
-				throw Assert.fail();
+				Class type = types[ lastArg ].getComponentType();
+				if( !Types.assignable( type, otherType ) )
+					return false;
 			}
 		}
-
-		if( call1bigger )
-			return 1; // call1 is assignable to call2
-		if( call2bigger )
-			return -1; // call2 is assignable to call1
-		if( call1VarArgCall )
-			if( call2VarArgCall )
+		else if( i < lastType )
+		{
+			Class type = types[ lastArg ].getComponentType();
+			while( i < lastType )
+				if( !Types.assignable( type, otherTypes[ i ] ) )
+					return false;
+			if( otherVararg )
 			{
-				if( last1 > last2 )
-					return 1;
-				if( last1 < last2 )
-					return -1;
-				if( ignoredArg )
-					return 2;
-				return 0;
+				Class otherType = otherTypes[ lastType ].getComponentType();
+				if( !Types.assignable( type, otherType ) )
+					return false;
 			}
-			else
-				return -1;
-		else
-			if( call2VarArgCall )
-				return 1;
-		if( ignoredArg )
-			return 2;
-		return 0;
+		}
+		else if( vararg && otherVararg )
+		{
+			Class type = types[ lastArg ].getComponentType();
+			Class otherType = otherTypes[ lastType ].getComponentType();
+			if( !Types.assignable( type, otherType ) )
+				return false;
+		}
+
+		return true;
 	}
 
 

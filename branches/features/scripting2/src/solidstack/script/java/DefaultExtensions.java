@@ -28,6 +28,22 @@ import java.util.Map.Entry;
  */
 public class DefaultExtensions
 {
+	static public List collect( Collection collection, Function function )
+	{
+		List result = new ArrayList(collection.size());
+		for( Object object : collection )
+			result.add( function.call( object ) );
+		return result;
+	}
+
+	static public List collect( Object[] array, Function function )
+	{
+		List result = new ArrayList(array.length);
+		for( Object object : array )
+			result.add( function.call( object ) );
+		return result;
+	}
+
 	static public Object each( Collection collection, Function function )
 	{
 		// TODO Or should the ThreadContext be a parameter too?
@@ -62,23 +78,47 @@ public class DefaultExtensions
 		return result;
 	}
 
-	static public List collect( Collection collection, Function function )
-	{
-		List result = new ArrayList(collection.size());
-		for( Object object : collection )
-			result.add( function.call( object ) );
-		return result;
-	}
-
-	static public List collect( Object[] array, Function function )
-	{
-		List result = new ArrayList(array.length);
-		for( Object object : array )
-			result.add( function.call( object ) );
-		return result;
-	}
-
 	static public int size( Object[] array )
+	{
+		return array.length;
+	}
+
+	static public int size( boolean[] array )
+	{
+		return array.length;
+	}
+
+	static public int size( char[] array )
+	{
+		return array.length;
+	}
+
+	static public int size( byte[] array )
+	{
+		return array.length;
+	}
+
+	static public int size( short[] array )
+	{
+		return array.length;
+	}
+
+	static public int size( int[] array )
+	{
+		return array.length;
+	}
+
+	static public int size( long[] array )
+	{
+		return array.length;
+	}
+
+	static public int size( float[] array )
+	{
+		return array.length;
+	}
+
+	static public int size( double[] array )
 	{
 		return array.length;
 	}
