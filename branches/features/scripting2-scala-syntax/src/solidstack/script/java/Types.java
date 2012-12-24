@@ -36,84 +36,7 @@ import solidstack.lang.Assert;
 
 public class Types
 {
-	// [ Argument value's type (vertical) ][ Argument type (horizontal) ]
-	// 0: identical, <=100 assignable, <=200 convertable
-//    static public final int[][] PRIMITIVE_DISTANCES =
-//    {
-//    	// TODO (RMB) The conversion distances > 100 seem to be in the wrong order. Redesign all.
-//		{   0,   0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 20 }, // boolean
-//		{   0,   0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 20 }, // Boolean
-//		{ 107, 108,   0,   0, 102, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 20 }, // char
-//		{ 107, 108,   0,   0, 102, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 20 }, // Character
-//		{ 107, 108, 109, 110,   0,   0,   3,   4,   1,   2,   5,   6,   8,  10,  11,  12,  13,   9,   7, 20 }, // byte
-//		{ 107, 108, 109, 110,   0,   0,   3,   4,   1,   2,   5,   6,   8,  10,  11,  12,  13,   9,   7, 20 }, // Byte
-//		{ 107, 108, 109, 110, 105, 106,   0,   0,   1,   2,   5,   6,   8,  10,  11,  12,  13,   9,   7, 20 }, // short
-//		{ 107, 108, 109, 110, 105, 106,   0,   0,   1,   2,   5,   6,   8,  10,  11,  12,  13,   9,   7, 20 }, // Short
-//		{ 107, 108, 109, 110, 105, 106, 103, 104,   0,   0,   5,   6,   8,  10,  11,  12,  13,   9,   7, 20 }, // int
-//		{ 107, 108, 109, 110, 105, 106, 103, 104,   0,   0,   5,   6,   8,  10,  11,  12,  13,   9,   7, 20 }, // Integer
-//		{ 107, 108, 109, 110, 105, 106, 103, 104, 101, 102,   0,   0,   8,  10,  11,  12,  13,   9,   7, 20 }, // long
-//		{ 107, 108, 109, 110, 105, 106, 103, 104, 102, 102,   0,   0,   8,  10,  11,  12,  13,   9,   7, 20 }, // Long
-//		{ 107, 108, 109, 110,   9,  10,   7,   8,   5,   6,   3,   4,   0,  13,  14,  11,  12,   1,   2, 20 }, // BigInteger
-//		{ 114, 115, 116, 117, 112, 113, 110, 111, 108, 109, 106, 107, 105,   0,   0,   1,   2,   3,   4, 20 }, // float
-//		{ 114, 115, 116, 117, 112, 113, 110, 111, 108, 109, 106, 107, 105,   0,   0,   1,   2,   3,   4, 20 }, // Float
-//		{ 114, 115, 116, 117, 112, 113, 110, 111, 108, 109, 106, 107, 105, 103, 104,   0,   0,   1,   2, 20 }, // double
-//		{ 114, 115, 116, 117, 112, 113, 110, 111, 108, 109, 106, 107, 105, 103, 104,   0,   0,   1,   2, 20 }, // Double
-//		{ 114, 115, 116, 117, 112, 113, 110, 111, 108, 109, 106, 107, 105, 103, 104, 101, 102,   0,   1, 20 }, // BigDecimal
-//		{ 101, 102, 114, 115, 114, 115, 112, 113, 110, 111, 108, 109, 107, 105, 106, 103, 104, 102,   0, 20 }, // Number
-//		{ 101, 102,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  0 }, // Object
-//	};
-
-    // -1 = not, 0 = nop, 1 = easy, 2 = difficult, 3 = depends
-    static public final int[][] PRIMITIVE_ASSIGNABILITY =
-    {
-		{   0,   0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  1 }, // boolean
-		{   0,   0,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  1 }, // Boolean
-		{  -1,  -1,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  1 }, // char
-		{  -1,  -1,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  1 }, // Character
-		{  -1,  -1,   1,   1,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  1 }, // byte
-		{  -1,  -1,   1,   1,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  1 }, // Byte
-		{  -1,  -1,   3,   3,   3,   3,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  1 }, // short
-		{  -1,  -1,   3,   3,   3,   3,   0,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,  1 }, // Short
-		{  -1,  -1,   3,   3,   3,   3,   3,   3,   0,   0,   1,   1,   1,   3,   3,   1,   1,   1,   1,  1 }, // int
-		{  -1,  -1,   3,   3,   3,   3,   3,   3,   0,   0,   1,   1,   1,   3,   3,   1,   1,   1,   1,  1 }, // Integer
-		{  -1,  -1,   3,   3,   3,   3,   3,   3,   3,   3,   0,   0,   1,   3,   3,   3,   3,   1,   1,  1 }, // long
-		{  -1,  -1,   3,   3,   3,   3,   3,   3,   3,   3,   0,   0,   1,   3,   3,   3,   3,   1,   1,  1 }, // Long
-		{  -1,  -1,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   0,   3,   3,   3,   3,   1,   1,  1 }, // BigInteger
-		{  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   0,   0,   1,   1,   1,   1,  1 }, // float
-		{  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   0,   0,   1,   1,   1,   1,  1 }, // Float
-		{  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   0,   0,   1,   1,  1 }, // double
-		{  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   0,   0,   1,   1,  1 }, // Double
-		{  -1,  -1,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   3,   0,   1,  1 }, // BigDecimal
-		{  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   0,  1 }, // Number
-		{  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  0 }, // Object
-	};
-
-    // x2 = int, x3 = long, x4 = BI, x5 = float, x6 = double, x7 = BD
-    // 1x = convert right, 2x = convert left
-    static public final int[][] NUMBER_MATCHING =
-    {
-		{  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99, 99 }, // boolean
-		{  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99, 99 }, // Boolean
-		{  99,  99,   1,   1,  12,  12,  12,  12,  12,  12,  13,  13,  14,  15,  15,  16,  16,  17,  99, 99 }, // char
-		{  99,  99,   1,   1,  12,  12,  12,  12,  12,  12,  13,  13,  14,  15,  15,  16,  16,  17,  99, 99 }, // Character
-		{  99,  99,  22,  22,   2,   2,   2,   2,   2,   2,   3,   3,  14,   5,   5,   6,   6,  17,  99, 99 }, // byte
-		{  99,  99,  22,  22,   2,   2,   2,   2,   2,   2,   3,   3,  14,   5,   5,   6,   6,  17,  99, 99 }, // Byte
-		{  99,  99,  22,  22,   2,   2,   2,   2,   2,   2,   3,   3,  14,   5,   5,   6,   6,  17,  99, 99 }, // short
-		{  99,  99,  22,  22,   2,   2,   2,   2,   2,   2,   3,   3,  14,   5,   5,   6,   6,  17,  99, 99 }, // Short
-		{  99,  99,  22,  22,   2,   2,   2,   2,   2,   2,   3,   3,  14,   5,   5,   6,   6,  17,  99, 99 }, // int
-		{  99,  99,  22,  22,   2,   2,   2,   2,   2,   2,   3,   3,  14,   5,   5,   6,   6,  17,  99, 99 }, // Integer
-		{  99,  99,  23,  23,   3,   3,   3,   3,   3,   3,   3,   3,  14,   5,   5,   6,   6,  17,  99, 99 }, // long
-		{  99,  99,  23,  23,   3,   3,   3,   3,   3,   3,   3,   3,  14,   5,   5,   6,   6,  17,  99, 99 }, // Long
-		{  99,  99,  24,  24,  24,  24,  24,  24,  24,  24,  24,  24,   4,   5,   5,   6,   6,  17,  99, 99 }, // BigInteger
-		{  99,  99,  25,  25,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   6,   6,  17,  99, 99 }, // float
-		{  99,  99,  25,  25,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   5,   6,   6,  17,  99, 99 }, // Float
-		{  99,  99,  26,  26,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,  17,  99, 99 }, // double
-		{  99,  99,  26,  26,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,  17,  99, 99 }, // Double
-		{  99,  99,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,  27,   7,  99, 99 }, // BigDecimal
-		{  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99, 99 }, // Number
-		{  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99,  99, 99 }, // Object
-	};
-
+	// Ordered array of basic types
 	static public final Class[] PRIMITIVES =
     {
     	boolean.class, Boolean.class, char.class, Character.class, byte.class, Byte.class, short.class, Short.class,
@@ -122,8 +45,10 @@ public class Types
 		Number.class, Object.class
 	};
 
+	// Map to index the basic types
     static public final Map< Class, Integer > TYPES;
 
+    // Fill the map
     static
     {
     	TYPES = new IdentityHashMap<Class, Integer>();
@@ -131,10 +56,69 @@ public class Types
     		TYPES.put( PRIMITIVES[ i ], i );
     }
 
-    // TODO (RMB) Better map implementation?
-    // TODO (RMB) Specificity cache?
-    static public final Map< Class, Map< Class, Integer > > distanceCache = new IdentityHashMap< Class, Map<Class,Integer> >();
+    // -1 = not possible
+	//  0 = equal types
+	//  1 = widening
+	//  3 = narrowing, depends on the value
+    static public final byte[][] CONVERSIONS =
+    {
+		{  0,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  1 }, // from: boolean
+		{  0,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  1 }, // from: Boolean
+		{ -1, -1,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1 }, // from: char
+		{ -1, -1,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1 }, // from: Character
+		{ -1, -1,  1,  1,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1 }, // from: byte
+		{ -1, -1,  1,  1,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1 }, // from: Byte
+		{ -1, -1,  3,  3,  3,  3,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1 }, // from: short
+		{ -1, -1,  3,  3,  3,  3,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1 }, // from: Short
+		{ -1, -1,  3,  3,  3,  3,  3,  3,  0,  0,  1,  1,  1,  3,  3,  1,  1,  1,  1,  1 }, // from: int
+		{ -1, -1,  3,  3,  3,  3,  3,  3,  0,  0,  1,  1,  1,  3,  3,  1,  1,  1,  1,  1 }, // from: Integer
+		{ -1, -1,  3,  3,  3,  3,  3,  3,  3,  3,  0,  0,  1,  3,  3,  3,  3,  1,  1,  1 }, // from: long
+		{ -1, -1,  3,  3,  3,  3,  3,  3,  3,  3,  0,  0,  1,  3,  3,  3,  3,  1,  1,  1 }, // from: Long
+		{ -1, -1,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  0,  3,  3,  3,  3,  1,  1,  1 }, // from: BigInteger
+		{ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0,  0,  1,  1,  1,  1,  1 }, // from: float
+		{ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0,  0,  1,  1,  1,  1,  1 }, // from: Float
+		{ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0,  0,  1,  1,  1 }, // from: double
+		{ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0,  0,  1,  1,  1 }, // from: Double
+		{ -1, -1,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  0,  1,  1 }, // from: BigDecimal
+		{ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0,  1 }, // from: Number
+		{ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0 }, // from: Object
+	};
 
+    static
+    {
+    	// Currently not interested in values 1 or 3
+    	for( byte[] l : CONVERSIONS )
+    		for( int j = 0; j < l.length; j++ )
+				switch( l[ j ] ) { case 1: l[ j ] = 0; break; case 3: l[ j ] = -1; }
+    }
+
+    // x2 = int, x3 = long, x4 = BI, x5 = float, x6 = double, x7 = BD
+    // 1x = convert right, 2x = convert left
+    static public final byte[][] NUMBER_MATCHING =
+    {
+		{  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0 }, // from: boolean
+		{  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0 }, // from: Boolean
+		{  0,  0,  1,  1, 12, 12, 12, 12, 12, 12, 13, 13, 14, 15, 15, 16, 16, 17,  0, 0 }, // from: char
+		{  0,  0,  1,  1, 12, 12, 12, 12, 12, 12, 13, 13, 14, 15, 15, 16, 16, 17,  0, 0 }, // from: Character
+		{  0,  0, 22, 22,  2,  2,  2,  2,  2,  2,  3,  3, 14,  5,  5,  6,  6, 17,  0, 0 }, // from: byte
+		{  0,  0, 22, 22,  2,  2,  2,  2,  2,  2,  3,  3, 14,  5,  5,  6,  6, 17,  0, 0 }, // from: Byte
+		{  0,  0, 22, 22,  2,  2,  2,  2,  2,  2,  3,  3, 14,  5,  5,  6,  6, 17,  0, 0 }, // from: short
+		{  0,  0, 22, 22,  2,  2,  2,  2,  2,  2,  3,  3, 14,  5,  5,  6,  6, 17,  0, 0 }, // from: Short
+		{  0,  0, 22, 22,  2,  2,  2,  2,  2,  2,  3,  3, 14,  5,  5,  6,  6, 17,  0, 0 }, // from: int
+		{  0,  0, 22, 22,  2,  2,  2,  2,  2,  2,  3,  3, 14,  5,  5,  6,  6, 17,  0, 0 }, // from: Integer
+		{  0,  0, 23, 23,  3,  3,  3,  3,  3,  3,  3,  3, 14,  5,  5,  6,  6, 17,  0, 0 }, // from: long
+		{  0,  0, 23, 23,  3,  3,  3,  3,  3,  3,  3,  3, 14,  5,  5,  6,  6, 17,  0, 0 }, // from: Long
+		{  0,  0, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,  4,  5,  5,  6,  6, 17,  0, 0 }, // from: BigInteger
+		{  0,  0, 25, 25,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  6,  6, 17,  0, 0 }, // from: float
+		{  0,  0, 25, 25,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  6,  6, 17,  0, 0 }, // from: Float
+		{  0,  0, 26, 26,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 17,  0, 0 }, // from: double
+		{  0,  0, 26, 26,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6, 17,  0, 0 }, // from: Double
+		{  0,  0, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27,  7,  0, 0 }, // from: BigDecimal
+		{  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0 }, // from: Number
+		{  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0 }, // from: Object
+	};
+
+    // --------------------------------------------------------------------------------
 
 	static public Class[] getTypes( Object[] objects )
 	{
@@ -236,128 +220,24 @@ public class Types
 	 * @return
 	 */
 	// SYNC isAssignableToType
-	static public int assignable( Object arg, Class type )
+	static public boolean assignable( Class<?> arg, Class<?> type )
 	{
 		if( arg == null )
-			return type.isPrimitive() ? -1 : 0;
-		if( type.isInstance( arg ) )
-			return 0;
+			return !type.isPrimitive();
+		if( type.isAssignableFrom( arg ) )
+			return true;
 
 		Integer i = TYPES.get( type );
 		if( i != null )
 		{
-			Integer j = TYPES.get( arg.getClass() );
+			Integer j = TYPES.get( arg );
 			if( j != null )
-			{
-				int a = PRIMITIVE_ASSIGNABILITY[ j ][ i ];
-				if( a != 3 )
-					return a;
-				return assignable0( arg, type );
-			}
+				if( CONVERSIONS[ j ][ i ] == 0 )
+					return true;
 		}
 
-        return -1;
+        return false;
 	}
-
-
-	static private int assignable0( Object arg, Class type )
-	{
-		if( arg instanceof BigDecimal )
-		{
-			BigDecimal bd = (BigDecimal)arg;
-			try
-			{
-				if( type == int.class )
-					bd.intValueExact(); // TODO Would be nice if the resulting value is not discarded.
-				else if( type == long.class )
-					bd.longValueExact();
-				else if( type == double.class )
-				{
-					double d = bd.doubleValue();
-					if( d == Double.NEGATIVE_INFINITY || d == Double.POSITIVE_INFINITY )
-						return -1;
-				}
-				else
-					throw Assert.fail( "Unexpected type " + type.getName() );
-				return 1;
-			}
-			catch( ArithmeticException e )
-			{
-				return -1;
-			}
-		}
-
-		throw Assert.fail( "Unexpected arg " + arg.getClass().getName() );
-	}
-
-
-	// SYNC isAssignableToType
-    // TODO (RMB) Maybe we should make String and FunnyString identical (no conversion), return 0
-	static public int compareSpecificness( Class arg, Class type )
-	{
-		if( arg == null )
-			throw new IllegalArgumentException( "'arg' should not be null" );
-
-		int result = 2;
-		if( type == arg )
-			result = 0;
-		else if( type.isAssignableFrom( arg ) )
-			result = 1;
-		else if( arg.isAssignableFrom( type ) )
-			result = -1;
-		else
-		{
-			Integer i = TYPES.get( type );
-			if( i != null )
-			{
-				Integer j = TYPES.get( arg );
-				if( j != null )
-					result = PRIMITIVE_ASSIGNABILITY[ j ][ i ];
-			}
-		}
-
-        return result;
-	}
-
-
-//	static public int calculateDistance( Class arg, Class type )
-//	{
-//		// arg can never be a primitive
-//
-//		if( arg == null )
-//		{
-//			int distance = 0;
-//			while( type.isArray() )
-//			{
-//				distance++;
-//				type = type.getComponentType();
-//			}
-//
-//			if( type.isInterface() )
-//				return distance + 1;
-//
-//			// Determine distance to Object (number of super classes)
-//			Class superCls = type.getSuperclass();
-//			while( superCls != null )
-//			{
-//				distance++;
-//				superCls = superCls.getSuperclass();
-//			}
-//
-//			return distance;
-//		}
-//
-//		Integer i = TYPES.get( type );
-//		if( i != null )
-//		{
-//			Integer j = TYPES.get( arg );
-//			if( j != null )
-//				return PRIMITIVE_DISTANCES[ j ][ i ];
-//		}
-//
-//		return 0;
-//	}
-
 
 	// SYNC isAssignableToType()
 	static public Object convert( Object object, Class type )
@@ -577,48 +457,52 @@ public class Types
 			if( j != null )
 			{
 				int a = NUMBER_MATCHING[ j ][ i ];
-				if( a != 99 )
+				switch( a )
 				{
-					switch( a )
-					{
-						case 1:
-							return new Object[] { 2, convert( left, int.class ), convert( right, int.class ) };
-						case 2:
-						case 3:
-						case 4:
-						case 5:
-						case 6:
-						case 7:
-							return new Object[] { a, left, right };
-						case 12:
-							return new Object[] { 2, left, convert( right, int.class ) };
-						case 13:
-							return new Object[] { 3, left, convert( right, long.class ) };
-						case 14:
-							return new Object[] { 4, left, convert( right, BigInteger.class ) };
-						case 15:
-							return new Object[] { 5, left, convert( right, float.class ) };
-						case 16:
-							return new Object[] { 6, left, convert( right, double.class ) };
-						case 17:
-							return new Object[] { 7, left, convert( right, BigDecimal.class ) };
-						case 22:
-							return new Object[] { 2, convert( left, int.class ), right };
-						case 23:
-							return new Object[] { 3, convert( left, long.class ), right };
-						case 24:
-							return new Object[] { 4, convert( left, BigInteger.class ), right };
-						case 25:
-							return new Object[] { 5, convert( left, float.class ), right };
-						case 26:
-							return new Object[] { 6, convert( left, double.class ), right };
-						case 27:
-							return new Object[] { 7, convert( left, BigDecimal.class ), right };
-					}
+					case 1:
+						return new Object[] { 2, convert( left, int.class ), convert( right, int.class ) };
+					case 2:
+					case 3:
+					case 4:
+					case 5:
+					case 6:
+					case 7:
+						return new Object[] { a, left, right };
+					case 12:
+						return new Object[] { 2, left, convert( right, int.class ) };
+					case 13:
+						return new Object[] { 3, left, convert( right, long.class ) };
+					case 14:
+						return new Object[] { 4, left, convert( right, BigInteger.class ) };
+					case 15:
+						return new Object[] { 5, left, convert( right, float.class ) };
+					case 16:
+						return new Object[] { 6, left, convert( right, double.class ) };
+					case 17:
+						return new Object[] { 7, left, convert( right, BigDecimal.class ) };
+					case 22:
+						return new Object[] { 2, convert( left, int.class ), right };
+					case 23:
+						return new Object[] { 3, convert( left, long.class ), right };
+					case 24:
+						return new Object[] { 4, convert( left, BigInteger.class ), right };
+					case 25:
+						return new Object[] { 5, convert( left, float.class ), right };
+					case 26:
+						return new Object[] { 6, convert( left, double.class ), right };
+					case 27:
+						return new Object[] { 7, convert( left, BigDecimal.class ), right };
 				}
 			}
 		}
+		throw Assert.fail(); // TODO Better exception
+	}
 
-		throw Assert.fail();
+	static public Object[] transformArguments( Class[] types, Object[] args )
+	{
+		Object[] result = new Object[ args.length ];
+		for( int i = types.length - 1; i >= 0; i-- )
+			result[ i ] = Types.convert( args[ i ], types[ i ] );
+		return result;
 	}
 }

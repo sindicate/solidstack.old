@@ -29,9 +29,30 @@ import java.util.Map.Entry;
  */
 public class DefaultExtensions
 {
-	static public int size( String string )
+	static public List apply( Class<List> cls, Object... objects )
 	{
-		return string.length();
+		return new ArrayList( Arrays.asList( objects ) );
+	}
+
+	static public Object apply( List list, int index )
+	{
+		return list.get( index );
+	}
+
+	static public List collect( Collection collection, Function function )
+	{
+		List result = new ArrayList(collection.size());
+		for( Object object : collection )
+			result.add( function.call( object ) );
+		return result;
+	}
+
+	static public List collect( Object[] array, Function function )
+	{
+		List result = new ArrayList(array.length);
+		for( Object object : array )
+			result.add( function.call( object ) );
+		return result;
 	}
 
 	static public Object each( Collection collection, Function function )
@@ -52,24 +73,6 @@ public class DefaultExtensions
 		return result;
 	}
 
-	static public List collect( Collection collection, Function function )
-	{
-		List result = new ArrayList(collection.size());
-		for( Object object : collection )
-			result.add( function.call( object ) );
-		return result;
-	}
-
-	static public List apply( Class<List> cls, Object... objects )
-	{
-		return new ArrayList( Arrays.asList( objects ) );
-	}
-
-	static public Object apply( List list, int index )
-	{
-		return list.get( index );
-	}
-
 	static public Object each( Map<?,?> map, Function function )
 	{
 		Object result = null;
@@ -86,16 +89,53 @@ public class DefaultExtensions
 		return result;
 	}
 
-	static public List collect( Object[] array, Function function )
-	{
-		List result = new ArrayList(array.length);
-		for( Object object : array )
-			result.add( function.call( object ) );
-		return result;
-	}
-
 	static public int size( Object[] array )
 	{
 		return array.length;
+	}
+
+	static public int size( boolean[] array )
+	{
+		return array.length;
+	}
+
+	static public int size( char[] array )
+	{
+		return array.length;
+	}
+
+	static public int size( byte[] array )
+	{
+		return array.length;
+	}
+
+	static public int size( short[] array )
+	{
+		return array.length;
+	}
+
+	static public int size( int[] array )
+	{
+		return array.length;
+	}
+
+	static public int size( long[] array )
+	{
+		return array.length;
+	}
+
+	static public int size( float[] array )
+	{
+		return array.length;
+	}
+
+	static public int size( double[] array )
+	{
+		return array.length;
+	}
+
+	static public int size( String string )
+	{
+		return string.length();
 	}
 }
