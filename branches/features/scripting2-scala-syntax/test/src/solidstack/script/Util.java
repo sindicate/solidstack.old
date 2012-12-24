@@ -53,9 +53,14 @@ public class Util
 
 	static public void fail( String expression, Class<? extends Exception> exception, String message )
 	{
+		fail( expression, null, exception, message );
+	}
+
+	static public void fail( String expression, Scope scope, Class<? extends Exception> exception, String message )
+	{
 		try
 		{
-			eval( expression );
+			eval( expression, scope );
 			failBecauseExceptionWasNotThrown( exception );
 		}
 		catch( Exception t )
