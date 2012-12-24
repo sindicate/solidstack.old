@@ -30,7 +30,7 @@ public class MethodCall implements Cloneable
 	public Method method;
 	public ExtMethod extMethod;
 	public Constructor constructor;
-	private Object[] args;
+	public Object[] args;
 	public boolean isVarargCall;
 
 	public MethodCall( boolean isVarargCall )

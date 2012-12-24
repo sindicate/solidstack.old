@@ -20,8 +20,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import solidstack.lang.Assert;
 
@@ -32,10 +34,38 @@ public class Resolver
 	static public final Object[] EMPTY_OBJECT_ARRAY = new Object[ 0 ];
 	static public final Class OBJECT_ARRAY_CLASS = Object[].class;
 
+	static private final Map<CallKey, MethodHandle> cache = new HashMap<CallKey, MethodHandle>();
+
 
 	static public MethodCall resolveMethodCall( CallContext context )
 	{
-		boolean needStatic = context.getObject() == null;
+		MethodHandle handle = cache.get( context.getCallKey() );
+		if( handle != null )
+		{
+			System.out.println( context.getName() + " hit" );
+			MethodCall caller = new MethodCall( handle.isVarargCall );
+			caller.constructor = handle.constructor;
+			caller.method = handle.method;
+			caller.extMethod = handle.extMethod;
+			caller.object = context.getObject();
+			caller.args = context.getArgs();
+			return caller;
+		}
+
+		System.out.println( context.getName() + " misss" );
+
+		MethodCall result = resolveMethodCall0( context );
+
+		if( result != null )
+			cache.put( context.getCallKey(), new MethodHandle( result.method, result.extMethod, result.constructor, result.isVarargCall ) );
+
+		return result;
+	}
+
+
+	static private MethodCall resolveMethodCall0( CallContext context )
+	{
+		boolean needStatic = context.staticCall();
 
 		for( Method method : context.getType().getMethods() )
 			if( !needStatic || ( method.getModifiers() & Modifier.STATIC ) != 0 )
