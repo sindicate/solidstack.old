@@ -26,7 +26,7 @@ import java.util.Map.Entry;
 /**
  * Default Java extensions.
  */
-public class DefaultExtensions
+public class DefaultClassExtensions
 {
 	static public List collect( Collection collection, Function function )
 	{

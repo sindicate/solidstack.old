@@ -3,13 +3,13 @@ package solidstack.script.java;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-public class ExtMethod
+public class ExtensionMethod
 {
 	private Method method; // A static method
 	private Class[] parameterTypes; // Possible memory leak, but no worries, these are parameter types for the extension methods and will only have standard types.
 	private boolean isVararg;
 
-	public ExtMethod( Method method )
+	public ExtensionMethod( Method method )
 	{
 		this.method = method;
 

@@ -26,15 +26,15 @@ import java.util.WeakHashMap;
 /**
  * Extensions to Java classes.
  */
-public class ClassExt
+public class ClassExtension
 {
 	// TODO This weak map is not really needed when this class is defined in the app classloader
 	// TODO Can we create a new child classloader when instantiating a script engine, so that the caches exist in this child classloader?
-	static private Map<Class<?>, ClassExt> extensions = new WeakHashMap<Class<?>, ClassExt>();
+	static private Map<Class<?>, ClassExtension> extensions = new WeakHashMap<Class<?>, ClassExtension>();
 
 	static
 	{
-		for( Method method : DefaultExtensions.class.getMethods() )
+		for( Method method : DefaultClassExtensions.class.getMethods() )
 			if( ( method.getModifiers() & Modifier.STATIC ) != 0 ) // Only statics
 			{
 				Class<?>[] types = method.getParameterTypes();
@@ -50,7 +50,7 @@ public class ClassExt
 	 * @param cls A class.
 	 * @return The extension for the given class. Null if it doesn't exist.
 	 */
-	static public ClassExt get( Class<?> cls )
+	static public ClassExtension get( Class<?> cls )
 	{
 		synchronized( extensions )
 		{
@@ -62,14 +62,14 @@ public class ClassExt
 	 * @param cls A class.
 	 * @return The extension for the given class. A new one will be created if it doesn't exist.
 	 */
-	static public ClassExt forClass( Class<?> cls )
+	static public ClassExtension forClass( Class<?> cls )
 	{
 		synchronized( extensions )
 		{
-			ClassExt result = extensions.get( cls );
+			ClassExtension result = extensions.get( cls );
 			if( result != null )
 				return result;
-			result = new ClassExt();
+			result = new ClassExtension();
 			extensions.put( cls, result );
 			return result;
 		}
@@ -77,14 +77,14 @@ public class ClassExt
 
 	// ----------
 
-	private Map<String, ExtMethod> methods = new HashMap<String, ExtMethod>();
+	private Map<String, ExtensionMethod> methods = new HashMap<String, ExtensionMethod>();
 
 	private void addMethod( String name, Method method )
 	{
-		this.methods.put( name,  new ExtMethod( method ) );
+		this.methods.put( name,  new ExtensionMethod( method ) );
 	}
 
-	public ExtMethod getMethod( String name )
+	public ExtensionMethod getMethod( String name )
 	{
 		return this.methods.get( name );
 	}

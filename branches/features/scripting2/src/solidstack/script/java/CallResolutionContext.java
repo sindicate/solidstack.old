@@ -22,11 +22,11 @@ import java.util.List;
 import java.util.Set;
 
 
-public class CallContext
+public class CallResolutionContext
 {
 	// Values for the original call context
 
-	private CallKey call;
+	private CallSignature call;
 
 	private Object object; // The object to call
 	private String name; // The name to call
@@ -43,7 +43,7 @@ public class CallContext
 	private Set< Class > interfacesDone = new HashSet();
 
 
-	public CallContext( Object object, String name, Object[] args )
+	public CallResolutionContext( Object object, String name, Object[] args )
 	{
 		this.object = object;
 		this.type = object.getClass();
@@ -51,17 +51,17 @@ public class CallContext
 		this.args = args;
 		this.argTypes = Types.getTypes( this.args );
 
-		this.call = new CallKey( this.type, name, false, this.argTypes );
+		this.call = new CallSignature( this.type, name, false, this.argTypes );
 	}
 
-	public CallContext( Class type, String name, Object[] args )
+	public CallResolutionContext( Class type, String name, Object[] args )
 	{
 		this.type = type;
 		this.name = name;
 		this.args = args;
 		this.argTypes = Types.getTypes( this.args );
 
-		this.call = new CallKey( type, name, true, this.argTypes );
+		this.call = new CallSignature( type, name, true, this.argTypes );
 	}
 
 	public Object getObject()
@@ -94,7 +94,7 @@ public class CallContext
 		return this.call.staticCall;
 	}
 
-	public CallKey getCallKey()
+	public CallSignature getCallKey()
 	{
 		return this.call;
 	}
