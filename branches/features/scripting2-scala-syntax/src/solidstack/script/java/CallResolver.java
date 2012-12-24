@@ -29,20 +29,20 @@ import solidstack.lang.Assert;
 
 
 
-public class Resolver
+public class CallResolver
 {
 	static public final Object[] EMPTY_OBJECT_ARRAY = new Object[ 0 ];
 	static public final Class OBJECT_ARRAY_CLASS = Object[].class;
 
-	static private final Map<CallKey, MethodHandle> cache = new HashMap<CallKey, MethodHandle>();
+	static private final Map<CallSignature, MethodHandle> cache = new HashMap<CallSignature, MethodHandle>();
 
 
-	static public MethodCall resolveMethodCall( CallContext context )
+	static public MethodCall resolveMethodCall( CallResolutionContext context )
 	{
 		MethodHandle handle = cache.get( context.getCallKey() );
 		if( handle != null )
 		{
-			System.out.println( context.getName() + " hit" );
+//			System.out.println( context.getName() + " hit" );
 			MethodCall caller = new MethodCall( handle.isVarargCall );
 			caller.constructor = handle.constructor;
 			caller.method = handle.method;
@@ -52,7 +52,7 @@ public class Resolver
 			return caller;
 		}
 
-		System.out.println( context.getName() + " misss" );
+//		System.out.println( context.getName() + " misss" );
 
 		MethodCall result = resolveMethodCall0( context );
 
@@ -63,7 +63,7 @@ public class Resolver
 	}
 
 
-	static private MethodCall resolveMethodCall0( CallContext context )
+	static private MethodCall resolveMethodCall0( CallResolutionContext context )
 	{
 		boolean needStatic = context.staticCall();
 
@@ -85,17 +85,17 @@ public class Resolver
 		else
 			collectStaticMethods( context.getType(), context );
 
-		return Resolver.calculateBestMethodCandidate( context.getCandidates() );
+		return CallResolver.calculateBestMethodCandidate( context.getCandidates() );
 	}
 
 
-	static public void collectMethods( Class cls, CallContext context )
+	static public void collectMethods( Class cls, CallResolutionContext context )
 	{
-		ClassExt ext = ClassExt.forClass( cls );
+		ClassExtension ext = ClassExtension.forClass( cls );
 		if( ext != null )
 		{
 			// TODO Multiple
-			ExtMethod method = ext.getMethod( context.getName() );
+			ExtensionMethod method = ext.getMethod( context.getName() );
 			if( method != null )
 			{
 				MethodCall caller = matchArguments( context, method.getParameterTypes(), method.isVararg() );
@@ -128,16 +128,16 @@ public class Resolver
 		}
 	}
 
-	static public void collectStaticMethods( Class cls, CallContext context )
+	static public void collectStaticMethods( Class cls, CallResolutionContext context )
 	{
-		ClassExt ext = ClassExt.forClass( cls );
+		ClassExtension ext = ClassExtension.forClass( cls );
 		if( ext != null )
 		{
 			// TODO Multiple
-			ExtMethod method = ext.getStaticMethod( context.getName() );
+			ExtensionMethod method = ext.getStaticMethod( context.getName() );
 			if( method != null )
 			{
-				MethodCall caller = Resolver.matchArguments( context, method.getParameterTypes(), method.isVararg() );
+				MethodCall caller = CallResolver.matchArguments( context, method.getParameterTypes(), method.isVararg() );
 				if( caller != null )
 				{
 					caller.object = context.getObject();
@@ -148,11 +148,11 @@ public class Resolver
 		}
 	}
 
-	static public MethodCall resolveConstructorCall( CallContext context )
+	static public MethodCall resolveConstructorCall( CallResolutionContext context )
 	{
 		for( Constructor constructor : context.getType().getConstructors() )
 		{
-			MethodCall caller = Resolver.matchArguments( context, constructor.getParameterTypes(), ( constructor.getModifiers() & Modifier.TRANSIENT ) != 0 );
+			MethodCall caller = CallResolver.matchArguments( context, constructor.getParameterTypes(), ( constructor.getModifiers() & Modifier.TRANSIENT ) != 0 );
 			if( caller != null )
 			{
 				caller.constructor = constructor;
@@ -160,11 +160,11 @@ public class Resolver
 			}
 		}
 
-		return Resolver.calculateBestMethodCandidate( context.getCandidates() );
+		return CallResolver.calculateBestMethodCandidate( context.getCandidates() );
 	}
 
 
-	static public MethodCall matchArguments( CallContext context, Class[] types, boolean vararg )
+	static public MethodCall matchArguments( CallResolutionContext context, Class[] types, boolean vararg )
 	{
 		// Initialize all used values from the context
 		Class[] argTypes = context.getArgTypes();
@@ -212,7 +212,7 @@ public class Resolver
 	}
 
 
-    static public MethodCall calculateBestMethodCandidate( List<MethodCall> candidates ) throws ResolverException
+    static public MethodCall calculateBestMethodCandidate( List<MethodCall> candidates ) throws CallResolutionException
     {
 		if( candidates.size() == 0 )
 			return null;
@@ -271,7 +271,7 @@ public class Resolver
 		if( best2.size() > 0 )
 			best = best2;
 
-			throw new ResolverException( best );
+		throw new CallResolutionException( best );
     }
 
 

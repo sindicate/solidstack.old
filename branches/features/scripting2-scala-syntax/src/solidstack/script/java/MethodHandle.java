@@ -19,16 +19,16 @@ package solidstack.script.java;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
-public class MethodHandle implements Cloneable
+public class MethodHandle
 {
 //	static public Class[] NO_PARAMETERS = new Class[ 0 ];
 
 	public Method method;
-	public ExtMethod extMethod;
+	public ExtensionMethod extMethod;
 	public Constructor constructor;
 	public boolean isVarargCall;
 
-	public MethodHandle( Method method, ExtMethod extMethod, Constructor constructor, boolean isVarargCall )
+	public MethodHandle( Method method, ExtensionMethod extMethod, Constructor constructor, boolean isVarargCall )
 	{
 		this.method = method;
 		this.extMethod = extMethod;

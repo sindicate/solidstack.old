@@ -20,9 +20,9 @@ package solidstack.script.java;
 
 public class MissingMethodException extends Exception
 {
-	public CallContext context;
+	public CallResolutionContext context;
 
-	public MissingMethodException( CallContext context )
+	public MissingMethodException( CallResolutionContext context )
 	{
 		this.context = context;
 	}

@@ -22,13 +22,13 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-public class MethodCall implements Cloneable
+public class MethodCall
 {
 	static public Class[] NO_PARAMETERS = new Class[ 0 ];
 
 	public Object object;
 	public Method method;
-	public ExtMethod extMethod;
+	public ExtensionMethod extMethod;
 	public Constructor constructor;
 	public Object[] args;
 	public boolean isVarargCall;
@@ -53,11 +53,11 @@ public class MethodCall implements Cloneable
 		return this.method.getParameterTypes();
 	}
 
-	public Class getDeclaringClass()
-	{
-		// TODO What do we do if it is an extension method?
-		return this.method.getDeclaringClass();
-	}
+//	public Class getDeclaringClass()
+//	{
+//		// TODO What do we do if it is an extension method?
+//		return this.method.getDeclaringClass();
+//	}
 
 	public Object invoke() throws InvocationTargetException
 	{

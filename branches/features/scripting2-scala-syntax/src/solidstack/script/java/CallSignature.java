@@ -16,18 +16,17 @@
 
 package solidstack.script.java;
 
-import java.util.Arrays;
 
 
 
-public class CallKey
+public class CallSignature
 {
-	public Class type; // Type of the object, or if the object is a class, then the object itself.
+	public Class type; // Class of the object to call or, in the case of a static call, the class to call
 	public String name; // The name of the method, null for constructor
-	public boolean staticCall;
+	public boolean staticCall; // Calling the class?
 	public Class[] argTypes; // Types of the arguments.
 
-	public CallKey( Class type, String name, boolean staticCall, Class[] argTypes )
+	public CallSignature( Class type, String name, boolean staticCall, Class[] argTypes )
 	{
 		this.type = type;
 		this.name = name;
@@ -38,43 +37,30 @@ public class CallKey
 	@Override
 	public int hashCode()
 	{
-		return Arrays.hashCode(
-			new Object[] {
-				this.type, this.name, this.staticCall,
-				new Object()
-				{
-					@Override
-					public int hashCode()
-					{
-						return Arrays.hashCode( CallKey.this.argTypes );
-					}
-				}
-			}
-		);
+        int result = 1;
+        result = 31 * result + this.type.hashCode();
+        result = 31 * result; if( this.name != null ) result += this.name.hashCode();
+        result = 31 * result + ( this.staticCall ? 1231 : 1237 );
+        for( Class<?> type : this.argTypes )
+            result = 31 * result + type.hashCode();
+        return result;
 	}
 
 	@Override
 	public boolean equals( Object other )
 	{
-		if( !( other instanceof CallKey ) )
+		if( !( other instanceof CallSignature ) )
 			return false;
 
-		CallKey key = (CallKey)other;
+		CallSignature key = (CallSignature)other;
+
 		if( key.type != this.type )
 			return false;
 		if( key.staticCall != this.staticCall )
 			return false;
 
-		if( key.name == null )
-		{
-			if( this.name != null )
-				return false;
-		}
-		else
-		{
-			if( !key.name.equals( this.name ) )
-				return false;
-		}
+		if( key.name == null ? this.name != null : !key.name.equals( this.name ) )
+			return false;
 
 		int len = key.argTypes.length;
 		if( this.argTypes.length != len )

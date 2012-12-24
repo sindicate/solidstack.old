@@ -27,7 +27,7 @@ import java.util.Map.Entry;
 /**
  * Default Java extensions.
  */
-public class DefaultExtensions
+public class DefaultClassExtensions
 {
 	static public List apply( Class<List> cls, Object... objects )
 	{
