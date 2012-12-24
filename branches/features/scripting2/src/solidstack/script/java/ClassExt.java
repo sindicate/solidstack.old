@@ -28,6 +28,8 @@ import java.util.WeakHashMap;
  */
 public class ClassExt
 {
+	// TODO This weak map is not really needed when this class is defined in the app classloader
+	// TODO Can we create a new child classloader when instantiating a script engine, so that the caches exist in this child classloader?
 	static private Map<Class<?>, ClassExt> extensions = new WeakHashMap<Class<?>, ClassExt>();
 
 	static
