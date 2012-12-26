@@ -1,5 +1,5 @@
 
-sql = class( "funny.sql.Sql" )( "org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:memory:test;create=true" );
+sql = new ( class( "funny.sql.Sql" ) )( "org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:memory:test;create=true" );
 
 sql.eachResult( "SELECT * FROM SYS.SYSTABLES", ( result =>
 	println( result.getString( "TABLENAME" ) );

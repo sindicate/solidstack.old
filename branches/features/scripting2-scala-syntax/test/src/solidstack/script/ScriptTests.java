@@ -299,16 +299,16 @@ public class ScriptTests extends Util
 		Scope context = new Scope();
 		test( "c = class( \"solidstack.script.ScriptTests$TestObject1\" );", context, TestObject1.class );
 		test( "new c().value", context, 0 );
-		test( "c( 3.14 ).value", context, 2 );
-		test( "c( 0.123E-10 ).value", context, 2 );
-		test( "c( \"string\" ).value", context, 3 );
-		test( "c( \"string\", \"string\" ).value", context, 4 );
-		test( "c( 1, 1 ).value", context, 6 );
-		test( "c( 1 == 1 ).value", context, 7 );
-		test( "c( a -> 1, b -> 2 ).value", context, 8 );
+		test( "new c( 3.14 ).value", context, 2 );
+		test( "new c( 0.123E-10 ).value", context, 2 );
+		test( "new c( \"string\" ).value", context, 3 );
+		test( "new c( \"string\", \"string\" ).value", context, 4 );
+		test( "new c( 1, 1 ).value", context, 6 );
+		test( "new c( 1 == 1 ).value", context, 7 );
+		test( "new c( a -> 1, b -> 2 ).value", context, 8 );
 
 		test( "c2 = class( \"solidstack.script.ScriptTests$TestObject2\" );", context, TestObject2.class );
-		test( "c2( 1, 1 ).value", context, 1 );
+		test( "new c2( 1, 1 ).value", context, 1 );
 	}
 
 	@Test
@@ -364,15 +364,15 @@ public class ScriptTests extends Util
 	static public void test17()
 	{
 		test( "class( \"java.util.ArrayList\" );", ArrayList.class );
-		test( "c = class( \"java.util.ArrayList\" ); c();", new ArrayList<Object>() );
-		test( "l = class( \"java.util.ArrayList\" )(); l.add( \"sinterklaas\" ); l.toArray();", new Object[] { "sinterklaas" } );
-		test( "ArrayList = class( \"java.util.ArrayList\" ); l = ArrayList(); l.toArray();", new Object[ 0 ] );
+		test( "c = class( \"java.util.ArrayList\" ); new c();", new ArrayList<Object>() );
+		test( "l = new ( class( \"java.util.ArrayList\" ) )(); l.add( \"sinterklaas\" ); l.toArray();", new Object[] { "sinterklaas" } );
+		test( "ArrayList = class( \"java.util.ArrayList\" ); l = new ArrayList(); l.toArray();", new Object[ 0 ] );
 	}
 
 	@Test
 	static public void test18()
 	{
-		test( "l = class( \"java.util.ArrayList\" )(); i = 0; while( i < 10 ) ( l.add( i ); i++ ); l.each( fun( i; println( i ) ) )", 9 );
+		test( "l = new ( class( \"java.util.ArrayList\" ) )(); i = 0; while( i < 10 ) ( l.add( i ); i++ ); l.each( fun( i; println( i ) ) )", 9 );
 		eval( "Calendar = class( \"java.util.Calendar\" ); println( Calendar#getInstance().getClass() )" );
 		test( "Calendar = class( \"java.util.Calendar\" ); Calendar#SATURDAY", 7 );
 		fail( "Calendar = class( \"java.util.Calendar\" ); Calendar#clear()", ScriptException.class, "static java.util.Calendar.clear()" );
@@ -647,7 +647,7 @@ public class ScriptTests extends Util
 		fail( "f = () => (); f( 1 )", ScriptException.class, "Too many parameters" );
 		fail( "f()", ScopeException.class, "'f' undefined" );
 		fail( "f = null; f()", ScriptException.class, "Function is null" );
-		fail( "f = 1; f()", ScriptException.class, "Can't apply parameters to a java.lang.Integer" );
+		fail( "f = 1; f()", ScriptException.class, "No such method: java.lang.Integer.apply()" );
 		fail( "a = ( 1, 2 )", ScriptException.class, "Can't assign tuples to variables" );
 		fail( "f = null; f[]", ScriptException.class, "Null can't be indexed" );
 		fail( "f = 1; f[]", ScriptException.class, "Missing index" );

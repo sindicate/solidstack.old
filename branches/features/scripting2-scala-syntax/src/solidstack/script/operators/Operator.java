@@ -46,6 +46,7 @@ abstract public class Operator implements Expression
 		precedences.put( "(", 1 ); // method call
 		precedences.put( ".", 1 ); // object member
 		precedences.put( "#", 1 ); // static member
+		precedences.put( "new", 1 ); // object creation
 
 		precedences.put( "@++", 2 ); // postfix increment
 		precedences.put( "@--", 2 ); // postfix decrement
@@ -58,7 +59,6 @@ abstract public class Operator implements Expression
 		precedences.put( "!@", 3 ); // boolean NOT
 //		precedences.put( "(type)", 3 ); // type cast
 		precedences.put( "as", 3 ); // type cast TODO Same precedence as instanceof?
-//		precedences.put( "new", 3 ); // object creation
 
 		precedences.put( "*", 4 ); // multiplication
 		precedences.put( "/", 4 ); // division
@@ -250,6 +250,11 @@ abstract public class Operator implements Expression
 			case '!':
 				if( name.equals( "!@" ) )
 					return new Not( location, name, right );
+				break;
+
+			case 'n':
+				if( name.equals( "new" ) )
+					return new New( location, name, right );
 				break;
 		}
 		Assert.fail( "Unknown operator " + name );

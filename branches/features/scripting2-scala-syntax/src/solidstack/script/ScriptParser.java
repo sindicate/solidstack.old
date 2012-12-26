@@ -331,6 +331,12 @@ public class ScriptParser
 					return new Parenthesis( token2.getLocation(), new Function( "->", pars, block ) );
 				}
 
+				if( token.getValue().equals( "new" ) )
+				{
+					result = parseAtom();
+					return Operator.preOp( token.getLocation(), "new", result );
+				}
+
 				return new Identifier( token.getLocation(), token.getValue() );
 
 			case UNAOP:

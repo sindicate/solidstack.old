@@ -39,10 +39,13 @@ public class CallSignature
 	{
         int result = 1;
         result = 31 * result + this.type.hashCode();
-        result = 31 * result; if( this.name != null ) result += this.name.hashCode();
+        result *= 31; if( this.name != null ) result += this.name.hashCode();
         result = 31 * result + ( this.staticCall ? 1231 : 1237 );
         for( Class<?> type : this.argTypes )
-            result = 31 * result + type.hashCode();
+        {
+            result *= 31;
+            if( type != null ) result += type.hashCode();
+        }
         return result;
 	}
 

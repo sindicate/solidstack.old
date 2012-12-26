@@ -39,6 +39,40 @@ public class Apply extends Operator
 
 	public Object evaluate( ThreadContext thread )
 	{
+		if( this.left instanceof New )
+		{
+			Object left = Util.deref( ( (New)this.left ).evaluateForApply( thread ) );
+			if( !( left instanceof Class ) )
+				throw new ThrowException( "The new operator needs a Class argument, not a " + left.getClass().getName(), thread.cloneStack( getLocation() ) );
+
+			Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY;
+
+			Class<?> cls = (Class<?>)left;
+			try
+			{
+				thread.pushStack( getLocation() );
+				try
+				{
+					return Java.construct( cls, Util.toJavaParameters( pars, thread ) );
+				}
+				finally
+				{
+					thread.popStack();
+				}
+			}
+			catch( InvocationTargetException e )
+			{
+				Throwable t = e.getCause();
+				if( t instanceof Returning )
+					throw (Returning)t;
+				throw new JavaException( t, thread.cloneStack( getLocation() ) );
+			}
+			catch( Exception e )
+			{
+				throw new ThrowException( e.getMessage(), thread.cloneStack( getLocation() ) );
+			}
+		}
+
 		Object left;
 		if( this.left instanceof Member )
 			left = ( (Member)this.left ).evaluateForApply( thread );
@@ -131,7 +165,7 @@ public class Apply extends Operator
 		catch( Exception e )
 		{
 			throw new ThrowException( e.getMessage(), thread.cloneStack( getLocation() ) );
-//			throw new JavaException( e, thread.cloneStack( getLocation() ) );
+//			throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
 		}
 	}
 }
