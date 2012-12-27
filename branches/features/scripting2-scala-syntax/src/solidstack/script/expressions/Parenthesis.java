@@ -42,4 +42,11 @@ public class Parenthesis extends LocalizedExpression
 			return this.expression.evaluate( thread );
 		return null;
 	}
+
+	public void writeTo( StringBuilder out )
+	{
+		out.append( '(' );
+		this.expression.writeTo( out );
+		out.append( ')' );
+	}
 }

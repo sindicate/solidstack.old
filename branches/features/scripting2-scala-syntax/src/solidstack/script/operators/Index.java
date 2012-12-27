@@ -144,4 +144,13 @@ public class Index extends Operator
 			this.list.set( this.index, value );
 		}
 	}
+
+	@Override
+	public void writeTo( StringBuilder out )
+	{
+		this.left.writeTo( out );
+		out.append( '[' );
+		this.right.writeTo( out );
+		out.append( ']' );
+	}
 }

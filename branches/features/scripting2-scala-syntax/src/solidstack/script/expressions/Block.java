@@ -51,4 +51,11 @@ public class Block extends LocalizedExpression // TODO Is this localized needed?
 			thread.swapScope( old );
 		}
 	}
+
+	public void writeTo( StringBuilder out )
+	{
+		out.append( '{' );
+		this.expression.writeTo( out );
+		out.append( '}' );
+	}
 }

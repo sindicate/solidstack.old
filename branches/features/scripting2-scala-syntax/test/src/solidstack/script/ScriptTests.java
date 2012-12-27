@@ -711,7 +711,7 @@ public class ScriptTests extends Util
 	@Test
 	static public void prims() throws IOException
 	{
-		String script = readFile( "Prim's Minimum Spanning Tree.funny" );
+		String script = readFile( "Copy of Prim's Minimum Spanning Tree.funny" );
 		eval( script );
 	}
 

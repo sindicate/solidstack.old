@@ -33,4 +33,9 @@ public class EmptyMap extends LocalizedExpression
 	{
 		return new HashMap<Object, Object>();
 	}
+
+	public void writeTo( StringBuilder out )
+	{
+		out.append( "[:]" );
+	}
 }

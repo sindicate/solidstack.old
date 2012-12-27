@@ -58,4 +58,13 @@ public class StringExpression extends LocalizedExpression
 	{
 		return this.expressions.get( index );
 	}
+
+	public void writeTo( StringBuilder out )
+	{
+		for( Expression expression : this.expressions )
+		{
+			expression.writeTo( out );
+			out.append( '+' );
+		}
+	}
 }

@@ -35,7 +35,6 @@ abstract public class Operator implements Expression
 	// TODO Make private
 	protected String operator;
 	protected Expression left;
-	protected Expression middle;
 	protected Expression right;
 
 	static
@@ -558,5 +557,14 @@ abstract public class Operator implements Expression
 	public SourceLocation getLocation()
 	{
 		return this.left.getLocation();
+	}
+
+	public void writeTo( StringBuilder out )
+	{
+		if( this.left != null )
+			this.left.writeTo( out );
+		out.append( this.operator );
+		if( this.right != null )
+			this.right.writeTo( out );
 	}
 }

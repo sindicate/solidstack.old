@@ -35,4 +35,9 @@ public class IntegerConstant extends LocalizedExpression
 	{
 		return this.value;
 	}
+
+	public void writeTo( StringBuilder out )
+	{
+		out.append( this.value );
+	}
 }

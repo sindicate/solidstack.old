@@ -42,4 +42,9 @@ public class Identifier extends LocalizedExpression
 	{
 		return thread.getScope().getRef( this.symbol );
 	}
+
+	public void writeTo( StringBuilder out )
+	{
+		out.append( this.symbol );
+	}
 }

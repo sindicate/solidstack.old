@@ -43,4 +43,10 @@ public class SymbolExpression extends LocalizedExpression
 	{
 		return this.symbol;
 	}
+
+	public void writeTo( StringBuilder out )
+	{
+		out.append( ':' );
+		out.append( this.symbol );
+	}
 }

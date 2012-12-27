@@ -37,4 +37,6 @@ public interface Expression
 	 * @return The source location where this expression is encountered.
 	 */
 	SourceLocation getLocation();
+
+	void writeTo( StringBuilder out );
 }

@@ -52,4 +52,17 @@ public class If extends LocalizedExpression
 		}
 		return null;
 	}
+
+	public void writeTo( StringBuilder out )
+	{
+		out.append( "if(" );
+		this.condition.writeTo( out );
+		out.append( ')' );
+		this.left.writeTo( out );
+		if( this.right != null )
+		{
+			out.append( " else " );
+			this.right.writeTo( out );
+		}
+	}
 }

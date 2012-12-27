@@ -209,4 +209,14 @@ public class Apply extends Operator
 //			throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
 		}
 	}
+
+	@Override
+	public void writeTo( StringBuilder out )
+	{
+		this.left.writeTo( out );
+		out.append( '(' );
+		if( this.right != null )
+			this.right.writeTo( out );
+		out.append( ')' );
+	}
 }

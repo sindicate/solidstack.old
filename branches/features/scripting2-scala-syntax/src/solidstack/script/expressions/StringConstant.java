@@ -42,4 +42,10 @@ public class StringConstant extends LocalizedExpression
 	{
 		return this.value;
 	}
+
+	public void writeTo( StringBuilder out )
+	{
+		// TODO Escape the string literal
+		out.append( '"' ).append( this.value ).append( '"' );
+	}
 }

@@ -64,4 +64,15 @@ public class BuildTuple extends Operator
 	{
 		this.expressions.set( this.expressions.size() - 1, expression );
 	}
+
+	@Override
+	public void writeTo( StringBuilder out )
+	{
+		boolean first = true;
+		for( Expression expression : this.expressions )
+		{
+			if( first ) first = false; else out.append( ',' );
+			expression.writeTo( out );
+		}
+	}
 }

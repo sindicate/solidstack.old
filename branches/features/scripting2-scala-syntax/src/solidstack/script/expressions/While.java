@@ -42,4 +42,12 @@ public class While extends LocalizedExpression
 				result = this.left.evaluate( thread );
 		return result;
 	}
+
+	public void writeTo( StringBuilder out )
+	{
+		out.append( "while(" );
+		this.condition.writeTo( out );
+		out.append( ')' );
+		this.left.writeTo( out );
+	}
 }

@@ -78,4 +78,11 @@ public class List extends LocalizedExpression // TODO Is this localized needed?
 			list.add( Util.deref( result ) );
 		return list;
 	}
+
+	public void writeTo( StringBuilder out )
+	{
+		out.append( '[' );
+		this.expression.writeTo( out );
+		out.append( ']' );
+	}
 }

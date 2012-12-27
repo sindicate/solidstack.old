@@ -32,4 +32,9 @@ public class NullConstant extends LocalizedExpression
 	{
 		return null;
 	}
+
+	public void writeTo( StringBuilder out )
+	{
+		out.append( "null" );
+	}
 }

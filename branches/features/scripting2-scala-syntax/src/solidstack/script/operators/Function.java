@@ -83,4 +83,20 @@ public class Function extends Operator
 	{
 		return this.subScope;
 	}
+
+	@Override
+	public void writeTo( StringBuilder out )
+	{
+		this.left.writeTo( out );
+		out.append( this.operator );
+		if( this.subScope )
+			out.append( '{' );
+		else
+			out.append( '(' );
+		this.right.writeTo( out );
+		if( this.subScope )
+			out.append( '}' );
+		else
+			out.append( ')' );
+	}
 }
