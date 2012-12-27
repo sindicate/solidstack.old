@@ -138,7 +138,7 @@ abstract public class Operator implements Expression
 				if( name.equals( "-" ) )
 					return new Minus( name, left, right );
 				if( name.equals( "->" ) )
-					return new Label( name, left, right );
+					return new Associate( name, left, right );
 				break;
 
 			case '=':
@@ -208,7 +208,7 @@ abstract public class Operator implements Expression
 
 			case ':':
 				if( name.equals( ":" ) )
-					return new Label( name, left, right );
+					return new Associate( name, left, right );
 				break;
 
 			case ',':

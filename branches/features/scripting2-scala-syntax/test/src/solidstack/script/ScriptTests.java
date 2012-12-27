@@ -286,7 +286,7 @@ public class ScriptTests extends Util
 		test( "1.0.getClass()#valueOf( 1.1 as double )", new BigDecimal( "1.1" ) );
 		test( "1.00.valueOf( 1.1 as double )", new BigDecimal( "1.1" ) );
 		test( "o1.test( 1 == 1 )", context, 7 );
-		test( "o1.test( a -> 1, b -> 2 )", context, 8 );
+//		test( "o1.test( a = 1, b = 2 )", context, 8 ); TODO
 
 		TestObject2 o2 = new TestObject2();
 		context.set( "o2", o2 );
@@ -305,7 +305,7 @@ public class ScriptTests extends Util
 		test( "new c( \"string\", \"string\" ).value", context, 4 );
 		test( "new c( 1, 1 ).value", context, 6 );
 		test( "new c( 1 == 1 ).value", context, 7 );
-		test( "new c( a -> 1, b -> 2 ).value", context, 8 );
+//		test( "new c( a = 1, b = 2 ).value", context, 8 ); TODO
 
 		test( "c2 = class( \"solidstack.script.ScriptTests$TestObject2\" );", context, TestObject2.class );
 		test( "new c2( 1, 1 ).value", context, 1 );
@@ -419,7 +419,7 @@ public class ScriptTests extends Util
 		test( "list = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ].toArray(); list[ 3 ]", 4 );
 		test( "list = []; list.size()", 0 );
 
-//		test( "map = Map( 0 -> 1, 1 -> 2, 2 -> 3, 3 -> 4 ); map( 3 )", 4 ); TODO
+		test( "map = Map( 0 -> 1, 1 -> 2, 2 -> 3, 3 -> 4 ); map( 3 )", 4 );
 		test( "map = [ 0 -> 1, 1 -> 2, 2 -> 3, 3 -> 4 ]; map[ 3 ]", 4 );
 		test( "map = [ \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ]; map[ \"second\" ]", 2 );
 		test( "map = [ \"fir\" + \"st\" -> 1, \"second\" -> 2, \"third\" -> 3 ]; map[ \"first\" ]", 1 );
@@ -668,7 +668,7 @@ public class ScriptTests extends Util
 		fail( "++null", ScriptException.class, "Can't apply ++ to a null" );
 		fail( "null--", ScriptException.class, "Can't apply -- to a null" );
 		fail( "null++", ScriptException.class, "Can't apply ++ to a null" );
-		fail( "[ a: 1, 2 ]", ScriptException.class, "All items in a map must be labeled" );
+		fail( "[ a: 1, 2 ]", ScriptException.class, "All items in a map must be associations" );
 		fail( ":1", SourceException.class, "Symbol must be an identifier or a string" );
 		fail( "abs()", ScriptException.class, "abs() needs exactly one parameter" );
 		fail( "class()", ScriptException.class, "class() needs exactly one parameter" );

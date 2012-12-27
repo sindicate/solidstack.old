@@ -18,12 +18,12 @@ package solidstack.script.operators;
 
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
-import solidstack.script.objects.Labeled;
+import solidstack.script.objects.Assoc;
 
 
-public class Label extends Operator
+public class Associate extends Operator
 {
-	public Label( String name, Expression left, Expression right)
+	public Associate( String name, Expression left, Expression right)
 	{
 		super( name, left, right );
 	}
@@ -32,6 +32,6 @@ public class Label extends Operator
 	{
 		Object left = this.left.evaluate( thread );
 		Object right = this.right.evaluate( thread );
-		return new Labeled( left, right );
+		return new Assoc( left, right );
 	}
 }

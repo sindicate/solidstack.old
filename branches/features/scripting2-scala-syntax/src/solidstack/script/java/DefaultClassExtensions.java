@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import solidstack.script.objects.Labeled;
+import solidstack.script.objects.Assoc;
 
 
 /**
@@ -45,10 +45,10 @@ public class DefaultClassExtensions
 		return new ArrayList( Arrays.asList( objects ) );
 	}
 
-	static public Map static_apply( Map map, Labeled... entries )
+	static public Map static_apply( Map map, Assoc... entries )
 	{
 		HashMap result = new HashMap();
-		for( Labeled labeled : entries )
+		for( Assoc labeled : entries )
 			result.put( labeled.getLabel(), labeled.getValue() );
 		return result;
 	}
@@ -61,6 +61,11 @@ public class DefaultClassExtensions
 	static public Object apply( List list, int index )
 	{
 		return list.get( index );
+	}
+
+	static public Object apply( Map map, Object key )
+	{
+		return map.get( key );
 	}
 
 	static public List collect( Collection collection, Function function )

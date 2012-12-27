@@ -24,7 +24,7 @@ import java.util.Map;
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
-import solidstack.script.objects.Labeled;
+import solidstack.script.objects.Assoc;
 import solidstack.script.objects.Tuple;
 import solidstack.script.objects.Util;
 
@@ -50,26 +50,26 @@ public class List extends LocalizedExpression // TODO Is this localized needed?
 		{
 			java.util.List<?> list = ( (Tuple)result ).list();
 			Object object = list.get( 0 );
-			if( object instanceof Labeled )
+			if( object instanceof Assoc )
 			{
 				Map<Object, Object> map = new LinkedHashMap<Object, Object>( list.size() );
 				for( Object item : list )
 				{
-					if( !( item instanceof Labeled ) )
-						throw new ThrowException( "All items in a map must be labeled", thread.cloneStack( getLocation() ) );
-					Labeled labeled = (Labeled)item;
-					map.put( labeled.getLabel(), Util.deref( labeled.getValue() ) );
+					if( !( item instanceof Assoc ) )
+						throw new ThrowException( "All items in a map must be associations", thread.cloneStack( getLocation() ) );
+					Assoc assoc = (Assoc)item;
+					map.put( assoc.getLabel(), Util.deref( assoc.getValue() ) );
 				}
 				return map;
 			}
 			return Util.deref( list );
 		}
 
-		if( result instanceof Labeled )
+		if( result instanceof Assoc )
 		{
 			Map<Object, Object> map = new HashMap<Object, Object>();
-			Labeled labeled = (Labeled)result;
-			map.put( labeled.getLabel(), Util.deref( labeled.getValue() ) );
+			Assoc assoc = (Assoc)result;
+			map.put( assoc.getLabel(), Util.deref( assoc.getValue() ) );
 			return map;
 		}
 

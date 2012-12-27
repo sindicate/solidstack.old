@@ -18,12 +18,12 @@ package solidstack.script.objects;
 
 
 
-public class Labeled
+public class Assoc
 {
 	private Object label;
 	private Object value;
 
-	public Labeled( Object label, Object value )
+	public Assoc( Object label, Object value )
 	{
 		this.label = label;
 		this.value = value;
