@@ -498,7 +498,10 @@ public class ScriptTests extends Util
 	@Test
 	static public void test23()
 	{
-		test( "f = (a,b,c) => a+b+c; f( a -> 1, b -> 2, c -> 3 )", 6 );
+		test( "f = (a,b,c) => a; f( b = 1, c = 2, a = 3 )", 3 );
+		test( "f = (a,b,c) => a; f( a = 3 )", 3 );
+		test( "f = (a,b,c) => a; f( a = null )", null );
+		test( "f = () => (); f()", null );
 	}
 
 	@Test
@@ -691,9 +694,10 @@ public class ScriptTests extends Util
 		fail( "upper( 1 )", ScriptException.class, "upper() needs a string parameter" );
 		fail( "val()", ScriptException.class, "val() needs exactly one parameter" );
 		fail( "val( 1 )", ScriptException.class, "val() needs a variable identifier as parameter" );
-		fail( "f = ( a ) => (); f( b -> 1 )", ScriptException.class, "Parameter 'b' undefined" );
-		fail( "f = ( a, b ) => (); f( a -> 1, 2 )", ScriptException.class, "All parameters must be named" );
-		fail( "f = ( a ) => (); f( \"a\" -> 1 )", ScriptException.class, "Parameter must be named with a variable identifier" );
+		fail( "f = ( a ) => (); f( b = 1 )", ScriptException.class, "Parameter 'b' undefined" );
+		fail( "f = ( a, b ) => (); f( a = 1, 2 )", ScriptException.class, "All parameters must be named" );
+		fail( "f = ( a, b ) => (); f( 1, b = 2 )", ScriptException.class, "All parameters must be named" );
+		fail( "f = ( a ) => (); f( \"a\" = 1 )", ScriptException.class, "Parameter must be named with a variable identifier" );
 	}
 
 	@Test

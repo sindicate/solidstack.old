@@ -17,17 +17,24 @@
 package solidstack.script.operators;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import solidstack.script.JavaException;
 import solidstack.script.Returning;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
+import solidstack.script.expressions.Identifier;
 import solidstack.script.java.Java;
 import solidstack.script.objects.ClassMember;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Util;
+import solidstack.script.scopes.Symbol;
 
 
 public class Apply extends Operator
@@ -85,11 +92,43 @@ public class Apply extends Operator
 		if( left == null )
 			throw new ThrowException( "Function is null", thread.cloneStack( getLocation() ) );
 
-		Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY;
-
 		if( left instanceof FunctionObject )
 		{
 			FunctionObject f = (FunctionObject)left;
+			List<Expression> vals;
+			if( this.right instanceof BuildTuple )
+				vals = ( (BuildTuple)this.right ).getExpressions();
+			else if( this.right != null )
+				vals = Arrays.asList( this.right );
+			else
+				vals = Collections.emptyList();
+			if( !vals.isEmpty() && vals.get( 0 ) instanceof Assign )
+			{
+				Map<Symbol, Object> pars = new HashMap<Symbol, Object>();
+				for( Expression expression : vals )
+				{
+					if( !( expression instanceof Assign ) )
+						throw new ThrowException( "All parameters must be named", thread.cloneStack( expression.getLocation() ) );
+					Assign assign = (Assign)expression;
+					if( !( assign.left instanceof Identifier ) )
+						throw new ThrowException( "Parameter must be named with a variable identifier", thread.cloneStack( assign.left.getLocation() ) );
+					pars.put( ( (Identifier)assign.left ).getSymbol(), assign.right.evaluate( thread ) ); // TODO Error message
+				}
+				thread.pushStack( getLocation() );
+				try
+				{
+					return f.call( thread, pars );
+				}
+				finally
+				{
+					thread.popStack();
+				}
+			}
+
+			for( Expression expression : vals )
+				if( expression instanceof Assign )
+					throw new ThrowException( "All parameters must be named", thread.cloneStack( expression.getLocation() ) );
+			Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY;
 			thread.pushStack( getLocation() );
 			try
 			{
@@ -100,6 +139,8 @@ public class Apply extends Operator
 				thread.popStack();
 			}
 		}
+
+		Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY;
 
 		try
 		{
