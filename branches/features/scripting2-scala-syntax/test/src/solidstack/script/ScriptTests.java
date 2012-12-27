@@ -411,10 +411,15 @@ public class ScriptTests extends Util
 		Assert.assertEquals( Java.forName( "int[][][][]", loader ), int[][][][].class );
 		Assert.assertEquals( Java.forName( "int[][]", loader ), int[][].class );
 
+		// TODO Add Array
+		// TODO Remove [ ] syntax
 		test( "list = List( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ); list( 3 )", 4 );
+		test( "list = LinkedList( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ); list( 3 )", 4 );
+		test( "set = Set( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ); set.contains( 3 )", true );
 		test( "list = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ].toArray(); list[ 3 ]", 4 );
 		test( "list = []; list.size()", 0 );
 
+//		test( "map = Map( 0 -> 1, 1 -> 2, 2 -> 3, 3 -> 4 ); map( 3 )", 4 ); TODO
 		test( "map = [ 0 -> 1, 1 -> 2, 2 -> 3, 3 -> 4 ]; map[ 3 ]", 4 );
 		test( "map = [ \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ]; map[ \"second\" ]", 2 );
 		test( "map = [ \"fir\" + \"st\" -> 1, \"second\" -> 2, \"third\" -> 3 ]; map[ \"first\" ]", 1 );

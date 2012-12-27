@@ -19,9 +19,15 @@ package solidstack.script.java;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+
+import solidstack.script.objects.Labeled;
 
 
 /**
@@ -29,9 +35,27 @@ import java.util.Map.Entry;
  */
 public class DefaultClassExtensions
 {
-	static public List apply( Class<List> cls, Object... objects )
+	static public List static_apply( LinkedList list, Object... objects )
+	{
+		return new LinkedList( Arrays.asList( objects ) );
+	}
+
+	static public List static_apply( List list, Object... objects )
 	{
 		return new ArrayList( Arrays.asList( objects ) );
+	}
+
+	static public Map static_apply( Map map, Labeled... entries )
+	{
+		HashMap result = new HashMap();
+		for( Labeled labeled : entries )
+			result.put( labeled.getLabel(), labeled.getValue() );
+		return result;
+	}
+
+	static public Set static_apply( Set set, Object... objects )
+	{
+		return new HashSet( Arrays.asList( objects ) );
 	}
 
 	static public Object apply( List list, int index )

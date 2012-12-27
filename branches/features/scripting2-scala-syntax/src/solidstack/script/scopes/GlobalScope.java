@@ -18,7 +18,10 @@ package solidstack.script.scopes;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import solidstack.script.functions.Abs;
 import solidstack.script.functions.Call;
@@ -71,6 +74,8 @@ public class GlobalScope extends Scope
 		val( Symbol.forString( "float" ), float.class );
 		val( Symbol.forString( "double" ), double.class );
 
+		// java.lang
+
 		val( Symbol.forString( "Boolean" ), Boolean.class );
 		val( Symbol.forString( "Byte" ), Byte.class );
 		val( Symbol.forString( "Character" ), Character.class );
@@ -79,13 +84,18 @@ public class GlobalScope extends Scope
 		val( Symbol.forString( "Long" ), Long.class );
 		val( Symbol.forString( "Float" ), Float.class );
 		val( Symbol.forString( "Double" ), Double.class );
+		val( Symbol.forString( "String" ), String.class );
+
+		// java.math
 
 		val( Symbol.forString( "BigInteger" ), BigInteger.class );
 		val( Symbol.forString( "BigDecimal" ), BigDecimal.class );
-		val( Symbol.forString( "String" ), String.class );
 
+		// java.util
+
+		val( Symbol.forString( "LinkedList" ), LinkedList.class );
 		val( Symbol.forString( "List" ), List.class );
-		val( Symbol.forString( "Set" ), List.class );
-		val( Symbol.forString( "Map" ), List.class );
+		val( Symbol.forString( "Map" ), Map.class );
+		val( Symbol.forString( "Set" ), Set.class );
 	}
 }

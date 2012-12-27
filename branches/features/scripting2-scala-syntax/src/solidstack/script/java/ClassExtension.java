@@ -18,8 +18,6 @@ package solidstack.script.java;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -39,23 +37,17 @@ public class ClassExtension
 		for( Method method : DefaultClassExtensions.class.getMethods() )
 			if( ( method.getModifiers() & Modifier.STATIC ) != 0 ) // Only statics
 			{
-				Type[] types = method.getGenericParameterTypes();
-				if( types.length != 0 ) // Only methods with at least one argument
+				Class<?>[] types = method.getParameterTypes();
+				if( types.length > 0 ) // Need at least one argument
 				{
-					String name = method.getName().indexOf( '_' ) == 0 ? method.getName().substring( 1 ) : method.getName(); // Remove leading _ from name
-					Type first = types[ 0 ];
-					if( first instanceof Class )
-						forClass( (Class<?>)first ).addMethod( name, method );
-					else if( first instanceof ParameterizedType )
+					String name = method.getName();
+					if( name.startsWith( "static_" ) )
+						forClass( types[ 0 ] ).addStaticMethod( name.substring( 7 ), method );
+					else
 					{
-						Type raw = ( (ParameterizedType)first ).getRawType();
-						if( raw == Class.class ) // Defines a static method on a Class
-						{
-							Type type = ( (ParameterizedType)first ).getActualTypeArguments()[ 0 ];
-							forClass( (Class<?>)type ).addStaticMethod( name, method );
-						}
-						else
-							forClass( (Class<?>)raw ).addMethod( name, method );
+						if( name.startsWith( "_" ) )
+							name = name.substring( 1 ); // Remove leading _ from name
+						forClass( types[ 0 ] ).addMethod( name, method );
 					}
 				}
 			}
