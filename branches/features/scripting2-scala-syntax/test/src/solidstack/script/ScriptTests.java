@@ -169,7 +169,7 @@ public class ScriptTests extends Util
 		test( "\"sinterklaas\".length()", 11 );
 		test( "\"sinterklaas\".size()", 11 );
 		test( "defined( a )", false );
-		test( "defined( def( a ) )", true );
+		test( "defined( var a )", true );
 		test( "a = null; defined( a )", true );
 		test( "if( a ) a", null ); // TODO Ponder over this once more
 		test( "a = null; a && a", null );
@@ -340,24 +340,24 @@ public class ScriptTests extends Util
 	@Test
 	static public void test16()
 	{
-		test( "def( a ) = 1;", 1 );
+		test( "var a = 1;", 1 );
 
 		test( "fun( ; a = 1 )(); a", 1 ); // The function has no context of its own
 		test( "a = 1; fun( a; a++ )( a ); a;", 1 );
-		test( "a = 1; fun( ; def( a ) = 2 )(); a", 2 ); // The function has no context of its own
+		test( "a = 1; fun( ; var a = 2 )(); a", 2 ); // The function has no context of its own
 //		test( "a = 1; fun( ; val( a ) = 2 )(); a", 2 ); // The function has no context of its own
-		test( "a = 1; fun{ ; def( a ) = 2 }(); a", 1 ); // The function has its own context
+		test( "a = 1; fun{ ; var a = 2 }(); a", 1 ); // The function has its own context
 
 		test( "( a = 1 ); a", 1 ); // The block has no context of its own
-		test( "a = 1; ( def( a ) = 2 ); a", 2 ); // The block has no context of its own
+		test( "a = 1; ( var a = 2 ); a", 2 ); // The block has no context of its own
 //		test( "a = 1; fun( ; val( a ) = 2 )(); a", 2 ); // The function has no context of its own
-		test( "a = 1; { def( a ) = 2 }; a", 1 ); // The block has its own context
+		test( "a = 1; { var a = 2 }; a", 1 ); // The block has its own context
 
 		test( "( () => a = 1 )(); a", 1 ); // The function has no context of its own
 		test( "a = 1; ( a => a++ )( a ); a;", 1 );
-		test( "a = 1; ( () => def( a ) = 2 )(); a", 2 ); // The function has no context of its own
+		test( "a = 1; ( () => var a = 2 )(); a", 2 ); // The function has no context of its own
 //		test( "a = 1; fun( ; val( a ) = 2 )(); a", 2 ); // The function has no context of its own
-		test( "a = 1; f = () => { def( a ) = 2 }; f(); a", 1 ); // The function has its own context
+		test( "a = 1; f = () => { var a = 2 }; f(); a", 1 ); // The function has its own context
 	}
 
 	@Test
@@ -382,14 +382,7 @@ public class ScriptTests extends Util
 	@Test
 	static public void test19()
 	{
-		try
-		{
-			eval( "o = class( \"solidstack.script.ScriptTests$TestObject3\" )(); o.throwException()" );
-		}
-		catch( Exception e )
-		{
-			e.printStackTrace( System.out );
-		}
+		fail( "o = new ( class( \"solidstack.script.ScriptTests$TestObject3\" ) )(); o.throwException()", JavaException.class, "test exception" );
 	}
 
 	@Test
@@ -412,24 +405,22 @@ public class ScriptTests extends Util
 		Assert.assertEquals( Java.forName( "int[][]", loader ), int[][].class );
 
 		// TODO Add Array
-		// TODO Remove [ ] syntax
 		test( "list = List( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ); list( 3 )", 4 );
 		test( "list = LinkedList( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ); list( 3 )", 4 );
 		test( "set = Set( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ); set.contains( 3 )", true );
-		test( "list = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ].toArray(); list[ 3 ]", 4 );
-		test( "list = []; list.size()", 0 );
+		test( "array = List( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ).toArray(); array( 3 )", 4 );
+		test( "list = List(); list.size()", 0 );
 
 		test( "map = Map( 0 -> 1, 1 -> 2, 2 -> 3, 3 -> 4 ); map( 3 )", 4 );
-		test( "map = [ 0 -> 1, 1 -> 2, 2 -> 3, 3 -> 4 ]; map[ 3 ]", 4 );
-		test( "map = [ \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ]; map[ \"second\" ]", 2 );
-		test( "map = [ \"fir\" + \"st\" -> 1, \"second\" -> 2, \"third\" -> 3 ]; map[ \"first\" ]", 1 );
-		test( "map = [ \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ]; map[ \"fourth\" ]", null ); // TODO Undefined? Then we assign to it too.
-		test( "map = scope( [ \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ] ); map.third", 3 );
-		test( "map = scope( [ \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ] ); map.fourth", null ); // TODO What about undefined?
-		test( "map = [:]; s = scope( map ); s.first = 1; map[ \"first\" ]", 1 );
-		test( "map = [:]; map[ \"fourth\" ]", null );
-		test( "map = [:]; map.size()", 0 );
-		test( "map = [:]; map[ \"third\" ] = 3; map[ \"third\" ]", 3 );
+		test( "map = Map( \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ); map( \"second\" )", 2 );
+		test( "map = Map( \"fir\" + \"st\" -> 1, \"second\" -> 2, \"third\" -> 3 ); map( \"first\" )", 1 );
+		test( "map = Map( \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ); map( \"fourth\" )", null ); // TODO Undefined? Then we assign to it too.
+		test( "map = scope( Map( \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ) ); map.third", 3 );
+		test( "map = scope( Map( \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ) ); map.fourth", null ); // TODO What about undefined?
+		test( "map = Map(); s = scope( map ); s.first = 1; map( \"first\" )", 1 );
+		test( "map = Map(); map( \"fourth\" )", null );
+		test( "map = Map(); map.size()", 0 );
+		test( "map = Map(); map( \"third\" ) = 3; map( \"third\" )", 3 );
 
 		test( "array = class( \"java.lang.reflect.Array\" )#newInstance( class( \"java.lang.String\" ), 10 ); array.size()", 10 );
 		test( "array = class( \"java.lang.reflect.Array\" )#newInstance( class( \"int\" ), 10 ); array.size()", 10 );
@@ -437,12 +428,12 @@ public class ScriptTests extends Util
 		eval( "fun( a; a )( null )" );
 		eval( "fun( a; a )( if( false; 1 ) )" );
 		eval( "fun( a; a )( while( false ) 1 )" );
-		eval( "fun( a; a )( [].each( fun( a; () ) ) )" );
+		eval( "fun( a; a )( List().each( fun( a; () ) ) )" );
 
 		eval( "( a => a )( null )" );
 		eval( "( a => a )( if( false; 1 ) )" );
 		eval( "( a => a )( while( false ) 1 )" );
-		eval( "( a => a )( [].each( a => () ) )" );
+		eval( "( a => a )( List().each( a => () ) )" );
 	}
 
 	@Test
@@ -466,7 +457,7 @@ public class ScriptTests extends Util
 		test( "s = \"string\"; c = x=>s.charAt(x); c(2)", 'r' );
 		test( "f = () => (1,2,3); (a,b,c) = f(); a+b+c;", 6 );
 
-		test( "l = [ 1, 2, 3 ]; l.each( i => println( i ) )", 3 );
+		test( "l = List( 1, 2, 3 ); l.each( i => println( i ) )", 3 );
 	}
 
 	@Test
@@ -478,18 +469,18 @@ public class ScriptTests extends Util
 		test( "f = ( a, *b ) => b.size(); f( 1, 2, 3 )", 2 );
 		test( "f = ( a, *b ) => a; g = ( a, *b ) => f( *b, a ); g( 1, 2, 3 )", 2 );
 		test( "f = *a => a.size(); f( 1, 2, 3 );", 3 );
-		test( "l = [1,2,3]; f = (a,b,c) => a+b+c; f(*l);", 6 );
+		test( "l = List(1,2,3); f = (a,b,c) => a+b+c; f(*l);", 6 );
 
-		test( "( a, b, c ) = *[ 1, 2, 3 ]; a + b + c", 6 );
-		test( "a = [ 1, 2, 3 ]; ( b, c, d ) = *a; b + c + d", 6 );
+		test( "( a, b, c ) = *List( 1, 2, 3 ); a + b + c", 6 );
+		test( "a = List( 1, 2, 3 ); ( b, c, d ) = *a; b + c + d", 6 );
 		test( "( 1, 2, 3 ).list().size()", 3 );
 //		test( "*a = ( 1, 2, 3 ); a.size()", 3 ); // TODO
 //		test( "( a, *b ) = ( 1, 2, 3 )", 3 ); TODO
 //		test( "( a, *b ) = ( *[ 1, 2 ], 3 )", 3 ); TODO
-		test( "a = [ 1, [ 2, 3, 4 ], 5 ]; ( (a,b,c) => a+b+c )( *a[ 1 ] )", 9 );
+		test( "a = List( 1, List( 2, 3, 4 ), 5 ); ( (a,b,c) => a+b+c )( *a( 1 ) )", 9 );
 
 		fail( "f = a => (); f( 1, 2, 3 );", ScriptException.class, "Too many parameters" );
-		fail( "a = *[ 1, 2, 3 ]; ( b, c, d ) = a; b + c + d", ScriptException.class, "Can't assign tuples to variables" );
+		fail( "a = *List( 1, 2, 3 ); ( b, c, d ) = a; b + c + d", ScriptException.class, "Can't assign tuples to variables" );
 		fail( "a = ( 1, 2, 3 ); ( b, c, d ) = a; b + c + d", ScriptException.class, "Can't assign tuples to variables" );
 
 		// TODO Key value tuples for named parameters?
@@ -533,10 +524,10 @@ public class ScriptTests extends Util
 		test( "true as boolean", true );
 		test( "\"\" as boolean", false );
 		test( "\"x\" as boolean", true );
-		test( "[] as boolean", false );
-		test( "[1] as boolean", true );
-		test( "[:] as boolean", false );
-		test( "[1 ->1] as boolean", true );
+		test( "List() as boolean", false );
+		test( "List(1) as boolean", true );
+		test( "Map() as boolean", false );
+		test( "Map(1->1) as boolean", true );
 
 		test( "1 as byte", (byte)1 );
 		test( "a = 1; a as byte", (byte)1 );
@@ -668,13 +659,13 @@ public class ScriptTests extends Util
 		fail( "++null", ScriptException.class, "Can't apply ++ to a null" );
 		fail( "null--", ScriptException.class, "Can't apply -- to a null" );
 		fail( "null++", ScriptException.class, "Can't apply ++ to a null" );
-		fail( "[ a: 1, 2 ]", ScriptException.class, "All items in a map must be associations" );
+		fail( "Map( a -> 1, 2 )", ScriptException.class, "No such method: static java.util.Map.apply() is applicable" );
 		fail( ":1", SourceException.class, "Symbol must be an identifier or a string" );
 		fail( "abs()", ScriptException.class, "abs() needs exactly one parameter" );
 		fail( "class()", ScriptException.class, "class() needs exactly one parameter" );
 		fail( "class( 1 )", ScriptException.class, "class() needs a string parameter" );
-		fail( "def()", ScriptException.class, "def() needs exactly one parameter" );
-		fail( "def( 1 )", ScriptException.class, "def() needs a variable identifier as parameter" );
+		fail( "var", ScriptException.class, "def() needs exactly one parameter" );
+		fail( "var 1", ScriptException.class, "def() needs a variable identifier as parameter" );
 		fail( "defined()", ScriptException.class, "defined() needs exactly one parameter" );
 		fail( "defined( 1 )", ScriptException.class, "defined() needs a variable identifier as parameter" );
 		fail( "length()", ScriptException.class, "length() needs exactly one parameter" );
@@ -704,14 +695,14 @@ public class ScriptTests extends Util
 	static public void test28()
 	{
 		test( "if( true; return( true ) ); return( false )", true );
-		test( "l = [ 1, 2, 3 ]; l.each( i => return( i ) ); 4", 1 );
-		test( "l = [ 1, 2, 3 ]; f = i => return( i ); l.each( f ); 4", 4 );
+		test( "l = List( 1, 2, 3 ); l.each( i => return( i ) ); 4", 1 );
+		test( "l = List( 1, 2, 3 ); f = i => return( i ); l.each( f ); 4", 4 );
 	}
 
 	@Test
 	static public void prims() throws IOException
 	{
-		String script = readFile( "Copy of Prim's Minimum Spanning Tree.funny" );
+		String script = readFile( "Prim's Minimum Spanning Tree.funny" );
 		eval( script );
 	}
 

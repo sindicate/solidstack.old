@@ -25,7 +25,7 @@ public class New extends Operator
 {
 	private SourceLocation location;
 
-	public New( SourceLocation location, String name, Expression right)
+	public New( SourceLocation location, String name, Expression right )
 	{
 		super( name, null, right );
 

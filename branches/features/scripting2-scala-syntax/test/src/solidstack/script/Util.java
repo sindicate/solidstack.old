@@ -34,10 +34,9 @@ public class Util
 	static public Object eval( String expression, Scope context )
 	{
 		Script script = Script.compile( expression );
-		StringBuilder buffer = new StringBuilder();
-		script.writeTo( buffer );
-		System.out.println( buffer );
-//		String dump = new Dumper().dump( script );
+//		StringBuilder buffer = new StringBuilder();
+//		script.writeTo( buffer );
+//		System.out.println( buffer );
 		return script.eval( context );
 	}
 

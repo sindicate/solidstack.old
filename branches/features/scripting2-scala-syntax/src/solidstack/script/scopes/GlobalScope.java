@@ -51,7 +51,7 @@ public class GlobalScope extends Scope
 		val( Symbol.forString( "abs" ), new Abs() );
 		val( Symbol.forString( "call" ), new Call() );
 		val( Symbol.forString( "class" ), new Class() );
-		val( Symbol.forString( "def" ), new Def() );
+		val( Symbol.forString( "def" ), new Def() ); // TODO Remove
 		val( Symbol.forString( "defined" ), new Defined() );
 		val( Symbol.forString( "length" ), new Length() );
 		val( Symbol.forString( "load" ), new Load() );
@@ -63,7 +63,7 @@ public class GlobalScope extends Scope
 		val( Symbol.forString( "substr" ), new Substr() );
 		val( Symbol.forString( "throw" ), new Throw() );
 		val( Symbol.forString( "upper" ), new Upper() );
-		val( Symbol.forString( "val" ), new Val() );
+		val( Symbol.forString( "val" ), new Val() ); // TODO Remove
 
 		val( Symbol.forString( "boolean" ), boolean.class );
 		val( Symbol.forString( "byte" ), byte.class );

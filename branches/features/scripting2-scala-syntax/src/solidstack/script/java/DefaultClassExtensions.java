@@ -68,6 +68,11 @@ public class DefaultClassExtensions
 		return map.get( key );
 	}
 
+	static public Object apply( Object[] array, int index )
+	{
+		return array[ index ];
+	}
+
 	static public List collect( Collection collection, Function function )
 	{
 		List result = new ArrayList(collection.size());
@@ -166,5 +171,31 @@ public class DefaultClassExtensions
 	static public int size( String string )
 	{
 		return string.length();
+	}
+
+	static public Object update( List list, int index, Object value )
+	{
+		if( index >= list.size() )
+		{
+			// TODO Is this what we want?
+			while( index > list.size() )
+				list.add( null );
+			list.add( value );
+			return value;
+		}
+		list.set( index, value );
+		return value;
+	}
+
+	static public Object update( Map map, Object key, Object value )
+	{
+		map.put( key, value );
+		return value;
+	}
+
+	static public Object update( Object[] array, int index, Object value )
+	{
+		array[ index ] = value;
+		return value;
 	}
 }

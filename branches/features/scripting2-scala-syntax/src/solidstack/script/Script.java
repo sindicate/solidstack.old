@@ -118,6 +118,7 @@ public class Script
 	// TODO WriteTo should actually be used to write the output of the script execution.
 	public void writeTo( StringBuilder out )
 	{
-		this.expression.writeTo( out );
+		if( this.expression != null )
+			this.expression.writeTo( out );
 	}
 }

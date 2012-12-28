@@ -32,7 +32,7 @@ import solidstack.script.scopes.Symbol;
 
 public class Member extends Operator
 {
-	public Member( String name, Expression left, Expression right)
+	public Member( String name, Expression left, Expression right )
 	{
 		super( name, left, right );
 	}

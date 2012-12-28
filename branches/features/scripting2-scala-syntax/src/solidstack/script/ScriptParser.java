@@ -40,6 +40,7 @@ import solidstack.script.expressions.StringConstant;
 import solidstack.script.expressions.StringExpression;
 import solidstack.script.expressions.SymbolExpression;
 import solidstack.script.expressions.While;
+import solidstack.script.operators.Apply;
 import solidstack.script.operators.Function;
 import solidstack.script.operators.Operator;
 import solidstack.script.operators.Spread;
@@ -332,10 +333,10 @@ public class ScriptParser
 				}
 
 				if( token.getValue().equals( "new" ) )
-				{
-					result = parseAtom();
-					return Operator.preOp( token.getLocation(), "new", result );
-				}
+					return Operator.preOp( token.getLocation(), "new", parseAtom() );
+
+				if( token.getValue().equals( "var" ) )
+					return new Apply( "(", new Identifier( token.getLocation(), "def" ), parseAtom() );
 
 				return new Identifier( token.getLocation(), token.getValue() );
 

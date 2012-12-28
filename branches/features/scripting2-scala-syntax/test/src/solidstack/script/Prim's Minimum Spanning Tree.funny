@@ -33,10 +33,10 @@ prim = ( graph, start ) =>
 	queue = Map();
     parent = List();
  
- 	graph.eachKey( k => queue[ k ] = INFINITY );
+ 	graph.eachKey( k => queue( k ) = INFINITY );
  
- 	queue[ start ] = 0;
- 	parent[ start ] = null;
+ 	queue( start ) = 0;
+ 	parent( start ) = null;
  
  	while( queue )
  	{
@@ -47,8 +47,8 @@ prim = ( graph, start ) =>
 		graph( minKey ).each( ( v, weight ) =>
             if( weight > 0 && queue.containsKey( v ) && weight < queue( v ) )
             (
-                parent[ v ] = minKey;
-                queue[ v ] = weight;
+                parent( v ) = minKey;
+                queue( v ) = weight;
             )
 		);
  

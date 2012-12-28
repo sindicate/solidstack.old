@@ -20,6 +20,7 @@ import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
+import solidstack.script.expressions.Identifier;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Tuple;
 import solidstack.script.objects.Util;
@@ -35,6 +36,23 @@ public class Assign extends Operator
 
 	public Object evaluate( ThreadContext thread )
 	{
+		if( this.left instanceof Apply )
+		{
+			// TODO This is ugly
+			Apply apply = (Apply)this.left;
+			Expression object = apply.left;
+			if( !( object instanceof Identifier && ( (Identifier)object ).getSymbol().toString().equals( "def" ) ) )
+			{
+				Expression pars = apply.right;
+				if( !( pars instanceof BuildTuple ) ) // TODO And what if it is?
+				{
+					Member update = new Member( ".", object, new Identifier( getLocation(), "update" ) );
+					BuildTuple par = new BuildTuple( ",", pars, this.right );
+					return new Apply( "(", update, par ).evaluate( thread );
+				}
+			}
+		}
+
 		Object left = this.left.evaluate( thread );
 		Object right = Util.deref( this.right.evaluate( thread ) );
 

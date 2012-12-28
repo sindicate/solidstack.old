@@ -8,6 +8,6 @@ sql.eachResult( "SELECT * FROM SYS.SYSTABLES", ( result =>
 tables = sql.list( "SELECT * FROM SYS.SYSTABLES" );
 if( !tables ) throw( "Expected some tables" );
 
-tables.each( table => println( table[ "tablename" ] ) );
+tables.each( table => println( table( "tablename" ) ) );
 
-tables.collect( t => t[ "tablename" ] ).each( t => println( t ) );
+tables.collect( t => t( "tablename" ) ).each( t => println( t ) );
