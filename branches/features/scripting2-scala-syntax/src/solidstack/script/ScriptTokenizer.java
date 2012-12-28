@@ -17,7 +17,9 @@
 package solidstack.script;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import solidstack.io.PushbackReader;
 import solidstack.io.SourceException;
@@ -34,6 +36,23 @@ import solidstack.script.ScriptTokenizer.Token.TYPE;
  */
 public class ScriptTokenizer
 {
+	static private final String[] KEYWORD_ARRAY = new String[] {
+		"abstract", "case", "catch", "class", "def", "do", "else", "extends", "false", "final",
+		"finally", "for", "forSome", "if", "implicit", "import", "lazy", "match", "new", "null",
+		"object", "override", "package", "private", "protected", "return", "sealed", "super", "this", "throw",
+		"trait", "try", "true", "type", "val", "var", "while", "with", "yield",
+//		"_", ":", "=", "=>", "<-", "<:", "<%", ">:", "#", "@"
+	};
+	
+	static public final Set<String> KEYWORDS;
+	
+	static
+	{
+		KEYWORDS = new HashSet<String>();
+		for( String keyword : KEYWORD_ARRAY )
+			KEYWORDS.add( keyword );
+	}
+
 	/**
 	 * The reader used to read from and push back characters.
 	 */
