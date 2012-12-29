@@ -38,10 +38,10 @@ with escaped newline" );
 			i = 0;
 			while( i < 10 ) ( // This is a comment
 				println( i );
-				i++
+				i = i + 1
 			);
 			// Comment at the end''',
-			9
+			10
 		);
 	}
 
@@ -50,7 +50,7 @@ with escaped newline" );
 	{
 		test( '''
 			i = 0;
-			f = fun( ; println( i ); ++i );
+			f = fun( ; println( i ); i = i + 1 );
 			while( i < 10 ) f();
 			println( "total: " + ( while( i < 20 ) f() ) + " numbers" );
 			''',

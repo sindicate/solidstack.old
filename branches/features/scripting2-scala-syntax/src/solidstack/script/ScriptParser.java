@@ -95,7 +95,7 @@ public class ScriptParser
 		while( true )
 		{
 			Expression expression = parseExpression();
-			Token last = this.tokenizer.lastToken();
+			Token last = this.tokenizer.last();
 			if( last.getType() == TYPE.EOF || last.getType() == this.stop )
 			{
 				if( expression != null )
@@ -134,7 +134,9 @@ public class ScriptParser
 				case SEMICOLON:
 					return result;
 
-				case BINOP:
+				case OPERATOR:
+				case COMMA:
+				case DOT:
 					Expression right = parseAtom();
 					Assert.notNull( right );
 					result = appendOperator( result, token.getValue(), right );
@@ -146,10 +148,6 @@ public class ScriptParser
 					Expression parameters = parse();
 					swapStops( oldStop );
 					result = appendOperator( result, token.getValue(), parameters );
-					break;
-
-				case UNAOP:
-					result = appendOperator( result, "@" + token.getValue(), null );
 					break;
 
 				case IDENTIFIER:
@@ -217,7 +215,7 @@ public class ScriptParser
 			case DECIMAL:
 				return new DecimalConstant( token.getLocation(), new BigDecimal( token.getValue() ) );
 
-			case INT:
+			case INTEGER:
 				return new IntegerConstant( token.getLocation(), Integer.valueOf( token.getValue() ) );
 
 			case STRING:
@@ -249,13 +247,12 @@ public class ScriptParser
 				swapStops( oldStop );
 				return new solidstack.script.expressions.List( token.getLocation(), result );
 
-			case BINOP:
+			case OPERATOR:
 				// No need to consider precedences here. Only one atom is parsed.
 				if( token.getValue().equals( "-" ) )
-				{
-					result = parseAtom(); // TODO Pre-apply
-					return Operator.preOp( token.getLocation(), "-@", result );
-				}
+					return Operator.preOp( token.getLocation(), "-@", parseAtom() ); // TODO Pre-apply
+				if( token.getValue().equals( "!" ) )
+					return Operator.preOp( token.getLocation(), "!@", parseAtom() ); // TODO Pre-apply
 				if( token.getValue().equals( "+" ) )
 					return parseAtom(); // TODO Is this correct, just ignore the operator?
 				if( token.getValue().equals( "*" ) )
@@ -292,7 +289,7 @@ public class ScriptParser
 						right = parseExpression();
 					else
 						this.tokenizer.push();
-					token2 = this.tokenizer.lastToken();
+					token2 = this.tokenizer.last();
 					Assert.isTrue( token2.getType() == this.stop || token2.getType() == TYPE.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
 					this.tokenizer.push();
 					return new If( token.getLocation(), expressions, left, right );
@@ -307,7 +304,7 @@ public class ScriptParser
 					Expressions expressions = parseExpressions();
 					swapStops( oldStop );
 					Expression left = parseExpression();
-					token2 = this.tokenizer.lastToken();
+					token2 = this.tokenizer.last();
 					Assert.isTrue( token2.getType() == this.stop || token2.getType() == TYPE.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
 					this.tokenizer.push();
 					return new While( token.getLocation(), expressions, left );
@@ -339,10 +336,6 @@ public class ScriptParser
 					return new Apply( "(", new Identifier( token.getLocation(), "def" ), parseAtom() );
 
 				return new Identifier( token.getLocation(), token.getValue() );
-
-			case UNAOP:
-				result = parseAtom();
-				return Operator.preOp( token.getLocation(), token.getValue() + "@", result ); // TODO Pre-apply
 
 			default:
 				throw new SourceException( "Unexpected token " + token, token.getLocation() );

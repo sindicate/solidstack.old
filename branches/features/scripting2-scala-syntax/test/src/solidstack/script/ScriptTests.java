@@ -232,16 +232,16 @@ public class ScriptTests extends Util
 	static public void test11()
 	{
 		test( "( 2; 3 )", 3 );
-		test( "a = 1; a + a + a++", 3 );
-		test( "a = 1; a + a + ++a", 4 );
+//		test( "a = 1; a + a + a++", 3 );
+//		test( "a = 1; a + a + ++a", 4 );
 		// TODO If should stop at the comma just as with the ;
-		test( "a = 0; ( b, c ) = if( true ) ( a++, a++ )", Arrays.asList( 0, 1 ) );
+		test( "a = 0; ( b, c ) = if( true ) ( a = a + 1, a = a + 1 )", Arrays.asList( 1, 2 ) );
 		test( "if( a = 1, b = a, b ) 3 else 4", 3 );
 		test( "if( a = null, b = a, b ) 3 else 4", 4 );
-		test( "a = 0; ( b, c ) = if( false ) ( a++, a++ ) else ( ++a, ++a )", Arrays.asList( 1, 2 ) );
-		test( "i = 0; while( i < 10 ) print( i++ )", 9 );
-		test( "i = 0; while( i++ < 10 ) print( i )", 10 );
-		test( "i = 0; while( i++ < 10 && print( i ) ) ()", null ); // TODO Is there an example where result of condition should be returned?
+		test( "a = 0; ( b, c ) = if( false ) ( 1, 2 ) else ( 3, 4 )", Arrays.asList( 3, 4 ) );
+//		test( "i = 0; while( i < 10 ) print( i++ )", 9 );
+		test( "i = 0; while( i < 10 ) ( print( i ); i = i + 1 )", 10 );
+//		test( "i = 0; while( i < 10 && print( i = i + 1 ) ) ()", null ); // TODO Is there an example where result of condition should be returned?
 	}
 
 	@Test
@@ -343,7 +343,7 @@ public class ScriptTests extends Util
 		test( "var a = 1;", 1 );
 
 		test( "fun( ; a = 1 )(); a", 1 ); // The function has no context of its own
-		test( "a = 1; fun( a; a++ )( a ); a;", 1 );
+		test( "a = 1; fun( a; a = 2 )( a ); a;", 1 );
 		test( "a = 1; fun( ; var a = 2 )(); a", 2 ); // The function has no context of its own
 //		test( "a = 1; fun( ; val( a ) = 2 )(); a", 2 ); // The function has no context of its own
 		test( "a = 1; fun{ ; var a = 2 }(); a", 1 ); // The function has its own context
@@ -354,7 +354,7 @@ public class ScriptTests extends Util
 		test( "a = 1; { var a = 2 }; a", 1 ); // The block has its own context
 
 		test( "( () => a = 1 )(); a", 1 ); // The function has no context of its own
-		test( "a = 1; ( a => a++ )( a ); a;", 1 );
+		test( "a = 1; ( a => a = 2 )( a ); a;", 1 );
 		test( "a = 1; ( () => var a = 2 )(); a", 2 ); // The function has no context of its own
 //		test( "a = 1; fun( ; val( a ) = 2 )(); a", 2 ); // The function has no context of its own
 		test( "a = 1; f = () => { var a = 2 }; f(); a", 1 ); // The function has its own context
@@ -372,7 +372,7 @@ public class ScriptTests extends Util
 	@Test
 	static public void test18()
 	{
-		test( "l = new ( class( \"java.util.ArrayList\" ) )(); i = 0; while( i < 10 ) ( l.add( i ); i++ ); l.each( fun( i; println( i ) ) )", 9 );
+		test( "l = new ( class( \"java.util.ArrayList\" ) )(); i = 0; while( i < 10 ) ( l.add( i ); i = i + 1 ); l.each( fun( i; println( i ) ) )", 9 );
 		eval( "Calendar = class( \"java.util.Calendar\" ); println( Calendar#getInstance().getClass() )" );
 		test( "Calendar = class( \"java.util.Calendar\" ); Calendar#SATURDAY", 7 );
 		fail( "Calendar = class( \"java.util.Calendar\" ); Calendar#clear()", ScriptException.class, "static java.util.Calendar.clear()" );
@@ -489,6 +489,7 @@ public class ScriptTests extends Util
 	@Test
 	static public void test23()
 	{
+		// TODO Calling default global methods with named parameter
 		test( "f = (a,b,c) => a; f( b = 1, c = 2, a = 3 )", 3 );
 		test( "f = (a,b,c) => a; f( a = 3 )", 3 );
 		test( "f = (a,b,c) => a; f( a = null )", null );
@@ -651,14 +652,14 @@ public class ScriptTests extends Util
 		fail( "f = null; f[]", ScriptException.class, "Null can't be indexed" );
 		fail( "f = 1; f[]", ScriptException.class, "Missing index" );
 		fail( "f = 1; f[ 1 ]", ScriptException.class, "Can't index a java.lang.Integer" );
-		fail( "--1", ScriptException.class, "Can't apply -- to a java.lang.Integer" );
-		fail( "++1", ScriptException.class, "Can't apply ++ to a java.lang.Integer" );
-		fail( "1--", ScriptException.class, "Can't apply -- to a java.lang.Integer" );
-		fail( "1++", ScriptException.class, "Can't apply ++ to a java.lang.Integer" );
-		fail( "--null", ScriptException.class, "Can't apply -- to a null" );
-		fail( "++null", ScriptException.class, "Can't apply ++ to a null" );
-		fail( "null--", ScriptException.class, "Can't apply -- to a null" );
-		fail( "null++", ScriptException.class, "Can't apply ++ to a null" );
+//		fail( "--1", ScriptException.class, "Can't apply -- to a java.lang.Integer" );
+//		fail( "++1", ScriptException.class, "Can't apply ++ to a java.lang.Integer" );
+//		fail( "1--", ScriptException.class, "Can't apply -- to a java.lang.Integer" );
+//		fail( "1++", ScriptException.class, "Can't apply ++ to a java.lang.Integer" );
+//		fail( "--null", ScriptException.class, "Can't apply -- to a null" );
+//		fail( "++null", ScriptException.class, "Can't apply ++ to a null" );
+//		fail( "null--", ScriptException.class, "Can't apply -- to a null" );
+//		fail( "null++", ScriptException.class, "Can't apply ++ to a null" );
 		fail( "Map( a -> 1, 2 )", ScriptException.class, "No such method: static java.util.Map.apply() is applicable" );
 		fail( ":1", SourceException.class, "Symbol must be an identifier or a string" );
 		fail( "abs()", ScriptException.class, "abs() needs exactly one parameter" );

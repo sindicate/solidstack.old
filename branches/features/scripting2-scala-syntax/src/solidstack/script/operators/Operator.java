@@ -47,11 +47,11 @@ abstract public class Operator implements Expression
 		precedences.put( "#", 1 ); // static member
 		precedences.put( "new", 1 ); // object creation
 
-		precedences.put( "@++", 2 ); // postfix increment
-		precedences.put( "@--", 2 ); // postfix decrement
-
-		precedences.put( "++@", 3 ); // prefix increment
-		precedences.put( "--@", 3 ); // prefix decrement
+//		precedences.put( "@++", 2 ); // postfix increment
+//		precedences.put( "@--", 2 ); // postfix decrement
+//
+//		precedences.put( "++@", 3 ); // prefix increment
+//		precedences.put( "--@", 3 ); // prefix decrement
 		precedences.put( "+@", 3 ); // unary plus
 		precedences.put( "-@", 3 ); // unary minus
 //		precedences.put( "~", 3 ); // bitwise NOT
