@@ -649,9 +649,9 @@ public class ScriptTests extends Util
 		fail( "f = null; f()", ScriptException.class, "Function is null" );
 		fail( "f = 1; f()", ScriptException.class, "No such method: java.lang.Integer.apply()" );
 		fail( "a = ( 1, 2 )", ScriptException.class, "Can't assign tuples to variables" );
-		fail( "f = null; f[]", ScriptException.class, "Null can't be indexed" );
-		fail( "f = 1; f[]", ScriptException.class, "Missing index" );
-		fail( "f = 1; f[ 1 ]", ScriptException.class, "Can't index a java.lang.Integer" );
+//		fail( "f = null; f[]", ScriptException.class, "Null can't be indexed" );
+//		fail( "f = 1; f[]", ScriptException.class, "Missing index" );
+//		fail( "f = 1; f[ 1 ]", ScriptException.class, "Can't index a java.lang.Integer" );
 //		fail( "--1", ScriptException.class, "Can't apply -- to a java.lang.Integer" );
 //		fail( "++1", ScriptException.class, "Can't apply ++ to a java.lang.Integer" );
 //		fail( "1--", ScriptException.class, "Can't apply -- to a java.lang.Integer" );

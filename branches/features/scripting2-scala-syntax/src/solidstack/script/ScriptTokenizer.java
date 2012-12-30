@@ -17,16 +17,15 @@
 package solidstack.script;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import solidstack.io.PushbackReader;
 import solidstack.io.SourceException;
 import solidstack.io.SourceLocation;
 import solidstack.io.SourceReader;
 import solidstack.lang.Assert;
-import solidstack.script.ScriptTokenizer.Token.TYPE;
 
 
 /**
@@ -36,28 +35,48 @@ import solidstack.script.ScriptTokenizer.Token.TYPE;
  */
 public class ScriptTokenizer
 {
-	static private final String[] KEYWORD_ARRAY = new String[] {
-		"abstract", "case", "catch", "class", "def", "do", "else", "extends", "false", "final",
-		"finally", "for", "forSome", "if", "implicit", "import", "lazy", "match", "new", "null",
-		"object", "override", "package", "private", "protected", "return", "sealed", "super", "this", "throw",
-		"trait", "try", "true", "type", "val", "var", "while", "with", "yield",
-//		"_", ":", "=", "=>", "<-", "<:", "<%", ">:", "#", "@"
-	};
+	/**
+	 * Reserved words.
+	 */
+	@SuppressWarnings( "javadoc" )
+	static public enum TOKENTYPE {
+		// Literals & identifiers
+		INTEGER, DECIMAL, STRING, IDENTIFIER, OPERATOR,
+		// Fixed characters
+		PAREN_OPEN( "(", false ), PAREN_CLOSE( ")", false ), BRACKET_OPEN( "[", false ), BRACKET_CLOSE( "]", false ), BRACE_OPEN( "{", false ), BRACE_CLOSE( "}", false ),
+		BACKQUOTE( "`", false ), QUOTE( "'", false ), DOT( ".", false ), SEMICOLON( ";", false ), COMMA( ",", false ),
+		EOF,
+		// Reserved words
+		ABSTRACT( "abstract" ), CASE( "case" ), CATCH( "catch" ), /* CLASS( "class" ), */
+		DEF( "def" ), DO( "do" ), ELSE( "else" ), EXTENDS( "extends" ),
+		FALSE( "false" ), FINAL( "final" ), FINALLY( "finally" ), FOR( "for" ),
+		FORSOME( "forSome" ), IF( "if" ), IMPLICIT( "implicit" ), IMPORT( "import" ),
+		LAZY( "lazy" ), MATCH( "match" ), NEW( "new" ), NULL( "null" ),
+		OBJECT( "object" ), OVERRIDE( "override" ), PACKAGE( "package" ), PRIVATE( "private" ),
+		PROTECTED( "protected" ), RETURN( "return" ), SEALED( "sealed" ), SUPER( "super" ),
+		THIS( "this" ), THROW( "throw" ), TRAIT( "trait" ), TRY( "try" ),
+		TRUE( "true" ), TYPE( "type" ), VAL( "val" ), VAR( "var" ),
+		WHILE( "while" ), WITH( "with" ), YIELD( "yield" ),
+		UNDERSCORE( "_" ), COLON( ":" ), EQUALS( "=" ), HASH( "#" ), AT( "@" ),
+		FUNCTION( "=>" ), GENERATOR( "<-" ), UPPERBOUND( "<:" ), VIEWBOUND( "<%" ), LOWERBOUND( ">:" );
+		public final String word;
+		public final boolean reserved;
+		private TOKENTYPE() { this( null, false ); }
+		private TOKENTYPE( String word ) { this( word, true ); }
+		private TOKENTYPE( String word, boolean reserved ) { this.word = word; this.reserved = reserved; }
+	}
 
-	static public final Set<String> KEYWORD_SET;
+	/**
+	 * Map of reserved words.
+	 */
+	static public final Map<String, TOKENTYPE> RESERVED_WORDS;
 
 	static
 	{
-		KEYWORD_SET = new HashSet<String>();
-		for( String keyword : KEYWORD_ARRAY )
-			KEYWORD_SET.add( keyword );
-	}
-
-	static public enum KEYWORD {
-		ABSTRACT, CASE, CATCH, CLASS, DEF, DO, ELSE, EXTENDS, FALSE, FINAL,
-		FINALLY, FOR, FORSOME, IF, IMPLICIT, IMPORT, LAZY, MATCH, NEW, NULL,
-		OBJECT, OVERRIDE, PACKAGE, PRIVATE, PROTECTED, RETURN, SEALED, SUPER, THIS, THROW,
-		TRAIT, TRY, TRUE, TYPE, VAL, VAR, WHILE, WITH, YIELD
+		RESERVED_WORDS = new HashMap<String, TOKENTYPE>();
+		for( TOKENTYPE type : TOKENTYPE.values() )
+			if( type.reserved )
+				RESERVED_WORDS.put( type.word, type );
 	}
 
 	/**
@@ -165,7 +184,7 @@ public class ScriptTokenizer
 			ws: while( true )
 				switch( ch = in.read() )
 				{
-					case -1: return new Token( TYPE.EOF, in.getLocation(), null );
+					case -1: return new Token( TOKENTYPE.EOF, in.getLocation(), null );
 					default: break ws;
 					case ' ': case '\t': case '\n': case '\r': // Whitespace
 				}
@@ -189,7 +208,11 @@ public class ScriptTokenizer
 					}
 					while( ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch >= '0' && ch <= '9' || ch == '$' || ch == '_' );
 					in.push( ch );
-					return new Token( TYPE.IDENTIFIER, location, result.toString() );
+					String value = result.toString();
+					TOKENTYPE type = RESERVED_WORDS.get( value );
+					if( type != null )
+						return new Token( type, location, value );
+					return new Token( TOKENTYPE.IDENTIFIER, location, value );
 
 				// String
 				case '"':
@@ -198,7 +221,7 @@ public class ScriptTokenizer
 						switch( ch = in.read() )
 						{
 							case -1: throw new SourceException( "Missing \"", in.getLocation() );
-							case '"': return new Token( TYPE.STRING, location, result.toString() );
+							case '"': return new Token( TOKENTYPE.STRING, location, result.toString() );
 							case '\\':
 								switch( ch = in.read() )
 								{
@@ -246,7 +269,7 @@ public class ScriptTokenizer
 						{
 							in.push( ch );
 							in.push( '.' );
-							return new Token( TYPE.INTEGER, location, result.toString() );
+							return new Token( TOKENTYPE.INTEGER, location, result.toString() );
 						}
 						result.append( '.' );
 						do
@@ -277,33 +300,33 @@ public class ScriptTokenizer
 						decimal = true;
 					}
 					in.push( ch );
-					return new Token( decimal ? TYPE.DECIMAL : TYPE.INTEGER, location, result.toString() );
+					return new Token( decimal ? TOKENTYPE.DECIMAL : TOKENTYPE.INTEGER, location, result.toString() );
 
 				// Parenthesis
 				case '(':
-					return new Token( TYPE.PAREN_OPEN, location, "(" );
+					return new Token( TOKENTYPE.PAREN_OPEN, location, "(" );
 				case ')':
-					return new Token( TYPE.PAREN_CLOSE, location, ")" );
+					return new Token( TOKENTYPE.PAREN_CLOSE, location, ")" );
 				case '[':
-					return new Token( TYPE.BRACKET_OPEN, location, "[" );
+					return new Token( TOKENTYPE.BRACKET_OPEN, location, "[" );
 				case ']':
-					return new Token( TYPE.BRACKET_CLOSE, location, "]" );
+					return new Token( TOKENTYPE.BRACKET_CLOSE, location, "]" );
 				case '{':
-					return new Token( TYPE.BRACE_OPEN, location, "{" );
+					return new Token( TOKENTYPE.BRACE_OPEN, location, "{" );
 				case '}':
-					return new Token( TYPE.BRACE_CLOSE, location, "}" );
+					return new Token( TOKENTYPE.BRACE_CLOSE, location, "}" );
 
 				// Delimiters
 				case '`':
-					return new Token( TYPE.BACKQUOTE, location, "`" );
+					return new Token( TOKENTYPE.BACKQUOTE, location, "`" );
 				case '\'':
-					return new Token( TYPE.QUOTE, location, "'" );
+					return new Token( TOKENTYPE.QUOTE, location, "'" );
 				case '.':
-					return new Token( TYPE.DOT, location, "." );
+					return new Token( TOKENTYPE.DOT, location, "." );
 				case ';':
-					return new Token( TYPE.SEMICOLON, location, ";" );
+					return new Token( TOKENTYPE.SEMICOLON, location, ";" );
 				case ',':
-					return new Token( TYPE.COMMA, location, "," );
+					return new Token( TOKENTYPE.COMMA, location, "," );
 
 				// Comment
 				case '/':
@@ -361,7 +384,11 @@ public class ScriptTokenizer
 					}
 					while( isOperatorChar( ch ) );
 					in.push( ch );
-					return new Token( TYPE.OPERATOR, location, result.toString() );
+					value = result.toString();
+					type = RESERVED_WORDS.get( value );
+					if( type != null )
+						return new Token( type, location, value );
+					return new Token( TOKENTYPE.OPERATOR, location, value );
 
 				default:
 					throw new SourceException( "Unexpected character '" + (char)ch + "'", in.getLocation() );
@@ -407,18 +434,11 @@ public class ScriptTokenizer
 
 	static public class Token
 	{
-		static public enum TYPE {
-			INTEGER, DECIMAL, STRING, IDENTIFIER, OPERATOR,
-			PAREN_OPEN, PAREN_CLOSE, BRACKET_OPEN, BRACKET_CLOSE, BRACE_OPEN, BRACE_CLOSE,
-			BACKQUOTE, QUOTE, DOT, SEMICOLON, COMMA,
-			EOF
-		};
-
-		private TYPE type;
+		private TOKENTYPE type;
 		private SourceLocation location;
 		private String value;
 
-		Token( TYPE type, SourceLocation location, String value )
+		Token( TOKENTYPE type, SourceLocation location, String value )
 		{
 			this.type = type;
 			this.location = location;
@@ -437,7 +457,7 @@ public class ScriptTokenizer
 			return this.value.equals( s );
 		}
 
-		public TYPE getType()
+		public TOKENTYPE getType()
 		{
 			return this.type;
 		}
@@ -455,12 +475,12 @@ public class ScriptTokenizer
 		@Override
 		public String toString()
 		{
-			if( this.type == TYPE.STRING )
+			if( this.type == TOKENTYPE.STRING )
 				return "\"" + this.value + "\""; // TODO Or maybe just the double quote. Actually, we don't know what quote is used.
 			// TODO Maybe we should not parse the complete string as a token, especially with super strings
 			if( this.value != null )
 				return this.value.toString();
-			Assert.isTrue( this.type == TYPE.EOF );
+			Assert.isTrue( this.type == TOKENTYPE.EOF );
 			return "EOF";
 		}
 	}

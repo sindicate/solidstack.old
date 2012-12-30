@@ -23,12 +23,11 @@ import solidstack.io.SourceLocation;
 import solidstack.io.SourceReader;
 import solidstack.io.SourceReaders;
 import solidstack.lang.Assert;
+import solidstack.script.ScriptTokenizer.TOKENTYPE;
 import solidstack.script.ScriptTokenizer.Token;
-import solidstack.script.ScriptTokenizer.Token.TYPE;
 import solidstack.script.expressions.Block;
 import solidstack.script.expressions.BooleanConstant;
 import solidstack.script.expressions.DecimalConstant;
-import solidstack.script.expressions.EmptyMap;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Expressions;
 import solidstack.script.expressions.Identifier;
@@ -55,7 +54,7 @@ import solidstack.script.operators.Spread;
 public class ScriptParser
 {
 	private ScriptTokenizer tokenizer;
-	private TYPE stop;
+	private TOKENTYPE stop;
 	private boolean expectElse;
 
 	// TODO Add keywords that can't be identifiers
@@ -96,11 +95,11 @@ public class ScriptParser
 		{
 			Expression expression = parseExpression();
 			Token last = this.tokenizer.last();
-			if( last.getType() == TYPE.EOF || last.getType() == this.stop )
+			if( last.getType() == TOKENTYPE.EOF || last.getType() == this.stop )
 			{
 				if( expression != null )
 					results.append( expression );
-				if( this.stop != null && last.getType() == TYPE.EOF )
+				if( this.stop != null && last.getType() == TOKENTYPE.EOF )
 					throw new SourceException( "Unexpected " + last + ", missing " + this.stop, last.getLocation() );
 //				if( results.size() == 0 )
 //					return null;
@@ -121,7 +120,7 @@ public class ScriptParser
 		while( true )
 		{
 			Token token = this.tokenizer.get();
-			TYPE type = token.getType();
+			TOKENTYPE type = token.getType();
 			if( type == this.stop )
 				return result;
 
@@ -137,18 +136,27 @@ public class ScriptParser
 				case OPERATOR:
 				case COMMA:
 				case DOT:
+				case EQUALS:
+				case HASH:
+				case FUNCTION:
 					Expression right = parseAtom();
 					Assert.notNull( right );
 					result = appendOperator( result, token.getValue(), right );
 					break;
 
-				case BRACKET_OPEN:
+//				case BRACKET_OPEN:
 				case PAREN_OPEN:
-					TYPE oldStop = swapStops( inverse( type ) );
+					TOKENTYPE oldStop = swapStops( inverse( type ) );
 					Expression parameters = parse();
 					swapStops( oldStop );
 					result = appendOperator( result, token.getValue(), parameters );
 					break;
+
+				case ELSE:
+					if( !this.expectElse )
+						throw new SourceException( "Unexpected token '" + token + "'", token.getLocation() );
+					this.tokenizer.push();
+					return result;
 
 				case IDENTIFIER:
 					if( token.getValue().equals( "as" ) || token.getValue().equals( "instanceof" ) )
@@ -157,11 +165,6 @@ public class ScriptParser
 						Assert.notNull( right );
 						result = appendOperator( result, token.getValue(), right );
 						break;
-					}
-					else if( token.getValue().equals( "else" ) && this.expectElse )
-					{
-						this.tokenizer.push();
-						return result;
 					}
 					//$FALL-THROUGH$
 
@@ -178,16 +181,16 @@ public class ScriptParser
 		return Operator.operator( operator, result, operand );
 	}
 
-	private TYPE inverse( TYPE type )
+	private TOKENTYPE inverse( TOKENTYPE type )
 	{
 		switch( type )
 		{
 			case BRACE_OPEN:
-				return TYPE.BRACE_CLOSE;
+				return TOKENTYPE.BRACE_CLOSE;
 			case BRACKET_OPEN:
-				return TYPE.BRACKET_CLOSE;
+				return TOKENTYPE.BRACKET_CLOSE;
 			case PAREN_OPEN:
-				return TYPE.PAREN_CLOSE;
+				return TOKENTYPE.PAREN_CLOSE;
 			default:
 				throw new AssertionError();
 		}
@@ -199,7 +202,7 @@ public class ScriptParser
 	private Expression parseAtom()
 	{
 		Token token = this.tokenizer.get();
-		TYPE type = token.getType();
+		TOKENTYPE type = token.getType();
 		if( type == this.stop )
 			return null;
 
@@ -222,30 +225,33 @@ public class ScriptParser
 				return parseString( token );
 
 			case PAREN_OPEN:
-				TYPE oldStop = swapStops( TYPE.PAREN_CLOSE );
+				TOKENTYPE oldStop = swapStops( TOKENTYPE.PAREN_CLOSE );
 				Expression result = parse();
 				swapStops( oldStop );
 				return new Parenthesis( token.getLocation(), result );
 
 			case BRACE_OPEN:
-				oldStop = swapStops( TYPE.BRACE_CLOSE );
+				oldStop = swapStops( TOKENTYPE.BRACE_CLOSE );
 				result = parse();
 				swapStops( oldStop );
 				return new Block( token.getLocation(), result );
 
-			case BRACKET_OPEN:
-				Token token2 = this.tokenizer.get();
-				if( token2.eq( ":" ) )
-				{
-					token2 = this.tokenizer.get();
-					Assert.isTrue( token2.getType() == TYPE.BRACKET_CLOSE, "Not expecting token " + token2 );
-					return new EmptyMap( token.getLocation() );
-				}
-				this.tokenizer.push();
-				oldStop = swapStops( TYPE.BRACKET_CLOSE );
-				result = parse();
-				swapStops( oldStop );
-				return new solidstack.script.expressions.List( token.getLocation(), result );
+//			case BRACKET_OPEN:
+//				Token token2 = this.tokenizer.get();
+//				if( token2.eq( ":" ) )
+//				{
+//					token2 = this.tokenizer.get();
+//					Assert.isTrue( token2.getType() == TOKENTYPE.BRACKET_CLOSE, "Not expecting token " + token2 );
+//					return new EmptyMap( token.getLocation() );
+//				}
+//				this.tokenizer.push();
+//				oldStop = swapStops( TOKENTYPE.BRACKET_CLOSE );
+//				result = parse();
+//				swapStops( oldStop );
+//				return new solidstack.script.expressions.List( token.getLocation(), result );
+
+			case COLON: // TODO Replace with quote
+				return new SymbolExpression( token.getLocation(), parseAtom() );
 
 			case OPERATOR:
 				// No need to consider precedences here. Only one atom is parsed.
@@ -257,83 +263,81 @@ public class ScriptParser
 					return parseAtom(); // TODO Is this correct, just ignore the operator?
 				if( token.getValue().equals( "*" ) )
 					return new Spread( token.getLocation(), token.getValue(), parseAtom() );
-				if( token.getValue().equals( ":" ) )
-					return new SymbolExpression( token.getLocation(), parseAtom() );
 				throw new SourceException( "Unexpected token " + token, token.getLocation() );
 
+			case NULL:
+				return new NullConstant( token.getLocation() );
+
+			case WHILE:
+				Token token2 = this.tokenizer.get();
+				if( token2.getType() != TOKENTYPE.PAREN_OPEN )
+					throw new SourceException( "Expected an opening parenthesis", token2.getLocation() );
+				oldStop = swapStops( TOKENTYPE.PAREN_CLOSE );
+				Expressions expressions = parseExpressions();
+				swapStops( oldStop );
+				Expression left = parseExpression();
+				token2 = this.tokenizer.last();
+				Assert.isTrue( token2.getType() == this.stop || token2.getType() == TOKENTYPE.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
+				this.tokenizer.push();
+				return new While( token.getLocation(), expressions, left );
+
+			case IF:
+				token2 = this.tokenizer.get();
+				if( token2.getType() != TOKENTYPE.PAREN_OPEN )
+					throw new SourceException( "Expected an opening parenthesis", token2.getLocation() );
+				oldStop = swapStops( TOKENTYPE.PAREN_CLOSE );
+				expressions = parseExpressions();
+				swapStops( oldStop );
+				this.expectElse = true;
+				left = parseExpression();
+				this.expectElse = false;
+				Expression right = null;
+				token2 = this.tokenizer.get();
+				if( token2.getType() == TOKENTYPE.ELSE )
+					right = parseExpression();
+				else
+					this.tokenizer.push();
+				token2 = this.tokenizer.last();
+				Assert.isTrue( token2.getType() == this.stop || token2.getType() == TOKENTYPE.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
+				this.tokenizer.push();
+				return new If( token.getLocation(), expressions, left, right );
+
+			case NEW:
+				return Operator.preOp( token.getLocation(), "new", parseAtom() );
+
+			case TRUE:
+				return new BooleanConstant( token.getLocation(), true );
+
+			case FALSE:
+				return new BooleanConstant( token.getLocation(), false );
+
+			case VAR:
+				return new Apply( "(", new Identifier( token.getLocation(), "def" ), parseAtom() );
+
 			case IDENTIFIER:
+			case THROW: // TODO Make a statement instead of a function
+			case RETURN: // TODO Make a statement instead of a function
+			case VAL: // TODO Make a statement instead of a function
+			case THIS:
 				String name = token.getValue();
-				if( name.equals( "false" ) )
-					return new BooleanConstant( token.getLocation(), false );
-
-				if( name.equals( "true" ) )
-					return new BooleanConstant( token.getLocation(), true );
-
-				if( name.equals( "null" ) )
-					return new NullConstant( token.getLocation() );
-
-				if( token.getValue().equals( "if" ) )
-				{
-					token2 = this.tokenizer.get();
-					if( token2.getType() != TYPE.PAREN_OPEN )
-						throw new SourceException( "Expected an opening parenthesis", token2.getLocation() );
-					oldStop = swapStops( TYPE.PAREN_CLOSE );
-					Expressions expressions = parseExpressions();
-					swapStops( oldStop );
-					this.expectElse = true;
-					Expression left = parseExpression();
-					this.expectElse = false;
-					Expression right = null;
-					token2 = this.tokenizer.get();
-					if( token2.getType() == TYPE.IDENTIFIER && token2.eq( "else" ) )
-						right = parseExpression();
-					else
-						this.tokenizer.push();
-					token2 = this.tokenizer.last();
-					Assert.isTrue( token2.getType() == this.stop || token2.getType() == TYPE.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
-					this.tokenizer.push();
-					return new If( token.getLocation(), expressions, left, right );
-				}
-
-				if( token.getValue().equals( "while" ) )
-				{
-					token2 = this.tokenizer.get();
-					if( token2.getType() != TYPE.PAREN_OPEN )
-						throw new SourceException( "Expected an opening parenthesis", token2.getLocation() );
-					oldStop = swapStops( TYPE.PAREN_CLOSE );
-					Expressions expressions = parseExpressions();
-					swapStops( oldStop );
-					Expression left = parseExpression();
-					token2 = this.tokenizer.last();
-					Assert.isTrue( token2.getType() == this.stop || token2.getType() == TYPE.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
-					this.tokenizer.push();
-					return new While( token.getLocation(), expressions, left );
-				}
-
 				// TODO Remove this
 				if( token.getValue().equals( "fun" ) )
 				{
 					token2 = this.tokenizer.get();
-					if( token2.getType() != TYPE.PAREN_OPEN && token2.getType() != TYPE.BRACE_OPEN )
+					if( token2.getType() != TOKENTYPE.PAREN_OPEN && token2.getType() != TOKENTYPE.BRACE_OPEN )
 						throw new SourceException( "Expected one of (, {", token2.getLocation() );
-					if( token2.getType() == TYPE.PAREN_OPEN )
-						oldStop = swapStops( TYPE.PAREN_CLOSE );
+					if( token2.getType() == TOKENTYPE.PAREN_OPEN )
+						oldStop = swapStops( TOKENTYPE.PAREN_CLOSE );
 					else
-						oldStop = swapStops( TYPE.BRACE_CLOSE );
-					Expressions expressions = parseExpressions();
+						oldStop = swapStops( TOKENTYPE.BRACE_CLOSE );
+					expressions = parseExpressions();
 					swapStops( oldStop );
 					if( expressions.size() < 2 ) // TODO And 1?
 						throw new SourceException( "Expected 2 or more expressions", token2.getLocation() );
 					Expression pars = expressions.remove( 0 );
-					Expression block = token2.getType() == TYPE.BRACE_OPEN ? new Block( expressions.getLocation(), expressions ) : expressions;
+					Expression block = token2.getType() == TOKENTYPE.BRACE_OPEN ? new Block( expressions.getLocation(), expressions ) : expressions;
 					return new Parenthesis( token2.getLocation(), new Function( "->", pars, block ) );
 				}
-
-				if( token.getValue().equals( "new" ) )
-					return Operator.preOp( token.getLocation(), "new", parseAtom() );
-
-				if( token.getValue().equals( "var" ) )
-					return new Apply( "(", new Identifier( token.getLocation(), "def" ), parseAtom() );
 
 				return new Identifier( token.getLocation(), token.getValue() );
 
@@ -354,7 +358,7 @@ public class ScriptParser
 		SourceReader in = SourceReaders.forString( s, location );
 		StringTokenizer t = new StringTokenizer( in );
 		ScriptParser parser = new ScriptParser( t );
-		parser.swapStops( TYPE.BRACE_CLOSE );
+		parser.swapStops( TOKENTYPE.BRACE_CLOSE );
 
 		StringExpression result = new StringExpression( location );
 
@@ -389,9 +393,9 @@ public class ScriptParser
 		return parseString( string.getValue(), string.getLocation() );
 	}
 
-	private TYPE swapStops( TYPE stop )
+	private TOKENTYPE swapStops( TOKENTYPE stop )
 	{
-		TYPE result = this.stop;
+		TOKENTYPE result = this.stop;
 		this.stop = stop;
 		return result;
 	}
