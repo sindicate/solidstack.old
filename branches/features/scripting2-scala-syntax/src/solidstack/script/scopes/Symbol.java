@@ -1,21 +1,32 @@
 package solidstack.script.scopes;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.ref.WeakReference;
+import java.util.WeakHashMap;
 
 public class Symbol
 {
-	static private Map<String,Symbol> symbols = new HashMap<String, Symbol>(); // TODO Use the ValueMap
+	static private WeakHashMap<String,WeakReference<Symbol>> symbols = new WeakHashMap<String,WeakReference<Symbol>>();
 
 	static public Symbol forString( String name )
 	{
-		Symbol symbol = symbols.get( name );
-		if( symbol != null )
-			return symbol;
+		synchronized( symbols )
+		{
+			WeakReference<Symbol> symbol = symbols.get( name );
+			Symbol result;
+			if( symbol != null )
+			{
+				result = symbol.get();
+				if( result != null )
+					return result;
+				// else: Symbol is lost, and the original key can't be retrieved, so we need to overwrite it completely
+				symbols.remove( name ); // Needed because put() will not replace the key if it already exists
+			}
+			// else: Key is lost or never existed, which means that the symbol does not exist or never existed
 
-		symbol = new Symbol( name );
-		symbols.put( name, symbol );
-		return symbol;
+			result = new Symbol( name );
+			symbols.put( name, new WeakReference<Symbol>( result ) );
+			return result;
+		}
 	}
 
 	String name;

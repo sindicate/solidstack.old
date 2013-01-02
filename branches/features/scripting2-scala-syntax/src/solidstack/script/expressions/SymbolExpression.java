@@ -16,7 +16,6 @@
 
 package solidstack.script.expressions;
 
-import solidstack.io.SourceException;
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
 import solidstack.script.scopes.Symbol;
@@ -27,16 +26,11 @@ public class SymbolExpression extends LocalizedExpression
 	private Symbol symbol;
 
 
-	public SymbolExpression( SourceLocation location, Object value )
+	public SymbolExpression( SourceLocation location, Symbol symbol )
 	{
 		super( location );
 
-		if( value instanceof Identifier )
-			this.symbol = ( (Identifier)value ).getSymbol();
-		else if( value instanceof StringConstant )
-			this.symbol = Symbol.forString( ( (StringConstant)value ).getString() );
-		else
-			throw new SourceException( "Symbol must be an identifier or a string", location );
+		this.symbol = symbol;
 	}
 
 	public Object evaluate( ThreadContext thread )
@@ -46,7 +40,7 @@ public class SymbolExpression extends LocalizedExpression
 
 	public void writeTo( StringBuilder out )
 	{
-		out.append( ':' );
+		out.append( '\'' );
 		out.append( this.symbol );
 	}
 }

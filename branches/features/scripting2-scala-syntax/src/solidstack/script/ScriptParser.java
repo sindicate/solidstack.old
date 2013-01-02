@@ -23,8 +23,8 @@ import solidstack.io.SourceLocation;
 import solidstack.io.SourceReader;
 import solidstack.io.SourceReaders;
 import solidstack.lang.Assert;
-import solidstack.script.ScriptTokenizer.TOKENTYPE;
 import solidstack.script.ScriptTokenizer.Token;
+import solidstack.script.ScriptTokenizer.TokenType;
 import solidstack.script.expressions.Block;
 import solidstack.script.expressions.BooleanConstant;
 import solidstack.script.expressions.DecimalConstant;
@@ -43,6 +43,7 @@ import solidstack.script.operators.Apply;
 import solidstack.script.operators.Function;
 import solidstack.script.operators.Operator;
 import solidstack.script.operators.Spread;
+import solidstack.script.scopes.Symbol;
 
 
 /**
@@ -54,7 +55,7 @@ import solidstack.script.operators.Spread;
 public class ScriptParser
 {
 	private ScriptTokenizer tokenizer;
-	private TOKENTYPE stop;
+	private TokenType stop;
 	private boolean expectElse;
 
 	// TODO Add keywords that can't be identifiers
@@ -95,11 +96,11 @@ public class ScriptParser
 		{
 			Expression expression = parseExpression();
 			Token last = this.tokenizer.last();
-			if( last.getType() == TOKENTYPE.EOF || last.getType() == this.stop )
+			if( last.getType() == TokenType.EOF || last.getType() == this.stop )
 			{
 				if( expression != null )
 					results.append( expression );
-				if( this.stop != null && last.getType() == TOKENTYPE.EOF )
+				if( this.stop != null && last.getType() == TokenType.EOF )
 					throw new SourceException( "Unexpected " + last + ", missing " + this.stop, last.getLocation() );
 //				if( results.size() == 0 )
 //					return null;
@@ -110,7 +111,7 @@ public class ScriptParser
 		}
 	}
 
-	// Parses on expression (ends with ; or EOF)
+	// Parses an expression (ends with ; or EOF)
 	private Expression parseExpression()
 	{
 		Expression result = parseAtom();
@@ -119,8 +120,8 @@ public class ScriptParser
 
 		while( true )
 		{
-			Token token = this.tokenizer.get();
-			TOKENTYPE type = token.getType();
+			Token token = this.tokenizer.next();
+			TokenType type = token.getType();
 			if( type == this.stop )
 				return result;
 
@@ -146,7 +147,7 @@ public class ScriptParser
 
 //				case BRACKET_OPEN:
 				case PAREN_OPEN:
-					TOKENTYPE oldStop = swapStops( inverse( type ) );
+					TokenType oldStop = swapStops( inverse( type ) );
 					Expression parameters = parse();
 					swapStops( oldStop );
 					result = appendOperator( result, token.getValue(), parameters );
@@ -159,6 +160,7 @@ public class ScriptParser
 					return result;
 
 				case IDENTIFIER:
+					// TODO asInstanceOf and isInstanceOf? Or replace 'as' with toInt() etc.?
 					if( token.getValue().equals( "as" ) || token.getValue().equals( "instanceof" ) )
 					{
 						right = parseAtom();
@@ -181,16 +183,16 @@ public class ScriptParser
 		return Operator.operator( operator, result, operand );
 	}
 
-	private TOKENTYPE inverse( TOKENTYPE type )
+	private TokenType inverse( TokenType type )
 	{
 		switch( type )
 		{
 			case BRACE_OPEN:
-				return TOKENTYPE.BRACE_CLOSE;
+				return TokenType.BRACE_CLOSE;
 			case BRACKET_OPEN:
-				return TOKENTYPE.BRACKET_CLOSE;
+				return TokenType.BRACKET_CLOSE;
 			case PAREN_OPEN:
-				return TOKENTYPE.PAREN_CLOSE;
+				return TokenType.PAREN_CLOSE;
 			default:
 				throw new AssertionError();
 		}
@@ -201,8 +203,8 @@ public class ScriptParser
 	 */
 	private Expression parseAtom()
 	{
-		Token token = this.tokenizer.get();
-		TOKENTYPE type = token.getType();
+		Token token = this.tokenizer.next();
+		TokenType type = token.getType();
 		if( type == this.stop )
 			return null;
 
@@ -225,13 +227,13 @@ public class ScriptParser
 				return parseString( token );
 
 			case PAREN_OPEN:
-				TOKENTYPE oldStop = swapStops( TOKENTYPE.PAREN_CLOSE );
+				TokenType oldStop = swapStops( TokenType.PAREN_CLOSE );
 				Expression result = parse();
 				swapStops( oldStop );
 				return new Parenthesis( token.getLocation(), result );
 
 			case BRACE_OPEN:
-				oldStop = swapStops( TOKENTYPE.BRACE_CLOSE );
+				oldStop = swapStops( TokenType.BRACE_CLOSE );
 				result = parse();
 				swapStops( oldStop );
 				return new Block( token.getLocation(), result );
@@ -250,9 +252,6 @@ public class ScriptParser
 //				swapStops( oldStop );
 //				return new solidstack.script.expressions.List( token.getLocation(), result );
 
-			case COLON: // TODO Replace with quote
-				return new SymbolExpression( token.getLocation(), parseAtom() );
-
 			case OPERATOR:
 				// No need to consider precedences here. Only one atom is parsed.
 				if( token.getValue().equals( "-" ) )
@@ -269,36 +268,36 @@ public class ScriptParser
 				return new NullConstant( token.getLocation() );
 
 			case WHILE:
-				Token token2 = this.tokenizer.get();
-				if( token2.getType() != TOKENTYPE.PAREN_OPEN )
+				Token token2 = this.tokenizer.next();
+				if( token2.getType() != TokenType.PAREN_OPEN )
 					throw new SourceException( "Expected an opening parenthesis", token2.getLocation() );
-				oldStop = swapStops( TOKENTYPE.PAREN_CLOSE );
+				oldStop = swapStops( TokenType.PAREN_CLOSE );
 				Expressions expressions = parseExpressions();
 				swapStops( oldStop );
 				Expression left = parseExpression();
 				token2 = this.tokenizer.last();
-				Assert.isTrue( token2.getType() == this.stop || token2.getType() == TOKENTYPE.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
+				Assert.isTrue( token2.getType() == this.stop || token2.getType() == TokenType.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
 				this.tokenizer.push();
 				return new While( token.getLocation(), expressions, left );
 
 			case IF:
-				token2 = this.tokenizer.get();
-				if( token2.getType() != TOKENTYPE.PAREN_OPEN )
+				token2 = this.tokenizer.next();
+				if( token2.getType() != TokenType.PAREN_OPEN )
 					throw new SourceException( "Expected an opening parenthesis", token2.getLocation() );
-				oldStop = swapStops( TOKENTYPE.PAREN_CLOSE );
+				oldStop = swapStops( TokenType.PAREN_CLOSE );
 				expressions = parseExpressions();
 				swapStops( oldStop );
 				this.expectElse = true;
 				left = parseExpression();
 				this.expectElse = false;
 				Expression right = null;
-				token2 = this.tokenizer.get();
-				if( token2.getType() == TOKENTYPE.ELSE )
+				token2 = this.tokenizer.next();
+				if( token2.getType() == TokenType.ELSE )
 					right = parseExpression();
 				else
 					this.tokenizer.push();
 				token2 = this.tokenizer.last();
-				Assert.isTrue( token2.getType() == this.stop || token2.getType() == TOKENTYPE.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
+				Assert.isTrue( token2.getType() == this.stop || token2.getType() == TokenType.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
 				this.tokenizer.push();
 				return new If( token.getLocation(), expressions, left, right );
 
@@ -319,27 +318,28 @@ public class ScriptParser
 			case RETURN: // TODO Make a statement instead of a function
 			case VAL: // TODO Make a statement instead of a function
 			case THIS:
-				String name = token.getValue();
-				// TODO Remove this
-				if( token.getValue().equals( "fun" ) )
+				if( token.getValue().equals( "fun" ) ) // TODO Remove this or use Scala's function syntax
 				{
-					token2 = this.tokenizer.get();
-					if( token2.getType() != TOKENTYPE.PAREN_OPEN && token2.getType() != TOKENTYPE.BRACE_OPEN )
+					token2 = this.tokenizer.next();
+					if( token2.getType() != TokenType.PAREN_OPEN && token2.getType() != TokenType.BRACE_OPEN )
 						throw new SourceException( "Expected one of (, {", token2.getLocation() );
-					if( token2.getType() == TOKENTYPE.PAREN_OPEN )
-						oldStop = swapStops( TOKENTYPE.PAREN_CLOSE );
+					if( token2.getType() == TokenType.PAREN_OPEN )
+						oldStop = swapStops( TokenType.PAREN_CLOSE );
 					else
-						oldStop = swapStops( TOKENTYPE.BRACE_CLOSE );
+						oldStop = swapStops( TokenType.BRACE_CLOSE );
 					expressions = parseExpressions();
 					swapStops( oldStop );
 					if( expressions.size() < 2 ) // TODO And 1?
 						throw new SourceException( "Expected 2 or more expressions", token2.getLocation() );
 					Expression pars = expressions.remove( 0 );
-					Expression block = token2.getType() == TOKENTYPE.BRACE_OPEN ? new Block( expressions.getLocation(), expressions ) : expressions;
+					Expression block = token2.getType() == TokenType.BRACE_OPEN ? new Block( expressions.getLocation(), expressions ) : expressions;
 					return new Parenthesis( token2.getLocation(), new Function( "->", pars, block ) );
 				}
 
 				return new Identifier( token.getLocation(), token.getValue() );
+
+			case SYMBOL:
+				return new SymbolExpression( token.getLocation(), Symbol.forString( token.getValue() ) );
 
 			default:
 				throw new SourceException( "Unexpected token " + token, token.getLocation() );
@@ -358,7 +358,7 @@ public class ScriptParser
 		SourceReader in = SourceReaders.forString( s, location );
 		StringTokenizer t = new StringTokenizer( in );
 		ScriptParser parser = new ScriptParser( t );
-		parser.swapStops( TOKENTYPE.BRACE_CLOSE );
+		parser.swapStops( TokenType.BRACE_CLOSE );
 
 		StringExpression result = new StringExpression( location );
 
@@ -393,9 +393,9 @@ public class ScriptParser
 		return parseString( string.getValue(), string.getLocation() );
 	}
 
-	private TOKENTYPE swapStops( TOKENTYPE stop )
+	private TokenType swapStops( TokenType stop )
 	{
-		TOKENTYPE result = this.stop;
+		TokenType result = this.stop;
 		this.stop = stop;
 		return result;
 	}

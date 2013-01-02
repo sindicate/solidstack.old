@@ -48,21 +48,21 @@ public class GlobalScope extends Scope
 
 	public GlobalScope()
 	{
-		val( Symbol.forString( "abs" ), new Abs() );
+		val( Symbol.forString( "abs" ), new Abs() ); // TODO Remove
 		val( Symbol.forString( "call" ), new Call() );
 		val( Symbol.forString( "class" ), new Class() );
 		val( Symbol.forString( "def" ), new Def() ); // TODO Remove
 		val( Symbol.forString( "defined" ), new Defined() );
-		val( Symbol.forString( "length" ), new Length() );
+		val( Symbol.forString( "length" ), new Length() ); // TODO Remove
 		val( Symbol.forString( "load" ), new Load() );
 		val( Symbol.forString( "print" ), new Print() );
 		val( Symbol.forString( "println" ), new Println() );
-		val( Symbol.forString( "return" ), new Return() );
-		val( Symbol.forString( "scope" ), new solidstack.script.functions.Scope() );
-		val( Symbol.forString( "stripMargin" ), new StripMargin() );
-		val( Symbol.forString( "substr" ), new Substr() );
-		val( Symbol.forString( "throw" ), new Throw() );
-		val( Symbol.forString( "upper" ), new Upper() );
+		val( Symbol.forString( "return" ), new Return() ); // TODO Remove
+		val( Symbol.forString( "scope" ), new solidstack.script.functions.Scope() ); // TODO Remove
+		val( Symbol.forString( "stripMargin" ), new StripMargin() ); // TODO Remove
+		val( Symbol.forString( "substr" ), new Substr() ); // TODO Remove
+		val( Symbol.forString( "throw" ), new Throw() ); // TODO Remove
+		val( Symbol.forString( "upper" ), new Upper() ); // TODO Remove
 		val( Symbol.forString( "val" ), new Val() ); // TODO Remove
 
 		val( Symbol.forString( "boolean" ), boolean.class );

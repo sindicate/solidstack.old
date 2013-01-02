@@ -1,5 +1,6 @@
 package solidstack.script.scopes;
 
+// TODO Not needed anymore since we are using a weak cache.
 public class TempSymbol extends Symbol
 {
 	public TempSymbol( String name )

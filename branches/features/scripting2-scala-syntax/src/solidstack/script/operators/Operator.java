@@ -89,7 +89,6 @@ abstract public class Operator implements Expression
 
 //		precedences.put( "?", 14 ); // conditional
 
-		precedences.put( ":", 15 ); // label TODO 15 ok?
 		precedences.put( "->", 15 ); // lambda TODO Equal to assignment precedence? Do we want that?
 		precedences.put( "=>", 15 ); // lambda TODO Equal to assignment precedence? Do we want that?
 		precedences.put( "=", 15 ); // assignment

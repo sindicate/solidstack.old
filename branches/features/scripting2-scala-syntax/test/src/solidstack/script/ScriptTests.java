@@ -329,7 +329,7 @@ public class ScriptTests extends Util
 		test( "a = 1; s = \"a = ${a}\"; a = 2; s", "a = 1" );
 		test( "a = 1; \"a = \\${a}\"", "a = ${a}" );
 		test( "\"${1}\"", "1" );
-//		test( "\"${}\"", "1" ); TODO
+		test( "\"${}\"", "" );
 		test( "\"\".getClass()", String.class );
 		test( "\"x\".getClass()", String.class );
 		test( "\"${1}\".getClass()", FunnyString.class );
@@ -509,9 +509,8 @@ public class ScriptTests extends Util
 		assertThat( temp1 ).isEqualTo( real1 );
 		assertThat( temp1 ).isEqualTo( temp2 );
 
-		test( "s = :symbol; s.toString()", "symbol" );
-		test( "s = :\"dit is ook een symbol\"; s.toString()", "dit is ook een symbol" );
-		test( "s = :red; if( s == :red ) true else false", true );
+		test( "s = 'symbol; s.toString()", "symbol" );
+		test( "s = 'red; if( s == 'red ) true else false", true );
 	}
 
 	@Test
@@ -661,7 +660,7 @@ public class ScriptTests extends Util
 //		fail( "null--", ScriptException.class, "Can't apply -- to a null" );
 //		fail( "null++", ScriptException.class, "Can't apply ++ to a null" );
 		fail( "Map( a -> 1, 2 )", ScriptException.class, "No such method: static java.util.Map.apply() is applicable" );
-		fail( ":1", SourceException.class, "Symbol must be an identifier or a string" );
+		fail( "'1", SourceException.class, "Unexpected character" );
 		fail( "abs()", ScriptException.class, "abs() needs exactly one parameter" );
 		fail( "class()", ScriptException.class, "class() needs exactly one parameter" );
 		fail( "class( 1 )", ScriptException.class, "class() needs a string parameter" );
