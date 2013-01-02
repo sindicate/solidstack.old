@@ -19,6 +19,7 @@ package solidstack.script.scopes;
 import java.util.Map;
 
 import solidstack.script.scopes.ValueMap.Entry;
+import funny.Symbol;
 
 
 abstract public class AbstractScope
@@ -43,7 +44,7 @@ abstract public class AbstractScope
 
 	public Object get( String name )
 	{
-		return get( new TempSymbol( name ) );
+		return get( Symbol.apply( name ) );
 	}
 
 	abstract public Variable def( Symbol symbol, Object value );
@@ -52,7 +53,7 @@ abstract public class AbstractScope
 
 	public void set( String name, Object value )
 	{
-		set( new TempSymbol( name ), value );
+		set( Symbol.apply( name ), value );
 	}
 
 	public void set( Symbol symbol, Object value )

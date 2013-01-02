@@ -16,6 +16,8 @@
 
 package solidstack.script.scopes;
 
+import funny.Symbol;
+
 
 
 public class CombinedScope extends AbstractScope

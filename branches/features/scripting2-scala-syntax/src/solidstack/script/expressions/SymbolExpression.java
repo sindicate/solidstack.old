@@ -16,9 +16,9 @@
 
 package solidstack.script.expressions;
 
+import funny.Symbol;
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
-import solidstack.script.scopes.Symbol;
 
 
 public class SymbolExpression extends LocalizedExpression

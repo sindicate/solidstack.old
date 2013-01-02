@@ -18,6 +18,8 @@ package solidstack.script;
 
 import java.math.BigDecimal;
 
+import funny.Symbol;
+
 import solidstack.io.SourceException;
 import solidstack.io.SourceLocation;
 import solidstack.io.SourceReader;
@@ -43,7 +45,6 @@ import solidstack.script.operators.Apply;
 import solidstack.script.operators.Function;
 import solidstack.script.operators.Operator;
 import solidstack.script.operators.Spread;
-import solidstack.script.scopes.Symbol;
 
 
 /**
@@ -339,7 +340,7 @@ public class ScriptParser
 				return new Identifier( token.getLocation(), token.getValue() );
 
 			case SYMBOL:
-				return new SymbolExpression( token.getLocation(), Symbol.forString( token.getValue() ) );
+				return new SymbolExpression( token.getLocation(), Symbol.apply( token.getValue() ) );
 
 			default:
 				throw new SourceException( "Unexpected token " + token, token.getLocation() );

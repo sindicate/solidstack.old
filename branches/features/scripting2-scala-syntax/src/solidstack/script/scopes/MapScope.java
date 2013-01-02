@@ -2,6 +2,8 @@ package solidstack.script.scopes;
 
 import java.util.Map;
 
+import funny.Symbol;
+
 public class MapScope extends AbstractScope
 {
 	private Map<Object, Object> map;
@@ -55,7 +57,7 @@ public class MapScope extends AbstractScope
 
 		public Symbol getKey()
 		{
-			return new TempSymbol( this.key );
+			return Symbol.apply( this.key );
 		}
 	}
 }

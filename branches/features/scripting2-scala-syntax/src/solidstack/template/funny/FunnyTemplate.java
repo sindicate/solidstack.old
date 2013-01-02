@@ -24,11 +24,10 @@ import solidstack.io.FatalIOException;
 import solidstack.script.Script;
 import solidstack.script.objects.ObjectMember;
 import solidstack.script.scopes.Scope;
-import solidstack.script.scopes.Symbol;
-import solidstack.script.scopes.TempSymbol;
 import solidstack.template.ConvertingWriter;
 import solidstack.template.EncodingWriter;
 import solidstack.template.Template;
+import funny.Symbol;
 
 
 /**
@@ -38,7 +37,7 @@ import solidstack.template.Template;
  */
 public class FunnyTemplate extends Template
 {
-	static public final Symbol OUT = Symbol.forString( "out" );
+	static public final Symbol OUT = Symbol.apply( "out" );
 
 	private Script script;
 
@@ -54,12 +53,12 @@ public class FunnyTemplate extends Template
 
 		Scope scope = new Scope();
 		for( Entry<String, Object> entry : params.entrySet() )
-			scope.def( new TempSymbol( entry.getKey() ), entry.getValue() );
+			scope.def( Symbol.apply( entry.getKey() ), entry.getValue() );
 		// TODO What about 'this'?
 		scope.def( OUT, out );
 
 		FunnyTemplateHelper helper = new FunnyTemplateHelper( this, params, writer );
-		scope.def( Symbol.forString( "include" ), new ObjectMember( helper, "include" ) );
+		scope.def( Symbol.apply( "include" ), new ObjectMember( helper, "include" ) );
 
 		this.script.eval( scope );
 

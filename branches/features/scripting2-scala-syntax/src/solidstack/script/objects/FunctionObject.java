@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import funny.Symbol;
+
 import solidstack.lang.Assert;
 import solidstack.script.Returning;
 import solidstack.script.ThreadContext;
@@ -32,7 +34,6 @@ import solidstack.script.operators.Spread;
 import solidstack.script.scopes.AbstractScope;
 import solidstack.script.scopes.ParameterScope;
 import solidstack.script.scopes.Scope;
-import solidstack.script.scopes.Symbol;
 
 public class FunctionObject implements solidstack.script.java.Function
 {

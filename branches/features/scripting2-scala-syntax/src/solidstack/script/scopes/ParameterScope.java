@@ -16,6 +16,7 @@
 
 package solidstack.script.scopes;
 
+import funny.Symbol;
 import solidstack.script.scopes.AbstractScope.Ref;
 
 

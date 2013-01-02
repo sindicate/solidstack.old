@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import funny.Symbol;
+
 import solidstack.script.JavaException;
 import solidstack.script.Returning;
 import solidstack.script.ThreadContext;
@@ -34,7 +36,6 @@ import solidstack.script.objects.ClassMember;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Util;
-import solidstack.script.scopes.Symbol;
 
 
 public class Apply extends Operator

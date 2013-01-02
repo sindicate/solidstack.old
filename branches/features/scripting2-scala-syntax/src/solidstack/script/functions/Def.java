@@ -16,11 +16,11 @@
 
 package solidstack.script.functions;
 
+import funny.Symbol;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.scopes.AbstractScope.Ref;
-import solidstack.script.scopes.Symbol;
 
 public class Def extends FunctionObject
 {

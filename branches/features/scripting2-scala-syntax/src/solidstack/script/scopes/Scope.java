@@ -16,6 +16,7 @@
 
 package solidstack.script.scopes;
 
+import funny.Symbol;
 import solidstack.script.scopes.AbstractScope.Ref;
 
 
@@ -23,7 +24,7 @@ import solidstack.script.scopes.AbstractScope.Ref;
 
 public class Scope extends AbstractScope
 {
-	static public final Symbol THIS = Symbol.forString( "this" );
+	static public final Symbol THIS = Symbol.apply( "this" );
 
 	private AbstractScope parent;
 

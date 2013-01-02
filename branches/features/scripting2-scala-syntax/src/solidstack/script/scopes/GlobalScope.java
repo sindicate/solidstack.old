@@ -38,6 +38,7 @@ import solidstack.script.functions.Substr;
 import solidstack.script.functions.Throw;
 import solidstack.script.functions.Upper;
 import solidstack.script.functions.Val;
+import funny.Symbol;
 
 
 
@@ -48,54 +49,58 @@ public class GlobalScope extends Scope
 
 	public GlobalScope()
 	{
-		val( Symbol.forString( "abs" ), new Abs() ); // TODO Remove
-		val( Symbol.forString( "call" ), new Call() );
-		val( Symbol.forString( "class" ), new Class() );
-		val( Symbol.forString( "def" ), new Def() ); // TODO Remove
-		val( Symbol.forString( "defined" ), new Defined() );
-		val( Symbol.forString( "length" ), new Length() ); // TODO Remove
-		val( Symbol.forString( "load" ), new Load() );
-		val( Symbol.forString( "print" ), new Print() );
-		val( Symbol.forString( "println" ), new Println() );
-		val( Symbol.forString( "return" ), new Return() ); // TODO Remove
-		val( Symbol.forString( "scope" ), new solidstack.script.functions.Scope() ); // TODO Remove
-		val( Symbol.forString( "stripMargin" ), new StripMargin() ); // TODO Remove
-		val( Symbol.forString( "substr" ), new Substr() ); // TODO Remove
-		val( Symbol.forString( "throw" ), new Throw() ); // TODO Remove
-		val( Symbol.forString( "upper" ), new Upper() ); // TODO Remove
-		val( Symbol.forString( "val" ), new Val() ); // TODO Remove
+		val( Symbol.apply( "abs" ), new Abs() ); // TODO Remove
+		val( Symbol.apply( "call" ), new Call() );
+		val( Symbol.apply( "class" ), new Class() );
+		val( Symbol.apply( "def" ), new Def() ); // TODO Remove
+		val( Symbol.apply( "defined" ), new Defined() );
+		val( Symbol.apply( "length" ), new Length() ); // TODO Remove
+		val( Symbol.apply( "load" ), new Load() );
+		val( Symbol.apply( "print" ), new Print() );
+		val( Symbol.apply( "println" ), new Println() );
+		val( Symbol.apply( "return" ), new Return() ); // TODO Remove
+		val( Symbol.apply( "scope" ), new solidstack.script.functions.Scope() ); // TODO Remove
+		val( Symbol.apply( "stripMargin" ), new StripMargin() ); // TODO Remove
+		val( Symbol.apply( "substr" ), new Substr() ); // TODO Remove
+		val( Symbol.apply( "throw" ), new Throw() ); // TODO Remove
+		val( Symbol.apply( "upper" ), new Upper() ); // TODO Remove
+		val( Symbol.apply( "val" ), new Val() ); // TODO Remove
 
-		val( Symbol.forString( "boolean" ), boolean.class );
-		val( Symbol.forString( "byte" ), byte.class );
-		val( Symbol.forString( "char" ), char.class );
-		val( Symbol.forString( "short" ), short.class );
-		val( Symbol.forString( "int" ), int.class );
-		val( Symbol.forString( "long" ), long.class );
-		val( Symbol.forString( "float" ), float.class );
-		val( Symbol.forString( "double" ), double.class );
+		val( Symbol.apply( "boolean" ), boolean.class );
+		val( Symbol.apply( "byte" ), byte.class );
+		val( Symbol.apply( "char" ), char.class );
+		val( Symbol.apply( "short" ), short.class );
+		val( Symbol.apply( "int" ), int.class );
+		val( Symbol.apply( "long" ), long.class );
+		val( Symbol.apply( "float" ), float.class );
+		val( Symbol.apply( "double" ), double.class );
 
 		// java.lang
 
-		val( Symbol.forString( "Boolean" ), Boolean.class );
-		val( Symbol.forString( "Byte" ), Byte.class );
-		val( Symbol.forString( "Character" ), Character.class );
-		val( Symbol.forString( "Short" ), Short.class );
-		val( Symbol.forString( "Integer" ), Integer.class );
-		val( Symbol.forString( "Long" ), Long.class );
-		val( Symbol.forString( "Float" ), Float.class );
-		val( Symbol.forString( "Double" ), Double.class );
-		val( Symbol.forString( "String" ), String.class );
+		val( Symbol.apply( "Boolean" ), Boolean.class );
+		val( Symbol.apply( "Byte" ), Byte.class );
+		val( Symbol.apply( "Character" ), Character.class );
+		val( Symbol.apply( "Short" ), Short.class );
+		val( Symbol.apply( "Integer" ), Integer.class );
+		val( Symbol.apply( "Long" ), Long.class );
+		val( Symbol.apply( "Float" ), Float.class );
+		val( Symbol.apply( "Double" ), Double.class );
+		val( Symbol.apply( "String" ), String.class );
 
 		// java.math
 
-		val( Symbol.forString( "BigInteger" ), BigInteger.class );
-		val( Symbol.forString( "BigDecimal" ), BigDecimal.class );
+		val( Symbol.apply( "BigInteger" ), BigInteger.class );
+		val( Symbol.apply( "BigDecimal" ), BigDecimal.class );
 
 		// java.util
 
-		val( Symbol.forString( "LinkedList" ), LinkedList.class );
-		val( Symbol.forString( "List" ), List.class );
-		val( Symbol.forString( "Map" ), Map.class );
-		val( Symbol.forString( "Set" ), Set.class );
+		val( Symbol.apply( "LinkedList" ), LinkedList.class );
+		val( Symbol.apply( "List" ), List.class );
+		val( Symbol.apply( "Map" ), Map.class );
+		val( Symbol.apply( "Set" ), Set.class );
+
+		// funny
+
+		val( Symbol.apply( "Symbol" ), Symbol.class );
 	}
 }

@@ -16,6 +16,7 @@
 
 package solidstack.script.operators;
 
+import funny.Symbol;
 import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
@@ -27,7 +28,6 @@ import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Util;
 import solidstack.script.scopes.AbstractScope;
 import solidstack.script.scopes.ScopeException;
-import solidstack.script.scopes.Symbol;
 
 
 public class Member extends Operator

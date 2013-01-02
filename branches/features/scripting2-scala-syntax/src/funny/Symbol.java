@@ -1,4 +1,4 @@
-package solidstack.script.scopes;
+package funny;
 
 import java.lang.ref.WeakReference;
 import java.util.WeakHashMap;
@@ -7,7 +7,7 @@ public class Symbol
 {
 	static private WeakHashMap<String,WeakReference<Symbol>> symbols = new WeakHashMap<String,WeakReference<Symbol>>();
 
-	static public Symbol forString( String name )
+	static public Symbol apply( String name )
 	{
 		synchronized( symbols )
 		{
@@ -54,15 +54,5 @@ public class Symbol
 	public int hashCode()
 	{
 		return this.hashCode;
-	}
-
-	@Override
-	public boolean equals( Object obj )
-	{
-		if( super.equals( obj ) )
-			return true;
-		if( obj instanceof TempSymbol )
-			return this.name.equals( ( (Symbol)obj ).name );
-		return false;
 	}
 }

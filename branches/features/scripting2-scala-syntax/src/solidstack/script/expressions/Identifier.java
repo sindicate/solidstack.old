@@ -16,9 +16,9 @@
 
 package solidstack.script.expressions;
 
+import funny.Symbol;
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
-import solidstack.script.scopes.Symbol;
 
 
 public class Identifier extends LocalizedExpression
@@ -30,7 +30,7 @@ public class Identifier extends LocalizedExpression
 	{
 		super( location );
 
-		this.symbol = Symbol.forString( name );
+		this.symbol = Symbol.apply( name );
 	}
 
 	public Symbol getSymbol()

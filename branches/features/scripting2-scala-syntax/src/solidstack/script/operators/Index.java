@@ -20,6 +20,8 @@ import java.lang.reflect.Array;
 import java.util.List;
 import java.util.Map;
 
+import funny.Symbol;
+
 import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
@@ -27,7 +29,6 @@ import solidstack.script.expressions.Expression;
 import solidstack.script.objects.Util;
 import solidstack.script.scopes.AbstractScope.Ref;
 import solidstack.script.scopes.ScopeException;
-import solidstack.script.scopes.Symbol;
 
 
 public class Index extends Operator
