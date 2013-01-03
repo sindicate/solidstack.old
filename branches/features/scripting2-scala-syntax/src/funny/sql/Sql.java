@@ -14,7 +14,12 @@ public class Sql
 {
 	private String url;
 
-	public Sql( String driver, String url ) throws ClassNotFoundException, SQLException
+	static public Sql apply( String driver, String url ) throws ClassNotFoundException, SQLException
+	{
+		return new Sql( driver, url );
+	}
+
+	private Sql( String driver, String url ) throws ClassNotFoundException, SQLException
 	{
 		Class.forName( driver );
 		this.url = url;

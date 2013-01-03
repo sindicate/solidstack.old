@@ -35,9 +35,37 @@ import solidstack.script.objects.Assoc;
  */
 public class DefaultClassExtensions
 {
+	static public StringBuilder addString( Object[] array, StringBuilder buf, String start, String separator, String end )
+	{
+		buf.append( start );
+		int len = array.length;
+		if( len > 0 )
+			buf.append( array[ 0 ] );
+		for( int i = 1; i < len; i++ )
+		{
+			buf.append( separator );
+			buf.append( array[ i ] );
+		}
+		buf.append( end );
+		return buf;
+	}
+
 	static public List static_apply( LinkedList list, Object... objects )
 	{
 		return new LinkedList( Arrays.asList( objects ) );
+	}
+
+	static public Class static_apply( Class dummy, String name ) throws ClassNotFoundException
+	{
+		ClassLoader loader = Thread.currentThread().getContextClassLoader();
+//		try
+//		{
+			return Java.forName( name, loader );
+//		}
+//		catch( ClassNotFoundException e )
+//		{
+//			throw new ThrowException( "No such class: " + e.getMessage(), ThreadContext.get().cloneStack() );
+//		}
 	}
 
 	static public List static_apply( List list, Object... objects )
@@ -121,6 +149,13 @@ public class DefaultClassExtensions
 		for( Object key : map.keySet() )
 			result = function.call( key );
 		return result;
+	}
+
+	static public String mkString( Object[] array, String start, String separator, String end )
+	{
+		StringBuilder buf = new StringBuilder();
+		addString( array, buf, start, separator, end );
+		return buf.toString();
 	}
 
 	static public int size( Object[] array )

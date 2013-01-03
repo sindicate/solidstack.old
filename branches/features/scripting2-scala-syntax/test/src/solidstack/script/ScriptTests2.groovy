@@ -125,7 +125,6 @@ with escaped newline" );
 	static public void test5()
 	{
 		eval( '''
-			ArrayList = class( "java.util.ArrayList" );
 			l = ArrayList.getMethods().collect( method => method.getName() );
 			l.each( name => println( name ) );
 			'''

@@ -296,7 +296,7 @@ public class ScriptTests extends Util
 	static public void test13_2()
 	{
 		Scope context = new Scope();
-		test( "c = class( \"solidstack.script.ScriptTests$TestObject1\" );", context, TestObject1.class );
+		test( "c = Class( \"solidstack.script.ScriptTests$TestObject1\" );", context, TestObject1.class );
 		test( "new c().value", context, 0 );
 		test( "new c( 3.14 ).value", context, 2 );
 		test( "new c( 0.123E-10 ).value", context, 2 );
@@ -306,7 +306,7 @@ public class ScriptTests extends Util
 		test( "new c( 1 == 1 ).value", context, 7 );
 //		test( "new c( a = 1, b = 2 ).value", context, 8 ); TODO
 
-		test( "c2 = class( \"solidstack.script.ScriptTests$TestObject2\" );", context, TestObject2.class );
+		test( "c2 = Class( \"solidstack.script.ScriptTests$TestObject2\" );", context, TestObject2.class );
 		test( "new c2( 1, 1 ).value", context, 1 );
 	}
 
@@ -362,26 +362,26 @@ public class ScriptTests extends Util
 	@Test
 	static public void test17()
 	{
-		test( "class( \"java.util.ArrayList\" );", ArrayList.class );
-		test( "c = class( \"java.util.ArrayList\" ); new c();", new ArrayList<Object>() );
-		test( "l = new ( class( \"java.util.ArrayList\" ) )(); l.add( \"sinterklaas\" ); l.toArray();", new Object[] { "sinterklaas" } );
-		test( "ArrayList = class( \"java.util.ArrayList\" ); l = new ArrayList(); l.toArray();", new Object[ 0 ] );
+		test( "Class( \"java.util.ArrayList\" );", ArrayList.class );
+		test( "new ArrayList();", new ArrayList<Object>() );
+		test( "l = new ArrayList(); l.add( \"sinterklaas\" ); l.toArray();", new Object[] { "sinterklaas" } );
+		test( "l = new ArrayList(); l.toArray();", new Object[ 0 ] );
 	}
 
 	@Test
 	static public void test18()
 	{
-		test( "l = new ( class( \"java.util.ArrayList\" ) )(); i = 0; while( i < 10 ) ( l.add( i ); i = i + 1 ); l.each( fun( i; println( i ) ) )", 9 );
-		eval( "Calendar = class( \"java.util.Calendar\" ); println( Calendar#getInstance().getClass() )" );
-		test( "Calendar = class( \"java.util.Calendar\" ); Calendar#SATURDAY", 7 );
-		fail( "Calendar = class( \"java.util.Calendar\" ); Calendar#clear()", ScriptException.class, "static java.util.Calendar.clear()" );
-		fail( "TestObject = class( \"solidstack.script.ScriptTests$TestObject2\" ); TestObject#value", ScriptException.class, "static solidstack.script.ScriptTests$TestObject2.value" );
+		test( "l = new ArrayList(); i = 0; while( i < 10 ) ( l.add( i ); i = i + 1 ); l.each( fun( i; println( i ) ) )", 9 );
+		eval( "println( Calendar#getInstance().getClass() )" );
+		test( "Calendar#SATURDAY", 7 );
+		fail( "Calendar#clear()", ScriptException.class, "static java.util.Calendar.clear()" );
+		fail( "TestObject = Class( \"solidstack.script.ScriptTests$TestObject2\" ); TestObject#value", ScriptException.class, "static solidstack.script.ScriptTests$TestObject2.value" );
 	}
 
 	@Test
 	static public void test19()
 	{
-		fail( "o = new ( class( \"solidstack.script.ScriptTests$TestObject3\" ) )(); o.throwException()", JavaException.class, "test exception" );
+		fail( "o = new ( Class( \"solidstack.script.ScriptTests$TestObject3\" ) )(); o.throwException()", JavaException.class, "test exception" );
 	}
 
 	@Test
@@ -421,8 +421,8 @@ public class ScriptTests extends Util
 		test( "map = Map(); map.size()", 0 );
 		test( "map = Map(); map( \"third\" ) = 3; map( \"third\" )", 3 );
 
-		test( "array = class( \"java.lang.reflect.Array\" )#newInstance( class( \"java.lang.String\" ), 10 ); array.size()", 10 );
-		test( "array = class( \"java.lang.reflect.Array\" )#newInstance( class( \"int\" ), 10 ); array.size()", 10 );
+		test( "array = Class( \"java.lang.reflect.Array\" )#newInstance( Class( \"java.lang.String\" ), 10 ); array.size()", 10 ); // TODO Array()
+		test( "array = Class( \"java.lang.reflect.Array\" )#newInstance( Class( \"int\" ), 10 ); array.size()", 10 );
 
 		eval( "fun( a; a )( null )" );
 		eval( "fun( a; a )( if( false; 1 ) )" );
@@ -464,7 +464,7 @@ public class ScriptTests extends Util
 	{
 		test( "f = (a,b,c) => a+b+c; g = (*a) => f(*a); g(1,2,3)", 6 );
 		test( "f = *a => \"sinterklaas\".charAt( *a ); f( 1 )", 'i' );
-		test( "Arrays = class( \"java.util.Arrays\" ); asList = *i => Arrays#asList( *i ); list = asList( 1, 2, 3 ); list.size()", 3 );
+		test( "asList = *i => Arrays#asList( *i ); list = asList( 1, 2, 3 ); list.size()", 3 );
 		test( "f = ( a, *b ) => b.size(); f( 1, 2, 3 )", 2 );
 		test( "f = ( a, *b ) => a; g = ( a, *b ) => f( *b, a ); g( 1, 2, 3 )", 2 );
 		test( "f = *a => a.size(); f( 1, 2, 3 );", 3 );
@@ -548,7 +548,7 @@ public class ScriptTests extends Util
 
 		test( "1 instanceof Integer", true );
 		test( "1 instanceof int", false );
-		test( "\"1\" instanceof class( \"java.lang.CharSequence\" )", true );
+		test( "\"1\" instanceof CharSequence", true );
 		test( "\"1\" instanceof String", true );
 		test( "null instanceof Byte", false );
 	}
@@ -637,9 +637,9 @@ public class ScriptTests extends Util
 		Scope scope = new Scope();
 		scope.set( "o1", new TestObject1() );
 
-		fail( "class( \"xxx\" )", ScriptException.class, "No such class: xxx" );
+		fail( "Class( \"xxx\" )", JavaException.class, "java.lang.ClassNotFoundException: xxx" );
 		fail( "1.xxx", ScriptException.class, "No such field: java.lang.Integer.xxx" );
-		fail( "class( \"java.lang.Integer\" )#xxx", ScriptException.class, "No such field: static java.lang.Integer.xxx" );
+		fail( "Integer#xxx", ScriptException.class, "No such field: static java.lang.Integer.xxx" );
 		fail( "o1.test( null )", scope, ScriptException.class, "test(java.util.Map)" );
 		fail( "f = ( *b, c ) => (); f()", ScriptException.class, "Collecting parameter must be the last parameter" );
 		fail( "f = ( a ) => (); f()", ScriptException.class, "Not enough parameters" );
@@ -662,8 +662,6 @@ public class ScriptTests extends Util
 		fail( "Map( a -> 1, 2 )", ScriptException.class, "No such method: static java.util.Map.apply() is applicable" );
 		fail( "'1", SourceException.class, "Unexpected character" );
 		fail( "abs()", ScriptException.class, "abs() needs exactly one parameter" );
-		fail( "class()", ScriptException.class, "class() needs exactly one parameter" );
-		fail( "class( 1 )", ScriptException.class, "class() needs a string parameter" );
 		fail( "var", ScriptException.class, "def() needs exactly one parameter" );
 		fail( "var 1", ScriptException.class, "def() needs a variable identifier as parameter" );
 		fail( "defined()", ScriptException.class, "defined() needs exactly one parameter" );

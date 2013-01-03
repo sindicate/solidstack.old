@@ -18,6 +18,9 @@ package solidstack.script.scopes;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +28,6 @@ import java.util.Set;
 
 import solidstack.script.functions.Abs;
 import solidstack.script.functions.Call;
-import solidstack.script.functions.Class;
 import solidstack.script.functions.Def;
 import solidstack.script.functions.Defined;
 import solidstack.script.functions.Length;
@@ -51,7 +53,6 @@ public class GlobalScope extends Scope
 	{
 		val( Symbol.apply( "abs" ), new Abs() ); // TODO Remove
 		val( Symbol.apply( "call" ), new Call() );
-		val( Symbol.apply( "class" ), new Class() );
 		val( Symbol.apply( "def" ), new Def() ); // TODO Remove
 		val( Symbol.apply( "defined" ), new Defined() );
 		val( Symbol.apply( "length" ), new Length() ); // TODO Remove
@@ -80,6 +81,8 @@ public class GlobalScope extends Scope
 		val( Symbol.apply( "Boolean" ), Boolean.class );
 		val( Symbol.apply( "Byte" ), Byte.class );
 		val( Symbol.apply( "Character" ), Character.class );
+		val( Symbol.apply( "CharSequence" ), CharSequence.class );
+		val( Symbol.apply( "Class" ), Class.class );
 		val( Symbol.apply( "Short" ), Short.class );
 		val( Symbol.apply( "Integer" ), Integer.class );
 		val( Symbol.apply( "Long" ), Long.class );
@@ -94,6 +97,9 @@ public class GlobalScope extends Scope
 
 		// java.util
 
+		val( Symbol.apply( "ArrayList" ), ArrayList.class );
+		val( Symbol.apply( "Arrays" ), Arrays.class );
+		val( Symbol.apply( "Calendar" ), Calendar.class );
 		val( Symbol.apply( "LinkedList" ), LinkedList.class );
 		val( Symbol.apply( "List" ), List.class );
 		val( Symbol.apply( "Map" ), Map.class );
