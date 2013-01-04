@@ -42,18 +42,18 @@ public class ScriptTests extends Util
 	@Test
 	static public void test1()
 	{
-		Scope context = new Scope();
-		context.set( "var1", "Value" );
-		test( "var1", context, "Value" );
+		Scope scope = new Scope();
+		scope.set( "var1", "Value" );
+		test( "var1", scope, "Value" );
 		test( "", null );
 	}
 
 	@Test
 	static public void test2()
 	{
-		Scope context = new Scope();
-		context.set( "var1", 1 );
-		test( "var1 + 1", context, 2 );
+		Scope scope = new Scope();
+		scope.set( "var1", 1 );
+		test( "var1 + 1", scope, 2 );
 	}
 
 	@Test
@@ -129,20 +129,20 @@ public class ScriptTests extends Util
 	@Test
 	static public void test5()
 	{
-		Scope context = new Scope();
+		Scope scope = new Scope();
 
-		test( "a = 1", context, 1 );
-		Assert.assertEquals( context.get( "a" ), 1 );
+		test( "a = 1", scope, 1 );
+		Assert.assertEquals( scope.get( "a" ), 1 );
 
-		test( "a = b = 1", context, 1 );
-		Assert.assertEquals( context.get( "a" ), 1 );
-		Assert.assertEquals( context.get( "b" ), 1 );
+		test( "a = b = 1", scope, 1 );
+		Assert.assertEquals( scope.get( "a" ), 1 );
+		Assert.assertEquals( scope.get( "b" ), 1 );
 
-		test( "1 + ( a = 1 )", context, 2 );
-		Assert.assertEquals( context.get( "a" ), 1 );
+		test( "1 + ( a = 1 )", scope, 2 );
+		Assert.assertEquals( scope.get( "a" ), 1 );
 
-		test( "1 + ( a = 1 ) + a", context, 3 );
-		Assert.assertEquals( context.get( "a" ), 1 );
+		test( "1 + ( a = 1 ) + a", scope, 3 );
+		Assert.assertEquals( scope.get( "a" ), 1 );
 	}
 
 	@Test
@@ -265,49 +265,49 @@ public class ScriptTests extends Util
 	@Test
 	static public void test13()
 	{
-		Scope context = new Scope();
-		context.set( "s", "sinterklaas" );
-		test( "s.length()", context, 11 );
-		test( "s.substring( 6 )", context, "klaas" );
-		test( "s.substring( 1, 6 )", context, "inter" );
-		test( "s.contains( \"kl\" )", context, true );
+		Scope scope = new Scope();
+		scope.set( "s", "sinterklaas" );
+		test( "s.length()", scope, 11 );
+		test( "s.substring( 6 )", scope, "klaas" );
+		test( "s.substring( 1, 6 )", scope, "inter" );
+		test( "s.contains( \"kl\" )", scope, true );
 
 		TestObject1 o1 = new TestObject1();
-		context.set( "o1", o1 );
-		test( "o1.test()", context, 0 );
-		test( "o1.test( 1.0 )", context, 2 );
-		test( "o1.test( \"string\" )", context, 3 );
-		test( "o1.test( \"string\", \"string\" )", context, 4 );
+		scope.set( "o1", o1 );
+		test( "o1.test()", scope, 0 );
+		test( "o1.test( 1.0 )", scope, 2 );
+		test( "o1.test( \"string\" )", scope, 3 );
+		test( "o1.test( \"string\", \"string\" )", scope, 4 );
 		assert o1.test( new BigDecimal( 1 ), new BigDecimal( 1 ) ) == 6;
-		test( "o1.test( 1, 1 )", context, 6 );
+		test( "o1.test( 1, 1 )", scope, 6 );
 		test( "1.getClass()", Integer.class );
 		test( "1.1.getClass()", BigDecimal.class );
 		test( "1.0.getClass()#valueOf( 1.1 as double )", new BigDecimal( "1.1" ) );
 		test( "1.00.valueOf( 1.1 as double )", new BigDecimal( "1.1" ) );
-		test( "o1.test( 1 == 1 )", context, 7 );
-//		test( "o1.test( a = 1, b = 2 )", context, 8 ); TODO
+		test( "o1.test( 1 == 1 )", scope, 7 );
+//		test( "o1.test( a = 1, b = 2 )", scope, 8 ); TODO
 
 		TestObject2 o2 = new TestObject2();
-		context.set( "o2", o2 );
-		test( "o2.test( 1, 1 )", context, 1 );
+		scope.set( "o2", o2 );
+		test( "o2.test( 1, 1 )", scope, 1 );
 	}
 
 	@Test
 	static public void test13_2()
 	{
-		Scope context = new Scope();
-		test( "c = Class( \"solidstack.script.ScriptTests$TestObject1\" );", context, TestObject1.class );
-		test( "new c().value", context, 0 );
-		test( "new c( 3.14 ).value", context, 2 );
-		test( "new c( 0.123E-10 ).value", context, 2 );
-		test( "new c( \"string\" ).value", context, 3 );
-		test( "new c( \"string\", \"string\" ).value", context, 4 );
-		test( "new c( 1, 1 ).value", context, 6 );
-		test( "new c( 1 == 1 ).value", context, 7 );
-//		test( "new c( a = 1, b = 2 ).value", context, 8 ); TODO
+		Scope scope = new Scope();
+		test( "c = Class( \"solidstack.script.ScriptTests$TestObject1\" );", scope, TestObject1.class );
+		test( "new c().value", scope, 0 );
+		test( "new c( 3.14 ).value", scope, 2 );
+		test( "new c( 0.123E-10 ).value", scope, 2 );
+		test( "new c( \"string\" ).value", scope, 3 );
+		test( "new c( \"string\", \"string\" ).value", scope, 4 );
+		test( "new c( 1, 1 ).value", scope, 6 );
+		test( "new c( 1 == 1 ).value", scope, 7 );
+//		test( "new c( a = 1, b = 2 ).value", scope, 8 ); TODO
 
-		test( "c2 = Class( \"solidstack.script.ScriptTests$TestObject2\" );", context, TestObject2.class );
-		test( "new c2( 1, 1 ).value", context, 1 );
+		test( "c2 = Class( \"solidstack.script.ScriptTests$TestObject2\" );", scope, TestObject2.class );
+		test( "new c2( 1, 1 ).value", scope, 1 );
 	}
 
 	@Test
@@ -341,22 +341,22 @@ public class ScriptTests extends Util
 	{
 		test( "var a = 1;", 1 );
 
-		test( "fun( ; a = 1 )(); a", 1 ); // The function has no context of its own
+		test( "fun( ; a = 1 )(); a", 1 ); // The function has no scope of its own
 		test( "a = 1; fun( a; a = 2 )( a ); a;", 1 );
-		test( "a = 1; fun( ; var a = 2 )(); a", 2 ); // The function has no context of its own
-//		test( "a = 1; fun( ; val( a ) = 2 )(); a", 2 ); // The function has no context of its own
-		test( "a = 1; fun{ ; var a = 2 }(); a", 1 ); // The function has its own context
+		test( "a = 1; fun( ; var a = 2 )(); a", 2 ); // The function has no scope of its own
+//		test( "a = 1; fun( ; val( a ) = 2 )(); a", 2 ); // The function has no scope of its own
+		test( "a = 1; fun{ ; var a = 2 }(); a", 1 ); // The function has its own scope
 
-		test( "( a = 1 ); a", 1 ); // The block has no context of its own
-		test( "a = 1; ( var a = 2 ); a", 2 ); // The block has no context of its own
-//		test( "a = 1; fun( ; val( a ) = 2 )(); a", 2 ); // The function has no context of its own
-		test( "a = 1; { var a = 2 }; a", 1 ); // The block has its own context
+		test( "( a = 1 ); a", 1 ); // The block has no scope of its own
+		test( "a = 1; ( var a = 2 ); a", 2 ); // The block has no scope of its own
+//		test( "a = 1; fun( ; val( a ) = 2 )(); a", 2 ); // The function has no scope of its own
+		test( "a = 1; { var a = 2 }; a", 1 ); // The block has its own scope
 
-		test( "( () => a = 1 )(); a", 1 ); // The function has no context of its own
+		test( "( () => a = 1 )(); a", 1 ); // The function has no scope of its own
 		test( "a = 1; ( a => a = 2 )( a ); a;", 1 );
-		test( "a = 1; ( () => var a = 2 )(); a", 2 ); // The function has no context of its own
-//		test( "a = 1; fun( ; val( a ) = 2 )(); a", 2 ); // The function has no context of its own
-		test( "a = 1; f = () => { var a = 2 }; f(); a", 1 ); // The function has its own context
+		test( "a = 1; ( () => var a = 2 )(); a", 2 ); // The function has no scope of its own
+//		test( "a = 1; fun( ; val( a ) = 2 )(); a", 2 ); // The function has no scope of its own
+		test( "a = 1; f = () => { var a = 2 }; f(); a", 1 ); // The function has its own scope
 	}
 
 	@Test
@@ -705,6 +705,11 @@ public class ScriptTests extends Util
 		test( "List( 1, 2, 3 ).iterator().mkString( \"; \" )", "1; 2; 3" );
 		test( "List( 1, 2, 3 ).iterator().mkString( \"List( \", \", \", \" )\" )", "List( 1, 2, 3 )" );
 		test( "Array#newInstance( String, 3 ).mkString()", "nullnullnull" );
+
+		test( "List( 1, 2, 3 ).filter( n => n == 2 )", Arrays.asList( 2 ) );
+		test( "List( 1, 2, 3 ).filter( n => () )", Arrays.asList() );
+		test( "List( 1, 2, 3 ).map( n => \"${n}.0\".toString() )", Arrays.asList( "1.0", "2.0", "3.0" ) );
+		test( "List( 1, 2, 3 ).fold( 0, ( a, b ) => a + b )", 6 );
 	}
 
 	@Test
@@ -749,8 +754,8 @@ public class ScriptTests extends Util
 	// TODO Lazy evaluation
 	// TODO Class extension pluggable
 	// TODO Extensions: unique/each(WithIndex)/find(All)/collect/contains/every/indexOf/flatten/groupBy/inject/join/max/min/removeAll/replaceAll/reverse/sum/tail/traverse/withReader(etc)
-	// TODO with() to execute a function with a different context
-	// DONE Currying, no need
+	// TODO with() to execute a function with a different scope
+	// TODO Multiple parameters lists: fun(args)(args)
 	// TODO Global namespaces
 	// TODO Operator calling method on first operand, operator overloading
 	// TODO Hints for null parameters: a as String which evaluates to a TypedNull object if a is null

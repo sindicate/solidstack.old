@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import solidstack.script.Script;
 import solidstack.script.objects.Assoc;
 
 
@@ -152,23 +153,51 @@ public class DefaultClassExtensions
 		return array[ index ];
 	}
 
-	static public List map( Iterable iterable, Function function )
+	static public List filter( Iterable iterable, Function function )
+	{
+		return filter( iterable.iterator(), function );
+	}
+
+	static public List filter( Iterator iterator, Function function )
 	{
 		List result = new ArrayList();
-		for( Object object : iterable )
-			result.add( function.call( object ) );
+		while( iterator.hasNext() )
+		{
+			Object object = iterator.next();
+			if( Script.isTrue( function.call( object ) ) )
+				result.add( object );
+		}
 		return result;
 	}
 
-	static public List map( Object[] array, Function function )
+	static public Object fold( Iterable iterable, Object start, Function function )
 	{
-		List result = new ArrayList(array.length);
-		for( Object object : array )
-			result.add( function.call( object ) );
-		return result;
+		return fold( iterable.iterator(), start, function );
+	}
+
+	static public Object fold( Iterator iterator, Object start, Function function )
+	{
+		while( iterator.hasNext() )
+			start = function.call( start, iterator.next() );
+		return start;
+	}
+
+	static public Object foldLeft( Iterable iterable, Object start, Function function )
+	{
+		return fold( iterable.iterator(), start, function );
+	}
+
+	static public Object foldLeft( Iterator iterator, Object start, Function function )
+	{
+		return fold( iterator, start, function );
 	}
 
 	static public Object foreach( Iterable iterable, Function function )
+	{
+		return foreach( iterable.iterator(), function );
+	}
+
+	static public Object foreach( Iterator iterator, Function function )
 	{
 		// TODO Or should the ThreadContext be a parameter too?
 		int count = function.getParameters().length;
@@ -176,13 +205,13 @@ public class DefaultClassExtensions
 		{
 			Object result = null;
 			int index = 0;
-			for( Object object : iterable )
-				result = function.call( index++, object );
+			while( iterator.hasNext() )
+				result = function.call( index++, iterator.next() );
 			return result;
 		}
 		Object result = null;
-		for( Object object : iterable )
-			result = function.call( object );
+		while( iterator.hasNext() )
+			result = function.call( iterator.next() );
 		return result;
 	}
 
@@ -204,19 +233,25 @@ public class DefaultClassExtensions
 		return foreach( map.values(), function );
 	}
 
-	static public String mkString( Iterator iterator )
+	static public List map( Iterable iterable, Function function )
 	{
-		return mkString( iterator, "", "", "" );
+		return map( iterable.iterator(), function );
 	}
 
-	static public String mkString( Iterator iterator, String separator )
+	static public List map( Iterator iterator, Function function )
 	{
-		return mkString( iterator, "", separator, "" );
+		List result = new ArrayList();
+		while( iterator.hasNext() )
+			result.add( function.call( iterator.next() ) );
+		return result;
 	}
 
-	static public String mkString( Iterator iterator, String start, String separator, String end )
+	static public List map( Object[] array, Function function )
 	{
-		return addString( iterator, new StringBuilder(), start, separator, end ).toString();
+		List result = new ArrayList(array.length);
+		for( Object object : array )
+			result.add( function.call( object ) );
+		return result;
 	}
 
 	static public String mkString( Iterable iterable )
@@ -232,6 +267,21 @@ public class DefaultClassExtensions
 	static public String mkString( Iterable iterable, String start, String separator, String end )
 	{
 		return mkString( iterable.iterator(), start, separator, end );
+	}
+
+	static public String mkString( Iterator iterator )
+	{
+		return mkString( iterator, "", "", "" );
+	}
+
+	static public String mkString( Iterator iterator, String separator )
+	{
+		return mkString( iterator, "", separator, "" );
+	}
+
+	static public String mkString( Iterator iterator, String start, String separator, String end )
+	{
+		return addString( iterator, new StringBuilder(), start, separator, end ).toString();
 	}
 
 	static public String mkString( Object[] array )

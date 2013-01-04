@@ -18,8 +18,6 @@ package solidstack.script;
 
 import java.math.BigDecimal;
 
-import funny.Symbol;
-
 import solidstack.io.SourceException;
 import solidstack.io.SourceLocation;
 import solidstack.io.SourceReader;
@@ -45,6 +43,7 @@ import solidstack.script.operators.Apply;
 import solidstack.script.operators.Function;
 import solidstack.script.operators.Operator;
 import solidstack.script.operators.Spread;
+import funny.Symbol;
 
 
 /**
@@ -58,8 +57,6 @@ public class ScriptParser
 	private ScriptTokenizer tokenizer;
 	private TokenType stop;
 	private boolean expectElse;
-
-	// TODO Add keywords that can't be identifiers
 
 
 	/**
@@ -330,7 +327,7 @@ public class ScriptParser
 						oldStop = swapStops( TokenType.BRACE_CLOSE );
 					expressions = parseExpressions();
 					swapStops( oldStop );
-					if( expressions.size() < 2 ) // TODO And 1?
+					if( expressions.size() < 2 )
 						throw new SourceException( "Expected 2 or more expressions", token2.getLocation() );
 					Expression pars = expressions.remove( 0 );
 					Expression block = token2.getType() == TokenType.BRACE_OPEN ? new Block( expressions.getLocation(), expressions ) : expressions;

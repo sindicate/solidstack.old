@@ -61,7 +61,7 @@ public class ThreadContext
 
 	public void pushStack( SourceLocation sourceLocation )
 	{
-		this.stack.push( sourceLocation ); // TODO Is this the fastest combination of push & pop?
+		this.stack.push( sourceLocation );
 	}
 
 	public void popStack()
