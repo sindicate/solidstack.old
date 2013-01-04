@@ -34,12 +34,19 @@ public class CallResolver
 	static public final Object[] EMPTY_OBJECT_ARRAY = new Object[ 0 ];
 	static public final Class OBJECT_ARRAY_CLASS = Object[].class;
 
+//	TODO Do weak references help?
+//	Map -> ( CallSignatures -> MethodHandles )
+//	CallSignature -> Classes
+//	MethodHandle -> Method, ExtensionMethod or Constructor
+//	ExtensionMethod -> Method (from DefaultClassExtensions), Classes (from java.xxx)
 	static private final Map<CallSignature, MethodHandle> cache = new HashMap<CallSignature, MethodHandle>();
 
 
 	static public MethodCall resolveMethodCall( CallResolutionContext context )
 	{
-		MethodHandle handle = cache.get( context.getCallKey() );
+		// TODO Do something smart when number of arguments is larger than 10 or so
+		// TODO Switch to enable caching
+		MethodHandle handle = cache.get( context.getCallSignature() );
 		if( handle != null )
 		{
 //			System.out.println( context.getName() + " hit" );
@@ -57,7 +64,7 @@ public class CallResolver
 		MethodCall result = resolveMethodCall0( context );
 
 		if( result != null )
-			cache.put( context.getCallKey(), new MethodHandle( result.method, result.extMethod, result.constructor, result.isVarargCall ) );
+			cache.put( context.getCallSignature(), new MethodHandle( result.method, result.extMethod, result.constructor, result.isVarargCall ) );
 
 		return result;
 	}
@@ -94,18 +101,18 @@ public class CallResolver
 		ClassExtension ext = ClassExtension.forClass( cls );
 		if( ext != null )
 		{
-			// TODO Multiple
-			ExtensionMethod method = ext.getMethod( context.getName() );
-			if( method != null )
-			{
-				MethodCall caller = matchArguments( context, method.getParameterTypes(), method.isVararg() );
-				if( caller != null )
+			List<ExtensionMethod> methods = ext.getMethods( context.getName() );
+			if( methods != null )
+				for( ExtensionMethod method : methods )
 				{
-					caller.object = context.getObject();
-					caller.extMethod = method;
-					context.addCandidate( caller );
+					MethodCall caller = matchArguments( context, method.getParameterTypes(), method.isVararg() );
+					if( caller != null )
+					{
+						caller.object = context.getObject();
+						caller.extMethod = method;
+						context.addCandidate( caller );
+					}
 				}
-			}
 		}
 
 		Class[] interfaces = cls.getInterfaces();

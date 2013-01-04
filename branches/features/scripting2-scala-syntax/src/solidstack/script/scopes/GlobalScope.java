@@ -16,6 +16,7 @@
 
 package solidstack.script.scopes;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -104,6 +105,10 @@ public class GlobalScope extends Scope
 		val( Symbol.apply( "List" ), List.class );
 		val( Symbol.apply( "Map" ), Map.class );
 		val( Symbol.apply( "Set" ), Set.class );
+
+		// java.reflect
+
+		val( Symbol.apply( "Array" ), Array.class );
 
 		// funny
 

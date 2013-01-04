@@ -371,7 +371,7 @@ public class ScriptTests extends Util
 	@Test
 	static public void test18()
 	{
-		test( "l = new ArrayList(); i = 0; while( i < 10 ) ( l.add( i ); i = i + 1 ); l.each( fun( i; println( i ) ) )", 9 );
+		test( "l = new ArrayList(); i = 0; while( i < 10 ) ( l.add( i ); i = i + 1 ); l.foreach( fun( i; println( i ) ) )", 9 );
 		eval( "println( Calendar#getInstance().getClass() )" );
 		test( "Calendar#SATURDAY", 7 );
 		fail( "Calendar#clear()", ScriptException.class, "static java.util.Calendar.clear()" );
@@ -427,12 +427,12 @@ public class ScriptTests extends Util
 		eval( "fun( a; a )( null )" );
 		eval( "fun( a; a )( if( false; 1 ) )" );
 		eval( "fun( a; a )( while( false ) 1 )" );
-		eval( "fun( a; a )( List().each( fun( a; () ) ) )" );
+		eval( "fun( a; a )( List().foreach( fun( a; () ) ) )" );
 
 		eval( "( a => a )( null )" );
 		eval( "( a => a )( if( false; 1 ) )" );
 		eval( "( a => a )( while( false ) 1 )" );
-		eval( "( a => a )( List().each( a => () ) )" );
+		eval( "( a => a )( List().foreach( a => () ) )" );
 	}
 
 	@Test
@@ -456,7 +456,7 @@ public class ScriptTests extends Util
 		test( "s = \"string\"; c = x=>s.charAt(x); c(2)", 'r' );
 		test( "f = () => (1,2,3); (a,b,c) = f(); a+b+c;", 6 );
 
-		test( "l = List( 1, 2, 3 ); l.each( i => println( i ) )", 3 );
+		test( "l = List( 1, 2, 3 ); l.foreach( i => println( i ) )", 3 );
 	}
 
 	@Test
@@ -693,8 +693,18 @@ public class ScriptTests extends Util
 	static public void test28()
 	{
 		test( "if( true; return( true ) ); return( false )", true );
-		test( "l = List( 1, 2, 3 ); l.each( i => return( i ) ); 4", 1 );
-		test( "l = List( 1, 2, 3 ); f = i => return( i ); l.each( f ); 4", 4 );
+		test( "l = List( 1, 2, 3 ); l.foreach( i => return( i ) ); 4", 1 );
+		test( "l = List( 1, 2, 3 ); f = i => return( i ); l.foreach( f ); 4", 4 );
+	}
+
+	@Test
+	static public void test29() throws IOException
+	{
+		test( "List( 1, 2, 3 ).mkString( \"; \" )", "1; 2; 3" );
+		test( "List( 1, 2, 3 ).mkString( \"List( \", \", \", \" )\" )", "List( 1, 2, 3 )" );
+		test( "List( 1, 2, 3 ).iterator().mkString( \"; \" )", "1; 2; 3" );
+		test( "List( 1, 2, 3 ).iterator().mkString( \"List( \", \", \", \" )\" )", "List( 1, 2, 3 )" );
+		test( "Array#newInstance( String, 3 ).mkString()", "nullnullnull" );
 	}
 
 	@Test

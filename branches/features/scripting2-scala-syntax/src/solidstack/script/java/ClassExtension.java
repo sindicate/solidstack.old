@@ -18,7 +18,9 @@ package solidstack.script.java;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -84,12 +86,15 @@ public class ClassExtension
 
 	// ----------
 
-	private Map<String, ExtensionMethod> methods = new HashMap<String, ExtensionMethod>();
+	private Map<String, List<ExtensionMethod>> methods = new HashMap<String, List<ExtensionMethod>>(); // TODO Optimise this data structure
 	private Map<String, ExtensionMethod> staticMethods = new HashMap<String, ExtensionMethod>();
 
 	private void addMethod( String name, Method method )
 	{
-		this.methods.put( name, new ExtensionMethod( method ) );
+		List<ExtensionMethod> methods = this.methods.get( name );
+		if( methods == null )
+			this.methods.put( name, methods = new ArrayList<ExtensionMethod>() );
+		methods.add( new ExtensionMethod( method ) );
 	}
 
 	private void addStaticMethod( String name, Method method )
@@ -97,7 +102,7 @@ public class ClassExtension
 		this.staticMethods.put( name, new ExtensionMethod( method ) );
 	}
 
-	public ExtensionMethod getMethod( String name )
+	public List<ExtensionMethod> getMethods( String name )
 	{
 		return this.methods.get( name );
 	}

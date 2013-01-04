@@ -18,9 +18,9 @@ package solidstack.script.java;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +35,57 @@ import solidstack.script.objects.Assoc;
  */
 public class DefaultClassExtensions
 {
+	// TODO: count(), distinct(), filter(), filterNot(), find(), findIndexOf(), fold(), forall(), foreach(), groupBy(), intersect(), map(), partition(), reduce(), reverse(), reverseMap()
+
+	static public StringBuilder addString( Iterable iterable, StringBuilder buf )
+	{
+		return addString( iterable.iterator(), buf, "", "", "" );
+	}
+
+	static public StringBuilder addString( Iterable iterable, StringBuilder buf, String separator )
+	{
+		return addString( iterable.iterator(), buf, "", separator, "" );
+	}
+
+	static public StringBuilder addString( Iterable iterable, StringBuilder buf, String start, String separator, String end )
+	{
+		return addString( iterable.iterator(), buf, start, separator, end );
+	}
+
+	static public StringBuilder addString( Iterator iterator, StringBuilder buf )
+	{
+		return addString( iterator, buf, "", "", "" );
+	}
+
+	static public StringBuilder addString( Iterator iterator, StringBuilder buf, String separator )
+	{
+		return addString( iterator, buf, "", separator, "" );
+	}
+
+	static public StringBuilder addString( Iterator iterator, StringBuilder buf, String start, String separator, String end )
+	{
+		buf.append( start );
+		if( iterator.hasNext() )
+			buf.append( iterator.next() );
+		while( iterator.hasNext() )
+		{
+			buf.append( separator );
+			buf.append( iterator.next() );
+		}
+		buf.append( end );
+		return buf;
+	}
+
+	static public StringBuilder addString( Object[] array, StringBuilder buf )
+	{
+		return addString( array, buf, "", "", "" );
+	}
+
+	static public StringBuilder addString( Object[] array, StringBuilder buf, String separator )
+	{
+		return addString( array, buf, "", separator, "" );
+	}
+
 	static public StringBuilder addString( Object[] array, StringBuilder buf, String start, String separator, String end )
 	{
 		buf.append( start );
@@ -101,15 +152,15 @@ public class DefaultClassExtensions
 		return array[ index ];
 	}
 
-	static public List collect( Collection collection, Function function )
+	static public List map( Iterable iterable, Function function )
 	{
-		List result = new ArrayList(collection.size());
-		for( Object object : collection )
+		List result = new ArrayList();
+		for( Object object : iterable )
 			result.add( function.call( object ) );
 		return result;
 	}
 
-	static public List collect( Object[] array, Function function )
+	static public List map( Object[] array, Function function )
 	{
 		List result = new ArrayList(array.length);
 		for( Object object : array )
@@ -117,7 +168,7 @@ public class DefaultClassExtensions
 		return result;
 	}
 
-	static public Object each( Collection collection, Function function )
+	static public Object foreach( Iterable iterable, Function function )
 	{
 		// TODO Or should the ThreadContext be a parameter too?
 		int count = function.getParameters().length;
@@ -125,17 +176,17 @@ public class DefaultClassExtensions
 		{
 			Object result = null;
 			int index = 0;
-			for( Object object : collection )
+			for( Object object : iterable )
 				result = function.call( index++, object );
 			return result;
 		}
 		Object result = null;
-		for( Object object : collection )
+		for( Object object : iterable )
 			result = function.call( object );
 		return result;
 	}
 
-	static public Object each( Map<?,?> map, Function function )
+	static public Object foreach( Map<?,?> map, Function function )
 	{
 		Object result = null;
 		for( Entry<?,?> entry : map.entrySet() )
@@ -143,12 +194,54 @@ public class DefaultClassExtensions
 		return result;
 	}
 
-	static public Object eachKey( Map<?,?> map, Function function )
+	static public Object foreachKey( Map<?,?> map, Function function )
 	{
-		Object result = null;
-		for( Object key : map.keySet() )
-			result = function.call( key );
-		return result;
+		return foreach( map.keySet(), function );
+	}
+
+	static public Object foreachValue( Map<?,?> map, Function function )
+	{
+		return foreach( map.values(), function );
+	}
+
+	static public String mkString( Iterator iterator )
+	{
+		return mkString( iterator, "", "", "" );
+	}
+
+	static public String mkString( Iterator iterator, String separator )
+	{
+		return mkString( iterator, "", separator, "" );
+	}
+
+	static public String mkString( Iterator iterator, String start, String separator, String end )
+	{
+		return addString( iterator, new StringBuilder(), start, separator, end ).toString();
+	}
+
+	static public String mkString( Iterable iterable )
+	{
+		return mkString( iterable.iterator(), "", "", "" );
+	}
+
+	static public String mkString( Iterable iterable, String separator )
+	{
+		return mkString( iterable.iterator(), "", separator, "" );
+	}
+
+	static public String mkString( Iterable iterable, String start, String separator, String end )
+	{
+		return mkString( iterable.iterator(), start, separator, end );
+	}
+
+	static public String mkString( Object[] array )
+	{
+		return mkString( array, "", "", "" );
+	}
+
+	static public String mkString( Object[] array, String separator )
+	{
+		return mkString( array, "", separator, "" );
 	}
 
 	static public String mkString( Object[] array, String start, String separator, String end )
