@@ -1,7 +1,6 @@
 <%@ template version="1.0" encoding="UTF-8" language="funny" %>
 <% // Comment
 Timestamp = Class( "java.sql.Timestamp" );
-Date = Class( "java.util.Date" );
 new Timestamp( new Date().getTime() ) %>
 SELECT *
 <%@ template contentType="text/html; charset=ISO-8859-1" %>

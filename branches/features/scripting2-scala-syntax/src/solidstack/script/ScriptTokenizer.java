@@ -197,7 +197,7 @@ public class ScriptTokenizer
 				case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J':
 				case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T':
 				case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
-				case '_': case '$': // Identifier
+				case '_': case '$':
 					do
 					{
 						result.append( (char)ch );
@@ -236,8 +236,8 @@ public class ScriptTokenizer
 										char[] codePoint = new char[ 4 ];
 										for( int i = 0; i < 4; i++ )
 										{
-											codePoint[ i ] = (char)( ch = in.read() );
-											if( !( ch >= '0' && ch <= '9' ) ) // TODO What about ABCDEF?
+											codePoint[ i ] = Character.toUpperCase( (char)( ch = in.read() ) );
+											if( !( ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'F' ) )
 												throw new SourceException( "Illegal escape sequence: \\u" + new String( codePoint, 0, i + 1 ), in.getLastLocation() );
 										}
 										ch = Integer.valueOf( new String( codePoint ), 16 );

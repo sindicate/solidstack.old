@@ -37,6 +37,19 @@ abstract public class Operator implements Expression
 	protected Expression left;
 	protected Expression right;
 
+	/* Scala precedences: lowest to highest
+		(all letters)
+		|
+		^
+		&
+		< >
+		= !
+		:
+		+ -
+		* / %
+		(all other special characters)
+	*/
+
 	static
 	{
 		precedences = new HashMap<String, Integer>();

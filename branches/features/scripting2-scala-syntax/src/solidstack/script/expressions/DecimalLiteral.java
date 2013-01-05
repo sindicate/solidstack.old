@@ -16,36 +16,30 @@
 
 package solidstack.script.expressions;
 
+import java.math.BigDecimal;
+
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
 
-
-
-public class StringConstant extends LocalizedExpression
+public class DecimalLiteral extends LocalizedExpression
 {
-	private String value;
+	private BigDecimal value;
 
 
-	public StringConstant( SourceLocation location, String value )
+	public DecimalLiteral( SourceLocation location, BigDecimal value )
 	{
 		super( location );
 
 		this.value = value;
 	}
 
-	public String getString()
-	{
-		return this.value;
-	}
-
-	public String evaluate( ThreadContext thread )
+	public BigDecimal evaluate( ThreadContext thread )
 	{
 		return this.value;
 	}
 
 	public void writeTo( StringBuilder out )
 	{
-		// TODO Escape the string literal
-		out.append( '"' ).append( this.value ).append( '"' );
+		out.append( this.value );
 	}
 }

@@ -32,9 +32,9 @@ public class ScriptTests2 extends Util
 				work too" );
 			println( "Single line \\
 with escaped newline" );
-			println( stripMargin( "\\
-				|Multiline |strings
-				|with indentation stripped" ) );
+			println( "\\
+|Multiline |strings
+				|with indentation stripped".stripMargin() );
 			i = 0;
 			while( i < 10 ) ( // This is a comment
 				println( i );

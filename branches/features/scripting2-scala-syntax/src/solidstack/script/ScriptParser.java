@@ -26,16 +26,16 @@ import solidstack.lang.Assert;
 import solidstack.script.ScriptTokenizer.Token;
 import solidstack.script.ScriptTokenizer.TokenType;
 import solidstack.script.expressions.Block;
-import solidstack.script.expressions.BooleanConstant;
-import solidstack.script.expressions.DecimalConstant;
+import solidstack.script.expressions.BooleanLiteral;
+import solidstack.script.expressions.DecimalLiteral;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Expressions;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.expressions.If;
-import solidstack.script.expressions.IntegerConstant;
-import solidstack.script.expressions.NullConstant;
+import solidstack.script.expressions.IntegerLiteral;
+import solidstack.script.expressions.NullLiteral;
 import solidstack.script.expressions.Parenthesis;
-import solidstack.script.expressions.StringConstant;
+import solidstack.script.expressions.StringLiteral;
 import solidstack.script.expressions.StringExpression;
 import solidstack.script.expressions.SymbolExpression;
 import solidstack.script.expressions.While;
@@ -105,7 +105,6 @@ public class ScriptParser
 				return results;
 			}
 			results.append( expression );
-
 		}
 	}
 
@@ -216,10 +215,10 @@ public class ScriptParser
 				return null;
 
 			case DECIMAL:
-				return new DecimalConstant( token.getLocation(), new BigDecimal( token.getValue() ) );
+				return new DecimalLiteral( token.getLocation(), new BigDecimal( token.getValue() ) );
 
 			case INTEGER:
-				return new IntegerConstant( token.getLocation(), Integer.valueOf( token.getValue() ) );
+				return new IntegerLiteral( token.getLocation(), Integer.valueOf( token.getValue() ) );
 
 			case STRING:
 				return parseString( token );
@@ -263,7 +262,7 @@ public class ScriptParser
 				throw new SourceException( "Unexpected token " + token, token.getLocation() );
 
 			case NULL:
-				return new NullConstant( token.getLocation() );
+				return new NullLiteral( token.getLocation() );
 
 			case WHILE:
 				Token token2 = this.tokenizer.next();
@@ -303,10 +302,10 @@ public class ScriptParser
 				return Operator.preOp( token.getLocation(), "new", parseAtom() );
 
 			case TRUE:
-				return new BooleanConstant( token.getLocation(), true );
+				return new BooleanLiteral( token.getLocation(), true );
 
 			case FALSE:
-				return new BooleanConstant( token.getLocation(), false );
+				return new BooleanLiteral( token.getLocation(), false );
 
 			case VAR:
 				return new Apply( "(", new Identifier( token.getLocation(), "def" ), parseAtom() );
@@ -362,7 +361,7 @@ public class ScriptParser
 
 		String fragment = t.getFragment();
 		if( fragment.length() != 0 )
-			result.append( new StringConstant( location, fragment ) );
+			result.append( new StringLiteral( location, fragment ) );
 		while( t.foundExpression() )
 		{
 			Expression expression = parser.parse();
@@ -370,12 +369,12 @@ public class ScriptParser
 				result.append( expression );
 			fragment = t.getFragment();
 			if( fragment.length() != 0 )
-				result.append( new StringConstant( location, fragment ) );
+				result.append( new StringLiteral( location, fragment ) );
 		}
 
 		if( result.size() == 0 )
-			return new StringConstant( location, "" );
-		if( result.size() == 1 && result.get( 0 ) instanceof StringConstant )
+			return new StringLiteral( location, "" );
+		if( result.size() == 1 && result.get( 0 ) instanceof StringLiteral )
 			return result.get( 0 );
 		return result;
 	}

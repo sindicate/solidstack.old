@@ -16,26 +16,25 @@
 
 package solidstack.script.expressions;
 
-import java.util.HashMap;
-
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
 
 
-public class EmptyMap extends LocalizedExpression
+
+public class NullLiteral extends LocalizedExpression
 {
-	public EmptyMap( SourceLocation location )
+	public NullLiteral( SourceLocation location )
 	{
 		super( location );
 	}
 
 	public Object evaluate( ThreadContext thread )
 	{
-		return new HashMap<Object, Object>();
+		return null;
 	}
 
 	public void writeTo( StringBuilder out )
 	{
-		out.append( "[:]" );
+		out.append( "null" );
 	}
 }

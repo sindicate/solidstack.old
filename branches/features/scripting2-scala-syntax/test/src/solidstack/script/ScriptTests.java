@@ -150,24 +150,26 @@ public class ScriptTests extends Util
 	{
 		test( "\"test\"", "test" );
 		test( "\"test\" + \"test\"", "testtest" );
+		test( "\"\u00E9\"", "é" ); // Unicode escape parsed by Java
+		test( "\"\\u00E9\"", "é" ); // Unicode escape parsed by script
 	}
 
 	@Test
 	static public void test7()
 	{
-		test( "abs( +1 )", 1 );
-		test( "abs( -1 )", 1 );
-		test( "abs( 1 + -2 )", 1 );
+		test( "(+1).abs()", 1 );
+		test( "(-1).abs()", 1 );
+		test( "-1.abs()", -1 );
+		test( "(1+ -2).abs()", 1 );
 
-		test( "substr( \"sinterklaas\", 1 + 2 * 1, 9 - 1 - 1 )", "terk" );
-		test( "substr( \"sinterklaas\", 6 )", "klaas" );
-		test( "upper( \"sinterklaas\" )", "SINTERKLAAS" );
+		test( "\"sinterklaas\".substring( 1+2*1, 9-1-1 )", "terk" );
+		test( "\"sinterklaas\".substring( 6 )", "klaas" );
+		test( "\"sinterklaas\".toUpperCase()", "SINTERKLAAS" );
 		test( "println( \"Hello World!\" )", "Hello World!" );
-		test( "println( upper( \"Hello World!\" ) )", "HELLO WORLD!" );
-		test( "length( \"sinterklaas\" )", 11 );
+		test( "println( \"Hello World!\".toUpperCase() )", "HELLO WORLD!" );
 		test( "\"sinterklaas\".length()", 11 );
 		test( "\"sinterklaas\".size()", 11 );
-		test( "defined( a )", false );
+		test( "defined( a )", false ); // TODO or a.isDefined() ?
 		test( "defined( var a )", true );
 		test( "a = null; defined( a )", true );
 		test( "if( a ) a", null ); // TODO Ponder over this once more
@@ -595,10 +597,10 @@ public class ScriptTests extends Util
 		test( "-(15 as char)", -15 );
 		test( "-(1.5 as float)", -1.5f );
 
-		test( "abs( -15 as byte )", 15 );
-		test( "abs( -15 as char )", 65521 );
-		test( "abs( -15 )", 15 );
-		test( "abs( -1.5 as float )", 1.5f );
+		test( "(-15as byte).abs()", 15 );
+		test( "( -15 as char ).abs()", 65521 );
+		test( "( -15 ).abs()", 15 );
+		test( "( -1.5 as float ).abs()", 1.5f );
 
 		test( "1 as byte < 2 as byte", true );
 		test( "1 as char < 2 as char", true );
@@ -661,26 +663,15 @@ public class ScriptTests extends Util
 //		fail( "null++", ScriptException.class, "Can't apply ++ to a null" );
 		fail( "Map( a -> 1, 2 )", ScriptException.class, "No such method: static java.util.Map.apply() is applicable" );
 		fail( "'1", SourceException.class, "Unexpected character" );
-		fail( "abs()", ScriptException.class, "abs() needs exactly one parameter" );
 		fail( "var", ScriptException.class, "def() needs exactly one parameter" );
 		fail( "var 1", ScriptException.class, "def() needs a variable identifier as parameter" );
 		fail( "defined()", ScriptException.class, "defined() needs exactly one parameter" );
 		fail( "defined( 1 )", ScriptException.class, "defined() needs a variable identifier as parameter" );
-		fail( "length()", ScriptException.class, "length() needs exactly one parameter" );
-		fail( "length( 1 )", ScriptException.class, "length() needs a string parameter" );
 		fail( "print()", ScriptException.class, "print() needs exactly one parameter" );
 		fail( "println()", ScriptException.class, "println() needs exactly one parameter" );
 		fail( "scope()", ScriptException.class, "scope() needs exactly one parameter" );
 		fail( "scope( 1 )", ScriptException.class, "scope() needs a map parameter" );
-		fail( "stripMargin()", ScriptException.class, "stripMargin() needs exactly one parameter" );
-		fail( "stripMargin( 1 )", ScriptException.class, "stripMargin() needs a string parameter" );
-		fail( "substr()", ScriptException.class, "substr() needs 2 or 3 parameters" );
-		fail( "substr( 1, 1 )", ScriptException.class, "substr() needs a string as first parameter" );
-		fail( "substr( \"\", \"\" )", ScriptException.class, "substr() needs an integer as second parameter" );
-		fail( "substr( \"\", 1, \"\" )", ScriptException.class, "substr() needs an integer as third parameter" );
 		fail( "throw()", ScriptException.class, "throw() needs exactly one parameter" );
-		fail( "upper()", ScriptException.class, "upper() needs exactly one parameter" );
-		fail( "upper( 1 )", ScriptException.class, "upper() needs a string parameter" );
 		fail( "val()", ScriptException.class, "val() needs exactly one parameter" );
 		fail( "val( 1 )", ScriptException.class, "val() needs a variable identifier as parameter" );
 		fail( "f = ( a ) => (); f( b = 1 )", ScriptException.class, "Parameter 'b' undefined" );

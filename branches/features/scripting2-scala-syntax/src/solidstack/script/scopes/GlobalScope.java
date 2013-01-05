@@ -22,24 +22,20 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import solidstack.script.functions.Abs;
 import solidstack.script.functions.Call;
 import solidstack.script.functions.Def;
 import solidstack.script.functions.Defined;
-import solidstack.script.functions.Length;
 import solidstack.script.functions.Load;
 import solidstack.script.functions.Print;
 import solidstack.script.functions.Println;
 import solidstack.script.functions.Return;
-import solidstack.script.functions.StripMargin;
-import solidstack.script.functions.Substr;
 import solidstack.script.functions.Throw;
-import solidstack.script.functions.Upper;
 import solidstack.script.functions.Val;
 import funny.Symbol;
 
@@ -52,20 +48,15 @@ public class GlobalScope extends Scope
 
 	public GlobalScope()
 	{
-		val( Symbol.apply( "abs" ), new Abs() ); // TODO Remove
 		val( Symbol.apply( "call" ), new Call() );
 		val( Symbol.apply( "def" ), new Def() ); // TODO Remove
 		val( Symbol.apply( "defined" ), new Defined() );
-		val( Symbol.apply( "length" ), new Length() ); // TODO Remove
 		val( Symbol.apply( "load" ), new Load() );
 		val( Symbol.apply( "print" ), new Print() );
 		val( Symbol.apply( "println" ), new Println() );
 		val( Symbol.apply( "return" ), new Return() ); // TODO Remove
 		val( Symbol.apply( "scope" ), new solidstack.script.functions.Scope() ); // TODO Remove
-		val( Symbol.apply( "stripMargin" ), new StripMargin() ); // TODO Remove
-		val( Symbol.apply( "substr" ), new Substr() ); // TODO Remove
 		val( Symbol.apply( "throw" ), new Throw() ); // TODO Remove
-		val( Symbol.apply( "upper" ), new Upper() ); // TODO Remove
 		val( Symbol.apply( "val" ), new Val() ); // TODO Remove
 
 		val( Symbol.apply( "boolean" ), boolean.class );
@@ -101,6 +92,7 @@ public class GlobalScope extends Scope
 		val( Symbol.apply( "ArrayList" ), ArrayList.class );
 		val( Symbol.apply( "Arrays" ), Arrays.class );
 		val( Symbol.apply( "Calendar" ), Calendar.class );
+		val( Symbol.apply( "Date" ), Date.class );
 		val( Symbol.apply( "LinkedList" ), LinkedList.class );
 		val( Symbol.apply( "List" ), List.class );
 		val( Symbol.apply( "Map" ), Map.class );

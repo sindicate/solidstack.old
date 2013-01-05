@@ -19,12 +19,12 @@ package solidstack.script.expressions;
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
 
-public class IntegerConstant extends LocalizedExpression
+public class IntegerLiteral extends LocalizedExpression
 {
 	private int value;
 
 
-	public IntegerConstant( SourceLocation location, int value )
+	public IntegerLiteral( SourceLocation location, int value )
 	{
 		super( location );
 

@@ -21,20 +21,23 @@ import solidstack.script.ThreadContext;
 
 
 
-public class NullConstant extends LocalizedExpression
+public class BooleanLiteral extends LocalizedExpression
 {
-	public NullConstant( SourceLocation location )
+	private boolean value;
+
+	public BooleanLiteral( SourceLocation location, boolean value )
 	{
 		super( location );
+		this.value = value;
 	}
 
-	public Object evaluate( ThreadContext thread )
+	public Boolean evaluate( ThreadContext thread )
 	{
-		return null;
+		return this.value;
 	}
 
 	public void writeTo( StringBuilder out )
 	{
-		out.append( "null" );
+		out.append( this.value );
 	}
 }

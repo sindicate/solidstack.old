@@ -26,9 +26,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import solidstack.script.Script;
 import solidstack.script.objects.Assoc;
+import solidstack.script.objects.FunnyString;
 
 
 /**
@@ -37,6 +39,44 @@ import solidstack.script.objects.Assoc;
 public class DefaultClassExtensions
 {
 	// TODO: count(), distinct(), filter(), filterNot(), find(), findIndexOf(), fold(), forall(), foreach(), groupBy(), intersect(), map(), partition(), reduce(), reverse(), reverseMap()
+
+	// TODO Should be covered by the integer version
+	static public Integer abs( Byte _byte )
+	{
+		return Math.abs( _byte );
+	}
+
+	// TODO Should be covered by the integer version
+	static public Integer abs( Character _char )
+	{
+		return Math.abs( _char );
+	}
+
+	static public Double abs( Double _double )
+	{
+		return Math.abs( _double );
+	}
+
+	static public Float abs( Float _float )
+	{
+		return Math.abs( _float );
+	}
+
+	static public Integer abs( Integer _int )
+	{
+		return Math.abs( _int );
+	}
+
+	static public Long abs( Long _long )
+	{
+		return Math.abs( _long );
+	}
+
+	// TODO Should be covered by the integer version
+	static public Integer abs( Short _short )
+	{
+		return Math.abs( _short );
+	}
 
 	static public StringBuilder addString( Iterable iterable, StringBuilder buf )
 	{
@@ -349,6 +389,18 @@ public class DefaultClassExtensions
 	static public int size( String string )
 	{
 		return string.length();
+	}
+
+	static public final Pattern STRIPMARGIN_PATTERN = Pattern.compile( "(?m)^[ \\t]*\\|" ); // TODO Why not \s for whitespace?
+
+	static public String stripMargin( String string )
+	{
+		return STRIPMARGIN_PATTERN.matcher( string ).replaceAll( "" );
+	}
+
+	static public String stripMargin( FunnyString string )
+	{
+		return stripMargin( string.toString() );
 	}
 
 	static public Object update( List list, int index, Object value )
