@@ -50,7 +50,7 @@ with escaped newline" );
 	{
 		test( '''
 			i = 0;
-			f = fun( ; println( i ); i = i + 1 );
+			f = () => ( println( i ); i = i + 1 );
 			while( i < 10 ) f();
 			println( "total: " + ( while( i < 20 ) f() ) + " numbers" );
 			''',
@@ -66,13 +66,13 @@ with escaped newline" );
 		eval( '''
 			o = {
 				a = 4;
-				f = fun( b; b * a );
+				f = b => b * a;
 				this;
 			};
 			if( ( got = o.f( 3 ) ) != 12 )
 				throw( "Expected 12, got ${got}" );
 			oo = {
-				f = fun( b; b );
+				f = b => b;
 				this + o;
 			};
 			if( ( got = oo.f( 4 ) ) != 4 )
@@ -81,8 +81,8 @@ with escaped newline" );
 		);
 		eval( '''
 			// Creates a function. The function returns its own scope.
-			c = fun{ a;
-				f = fun( b; b * a );
+			c = a => {
+				f = b => b * a;
 				this;
 			};
 			// Calls the function and receives the new scope. The scope contains f and a = 5.
@@ -91,8 +91,8 @@ with escaped newline" );
 			if( ( got = o.f( 3 ) ) != 15 )
 				throw( "Expected 15, got ${got}" );
 			// Creates a second function. The function returns the combined scope of itself and the one returned by calling c.
-			cc = fun{ ;
-				f = fun( b; b );
+			cc = () => {
+				f = b => b;
 				this + c( 6 );
 			};
 			// Calls cc and receives the new scope. The scope overrides f from the c scope.
@@ -108,7 +108,7 @@ with escaped newline" );
 	static public void test4()
 	{
 		fail( '''
-			f = fun(;
+			f = () => (
 				throw( "error" )
 			);
 			f();

@@ -35,12 +35,11 @@ import solidstack.script.expressions.If;
 import solidstack.script.expressions.IntegerLiteral;
 import solidstack.script.expressions.NullLiteral;
 import solidstack.script.expressions.Parenthesis;
-import solidstack.script.expressions.StringLiteral;
 import solidstack.script.expressions.StringExpression;
+import solidstack.script.expressions.StringLiteral;
 import solidstack.script.expressions.SymbolExpression;
 import solidstack.script.expressions.While;
 import solidstack.script.operators.Apply;
-import solidstack.script.operators.Function;
 import solidstack.script.operators.Operator;
 import solidstack.script.operators.Spread;
 import funny.Symbol;
@@ -315,23 +314,23 @@ public class ScriptParser
 			case RETURN: // TODO Make a statement instead of a function
 			case VAL: // TODO Make a statement instead of a function
 			case THIS:
-				if( token.getValue().equals( "fun" ) ) // TODO Remove this or use Scala's function syntax
-				{
-					token2 = this.tokenizer.next();
-					if( token2.getType() != TokenType.PAREN_OPEN && token2.getType() != TokenType.BRACE_OPEN )
-						throw new SourceException( "Expected one of (, {", token2.getLocation() );
-					if( token2.getType() == TokenType.PAREN_OPEN )
-						oldStop = swapStops( TokenType.PAREN_CLOSE );
-					else
-						oldStop = swapStops( TokenType.BRACE_CLOSE );
-					expressions = parseExpressions();
-					swapStops( oldStop );
-					if( expressions.size() < 2 )
-						throw new SourceException( "Expected 2 or more expressions", token2.getLocation() );
-					Expression pars = expressions.remove( 0 );
-					Expression block = token2.getType() == TokenType.BRACE_OPEN ? new Block( expressions.getLocation(), expressions ) : expressions;
-					return new Parenthesis( token2.getLocation(), new Function( "->", pars, block ) );
-				}
+//				if( token.getValue().equals( "fun" ) ) // TODO Remove this or use Scala's function syntax
+//				{
+//					token2 = this.tokenizer.next();
+//					if( token2.getType() != TokenType.PAREN_OPEN && token2.getType() != TokenType.BRACE_OPEN )
+//						throw new SourceException( "Expected one of (, {", token2.getLocation() );
+//					if( token2.getType() == TokenType.PAREN_OPEN )
+//						oldStop = swapStops( TokenType.PAREN_CLOSE );
+//					else
+//						oldStop = swapStops( TokenType.BRACE_CLOSE );
+//					expressions = parseExpressions();
+//					swapStops( oldStop );
+//					if( expressions.size() < 2 )
+//						throw new SourceException( "Expected 2 or more expressions", token2.getLocation() );
+//					Expression pars = expressions.remove( 0 );
+//					Expression block = token2.getType() == TokenType.BRACE_OPEN ? new Block( expressions.getLocation(), expressions ) : expressions;
+//					return new Parenthesis( token2.getLocation(), new Function( "->", pars, block ) );
+//				}
 
 				return new Identifier( token.getLocation(), token.getValue() );
 

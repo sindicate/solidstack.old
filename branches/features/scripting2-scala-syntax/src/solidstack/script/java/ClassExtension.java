@@ -36,8 +36,8 @@ public class ClassExtension
 
 	static
 	{
-		for( Method method : DefaultClassExtensions.class.getMethods() )
-			if( ( method.getModifiers() & Modifier.STATIC ) != 0 ) // Only statics
+		for( Method method : DefaultClassExtensions.class.getMethods() ) // Only public members
+			if( ( method.getModifiers() & Modifier.STATIC ) != 0 ) // Only statics members
 			{
 				Class<?>[] types = method.getParameterTypes();
 				if( types.length > 0 ) // Need at least one argument

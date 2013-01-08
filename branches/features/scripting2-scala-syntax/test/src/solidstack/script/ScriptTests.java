@@ -59,8 +59,9 @@ public class ScriptTests extends Util
 	@Test
 	static public void test3()
 	{
-		test( "1 + 1 * 2", 3 );
-		test( "2 * 1 + 1", 3 );
+		test( "1 + 1 * 2", \u0033 ); // Unicode 33 is '3'
+		test( "2 * 1 + \u0031", 3 ); // Unicode done by Java parser
+//		test( "2 * 1 + \\u0031", 3 ); // Unicode done by script parser
 		test( "1 + 1 + 1", 3 );
 		test( "1 + 2 * 2 + 1", 6 );
 		test( "( 1 + 2 ) * 2 + 1", 7 );
@@ -248,20 +249,6 @@ public class ScriptTests extends Util
 	@Test
 	static public void test12()
 	{
-		testParseFail( "println( 1 " );
-		test( "f = fun( a; a * a ); f( 3 )", 9 );
-		// TODO New fun syntax
-		test( "fun( a; a * a ) ( 5 )", 25 );
-		test( "b = 8; fun( a; a ) ( b )", 8 );
-		test( "fun( a; a( 3 ) ) ( fun( b; 5 * b ) )", 15 );
-		test( "fun( a, b; a( 1, 2 ) * b( 3, 4 ) ) ( fun( c, d; c * d ), fun( e, f; e * f ) )", 24 );
-		test( "fun( a, b; a( 1, 2 ) * b( 3, 4 ) ) ( fun( a, b; a * b ), fun( a, b; a * b ) )", 24 );
-		test( "f = fun( ; 1 ); f()", 1 );
-		test( "a = 0; fun( ; a = 1 ) (); a", 1 );
-		test( "fun( a; a ) ( null )", null );
-		test( "f = fun( ; fun( ; 2 ) ); f()()", 2 );
-		test( "a = 1; f = fun( ; a ); a = 2; f()", 2 );
-		test( "fun(a;fun(;a))(1)()", 1 );
 	}
 
 	@Test
@@ -317,8 +304,6 @@ public class ScriptTests extends Util
 	{
 		test( "( a, b ) = ( 1, 2 ); a + b", 3 );
 		test( "( a, b ) = ( 1, 2 ); a + b", 3 );
-		test( "( a, b ) = fun( ; 1, 2 )(); a + b", 3 );
-		test( "( a, b ) = ( fun( ; 1 ), fun( ; 2 ) ) ; a() + b()", 3 );
 		test( "( a, b ) = ( () => ( 1, 2 ) )(); a + b", 3 );
 		test( "( a, b ) = ( () => 1, () => 2 ); a() + b()", 3 );
 	}
@@ -343,21 +328,13 @@ public class ScriptTests extends Util
 	{
 		test( "var a = 1;", 1 );
 
-		test( "fun( ; a = 1 )(); a", 1 ); // The function has no scope of its own
-		test( "a = 1; fun( a; a = 2 )( a ); a;", 1 );
-		test( "a = 1; fun( ; var a = 2 )(); a", 2 ); // The function has no scope of its own
-//		test( "a = 1; fun( ; val( a ) = 2 )(); a", 2 ); // The function has no scope of its own
-		test( "a = 1; fun{ ; var a = 2 }(); a", 1 ); // The function has its own scope
-
 		test( "( a = 1 ); a", 1 ); // The block has no scope of its own
 		test( "a = 1; ( var a = 2 ); a", 2 ); // The block has no scope of its own
-//		test( "a = 1; fun( ; val( a ) = 2 )(); a", 2 ); // The function has no scope of its own
 		test( "a = 1; { var a = 2 }; a", 1 ); // The block has its own scope
 
 		test( "( () => a = 1 )(); a", 1 ); // The function has no scope of its own
 		test( "a = 1; ( a => a = 2 )( a ); a;", 1 );
 		test( "a = 1; ( () => var a = 2 )(); a", 2 ); // The function has no scope of its own
-//		test( "a = 1; fun( ; val( a ) = 2 )(); a", 2 ); // The function has no scope of its own
 		test( "a = 1; f = () => { var a = 2 }; f(); a", 1 ); // The function has its own scope
 	}
 
@@ -373,7 +350,7 @@ public class ScriptTests extends Util
 	@Test
 	static public void test18()
 	{
-		test( "l = new ArrayList(); i = 0; while( i < 10 ) ( l.add( i ); i = i + 1 ); l.foreach( fun( i; println( i ) ) )", 9 );
+		test( "l = new ArrayList(); i = 0; while( i < 10 ) ( l.add( i ); i = i + 1 ); l.foreach( i => println( i ) )", 9 );
 		eval( "println( Calendar#getInstance().getClass() )" );
 		test( "Calendar#SATURDAY", 7 );
 		fail( "Calendar#clear()", ScriptException.class, "static java.util.Calendar.clear()" );
@@ -425,11 +402,6 @@ public class ScriptTests extends Util
 
 		test( "array = Class( \"java.lang.reflect.Array\" )#newInstance( Class( \"java.lang.String\" ), 10 ); array.size()", 10 ); // TODO Array()
 		test( "array = Class( \"java.lang.reflect.Array\" )#newInstance( Class( \"int\" ), 10 ); array.size()", 10 );
-
-		eval( "fun( a; a )( null )" );
-		eval( "fun( a; a )( if( false; 1 ) )" );
-		eval( "fun( a; a )( while( false ) 1 )" );
-		eval( "fun( a; a )( List().foreach( fun( a; () ) ) )" );
 
 		eval( "( a => a )( null )" );
 		eval( "( a => a )( if( false; 1 ) )" );

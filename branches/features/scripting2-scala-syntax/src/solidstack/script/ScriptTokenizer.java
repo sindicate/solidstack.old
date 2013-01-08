@@ -232,7 +232,7 @@ public class ScriptTokenizer
 									case '\"': break;
 									case '\\': break;
 									case '$': result.append( '\\' ); break; // As is. TODO Remember, not for '' strings
-									case 'u':
+									case 'u': // TODO Actually, these escapes should be active through the entire script, like Java and Scala do. Maybe disabled by default. Or removed and optional for String literals.
 										char[] codePoint = new char[ 4 ];
 										for( int i = 0; i < 4; i++ )
 										{
@@ -251,6 +251,7 @@ public class ScriptTokenizer
 
 				// Character
 				case '\'':
+					// FIXME '\n' and the other escapes do not work yet
 					ch = in.read();
 					if( ch == -1 ) throw new SourceException( "Unexpected EOF", in.getLocation() );
 					int ch2 = in.read();

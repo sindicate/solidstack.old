@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import solidstack.script.Script;
 import solidstack.script.objects.Assoc;
 import solidstack.script.objects.FunnyString;
+import solidstack.util.ObjectArrayListIterator;
 
 
 /**
@@ -263,6 +264,11 @@ public class DefaultClassExtensions
 		return result;
 	}
 
+	static public Object foreach( Object[] array, Function function )
+	{
+		return foreach( new ObjectArrayListIterator( array ), function );
+	}
+
 	static public Object foreachKey( Map<?,?> map, Function function )
 	{
 		return foreach( map.keySet(), function );
@@ -275,22 +281,32 @@ public class DefaultClassExtensions
 
 	static public List map( Iterable iterable, Function function )
 	{
-		return map( iterable.iterator(), function );
+		return map( iterable.iterator(), function, new ArrayList() );
 	}
 
 	static public List map( Iterator iterator, Function function )
 	{
-		List result = new ArrayList();
+		return map( iterator, function, new ArrayList() );
+	}
+
+	static public LinkedList map( LinkedList list, Function function )
+	{
+		return (LinkedList)map( list.iterator(), function, new LinkedList() );
+	}
+
+	static private List map( Iterator iterator, Function function, List result )
+	{
 		while( iterator.hasNext() )
 			result.add( function.call( iterator.next() ) );
 		return result;
 	}
 
-	static public List map( Object[] array, Function function )
+	static public Object[] map( Object[] array, Function function )
 	{
-		List result = new ArrayList(array.length);
-		for( Object object : array )
-			result.add( function.call( object ) );
+		int len = array.length;
+		Object[] result = new Object[ len ];
+		for( int i = 0; i < len; i++ )
+			result[ i ] = function.call( array[ i ] );
 		return result;
 	}
 
