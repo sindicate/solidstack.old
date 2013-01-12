@@ -32,9 +32,9 @@ public class ValueMapTests
 
 		for( int i = 0; i < COUNT; i++ )
 		{
-			String key = Integer.toString( i );
+			Symbol key = Symbol.apply( Integer.toString( i ) );
 			TestEntry entry = values.remove( key );
-			Assert.assertEquals( entry.getKey().toString(), key );
+			Assert.assertEquals( entry.getKey(), key );
 		}
 		Assert.assertEquals( values.size(), 0 );
 
@@ -47,9 +47,9 @@ public class ValueMapTests
 		Assert.assertEquals( values.size(), COUNT );
 		for( int i = COUNT - 1; i >= 0; i-- )
 		{
-			String key = Integer.toString( i );
+			Symbol key = Symbol.apply( Integer.toString( i ) );
 			TestEntry entry = values.remove( key );
-			Assert.assertEquals( entry.getKey().toString(), key );
+			Assert.assertEquals( entry.getKey(), key );
 		}
 		Assert.assertEquals( values.size(), 0 );
 	}
