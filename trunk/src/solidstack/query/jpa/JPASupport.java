@@ -23,12 +23,11 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 
-import org.hibernate.QueryException;
-
 import solidstack.lang.Assert;
 import solidstack.query.Query;
 import solidstack.query.Query.Language;
 import solidstack.query.Query.PreparedSQL;
+import solidstack.query.QueryException;
 
 
 /**
