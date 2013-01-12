@@ -191,16 +191,16 @@
 			[query] = solidstack.query.* excluding solidstack.query.jpa.* solidstack.query.hibernate.*
 			[template] = solidstack.template.* excluding solidstack.template.groovy.* solidstack.template.javascript.*
 			check solidstack.cache.*               dependentOnlyOn java.* javax.* solidstack.* org.slf4j.*
-			check solidstack.io.*                  dependentOnlyOn java.* javax.* solidstack.* org.slf4j.*
-			check solidstack.lang.*                dependentOnlyOn java.* javax.* solidstack.* org.slf4j.*
+			check solidstack.io.*                  dependentOnlyOn java.* javax.* solidstack.*
+			check solidstack.lang.*                dependentOnlyOn java.* javax.* solidstack.*
 			check [query]                          dependentOnlyOn java.* javax.* solidstack.* org.slf4j.*
 			check solidstack.query.jpa.*           dependentOnlyOn java.* javax.* solidstack.*
 			check solidstack.query.hibernate.*     dependentOnlyOn java.* javax.* solidstack.* org.hibernate.*
 			check [template]                       dependentOnlyOn java.* javax.* solidstack.* org.slf4j.*
 			check solidstack.template.groovy.*     dependentOnlyOn java.* javax.* solidstack.* groovy.* org.codehaus.groovy.*
 			check solidstack.template.javascript.* dependentOnlyOn java.* javax.* solidstack.* org.mozilla.javascript.*
-			check solidstack.util.*                dependentOnlyOn java.* javax.* solidstack.* org.slf4j.*
-			check solidstack.xml.*                 dependentOnlyOn java.* javax.* solidstack.* org.slf4j.*
+			check solidstack.util.*                dependentOnlyOn java.* javax.* solidstack.*
+			check solidstack.xml.*                 dependentOnlyOn java.* javax.* solidstack.*
 	    </dependencyCheck>
 		<delete file="cobertura.ser" />
 		<testng classpathref="test.classpath" outputDir="${build.home}/testreports" haltOnFailure="true" verbose="3"
