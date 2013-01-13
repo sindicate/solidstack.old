@@ -115,6 +115,20 @@
 	<taskdef uri="antlib:org.sonar.ant" resource="org/sonar/ant/antlib.xml" classpathref="sonar.classpath" />
 	<taskdef name="dependencyCheck" classname="classycle.ant.DependencyCheckingTask" classpathref="classycle.classpath" />
 
+
+	<!-- Check Java version  -->
+
+	<echo message="Java Version: ${java.version}"/>
+	<echo message="Java home: ${java.home}"/>
+	<fail message="Unsupported Java version: ${java.version}. Let the JAVA_HOME environment variable point to a JDK 1.6.">
+		<condition>
+			<not>
+				<contains string="${java.version}" substring="1.6" casesensitive="false" />
+			</not>
+		</condition>
+	</fail>
+
+	
 	<!-- Targets -->
 
 	<target name="clean" description="Clean out the output directories ">
