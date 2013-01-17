@@ -41,7 +41,7 @@ public class ScriptTokenizer
 	@SuppressWarnings( "javadoc" )
 	static public enum TokenType {
 		// Literals & identifiers
-		INTEGER, DECIMAL, STRING, CHAR, IDENTIFIER, SYMBOL, OPERATOR,
+		INTEGER, DECIMAL, STRING, CHAR, IDENTIFIER, SYMBOL, OPERATOR, PSTRING,
 		// Fixed characters
 		PAREN_OPEN( "(", false ), PAREN_CLOSE( ")", false ), BRACKET_OPEN( "[", false ), BRACKET_CLOSE( "]", false ), BRACE_OPEN( "{", false ), BRACE_CLOSE( "}", false ),
 		BACKQUOTE( "`", false ), /* QUOTE( "'", false ), */ DOT( ".", false ), SEMICOLON( ";", false ), COMMA( ",", false ),
@@ -64,6 +64,7 @@ public class ScriptTokenizer
 		private TokenType() { this( null, false ); }
 		private TokenType( String word ) { this( word, true ); }
 		private TokenType( String word, boolean reserved ) { this.word = word; this.reserved = reserved; }
+		@Override public String toString() { if( this.word != null ) return this.word; return super.toString(); }
 	}
 
 	/**
@@ -109,12 +110,19 @@ public class ScriptTokenizer
 		this.in = new PushbackReader( in );
 	}
 
+	public ScriptTokenizer( PushbackReader in )
+	{
+		this.in = in;
+	}
+
 	/**
 	 * @return The underlying reader.
 	 */
 	public PushbackReader getIn()
 	{
-		return this.in;
+		if( this.pos == 3 )
+			return this.in;
+		throw new IllegalStateException( "There are still token in the push back buffer" );
 	}
 
 	/**
@@ -204,11 +212,16 @@ public class ScriptTokenizer
 						ch = in.read();
 					}
 					while( ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch >= '0' && ch <= '9' || ch == '$' || ch == '_' );
-					in.push( ch );
 					String value = result.toString();
 					TokenType type = RESERVED_WORDS.get( value );
 					if( type != null )
+					{
+						in.push( ch );
 						return new Token( type, location, value );
+					}
+					if( ch == '"' )
+						return new Token( TokenType.PSTRING, location, value );
+					in.push( ch );
 					return new Token( TokenType.IDENTIFIER, location, value );
 
 				// String

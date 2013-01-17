@@ -46,7 +46,7 @@ public class FunnyTemplateCompiler
 				case NEWLINE:
 				case WHITESPACE:
 					if( !text )
-						buffer.append( "out.write(\"" );
+						buffer.append( "out.write(s\"" );
 					text = true;
 					writeFunnyString( buffer, event.getData() );
 					break;
@@ -67,10 +67,10 @@ public class FunnyTemplateCompiler
 
 				case EXPRESSION2:
 					if( !text )
-						buffer.append( "out.write(\"" );
+						buffer.append( "out.write(s\"" );
 					text = true;
 					buffer.append( "${" );
-					writeFunnyString( buffer, event.getData() );
+					writeFunnyString( buffer, event.getData() ); // TODO This is not right, why write like this?
 					buffer.append( '}' );
 					break;
 
@@ -106,20 +106,23 @@ public class FunnyTemplateCompiler
 		context.setTemplate( new FunnyTemplate( script ) );
 	}
 
-	// TODO Any other characters?
+	// TODO Unit test: what if $ or ${ in the string?
 	static private void writeFunnyString( StringBuilder buffer, String s )
 	{
 		char[] chars = s.toCharArray();
 		int len = chars.length;
-		char c;
 		for( int i = 0; i < len; i++ )
+		{
+			char c;
 			switch( c = chars[ i ] )
 			{
+				case '\b': buffer.append( '\\' ); c = 'b'; break;
+				case '\f': buffer.append( '\\' ); c = 'f'; break;
 				case '"':
 				case '\\':
-					buffer.append( '\\' ); //$FALL-THROUGH$
-				default:
-					buffer.append( c );
+					buffer.append( '\\' );
 			}
+			buffer.append( c );
+		}
 	}
 }

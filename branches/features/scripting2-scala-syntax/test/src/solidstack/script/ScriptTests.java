@@ -311,16 +311,18 @@ public class ScriptTests extends Util
 	@Test
 	static public void test15()
 	{
-		test( "a = 1; \"a = ${a}\"", "a = 1" );
-		test( "a = 1; s = \"a = ${a}\"; a = 2; s", "a = 1" );
-		test( "a = 1; \"a = \\${a}\"", "a = ${a}" );
-		test( "\"${1}\"", "1" );
-		test( "\"${}\"", "" );
-		test( "\"\".getClass()", String.class );
-		test( "\"x\".getClass()", String.class );
-		test( "\"${1}\".getClass()", FunnyString.class );
-		test( "\"x${1}x\".getClass()", FunnyString.class );
-		test( "\"x${1}x\".size()", 3 );
+		test( "a = 1; s\"a = ${a}\"", "a = 1" );
+		test( "a = 1; s = s\"a = ${a}\"; a = 2; s", "a = 1" );
+		test( "a = 1; s\"a = \\${a}\"", "a = ${a}" );
+		test( "s\"${1}\"", "1" );
+		test( "s\"${}\"", "" );
+		test( "s\"\".getClass()", String.class );
+		test( "s\"x\".getClass()", String.class );
+		test( "s\"${1}\".getClass()", FunnyString.class );
+		test( "s\"x${1}x\".getClass()", FunnyString.class );
+		test( "s\"x${1}x\".size()", 3 );
+		test( "s\"${\"x\"}\"", "x" );
+		fail( "\"${\"x\"}\"", SourceException.class, "Unexpected token 'x'" );
 	}
 
 	@Test
@@ -671,7 +673,7 @@ public class ScriptTests extends Util
 
 		test( "List( 1, 2, 3 ).filter( n => n == 2 )", Arrays.asList( 2 ) );
 		test( "List( 1, 2, 3 ).filter( n => () )", Arrays.asList() );
-		test( "List( 1, 2, 3 ).map( n => \"${n}.0\".toString() )", Arrays.asList( "1.0", "2.0", "3.0" ) );
+		test( "List( 1, 2, 3 ).map( n => s\"${n}.0\".toString() )", Arrays.asList( "1.0", "2.0", "3.0" ) );
 		test( "List( 1, 2, 3 ).fold( 0, ( a, b ) => a + b )", 6 );
 	}
 

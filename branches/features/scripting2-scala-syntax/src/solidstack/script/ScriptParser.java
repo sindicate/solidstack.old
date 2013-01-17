@@ -18,6 +18,7 @@ package solidstack.script;
 
 import java.math.BigDecimal;
 
+import solidstack.io.PushbackReader;
 import solidstack.io.SourceException;
 import solidstack.io.SourceLocation;
 import solidstack.io.SourceReader;
@@ -25,6 +26,7 @@ import solidstack.io.SourceReaders;
 import solidstack.lang.Assert;
 import solidstack.script.ScriptTokenizer.Token;
 import solidstack.script.ScriptTokenizer.TokenType;
+import solidstack.script.StringTokenizer.Fragment;
 import solidstack.script.expressions.Block;
 import solidstack.script.expressions.BooleanLiteral;
 import solidstack.script.expressions.DecimalLiteral;
@@ -220,7 +222,10 @@ public class ScriptParser
 				return new IntegerLiteral( token.getLocation(), Integer.valueOf( token.getValue() ) );
 
 			case STRING:
-				return parseString( token );
+				return new StringLiteral( token.getLocation(), token.getValue() );
+
+			case PSTRING:
+				return parsePString( token, this.tokenizer.getIn() );
 
 			case PAREN_OPEN:
 				TokenType oldStop = swapStops( TokenType.PAREN_CLOSE );
@@ -343,24 +348,44 @@ public class ScriptParser
 	}
 
 	/**
-	 * Parses a super string.
+	 * Parses a string as a processed string.
 	 *
-	 * @param s The super string to parse.
-	 * @param location The location of the super string.
+	 * @param s The processed string to parse.
+	 * @param location The start location of the processed string.
 	 * @return An expression.
 	 */
 	static public Expression parseString( String s, SourceLocation location )
 	{
 		SourceReader in = SourceReaders.forString( s, location );
-		StringTokenizer t = new StringTokenizer( in );
+		StringTokenizer t = new StringTokenizer( in, false );
+		return parsePString( t, location );
+	}
+
+	/**
+	 * Parses a processed string.
+	 *
+	 * @param token The identifier in front of the processed string.
+	 * @param in The source reader to read the processed string from.
+	 * @return An expression.
+	 */
+	static public Expression parsePString( Token token, PushbackReader in )
+	{
+		if( !token.eq( "s" ) )
+			throw new SourceException( "Only 's' is currently allowed", token.getLocation() );
+		StringTokenizer t = new StringTokenizer( in, true );
+		return parsePString( t, token.getLocation() );
+	}
+
+	static private Expression parsePString( StringTokenizer t, SourceLocation location )
+	{
 		ScriptParser parser = new ScriptParser( t );
 		parser.swapStops( TokenType.BRACE_CLOSE );
 
 		StringExpression result = new StringExpression( location );
 
-		String fragment = t.getFragment();
+		Fragment fragment = t.getFragment();
 		if( fragment.length() != 0 )
-			result.append( new StringLiteral( location, fragment ) );
+			result.append( new StringLiteral( fragment.getLocation(), fragment.getValue() ) );
 		while( t.foundExpression() )
 		{
 			Expression expression = parser.parse();
@@ -368,25 +393,14 @@ public class ScriptParser
 				result.append( expression );
 			fragment = t.getFragment();
 			if( fragment.length() != 0 )
-				result.append( new StringLiteral( location, fragment ) );
+				result.append( new StringLiteral( fragment.getLocation(), fragment.getValue() ) );
 		}
 
 		if( result.size() == 0 )
-			return new StringLiteral( location, "" );
+			return new StringLiteral( fragment.getLocation(), "" );
 		if( result.size() == 1 && result.get( 0 ) instanceof StringLiteral )
 			return result.get( 0 );
 		return result;
-	}
-
-	/**
-	 * Parses a super string.
-	 *
-	 * @param string The super string to parse.
-	 * @return An expression.
-	 */
-	static public Expression parseString( Token string )
-	{
-		return parseString( string.getValue(), string.getLocation() );
 	}
 
 	private TokenType swapStops( TokenType stop )
