@@ -247,11 +247,6 @@ public class ScriptTests extends Util
 	}
 
 	@Test
-	static public void test12()
-	{
-	}
-
-	@Test
 	static public void test13()
 	{
 		Scope scope = new Scope();
@@ -561,6 +556,7 @@ public class ScriptTests extends Util
 		assertThat( -3 % 2 ).isEqualTo( -1 ); // So this is not mod but remainder
 		assertThat( new BigInteger( "-3" ).mod( new BigInteger( "2" ) ) ).isEqualTo( new BigInteger( "1" ) );
 		assertThat( new BigInteger( "-3" ).remainder( new BigInteger( "2" ) ) ).isEqualTo( new BigInteger( "-1" ) );
+		test( "-3%2", -1 );
 
 		test( "16 as float / 15 as byte", (float)16 / 15 );
 		test( "16 as float % 15 as byte", (float)1 );

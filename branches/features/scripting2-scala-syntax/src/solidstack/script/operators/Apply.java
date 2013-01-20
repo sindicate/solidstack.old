@@ -30,7 +30,6 @@ import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.java.Java;
-import solidstack.script.objects.ClassMember;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Type;
@@ -84,8 +83,6 @@ public class Apply extends Operator
 		Object left;
 		if( this.left instanceof Member )
 			left = ( (Member)this.left ).evaluateForApply( thread );
-		else if( this.left instanceof StaticMember )
-			left = ( (StaticMember)this.left ).evaluateForApply( thread );
 		else
 			left = this.left.evaluate( thread );
 		left = Util.deref( left );
@@ -155,20 +152,6 @@ public class Apply extends Operator
 					if( object instanceof Type )
 						return Java.invokeStatic( ( (Type)object ).theClass(), f.getName(), Util.toJavaParameters( pars, thread ) );
 					return Java.invoke( object, f.getName(), Util.toJavaParameters( pars, thread ) );
-				}
-				finally
-				{
-					thread.popStack();
-				}
-			}
-
-			if( left instanceof ClassMember )
-			{
-				ClassMember f = (ClassMember)left;
-				thread.pushStack( getLocation() );
-				try
-				{
-					return Java.invokeStatic( f.getType(), f.getName(), Util.toJavaParameters( pars, thread ) );
 				}
 				finally
 				{
