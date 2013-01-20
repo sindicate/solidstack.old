@@ -11,10 +11,7 @@ public class Util
 {
 	static public Object finalize( Object value )
 	{
-		value = Util.deref( value );
-		if( value == null )
-			return null;
-		return value;
+		return Util.deref( value );
 	}
 
 	static public Object toJava( Object value )
@@ -26,6 +23,8 @@ public class Util
 			return null;
 		if( result instanceof FunnyString )
 			return result.toString();
+		if( result instanceof Type )
+			return ( (Type)result ).theClass();
 		return result;
 	}
 

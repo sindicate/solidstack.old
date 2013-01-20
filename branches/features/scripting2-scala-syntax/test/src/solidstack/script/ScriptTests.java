@@ -271,7 +271,7 @@ public class ScriptTests extends Util
 		test( "o1.test( 1, 1 )", scope, 6 );
 		test( "1.getClass()", Integer.class );
 		test( "1.1.getClass()", BigDecimal.class );
-		test( "1.0.getClass()#valueOf( 1.1 as double )", new BigDecimal( "1.1" ) );
+		test( "loadClass( 1.0.getClass() ).valueOf( 1.1 as double )", new BigDecimal( "1.1" ) );
 		test( "1.00.valueOf( 1.1 as double )", new BigDecimal( "1.1" ) );
 		test( "o1.test( 1 == 1 )", scope, 7 );
 //		test( "o1.test( a = 1, b = 2 )", scope, 8 ); TODO
@@ -353,10 +353,10 @@ public class ScriptTests extends Util
 	static public void test18()
 	{
 		test( "l = new ArrayList(); i = 0; while( i < 10 ) ( l.add( i ); i = i + 1 ); l.foreach( i => println( i ) )", 9 );
-		eval( "println( Calendar#getInstance().getClass() )" );
-		test( "Calendar#SATURDAY", 7 );
-		fail( "Calendar#clear()", ScriptException.class, "static java.util.Calendar.clear()" );
-		fail( "TestObject = loadClass( \"solidstack.script.ScriptTests$TestObject2\" ); TestObject#value", ScriptException.class, "static solidstack.script.ScriptTests$TestObject2.value" );
+		eval( "println( Calendar.getInstance().getClass() )" );
+		test( "Calendar.SATURDAY", 7 );
+		fail( "Calendar.clear()", ScriptException.class, "static java.util.Calendar.clear()" );
+		fail( "TestObject = loadClass( \"solidstack.script.ScriptTests$TestObject2\" ); TestObject.value", ScriptException.class, "static solidstack.script.ScriptTests$TestObject2.value" );
 	}
 
 	@Test
@@ -402,8 +402,8 @@ public class ScriptTests extends Util
 		test( "map = Map(); map.size()", 0 );
 		test( "map = Map(); map( \"third\" ) = 3; map( \"third\" )", 3 );
 
-		test( "array = loadClass( \"java.lang.reflect.Array\" )#newInstance( loadClass( \"java.lang.String\" ), 10 ); array.size()", 10 ); // TODO Array()
-		test( "array = loadClass( \"java.lang.reflect.Array\" )#newInstance( loadClass( \"int\" ), 10 ); array.size()", 10 );
+		test( "array = loadClass( \"java.lang.reflect.Array\" ).newInstance( loadClass( \"java.lang.String\" ), 10 ); array.size()", 10 ); // TODO Array()
+		test( "array = loadClass( \"java.lang.reflect.Array\" ).newInstance( loadClass( \"int\" ), 10 ); array.size()", 10 );
 
 		eval( "( a => a )( null )" );
 		eval( "( a => a )( if( false; 1 ) )" );
@@ -440,7 +440,7 @@ public class ScriptTests extends Util
 	{
 		test( "f = (a,b,c) => a+b+c; g = (*a) => f(*a); g(1,2,3)", 6 );
 		test( "f = *a => \"sinterklaas\".charAt( *a ); f( 1 )", 'i' );
-		test( "asList = *i => Arrays#asList( *i ); list = asList( 1, 2, 3 ); list.size()", 3 );
+		test( "asList = *i => Arrays.asList( *i ); list = asList( 1, 2, 3 ); list.size()", 3 );
 		test( "f = ( a, *b ) => b.size(); f( 1, 2, 3 )", 2 );
 		test( "f = ( a, *b ) => a; g = ( a, *b ) => f( *b, a ); g( 1, 2, 3 )", 2 );
 		test( "f = *a => a.size(); f( 1, 2, 3 );", 3 );
@@ -615,7 +615,7 @@ public class ScriptTests extends Util
 
 		fail( "loadClass( \"xxx\" )", ScriptException.class, "Class not found: xxx" );
 		fail( "1.xxx", ScriptException.class, "No such field: java.lang.Integer.xxx" );
-		fail( "Integer#xxx", ScriptException.class, "No such field: static java.lang.Integer.xxx" );
+		fail( "Integer.xxx", ScriptException.class, "No such field: static java.lang.Integer.xxx" );
 		fail( "o1.test( null )", scope, ScriptException.class, "test(java.util.Map)" );
 		fail( "f = ( *b, c ) => (); f()", ScriptException.class, "Collecting parameter must be the last parameter" );
 		fail( "f = ( a ) => (); f()", ScriptException.class, "Not enough parameters" );
@@ -669,7 +669,7 @@ public class ScriptTests extends Util
 		test( "List( 1, 2, 3 ).mkString( \"List( \", \", \", \" )\" )", "List( 1, 2, 3 )" );
 		test( "List( 1, 2, 3 ).iterator().mkString( \"; \" )", "1; 2; 3" );
 		test( "List( 1, 2, 3 ).iterator().mkString( \"List( \", \", \", \" )\" )", "List( 1, 2, 3 )" );
-		test( "Array#newInstance( String, 3 ).mkString()", "nullnullnull" );
+		test( "Array.newInstance( String, 3 ).mkString()", "nullnullnull" );
 
 		test( "List( 1, 2, 3 ).filter( n => n == 2 )", Arrays.asList( 2 ) );
 		test( "List( 1, 2, 3 ).filter( n => () )", Arrays.asList() );

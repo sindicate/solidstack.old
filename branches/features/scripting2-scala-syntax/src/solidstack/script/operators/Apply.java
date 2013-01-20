@@ -23,8 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import funny.Symbol;
-
 import solidstack.script.JavaException;
 import solidstack.script.Returning;
 import solidstack.script.ThreadContext;
@@ -35,7 +33,9 @@ import solidstack.script.java.Java;
 import solidstack.script.objects.ClassMember;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.ObjectMember;
+import solidstack.script.objects.Type;
 import solidstack.script.objects.Util;
+import funny.Symbol;
 
 
 public class Apply extends Operator
@@ -50,12 +50,12 @@ public class Apply extends Operator
 		if( this.left instanceof New )
 		{
 			Object left = Util.deref( ( (New)this.left ).evaluateForApply( thread ) );
-			if( !( left instanceof Class ) )
-				throw new ThrowException( "The new operator needs a Class argument, not a " + left.getClass().getName(), thread.cloneStack( getLocation() ) );
+			if( !( left instanceof Type ) )
+				throw new ThrowException( "The new operator needs a type argument, not a " + left.getClass().getName(), thread.cloneStack( getLocation() ) );
 
 			Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY;
 
-			Class<?> cls = (Class<?>)left;
+			Class<?> cls = ( (Type)left ).theClass();
 			try
 			{
 				thread.pushStack( getLocation() );
@@ -148,10 +148,13 @@ public class Apply extends Operator
 			if( left instanceof ObjectMember )
 			{
 				ObjectMember f = (ObjectMember)left;
+				Object object = f.getObject();
 				thread.pushStack( getLocation() );
 				try
 				{
-					return Java.invoke( f.getObject(), f.getName(), Util.toJavaParameters( pars, thread ) );
+					if( object instanceof Type )
+						return Java.invokeStatic( ( (Type)object ).theClass(), f.getName(), Util.toJavaParameters( pars, thread ) );
+					return Java.invoke( object, f.getName(), Util.toJavaParameters( pars, thread ) );
 				}
 				finally
 				{
@@ -173,9 +176,9 @@ public class Apply extends Operator
 				}
 			}
 
-			if( left instanceof Class )
+			if( left instanceof Type )
 			{
-				Class<?> cls = (Class<?>)left;
+				Class<?> cls = ( (Type)left ).theClass();
 				thread.pushStack( getLocation() );
 				try
 				{

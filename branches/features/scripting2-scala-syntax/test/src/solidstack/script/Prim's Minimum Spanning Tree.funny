@@ -12,7 +12,7 @@
 10.          The priority of (v) is the weight of (u, v)
 */
 
-INFINITY = Integer#MAX_VALUE;
+INFINITY = Integer.MAX_VALUE;
  
 
 graph = Map

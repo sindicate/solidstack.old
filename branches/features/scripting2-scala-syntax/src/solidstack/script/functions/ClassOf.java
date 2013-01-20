@@ -18,31 +18,20 @@ package solidstack.script.functions;
 
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
-import solidstack.script.java.Java;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Type;
 import solidstack.script.objects.Util;
 
-public class LoadClass extends FunctionObject
+public class ClassOf extends FunctionObject
 {
 	@Override
 	public Object call( ThreadContext thread, Object... parameters )
 	{
 		if( parameters.length != 1 )
-			throw new ThrowException( "loadClass() expects exactly one parameter", thread.cloneStack() );
-		Object object = Util.toJava( parameters[ 0 ] );
-		if( object instanceof Class )
-			return new Type( (Class)object );
-		if( !( object instanceof String ) )
-			throw new ThrowException( "loadClass() expects a string or class parameter", thread.cloneStack() );
-		ClassLoader loader = Thread.currentThread().getContextClassLoader();
-		try
-		{
-			return new Type( Java.forName( (String)object, loader ) );
-		}
-		catch( ClassNotFoundException e )
-		{
-			throw new ThrowException( "Class not found: " + (String)object, thread.cloneStack() ); // TODO Is this correct exception?
-		}
+			throw new ThrowException( "classOf() expects exactly one parameter", thread.cloneStack() );
+		Object object = Util.deref( parameters[ 0 ] );
+		if( !( object instanceof Type ) )
+			throw new ThrowException( "classOf() expects a type parameter", thread.cloneStack() );
+		return ( (Type)object ).theClass();
 	}
 }

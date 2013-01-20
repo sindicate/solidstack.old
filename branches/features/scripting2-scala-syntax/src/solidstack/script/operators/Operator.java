@@ -57,7 +57,7 @@ abstract public class Operator implements Expression
 		precedences.put( "[", 1 ); // array index
 		precedences.put( "(", 1 ); // method call
 		precedences.put( ".", 1 ); // object member
-		precedences.put( "#", 1 ); // static member
+//		precedences.put( "#", 1 ); // static member
 		precedences.put( "new", 1 ); // object creation
 
 //		precedences.put( "@++", 2 ); // postfix increment
@@ -212,10 +212,10 @@ abstract public class Operator implements Expression
 					return new Member( name, left, right );
 				break;
 
-			case '#':
-				if( name.equals( "#" ) )
-					return new StaticMember( name, left, right );
-				break;
+//			case '#':
+//				if( name.equals( "#" ) )
+//					return new StaticMember( name, left, right );
+//				break;
 
 			case ':':
 				if( name.equals( ":" ) )

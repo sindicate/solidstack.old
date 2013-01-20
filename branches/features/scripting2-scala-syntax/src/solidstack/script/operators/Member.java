@@ -16,7 +16,6 @@
 
 package solidstack.script.operators;
 
-import funny.Symbol;
 import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
@@ -25,9 +24,11 @@ import solidstack.script.expressions.Identifier;
 import solidstack.script.java.Java;
 import solidstack.script.java.MissingFieldException;
 import solidstack.script.objects.ObjectMember;
+import solidstack.script.objects.Type;
 import solidstack.script.objects.Util;
 import solidstack.script.scopes.AbstractScope;
 import solidstack.script.scopes.ScopeException;
+import funny.Symbol;
 
 
 public class Member extends Operator
@@ -49,6 +50,8 @@ public class Member extends Operator
 				return ( (AbstractScope)left ).getRef( right );
 			try
 			{
+				if( left instanceof Type )
+					return Java.getStatic( ( (Type)left ).theClass(), right.toString() );
 				return Java.get( left, right.toString() );
 			}
 			catch( MissingFieldException e )

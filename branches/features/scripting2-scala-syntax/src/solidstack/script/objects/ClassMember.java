@@ -17,7 +17,7 @@
 package solidstack.script.objects;
 
 
-
+// TODO Remove
 public class ClassMember
 {
 	private Class type;

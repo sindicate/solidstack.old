@@ -28,6 +28,7 @@ import solidstack.script.objects.ClassMember;
 import solidstack.script.objects.Util;
 
 
+// TODO Remove
 public class StaticMember extends Operator
 {
 	public StaticMember( String name, Expression left, Expression right)
