@@ -32,6 +32,7 @@ import solidstack.script.functions.Call;
 import solidstack.script.functions.Def;
 import solidstack.script.functions.Defined;
 import solidstack.script.functions.Load;
+import solidstack.script.functions.LoadClass;
 import solidstack.script.functions.Print;
 import solidstack.script.functions.Println;
 import solidstack.script.functions.Return;
@@ -52,6 +53,7 @@ public class GlobalScope extends Scope
 		val( Symbol.apply( "def" ), new Def() ); // TODO Remove
 		val( Symbol.apply( "defined" ), new Defined() );
 		val( Symbol.apply( "load" ), new Load() );
+		val( Symbol.apply( "loadClass" ), new LoadClass() );
 		val( Symbol.apply( "print" ), new Print() );
 		val( Symbol.apply( "println" ), new Println() );
 		val( Symbol.apply( "return" ), new Return() ); // TODO Remove

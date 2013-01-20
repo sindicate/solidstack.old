@@ -148,19 +148,6 @@ public class DefaultClassExtensions
 		return new LinkedList( Arrays.asList( objects ) );
 	}
 
-	static public Class static_apply( Class dummy, String name ) throws ClassNotFoundException
-	{
-		ClassLoader loader = Thread.currentThread().getContextClassLoader();
-//		try
-//		{
-			return Java.forName( name, loader );
-//		}
-//		catch( ClassNotFoundException e )
-//		{
-//			throw new ThrowException( "No such class: " + e.getMessage(), ThreadContext.get().cloneStack() );
-//		}
-	}
-
 	static public List static_apply( List list, Object... objects )
 	{
 		return new ArrayList( Arrays.asList( objects ) );

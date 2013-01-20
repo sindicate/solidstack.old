@@ -285,7 +285,7 @@ public class ScriptTests extends Util
 	static public void test13_2()
 	{
 		Scope scope = new Scope();
-		test( "c = Class( \"solidstack.script.ScriptTests$TestObject1\" );", scope, TestObject1.class );
+		test( "c = loadClass( \"solidstack.script.ScriptTests$TestObject1\" );", scope, TestObject1.class );
 		test( "new c().value", scope, 0 );
 		test( "new c( 3.14 ).value", scope, 2 );
 		test( "new c( 0.123E-10 ).value", scope, 2 );
@@ -295,7 +295,7 @@ public class ScriptTests extends Util
 		test( "new c( 1 == 1 ).value", scope, 7 );
 //		test( "new c( a = 1, b = 2 ).value", scope, 8 ); TODO
 
-		test( "c2 = Class( \"solidstack.script.ScriptTests$TestObject2\" );", scope, TestObject2.class );
+		test( "c2 = loadClass( \"solidstack.script.ScriptTests$TestObject2\" );", scope, TestObject2.class );
 		test( "new c2( 1, 1 ).value", scope, 1 );
 	}
 
@@ -343,7 +343,7 @@ public class ScriptTests extends Util
 	@Test
 	static public void test17()
 	{
-		test( "Class( \"java.util.ArrayList\" );", ArrayList.class );
+		test( "loadClass( \"java.util.ArrayList\" );", ArrayList.class );
 		test( "new ArrayList();", new ArrayList<Object>() );
 		test( "l = new ArrayList(); l.add( \"sinterklaas\" ); l.toArray();", new Object[] { "sinterklaas" } );
 		test( "l = new ArrayList(); l.toArray();", new Object[ 0 ] );
@@ -356,13 +356,13 @@ public class ScriptTests extends Util
 		eval( "println( Calendar#getInstance().getClass() )" );
 		test( "Calendar#SATURDAY", 7 );
 		fail( "Calendar#clear()", ScriptException.class, "static java.util.Calendar.clear()" );
-		fail( "TestObject = Class( \"solidstack.script.ScriptTests$TestObject2\" ); TestObject#value", ScriptException.class, "static solidstack.script.ScriptTests$TestObject2.value" );
+		fail( "TestObject = loadClass( \"solidstack.script.ScriptTests$TestObject2\" ); TestObject#value", ScriptException.class, "static solidstack.script.ScriptTests$TestObject2.value" );
 	}
 
 	@Test
 	static public void test19()
 	{
-		fail( "o = new ( Class( \"solidstack.script.ScriptTests$TestObject3\" ) )(); o.throwException()", JavaException.class, "test exception" );
+		fail( "o = new ( loadClass( \"solidstack.script.ScriptTests$TestObject3\" ) )(); o.throwException()", JavaException.class, "test exception" );
 	}
 
 	@Test
@@ -402,8 +402,8 @@ public class ScriptTests extends Util
 		test( "map = Map(); map.size()", 0 );
 		test( "map = Map(); map( \"third\" ) = 3; map( \"third\" )", 3 );
 
-		test( "array = Class( \"java.lang.reflect.Array\" )#newInstance( Class( \"java.lang.String\" ), 10 ); array.size()", 10 ); // TODO Array()
-		test( "array = Class( \"java.lang.reflect.Array\" )#newInstance( Class( \"int\" ), 10 ); array.size()", 10 );
+		test( "array = loadClass( \"java.lang.reflect.Array\" )#newInstance( loadClass( \"java.lang.String\" ), 10 ); array.size()", 10 ); // TODO Array()
+		test( "array = loadClass( \"java.lang.reflect.Array\" )#newInstance( loadClass( \"int\" ), 10 ); array.size()", 10 );
 
 		eval( "( a => a )( null )" );
 		eval( "( a => a )( if( false; 1 ) )" );
@@ -613,7 +613,7 @@ public class ScriptTests extends Util
 		Scope scope = new Scope();
 		scope.set( "o1", new TestObject1() );
 
-		fail( "Class( \"xxx\" )", JavaException.class, "java.lang.ClassNotFoundException: xxx" );
+		fail( "loadClass( \"xxx\" )", ScriptException.class, "Class not found: xxx" );
 		fail( "1.xxx", ScriptException.class, "No such field: java.lang.Integer.xxx" );
 		fail( "Integer#xxx", ScriptException.class, "No such field: static java.lang.Integer.xxx" );
 		fail( "o1.test( null )", scope, ScriptException.class, "test(java.util.Map)" );
