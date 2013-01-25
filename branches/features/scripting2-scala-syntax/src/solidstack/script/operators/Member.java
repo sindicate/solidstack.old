@@ -16,7 +16,11 @@
 
 package solidstack.script.operators;
 
+import java.lang.reflect.InvocationTargetException;
+
 import solidstack.lang.Assert;
+import solidstack.script.JavaException;
+import solidstack.script.Returning;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
@@ -53,6 +57,13 @@ public class Member extends Operator
 				if( left instanceof Type )
 					return Java.getStatic( ( (Type)left ).theClass(), right.toString() );
 				return Java.get( left, right.toString() );
+			}
+			catch( InvocationTargetException e )
+			{
+				Throwable t = e.getCause();
+				if( t instanceof Returning )
+					throw (Returning)t;
+				throw new JavaException( t, thread.cloneStack( getLocation() ) );
 			}
 			catch( MissingFieldException e )
 			{

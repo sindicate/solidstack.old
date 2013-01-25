@@ -20,9 +20,9 @@ public class Util
 		Util.test( expression, null, expected );
 	}
 
-	static public void test( String expression, Scope context, Object expected )
+	static public void test( String expression, Object scope, Object expected )
 	{
-		Object result = Util.eval( expression, context );
+		Object result = Util.eval( expression, scope );
 		Assert.assertEquals( result, expected );
 	}
 
@@ -31,13 +31,13 @@ public class Util
 		return Util.eval( expression, null );
 	}
 
-	static public Object eval( String expression, Scope context )
+	static public Object eval( String expression, Object scope )
 	{
 		Script script = Script.compile( expression );
 //		StringBuilder buffer = new StringBuilder();
 //		script.writeTo( buffer );
 //		System.out.println( buffer );
-		return script.eval( context );
+		return script.eval( scope );
 	}
 
 	static public void testParseFail( String expression )

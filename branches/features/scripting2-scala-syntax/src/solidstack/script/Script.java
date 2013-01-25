@@ -26,6 +26,7 @@ import solidstack.script.objects.Tuple;
 import solidstack.script.objects.Util;
 import solidstack.script.scopes.AbstractScope;
 import solidstack.script.scopes.AbstractScope.Ref;
+import solidstack.script.scopes.ObjectScope;
 import solidstack.script.scopes.Scope;
 
 public class Script
@@ -40,7 +41,7 @@ public class Script
 		return new Script( new ScriptParser( new ScriptTokenizer( reader ) ).parse() );
 	}
 
-	static private Object eval0( Expression expression, AbstractScope scope )
+	static private Object eval0( Expression expression, Object scope )
 	{
 		if( expression == null )
 			return null;
@@ -48,7 +49,13 @@ public class Script
 		if( scope == null )
 			scope = new Scope();
 
-		ThreadContext thread = ThreadContext.init( scope );
+		AbstractScope s;
+		if( scope instanceof AbstractScope )
+			s = (AbstractScope)scope;
+		else
+			s = new ObjectScope( scope ); // TODO And MapScope?
+
+		ThreadContext thread = ThreadContext.init( s );
 		try
 		{
 			return expression.evaluate( thread );
@@ -67,7 +74,7 @@ public class Script
 //		}
 	}
 
-	static public Object eval( Expression expression, AbstractScope scope )
+	static public Object eval( Expression expression, Object scope )
 	{
 		return Util.toJava( eval0( expression, scope ) );
 	}
@@ -105,7 +112,7 @@ public class Script
 		this.expression = expression;
 	}
 
-	public Object eval( AbstractScope scope )
+	public Object eval( Object scope )
 	{
 		return eval( this.expression, scope );
 	}

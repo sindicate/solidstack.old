@@ -674,6 +674,15 @@ public class ScriptTests extends Util
 	}
 
 	@Test
+	static public void test30() throws IOException
+	{
+		Object scope = new TestObject4();
+		test( "field1", scope, 1 );
+//		test( "getField2()", scope, 2 ); TODO
+		test( "field2", scope, 2 );
+	}
+
+	@Test
 	static public void prims() throws IOException
 	{
 		String script = readFile( "Prim's Minimum Spanning Tree.funny" );
@@ -769,5 +778,12 @@ public class ScriptTests extends Util
 		{
 			throw new Exception( "test exception" );
 		}
+	}
+
+	@SuppressWarnings( "unused" )
+	static public class TestObject4
+	{
+		public int field1 = 1;
+		public int getField2() { return 2; };
 	}
 }

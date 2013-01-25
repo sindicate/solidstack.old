@@ -17,6 +17,7 @@
 package solidstack.script.java;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -44,6 +45,7 @@ public class CallResolver
 
 	static public MethodCall resolveMethodCall( CallResolutionContext context )
 	{
+		Assert.isTrue( context.getArgs() != null );
 		// TODO Do something smart when number of arguments is larger than 10 or so
 		// TODO Switch to enable caching
 		MethodHandle handle = cache.get( context.getCallSignature() );
@@ -64,7 +66,7 @@ public class CallResolver
 		MethodCall result = resolveMethodCall0( context );
 
 		if( result != null )
-			cache.put( context.getCallSignature(), new MethodHandle( result.method, result.extMethod, result.constructor, result.isVarargCall ) );
+			cache.put( context.getCallSignature(), new MethodHandle( result.method, result.extMethod, result.constructor, result.isVarargCall, result.field ) );
 
 		return result;
 	}
@@ -157,6 +159,9 @@ public class CallResolver
 
 	static public MethodCall resolveConstructorCall( CallResolutionContext context )
 	{
+		Assert.isTrue( context.getArgs() != null );
+		// TODO Caching?
+
 		for( Constructor constructor : context.getType().getConstructors() )
 		{
 			MethodCall caller = CallResolver.matchArguments( context, constructor.getParameterTypes(), ( constructor.getModifiers() & Modifier.TRANSIENT ) != 0 );
@@ -306,12 +311,12 @@ public class CallResolver
 				if( !Types.assignable( types[ i++ ], otherType ) )
 					return false;
 			if( vararg )
-		{
+			{
 				Class type = types[ lastArg ].getComponentType();
 				if( !Types.assignable( type, otherType ) )
 					return false;
-		}
 			}
+		}
 		else if( i < lastType )
 		{
 			Class type = types[ lastArg ].getComponentType();
@@ -333,11 +338,80 @@ public class CallResolver
 				Class otherType = otherTypes[ lastType ].getComponentType();
 				if( !Types.assignable( type, otherType ) )
 					return false;
-				}
+			}
 			else
 				return false;
-				}
+		}
 
 		return true;
+	}
+
+
+	static public MethodCall resolvePropertyRead( CallResolutionContext context )
+	{
+		Assert.isTrue( context.getArgs() == null );
+		// TODO Switch to enable caching
+		MethodHandle handle = cache.get( context.getCallSignature() );
+		if( handle != null )
+		{
+//			System.out.println( context.getName() + " hit" );
+			MethodCall caller = new MethodCall( false );
+			caller.constructor = handle.constructor;
+			caller.method = handle.method;
+			caller.field = handle.field;
+			caller.extMethod = handle.extMethod;
+			caller.object = context.getObject();
+			caller.args = context.getArgs();
+			return caller;
+		}
+
+//		System.out.println( context.getName() + " misss" );
+
+		MethodCall result = resolvePropertyRead0( context );
+
+		if( result != null )
+			cache.put( context.getCallSignature(), new MethodHandle( result.method, result.extMethod, result.constructor, result.isVarargCall, result.field ) );
+
+		return result;
+	}
+
+
+	static private MethodCall resolvePropertyRead0( CallResolutionContext context )
+	{
+		boolean needStatic = context.staticCall();
+
+		String name = "get" + capitalize( context.getName() );
+		CallResolutionContext context2;
+		if( needStatic )
+			context2 = new CallResolutionContext( context.getType(), name, EMPTY_OBJECT_ARRAY );
+		else
+			context2 = new CallResolutionContext( context.getObject(), name, EMPTY_OBJECT_ARRAY );
+
+		MethodCall caller = resolveMethodCall( context2 );
+		if( caller != null )
+			return caller;
+
+		for( Field field : context.getType().getFields() )
+			if( !needStatic || ( field.getModifiers() & Modifier.STATIC ) != 0 )
+				if( field.getName().equals( context.getName() ) )
+				{
+					caller = new MethodCall( false );
+					caller.object = context.getObject();
+					caller.field = field;
+					break;
 				}
-				}
+
+		return caller;
+	}
+
+
+	static public String capitalize( String name )
+	{
+		if( name == null || name.length() == 0 ) return name;
+		if( name.length() == 1 ) return name.toUpperCase();
+		if( Character.isUpperCase( name.charAt( 1 ) ) ) return name;
+		char chars[] = name.toCharArray();
+		chars[ 0 ] = Character.toUpperCase( chars[ 0 ] );
+		return new String( chars );
+	}
+}

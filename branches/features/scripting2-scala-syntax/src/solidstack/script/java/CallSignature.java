@@ -41,10 +41,14 @@ public class CallSignature
         result = 31 * result + this.type.hashCode();
         result *= 31; if( this.name != null ) result += this.name.hashCode();
         result = 31 * result + ( this.staticCall ? 1231 : 1237 );
-        for( Class<?> type : this.argTypes )
+        if( this.argTypes != null )
         {
-            result *= 31;
-            if( type != null ) result += type.hashCode();
+            result *= 31; // TODO Maybe if property becomes a separate boolean we don't need this one
+	        for( Class<?> type : this.argTypes )
+	        {
+	            result *= 31;
+	            if( type != null ) result += type.hashCode();
+	        }
         }
         return result;
 	}
@@ -52,18 +56,15 @@ public class CallSignature
 	@Override
 	public boolean equals( Object other )
 	{
-		if( !( other instanceof CallSignature ) )
-			return false;
+		if( !( other instanceof CallSignature ) ) return false;
 
 		CallSignature key = (CallSignature)other;
 
-		if( key.type != this.type )
-			return false;
-		if( key.staticCall != this.staticCall )
-			return false;
-
-		if( key.name == null ? this.name != null : !key.name.equals( this.name ) )
-			return false;
+		if( key.type != this.type ) return false;
+		if( key.staticCall != this.staticCall ) return false;
+		if( key.name == null ? this.name != null : !key.name.equals( this.name ) ) return false;
+		if( key.argTypes == null ) return this.argTypes == null;
+		if( this.argTypes == null ) return false;
 
 		int len = key.argTypes.length;
 		if( this.argTypes.length != len )

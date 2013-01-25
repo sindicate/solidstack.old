@@ -48,8 +48,11 @@ public class CallResolutionContext
 		this.object = object;
 		this.type = object.getClass();
 		this.name = name;
-		this.args = args;
-		this.argTypes = Types.getTypes( this.args );
+		if( args != null ) // null for property read
+		{
+			this.args = args;
+			this.argTypes = Types.getTypes( this.args );
+		}
 
 		this.call = new CallSignature( this.type, name, false, this.argTypes );
 	}
@@ -58,8 +61,11 @@ public class CallResolutionContext
 	{
 		this.type = type;
 		this.name = name;
-		this.args = args;
-		this.argTypes = Types.getTypes( this.args );
+		if( args != null ) // null for property read
+		{
+			this.args = args;
+			this.argTypes = Types.getTypes( this.args );
+		}
 
 		this.call = new CallSignature( type, name, true, this.argTypes );
 	}

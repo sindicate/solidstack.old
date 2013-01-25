@@ -17,6 +17,7 @@
 package solidstack.script.java;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
@@ -32,6 +33,7 @@ public class MethodCall
 	public Constructor constructor;
 	public Object[] args;
 	public boolean isVarargCall;
+	public Field field;
 
 	public MethodCall( boolean isVarargCall )
 	{
@@ -50,6 +52,8 @@ public class MethodCall
 			return this.constructor.getParameterTypes();
 		if( this.extMethod != null )
 			return this.extMethod.getParameterTypes();
+		if( this.field != null )
+			throw new UnsupportedOperationException();
 		return this.method.getParameterTypes();
 	}
 
@@ -61,9 +65,16 @@ public class MethodCall
 
 	public Object invoke() throws InvocationTargetException
 	{
-		this.args = Types.transformArguments( getParameterTypes(), this.args );
 		try
 		{
+			if( this.field != null )
+			{
+				if( !this.field.isAccessible() )
+					this.field.setAccessible( true );
+				return this.field.get( this.object );
+			}
+			if( this.args != null )
+				this.args = Types.transformArguments( getParameterTypes(), this.args ); // TODO Why this.args?
 			if( this.constructor != null )
 				return this.constructor.newInstance( this.args );
 			if( this.extMethod != null )
@@ -97,6 +108,8 @@ public class MethodCall
 			return this.constructor;
 		if( this.extMethod != null )
 			return this.extMethod.getMethod();
+		if( this.field != null )
+			return this.field;
 		return this.method;
 	}
 
@@ -109,8 +122,12 @@ public class MethodCall
 
 	public boolean isVararg()
 	{
+		if( this.constructor != null )
+			return ( this.constructor.getModifiers() & Modifier.TRANSIENT ) != 0;
 		if( this.extMethod != null )
 			return this.extMethod.isVararg();
+		if( this.field != null )
+			return false;
 		return ( this.method.getModifiers() & Modifier.TRANSIENT ) != 0;
 	}
 
