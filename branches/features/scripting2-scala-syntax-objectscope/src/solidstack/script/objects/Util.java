@@ -45,7 +45,7 @@ public class Util
 //		return result;
 //	}
 
-	static public Object[] toJavaParameters( Object[] pars, ThreadContext thread )
+	static public Object[] toJavaParameters( ThreadContext thread, Object... pars )
 	{
 //		// TODO Not all parameters need to be named here: example method( String, String, Map )
 //		if( pars.length > 0 && pars[ 0 ] instanceof Labeled )

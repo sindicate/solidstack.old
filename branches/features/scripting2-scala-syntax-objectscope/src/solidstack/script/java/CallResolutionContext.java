@@ -43,31 +43,25 @@ public class CallResolutionContext
 	private Set< Class > interfacesDone = new HashSet();
 
 
-	public CallResolutionContext( Object object, String name, Object[] args )
+	public CallResolutionContext( Object object, String name, boolean property, Object... args )
 	{
 		this.object = object;
 		this.type = object.getClass();
 		this.name = name;
-		if( args != null ) // null for property read
-		{
-			this.args = args;
-			this.argTypes = Types.getTypes( this.args );
-		}
+		this.args = args;
+		this.argTypes = Types.getTypes( this.args );
 
-		this.call = new CallSignature( this.type, name, false, this.argTypes );
+		this.call = new CallSignature( this.type, name, property, false, this.argTypes );
 	}
 
-	public CallResolutionContext( Class type, String name, Object[] args )
+	public CallResolutionContext( Class type, String name, boolean property, Object... args )
 	{
 		this.type = type;
 		this.name = name;
-		if( args != null ) // null for property read
-		{
-			this.args = args;
-			this.argTypes = Types.getTypes( this.args );
-		}
+		this.args = args;
+		this.argTypes = Types.getTypes( this.args );
 
-		this.call = new CallSignature( type, name, true, this.argTypes );
+		this.call = new CallSignature( type, name, property, true, this.argTypes );
 	}
 
 	public Object getObject()

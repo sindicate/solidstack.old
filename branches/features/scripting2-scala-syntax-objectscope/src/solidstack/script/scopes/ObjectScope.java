@@ -45,6 +45,16 @@ public class ObjectScope extends AbstractScope
 			this.key = key;
 		}
 
+		public Object getObject()
+		{
+			return ObjectScope.this.object;
+		}
+
+		public Symbol getKey()
+		{
+			return Symbol.apply( this.key );
+		}
+
 		public Object get()
 		{
 			try
@@ -66,17 +76,26 @@ public class ObjectScope extends AbstractScope
 
 		public void set( Object value )
 		{
-			throw new UnsupportedOperationException(); // TODO
+			try
+			{
+				Java.set( ObjectScope.this.object, this.key, value ); // TODO Use resolve() instead.
+			}
+			catch( InvocationTargetException e )
+			{
+				Throwable t = e.getCause();
+				if( t instanceof Returning )
+					throw (Returning)t;
+				throw new JavaException( t, ThreadContext.get().cloneStack( /* TODO getLocation() */ ) );
+			}
+			catch( MissingFieldException e )
+			{
+				throw new ScopeException( "'" + this.key + "' undefined" );
+			}
 		}
 
 		public boolean isUndefined()
 		{
 			throw new UnsupportedOperationException(); // TODO
-		}
-
-		public Symbol getKey()
-		{
-			return Symbol.apply( this.key );
 		}
 	}
 }

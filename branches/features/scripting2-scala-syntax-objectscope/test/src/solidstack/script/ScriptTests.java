@@ -32,7 +32,6 @@ import solidstack.io.SourceException;
 import solidstack.script.java.Java;
 import solidstack.script.objects.FunnyString;
 import solidstack.script.scopes.Scope;
-import solidstack.script.scopes.ScopeException;
 import funny.Symbol;
 
 
@@ -616,7 +615,7 @@ public class ScriptTests extends Util
 		fail( "f = ( *b, c ) => (); f()", ScriptException.class, "Collecting parameter must be the last parameter" );
 		fail( "f = ( a ) => (); f()", ScriptException.class, "Not enough parameters" );
 		fail( "f = () => (); f( 1 )", ScriptException.class, "Too many parameters" );
-		fail( "f()", ScopeException.class, "'f' undefined" );
+		fail( "f()", ScriptException.class, "'f' undefined" );
 		fail( "f = null; f()", ScriptException.class, "Function is null" );
 		fail( "f = 1; f()", ScriptException.class, "No such method: java.lang.Integer.apply()" );
 		fail( "a = ( 1, 2 )", ScriptException.class, "Can't assign tuples to variables" );
@@ -653,7 +652,7 @@ public class ScriptTests extends Util
 	@Test
 	static public void test28()
 	{
-		test( "if( true; return( true ) ); return( false )", true );
+		test( "if( true ) return( true ); return( false )", true );
 		test( "l = List( 1, 2, 3 ); l.foreach( i => return( i ) ); 4", 1 );
 		test( "l = List( 1, 2, 3 ); f = i => return( i ); l.foreach( f ); 4", 4 );
 	}
@@ -678,8 +677,11 @@ public class ScriptTests extends Util
 	{
 		Object scope = new TestObject4();
 		test( "field1", scope, 1 );
-//		test( "getField2()", scope, 2 ); TODO
+		test( "field1 = 2; field2", scope, 2 );
 		test( "field2", scope, 2 );
+		test( "field2 = 3; field2", scope, 3 );
+		test( "getField2()", scope, 3 );
+		test( "setField2( 4 ); field2", scope, 4 );
 	}
 
 	@Test
@@ -784,6 +786,8 @@ public class ScriptTests extends Util
 	static public class TestObject4
 	{
 		public int field1 = 1;
-		public int getField2() { return 2; };
+		private int _field2 = 2;
+		public int getField2() { return this._field2; };
+		public void setField2( int value ) { this._field2 = value; }
 	}
 }
