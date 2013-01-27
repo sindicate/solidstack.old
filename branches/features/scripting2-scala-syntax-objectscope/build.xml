@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!--
+   Copyright 2006 René M. de Bloois
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<project basedir="." name="solidstack" default="dist" xmlns:maven="antlib:org.apache.maven.artifact.ant">
+
+	<!-- Maven Ant Task -->
+
+	<path id="maven.classpath">
+		<fileset dir="tools/maven" includes="*.jar" />
+	</path>
+
+	<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="antlib:org.apache.maven.artifact.ant" classpathref="maven.classpath" />
+
+	<!-- Properties -->
+	<property file="build.properties" />
+	<property name="target-jre" value="1.5" />
+	<property name="build.sysclasspath" value="ignore" />
+
+	<!-- Product folders -->
+	<property name="build.home" location="../BUILDS/solidstack" />
+	<property name="temp.home" value="../TEMP/solidstack" />
+	<property name="dist.home" location="${build.home}/dist" />
+
+
+	<!-- Tool classpaths -->
+
+	<path id="groovy.classpath">
+		<fileset dir="lib" includes="groovy*.jar" />
+		<fileset dir="tools/svnkit" includes="*.jar" />
+	</path>
+
+	<path id="jarjar.classpath">
+		<fileset dir="tools/jarjar" includes="*.jar" />
+	</path>
+
+	<path id="testng.classpath">
+		<fileset dir="test/lib" includes="testng*.jar" />
+	</path>
+
+	<path id="cobertura.classpath">
+		<fileset dir="tools/cobertura" includes="*.jar" />
+	</path>
+
+	<path id="sonar.classpath">
+		<fileset dir="tools/sonar" includes="*.jar" />
+	</path>
+
+	<path id="classycle.classpath">
+		<fileset dir="tools/classycle" includes="*.jar" />
+	</path>
+
+	<!-- Build classpaths -->
+
+	<path id="compile.classpath">
+		<fileset dir="lib" includes="**/*.jar" />
+	</path>
+
+	<path id="compiletest.classpath">
+		<pathelement location="${build.home}/classes" />
+		<fileset dir="test/lib" includes="*.jar" />
+		<path refid="compile.classpath" />
+	</path>
+
+	<path id="test_.classpath">
+		<pathelement location="${build.home}/testclasses" />
+		<pathelement location="${build.home}/instrumentedclasses" />
+		<pathelement location="${build.home}/classes" />
+		<fileset dir="lib" includes="*.jar" />
+		<fileset dir="test/lib" includes="*.jar" />
+		<fileset dir="test/lib/hibernate" includes="*.jar" />
+		<path refid="cobertura.classpath" />
+	</path>
+
+	<path id="test.classpath">
+		<path refid="test_.classpath" />
+		<fileset dir="lib/hibernate41" includes="*.jar" />
+		<fileset dir="lib/spring31" includes="*.jar" />
+		<fileset dir="test/lib/hibernate41" includes="*.jar" />
+		<fileset dir="test/lib/spring31" includes="*.jar" />
+	</path>
+
+	<path id="test-hibernate3.classpath">
+		<path refid="test_.classpath" />
+		<fileset dir="test/lib/hibernate33" includes="*.jar" />
+	</path>
+
+	<path id="test-jpa1.classpath">
+		<path refid="test-hibernate3.classpath" />
+		<fileset dir="test/lib/jpa10" includes="*.jar" />
+	</path>
+
+
+	<!-- Custom Ant Task Definitions -->
+
+	<taskdef resource="testngtasks" classpathref="testng.classpath" />
+	<taskdef name="groovy" classname="org.codehaus.groovy.ant.Groovy" classpathref="groovy.classpath" />
+	<taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="jarjar.classpath" />
+	<taskdef resource="tasks.properties" classpathref="cobertura.classpath" />
+	<taskdef uri="antlib:org.sonar.ant" resource="org/sonar/ant/antlib.xml" classpathref="sonar.classpath" />
+	<taskdef name="dependencyCheck" classname="classycle.ant.DependencyCheckingTask" classpathref="classycle.classpath" />
+
+
+	<!-- Check Java version  -->
+
+	<echo message="Java Version: ${java.version}"/>
+	<echo message="Java home: ${java.home}"/>
+	<fail message="Unsupported Java version: ${java.version}. Let the JAVA_HOME environment variable point to a JDK 1.6.">
+		<condition>
+			<not>
+				<contains string="${java.version}" substring="1.6" casesensitive="false" />
+			</not>
+		</condition>
+	</fail>
+
+	
+	<!-- Targets -->
+
+	<target name="clean" description="Clean out the output directories ">
+		<delete dir="${build.home}" />
+		<delete dir="${temp.home}" />
+	</target>
+
+
+	<target name="compile">
+		<echo message="java.home=${java.home}" />
+		<mkdir dir="${build.home}/classes" />
+		<javac srcdir="src" destdir="${build.home}/classes"
+			classpathref="compile.classpath" source="${target-jre}" target="${target-jre}" optimize="true" debug="true" deprecation="true" />
+		<sync todir="${build.home}/classes">
+			<fileset dir="src" excludes="**/*.java,**/*.html" />
+			<preserveInTarget includes="**/*.class" />
+		</sync>
+	</target>
+
+
+	<target name="jar" depends="compile">
+		<fail message="A *.txt file is missing">
+			<condition>
+				<resourcecount when="ne" count="2">
+					<fileset dir="." includes="LICENSE.txt,NOTICE.txt,CHANGELOG.TXT" />
+				</resourcecount>
+			</condition>
+		</fail>
+		<jarjar compress="yes" destfile="${dist.home}/solidstack.jar">
+			<zipfileset dir="${build.home}/classes" />
+			<zipfileset dir="." includes="LICENSE.txt,NOTICE.txt,CHANGELOG.TXT" prefix="META-INF" />
+			<keep pattern="solidstack.**" />
+			<manifest>
+				<attribute name="Implementation-Title" value="SolidStack" />
+				<attribute name="Implementation-Version" value="${release.number}.${svn.revision}" />
+				<attribute name="Implementation-Vendor-Id" value="solidstack.googlecode.com" />
+				<attribute name="Version" value="${release.number}.${svn.revision}" />
+				<attribute name="Project-Name" value="${ant.project.name}" />
+				<attribute name="Built-By" value="${user.name}" />
+				<attribute name="Target-JRE" value="${target-jre}" />
+				<attribute name="SVN-url" value="${svn.url}" />
+				<attribute name="SVN-revision" value="${svn.committedRevision}" />
+			</manifest>
+		</jarjar>
+	</target>
+
+
+	<target name="compiletest" depends="compile">
+		<mkdir dir="${build.home}/testclasses" />
+		<javac source="${target-jre}" target="${target-jre}" srcdir="test/src" destdir="${build.home}/testclasses" debug="true" deprecation="true" optimize="true">
+			<classpath refid="compiletest.classpath" />
+		</javac>
+	</target>
+
+
+	<target name="buildtest" depends="compiletest">
+		<sync todir="${build.home}/testclasses">
+			<fileset dir="test/src" excludes="**/*.java" />
+			<preserveInTarget includes="**/*.class" />
+		</sync>
+	</target>
+
+
+	<target name="instrument" depends="compile">
+		<cobertura-instrument todir="${build.home}/instrumentedclasses">
+			<fileset dir="${build.home}/classes" includes="**/*.class" />
+		</cobertura-instrument>
+	</target>
+
+
+	<target name="test" depends="buildtest,instrument" description="Run the tests">
+		<dependencyCheck failOnUnwantedDependencies="true">
+			<fileset dir="${build.home}/classes"><include name="**/*.class" /></fileset>
+			[query] = solidstack.query.* excluding solidstack.query.jpa.* solidstack.query.hibernate.*
+			[template] = solidstack.template.* excluding solidstack.template.groovy.* solidstack.template.javascript.* solidstack.template.funny.*
+			check solidstack.cache.*               dependentOnlyOn java.* javax.* solidstack.* org.slf4j.*
+			check solidstack.io.*                  dependentOnlyOn java.* javax.* solidstack.*
+			check solidstack.lang.*                dependentOnlyOn java.* javax.* solidstack.*
+			check [query]                          dependentOnlyOn java.* javax.* solidstack.* org.slf4j.*
+			check solidstack.query.jpa.*           dependentOnlyOn java.* javax.* solidstack.*
+			check solidstack.query.hibernate.*     dependentOnlyOn java.* javax.* solidstack.* org.hibernate.*
+			check [template]                       dependentOnlyOn java.* javax.* solidstack.* org.slf4j.*
+			check solidstack.template.groovy.*     dependentOnlyOn java.* javax.* solidstack.* groovy.* org.codehaus.groovy.*
+			check solidstack.template.javascript.* dependentOnlyOn java.* javax.* solidstack.* org.mozilla.javascript.*
+			check solidstack.util.*                dependentOnlyOn java.* javax.* solidstack.*
+			check solidstack.xml.*                 dependentOnlyOn java.* javax.* solidstack.*
+	    </dependencyCheck>
+		<delete file="cobertura.ser" />
+		<testng classpathref="test.classpath" outputDir="${build.home}/testreports" haltOnFailure="true" verbose="3"
+			usedefaultlisteners="false" listeners="org.testng.reporters.JUnitReportReporter">
+			<classfileset dir="${build.home}/testclasses" />
+		</testng>
+		<testng classpathref="test-hibernate3.classpath" outputDir="${build.home}/testreports-hibernate3" haltOnFailure="true" verbose="3"
+			usedefaultlisteners="false" listeners="org.testng.reporters.JUnitReportReporter">
+			<classfileset dir="${build.home}/testclasses" includes="solidstack/query/hibernate/Hibernate3Tests.class" />
+		</testng>
+		<testng classpathref="test-jpa1.classpath" outputDir="${build.home}/testreports-jpa1" haltOnFailure="true" verbose="3"
+			usedefaultlisteners="true" listeners="org.testng.reporters.JUnitReportReporter">
+			<classfileset dir="${build.home}/testclasses" includes="solidstack/query/jpa/JPA1Tests.class" />
+		</testng>
+	</target>
+
+
+	<target name="testclass" depends="buildtest" description="Run a test class">
+		<testng classpathref="test.classpath" outputDir="${build.home}/testreports" haltOnFailure="true" verbose="3"
+			listeners="org.testng.reporters.JUnitReportReporter">
+			<classfileset dir="${build.home}/testclasses" includes="**/${testclass}.class" />
+		</testng>
+	</target>
+
+
+	<target name="testnew" depends="buildtest" description="Run new tests">
+		<testng classpathref="test.classpath" outputDir="${build.home}/testreports" haltOnFailure="true" verbose="3" groups="new" >
+			<classfileset dir="${build.home}/testclasses" />
+		</testng>
+	</target>
+
+
+	<target name="coberturareport" depends="test">
+		<cobertura-report format="xml" destdir="${build.home}/coberturareport">
+			<fileset dir="src" includes="**/*.java" />
+		</cobertura-report>
+	</target>
+
+
+	<target name="sonar" depends="coberturareport,build">
+		<property name="sonar.sources" location="src" />
+		<property name="sonar.binaries" location="${build.home}/classes" />
+		<property name="sonar.cobertura.reportPath" location="${build.home}/coberturareport/coverage.xml" />
+		<property name="sonar.surefire.reportsPath" location="${build.home}/testreports/junitreports" />
+		<!-- list of optional Sonar properties
+		<property name="sonar.projectName" value="this value overrides the name defined in Ant root node" />
+		<property name="sonar.binaries" value="list of directories which contain for example the Java bytecode" />
+		<property name="sonar.tests" value="list of test source directories separated by a comma" />
+		<property name="sonar.libraries" value="list of paths to libraries separated by a comma (These libraries are for example used by the Sonar Findbugs plugin)" />
+ 		-->
+		<sonar:sonar key="solidstack:solidstack" version="1.9.2-beta" xmlns:sonar="antlib:org.sonar.ant" />
+	</target>
+
+
+	<target name="build" depends="jar" description="Do an (incremental) build">
+	</target>
+
+
+	<target name="checksvnstatus">
+	</target>
+
+
+	<target name="getsvninfo">
+		<groovy src="scripts/getsvninfo.groovy" />
+	</target>
+
+
+	<target name="sources">
+		<jar compress="yes" destfile="${dist.home}/solidstack-sources.jar">
+			<zipfileset dir="src" includes="**/*.java" />
+		</jar>
+	</target>
+
+
+	<target name="dist" depends="checksvnstatus,getsvninfo,clean,test,build,javadoc,sources" description="Complete build process to create the distribution files">
+		<echo message="Distribution files created in ${dist.home}" />
+	</target>
+
+
+	<target name="javadoc" depends="compile" description="Generate Javadoc">
+		<delete dir="${dist.home}/javadoc" />
+		<mkdir dir="${dist.home}/javadoc" />
+		<javadoc sourcepath="src" destdir="${dist.home}/javadoc" packagenames="*" linkoffline="http://java.sun.com/j2se/1.5.0/docs/api doc/jdk1.5.0">
+			<classpath refid="compile.classpath" />
+		</javadoc>
+		<jar compress="yes" destfile="${dist.home}/solidstack-javadoc.jar">
+			<zipfileset dir="${dist.home}/javadoc" />
+		</jar>
+	</target>
+
+
+	<target name="maven:deploy" depends="dist" description="Deploys to the remote repo">
+		<maven:deploy file="${dist.home}/solidstack.jar">
+			<pom file="deploy-pom.xml" />
+			<attach file="${dist.home}/solidstack-sources.jar" type="jar" classifier="sources"/>
+			<attach file="${dist.home}/solidstack-javadoc.jar" type="jar" classifier="javadoc"/>
+		</maven:deploy>
+	</target>
+
+
+</project>
