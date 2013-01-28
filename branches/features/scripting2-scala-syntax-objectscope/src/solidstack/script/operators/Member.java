@@ -76,7 +76,8 @@ public class Member extends Operator
 		}
 	}
 
-	public Object evaluateForApply( ThreadContext thread )
+	@Override
+	public Object evaluateRef( ThreadContext thread )
 	{
 		try
 		{
@@ -87,7 +88,7 @@ public class Member extends Operator
 			if( left instanceof AbstractScope ) // TODO This is part of the OO we want
 				return ( (AbstractScope)left ).getRef( right );
 			// TODO Also read properties to look for Functions
-			return new ObjectMember( left, right.toString() );
+			return new ObjectMember( left, right );
 		}
 		catch( ScopeException e )
 		{

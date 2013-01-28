@@ -81,11 +81,7 @@ public class Apply extends Operator
 			}
 		}
 
-		Object left;
-		if( this.left instanceof Member )
-			left = ( (Member)this.left ).evaluateForApply( thread );
-		else
-			left = this.left.evaluate( thread );
+		Object left = this.left.evaluateRef( thread );
 
 		try
 		{
@@ -93,7 +89,7 @@ public class Apply extends Operator
 			{
 				ObjectMember ref = (ObjectMember)left;
 				Object object = ref.getObject();
-				String name = ref.getName();
+				String name = ref.getKey().toString();
 				Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY; // TODO Shouldn't this happen outside the try catch?
 				pars = Util.toJavaParameters( thread, pars );
 				thread.pushStack( getLocation() );

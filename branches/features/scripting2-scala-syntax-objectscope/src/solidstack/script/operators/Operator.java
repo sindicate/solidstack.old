@@ -22,6 +22,7 @@ import java.util.HashMap;
 
 import solidstack.io.SourceLocation;
 import solidstack.lang.Assert;
+import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.java.Types;
 import solidstack.script.scopes.AbstractScope;
@@ -270,6 +271,11 @@ abstract public class Operator implements Expression
 		}
 		Assert.fail( "Unknown operator " + name );
 		return null;
+	}
+
+	public Object evaluateRef( ThreadContext thread )
+	{
+		return evaluate( thread );
 	}
 
 	static protected Object add( Object left, Object right )

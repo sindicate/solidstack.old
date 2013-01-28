@@ -608,6 +608,7 @@ public class ScriptTests extends Util
 		Scope scope = new Scope();
 		scope.set( "o1", new TestObject1() );
 
+		fail( "1 = 1", ScriptException.class, "Can't assign to a java.lang.Integer" );
 		fail( "loadClass( \"xxx\" )", ScriptException.class, "Class not found: xxx" );
 		fail( "1.xxx", ScriptException.class, "No such field: java.lang.Integer.xxx" );
 		fail( "Integer.xxx", ScriptException.class, "No such field: static java.lang.Integer.xxx" );
@@ -682,6 +683,20 @@ public class ScriptTests extends Util
 		test( "field2 = 3; field2", scope, 3 );
 		test( "getField2()", scope, 3 );
 		test( "setField2( 4 ); field2", scope, 4 );
+	}
+
+	@Test
+	static public void test31() throws IOException
+	{
+		Object object = new TestObject4();
+		Scope scope = new Scope();
+		scope.def( Symbol.apply( "o" ), object );
+		test( "o.field1", scope, 1 );
+		test( "o.field1 = 2; o.field2", scope, 2 );
+		test( "o.field2", scope, 2 );
+		test( "o.field2 = 3; o.field2", scope, 3 );
+		test( "o.getField2()", scope, 3 );
+		test( "o.setField2( 4 ); o.field2", scope, 4 );
 	}
 
 	@Test

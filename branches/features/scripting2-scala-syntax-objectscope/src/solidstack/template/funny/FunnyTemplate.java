@@ -58,7 +58,7 @@ public class FunnyTemplate extends Template
 		scope.def( OUT, out );
 
 		FunnyTemplateHelper helper = new FunnyTemplateHelper( this, params, writer );
-		scope.def( Symbol.apply( "include" ), new ObjectMember( helper, "include" ) );
+		scope.def( Symbol.apply( "include" ), new ObjectMember( helper, Symbol.apply( "include" ) ) );
 
 		this.script.eval( scope );
 

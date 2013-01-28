@@ -53,7 +53,7 @@ public class Assign extends Operator
 			}
 		}
 
-		Object left = this.left.evaluate( thread );
+		Object left = this.left.evaluateRef( thread );
 		Object right = Util.deref( this.right.evaluate( thread ) );
 
 		if( left instanceof Tuple )
@@ -88,6 +88,8 @@ public class Assign extends Operator
 			throw new ThrowException( "Can't assign tuples to variables", thread.cloneStack( getLocation() ) );
 		if( value instanceof FunctionObject )
 			( (FunctionObject)value ).setAssigned();
+		if( !( var instanceof Ref ) )
+			throw new ThrowException( "Can't assign to a " + var.getClass().getName(), thread.cloneStack( getLocation() ) );
 		( (Ref)var ).set( value );
 	}
 }

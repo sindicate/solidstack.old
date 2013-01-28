@@ -47,6 +47,11 @@ public class Expressions implements Expression
 		return result;
 	}
 
+	public Object evaluateRef( ThreadContext thread )
+	{
+		return evaluate( thread );
+	}
+
 	public Expressions append( Expression expression )
 	{
 		this.expressions.add( expression );
