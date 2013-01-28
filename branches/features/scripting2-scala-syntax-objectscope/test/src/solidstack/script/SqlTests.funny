@@ -6,6 +6,6 @@ sql.eachResult( "SELECT * FROM SYS.SYSTABLES", result => println( result.getStri
 tables = sql.list( "SELECT * FROM SYS.SYSTABLES" );
 if( !tables ) throw( "Expected some tables" );
 
-tables.foreach( table => println( table( "tablename" ) ) );
+tables.foreach( table => println( table.tablename ) );
 
-tables.map( t => t( "tablename" ) ).foreach( t => println( t ) );
+tables.map( t => t.tablename ).foreach( t => println( t ) );

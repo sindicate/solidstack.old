@@ -23,9 +23,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import solidstack.script.functions.Call;
@@ -101,9 +104,12 @@ public class GlobalScope extends Scope
 		val( Symbol.apply( "Arrays" ), new Type( Arrays.class ) );
 		val( Symbol.apply( "Calendar" ), new Type( Calendar.class ) );
 		val( Symbol.apply( "Date" ), new Type( Date.class ) );
+		val( Symbol.apply( "LinkedHashMap" ), new Type( LinkedHashMap.class ) );
+		val( Symbol.apply( "LinkedHashSet" ), new Type( LinkedHashSet.class ) );
 		val( Symbol.apply( "LinkedList" ), new Type( LinkedList.class ) );
 		val( Symbol.apply( "List" ), new Type( List.class ) );
 		val( Symbol.apply( "Map" ), new Type( Map.class ) );
+		val( Symbol.apply( "Properties" ), new Type( Properties.class ) );
 		val( Symbol.apply( "Set" ), new Type( Set.class ) );
 
 		// java.reflect

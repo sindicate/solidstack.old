@@ -17,6 +17,7 @@
 package solidstack.script.operators;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 
 import solidstack.lang.Assert;
 import solidstack.script.JavaException;
@@ -52,6 +53,8 @@ public class Member extends Operator
 			Assert.isFalse( left == null, "member: " + right.toString() );
 			if( left instanceof AbstractScope ) // TODO This is part of the OO we want
 				return ( (AbstractScope)left ).getRef( right );
+			if( left instanceof Map )
+				return ( (Map)left ).get( right.toString() );
 			try
 			{
 				if( left instanceof Type )

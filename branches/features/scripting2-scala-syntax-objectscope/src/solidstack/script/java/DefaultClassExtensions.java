@@ -21,10 +21,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -143,6 +146,19 @@ public class DefaultClassExtensions
 		return buf;
 	}
 
+	static public LinkedHashMap static_apply( LinkedHashMap map, Assoc... entries )
+	{
+		LinkedHashMap result = new LinkedHashMap();
+		for( Assoc labeled : entries )
+			result.put( labeled.getLabel(), labeled.getValue() );
+		return result;
+	}
+
+	static public LinkedHashSet static_apply( LinkedHashSet set, Object... objects )
+	{
+		return new LinkedHashSet( Arrays.asList( objects ) );
+	}
+
 	static public List static_apply( LinkedList list, Object... objects )
 	{
 		return new LinkedList( Arrays.asList( objects ) );
@@ -158,6 +174,15 @@ public class DefaultClassExtensions
 		HashMap result = new HashMap();
 		for( Assoc labeled : entries )
 			result.put( labeled.getLabel(), labeled.getValue() );
+		return result;
+	}
+
+	// TODO One with parent?
+	static public Properties static_apply( Properties props, Assoc... entries )
+	{
+		Properties result = new Properties();
+		for( Assoc labeled : entries )
+			result.setProperty( (String)labeled.getLabel(), (String)labeled.getValue() );
 		return result;
 	}
 

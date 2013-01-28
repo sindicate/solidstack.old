@@ -1,7 +1,7 @@
 <%@ template version="1.0" encoding="UTF-8" language="funny" %>
 <% // Comment
 Timestamp = loadClass( "java.sql.Timestamp" );
-new Timestamp( new Date().getTime() ) %>
+new Timestamp( new Date().time ) %>
 SELECT *
 <%@ template contentType="text/html; charset=ISO-8859-1" %>
 FROM SYS.SYSTABLES

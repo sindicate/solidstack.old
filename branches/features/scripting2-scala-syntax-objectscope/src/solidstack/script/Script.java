@@ -17,6 +17,7 @@
 package solidstack.script;
 
 import java.io.StringReader;
+import java.util.Map;
 
 import solidstack.io.ReaderSourceReader;
 import solidstack.io.SourceReader;
@@ -26,6 +27,7 @@ import solidstack.script.objects.Tuple;
 import solidstack.script.objects.Util;
 import solidstack.script.scopes.AbstractScope;
 import solidstack.script.scopes.AbstractScope.Ref;
+import solidstack.script.scopes.MapScope;
 import solidstack.script.scopes.ObjectScope;
 import solidstack.script.scopes.Scope;
 
@@ -52,8 +54,10 @@ public class Script
 		AbstractScope s;
 		if( scope instanceof AbstractScope )
 			s = (AbstractScope)scope;
+		else if( scope instanceof Map )
+			s = new MapScope( (Map)scope );
 		else
-			s = new ObjectScope( scope ); // TODO And MapScope?
+			s = new ObjectScope( scope );
 
 		ThreadContext thread = ThreadContext.init( s );
 		try

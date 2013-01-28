@@ -17,6 +17,7 @@
 package solidstack.script.objects;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 
 import solidstack.script.JavaException;
 import solidstack.script.Returning;
@@ -78,7 +79,10 @@ public class ObjectMember implements Ref
 	{
 		try
 		{
-			Java.set( this.object, this.key.toString(), value ); // TODO Use resolve() instead.
+			if( this.object instanceof Map )
+				( (Map)this.object ).put( this.key.toString(), value );
+			else
+				Java.set( this.object, this.key.toString(), value ); // TODO Use resolve() instead.
 		}
 		catch( InvocationTargetException e )
 		{

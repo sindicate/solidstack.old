@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.testng.Assert;
@@ -395,6 +396,12 @@ public class ScriptTests extends Util
 		test( "map = Map(); map( \"fourth\" )", null );
 		test( "map = Map(); map.size()", 0 );
 		test( "map = Map(); map( \"third\" ) = 3; map( \"third\" )", 3 );
+		test( "map = LinkedHashMap( 0 -> 1 ); map.size()", 1 );
+
+		test( "set = Set( 0 ); set.size()", 1 );
+		test( "set = LinkedHashSet( 0, 1 ); set.size()", 2 );
+
+		test( "props = Properties( \"prop1\" -> \"value1\" ); props.prop1", "value1" );
 
 		test( "array = loadClass( \"java.lang.reflect.Array\" ).newInstance( loadClass( \"java.lang.String\" ), 10 ); array.size()", 10 ); // TODO Array()
 		test( "array = loadClass( \"java.lang.reflect.Array\" ).newInstance( loadClass( \"int\" ), 10 ); array.size()", 10 );
@@ -697,6 +704,32 @@ public class ScriptTests extends Util
 		test( "o.field2 = 3; o.field2", scope, 3 );
 		test( "o.getField2()", scope, 3 );
 		test( "o.setField2( 4 ); o.field2", scope, 4 );
+	}
+
+	@Test
+	static public void test32() throws IOException
+	{
+		Map scope = new HashMap();
+		scope.put( "field1", 1 );
+		scope.put( "field2", 2 );
+		test( "field1", scope, 1 );
+		test( "field1 = 2; field2", scope, 2 );
+		test( "field2", scope, 2 );
+		test( "field2 = 3; field2", scope, 3 );
+	}
+
+	@Test
+	static public void test33() throws IOException
+	{
+		Map map = new HashMap();
+		map.put( "field1", 1 );
+		map.put( "field2", 2 );
+		Scope scope = new Scope();
+		scope.def( Symbol.apply( "o" ), map );
+		test( "o.field1", scope, 1 );
+		test( "o.field1 = 2; o.field2", scope, 2 );
+		test( "o.field2", scope, 2 );
+		test( "o.field2 = 3; o.field2", scope, 3 );
 	}
 
 	@Test
