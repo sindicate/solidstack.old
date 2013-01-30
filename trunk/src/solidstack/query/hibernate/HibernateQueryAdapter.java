@@ -54,12 +54,12 @@ public class HibernateQueryAdapter
 	 * Retrieves a {@link ResultSet} from the given Hibernate {@link Session}.
 	 *
 	 * @param session The Hibernate {@link Session} to use.
-	 * @param args The arguments to the query.
+	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return a {@link ResultSet}.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
 	 * @see Query#resultSet(Connection, Map)
 	 */
-	public ResultSet resultSet( Session session, Map< String, Object > args )
+	public ResultSet resultSet( Session session, Object args )
 	{
 		return HibernateSupport.resultSet( this.query, session, args );
 	}
@@ -68,12 +68,12 @@ public class HibernateQueryAdapter
 	 * Retrieves a {@link List} of {@link Object} arrays from the given Hibernate {@link Session}.
 	 *
 	 * @param session The Hibernate {@link Session} to use.
-	 * @param args The arguments to the query.
+	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return a {@link List} of {@link Object} arrays.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
 	 * @see Query#listOfArrays(Connection, Map)
 	 */
-	public List< Object[] > listOfArrays( final Session session, Map< String, Object > args )
+	public List< Object[] > listOfArrays( final Session session, Object args )
 	{
 		return HibernateSupport.listOfArrays( this.query, session, args );
 	}
@@ -82,12 +82,12 @@ public class HibernateQueryAdapter
 	 * Retrieves a {@link List} of {@link Map}s from the given Hibernate {@link Session}.
 	 *
 	 * @param session The Hibernate {@link Session} to use.
-	 * @param args The arguments to the query.
+	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return A {@link List} of {@link Map}s.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
 	 * @see Query#listOfMaps(Connection, Map)
 	 */
-	public List< Map< String, Object > > listOfMaps( final Session session, Map< String, Object > args )
+	public List< Map< String, Object > > listOfMaps( final Session session, Object args )
 	{
 		return HibernateSupport.listOfMaps( this.query, session, args );
 	}
@@ -96,12 +96,12 @@ public class HibernateQueryAdapter
 	 * Executes an update (DML) or a DDL query through the given Hibernate {@link Session}.
 	 *
 	 * @param session The Hibernate {@link Session} to use.
-	 * @param args The arguments to the query.
+	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
 	 * @see Query#updateChecked(Connection, Map)
 	 */
-	public int update( Session session, Map< String, Object > args )
+	public int update( Session session, Object args )
 	{
 		return HibernateSupport.update( this.query, session, args );
 	}
@@ -110,10 +110,10 @@ public class HibernateQueryAdapter
 	 * Executes {@link org.hibernate.Query#list()}.
 	 *
 	 * @param session The Hibernate {@link Session} to use.
-	 * @param args The arguments to the query.
+	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return A list of Hibernate entities.
 	 */
-	public <T> List< T > list( Session session, Map< String, Object > args )
+	public <T> List< T > list( Session session, Object args )
 	{
 		return HibernateSupport.list( this.query, session, args );
 	}
@@ -122,10 +122,10 @@ public class HibernateQueryAdapter
 	 * Executes {@link org.hibernate.Query#executeUpdate()}.
 	 *
 	 * @param session The Hibernate {@link Session} to use.
-	 * @param args The arguments to the query.
+	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return The number of entities updated or deleted.
 	 */
-	public int executeUpdate( Session session, Map< String, Object > args )
+	public int executeUpdate( Session session, Object args )
 	{
 		return HibernateSupport.executeUpdate( this.query, session, args );
 	}
@@ -134,10 +134,10 @@ public class HibernateQueryAdapter
 	 * Executes {@link org.hibernate.Query#uniqueResult()}.
 	 *
 	 * @param session The Hibernate {@link Session} to use.
-	 * @param args The arguments to the query.
+	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return A single Hibernate entity or null.
 	 */
-	public <T> T uniqueResult( Session session, Map< String, Object > args )
+	public <T> T uniqueResult( Session session, Object args )
 	{
 		return HibernateSupport.uniqueResult( this.query, session, args );
 	}
