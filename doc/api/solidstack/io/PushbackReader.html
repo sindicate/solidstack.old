@@ -54,8 +54,8 @@ function windowTitle()
 
 <TR>
 <TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
-&nbsp;PREV CLASS&nbsp;
-&nbsp;NEXT CLASS</FONT></TD>
+&nbsp;<A HREF="../../solidstack/io/NonClosingOutputStream.html" title="class in solidstack.io"><B>PREV CLASS</B></A>&nbsp;
+&nbsp;<A HREF="../../solidstack/io/RandomAccessSourceReader.html" title="class in solidstack.io"><B>NEXT CLASS</B></A></FONT></TD>
 <TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
   <A HREF="../../index.html?solidstack/io/PushbackReader.html" target="_top"><B>FRAMES</B></A>  &nbsp;
 &nbsp;<A HREF="PushbackReader.html" target="_top"><B>NO FRAMES</B></A>  &nbsp;
@@ -75,9 +75,9 @@ function windowTitle()
 </TR>
 <TR>
 <TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
-  SUMMARY:&nbsp;NESTED&nbsp;|&nbsp;<A HREF="#field_summary">FIELD</A>&nbsp;|&nbsp;<A HREF="#constructor_summary">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_summary">METHOD</A></FONT></TD>
+  SUMMARY:&nbsp;NESTED&nbsp;|&nbsp;FIELD&nbsp;|&nbsp;<A HREF="#constructor_summary">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_summary">METHOD</A></FONT></TD>
 <TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
-DETAIL:&nbsp;<A HREF="#field_detail">FIELD</A>&nbsp;|&nbsp;<A HREF="#constructor_detail">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_detail">METHOD</A></FONT></TD>
+DETAIL:&nbsp;FIELD&nbsp;|&nbsp;<A HREF="#constructor_detail">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_detail">METHOD</A></FONT></TD>
 </TR>
 </TABLE>
 <A NAME="skip-navbar_top"></A>
@@ -101,7 +101,7 @@ Class PushbackReader</H2>
 
 <P>
 My own PushbackReader. This one has an unlimited buffer and maintains the current line number. It also gives access
- to the underlying reader. Furthermore, it wraps <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/io/IOException.html?is-external=true" title="class or interface in java.io"><CODE>IOException</CODE></A>s in a <A HREF="../../solidstack/SystemException.html" title="class in solidstack"><CODE>SystemException</CODE></A> because we are
+ to the underlying reader. Furthermore, it wraps <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/io/IOException.html?is-external=true" title="class or interface in java.io"><CODE>IOException</CODE></A>s in a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/RuntimeException.html?is-external=true" title="class or interface in java.lang"><CODE>RuntimeException</CODE></A> because we are
  never interested in it.
 <P>
 
@@ -113,56 +113,7 @@ My own PushbackReader. This one has an unlimited buffer and maintains the curren
 <HR>
 
 <P>
-<!-- =========== FIELD SUMMARY =========== -->
 
-<A NAME="field_summary"><!-- --></A>
-<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
-<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
-<TH ALIGN="left" COLSPAN="2"><FONT SIZE="+2">
-<B>Field Summary</B></FONT></TH>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>protected &nbsp;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/StringBuilder.html?is-external=true" title="class or interface in java.lang">StringBuilder</A></CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/io/PushbackReader.html#buffer">buffer</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The push back buffer.</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>protected &nbsp;int</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/io/PushbackReader.html#lineNumber">lineNumber</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The current line number.</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>protected &nbsp;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/StringBuilder.html?is-external=true" title="class or interface in java.lang">StringBuilder</A></CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/io/PushbackReader.html#mark">mark</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The mark buffer.</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>protected &nbsp;int</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/io/PushbackReader.html#markLimit">markLimit</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The mark limit.</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>protected &nbsp;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/io/Reader.html?is-external=true" title="class or interface in java.io">Reader</A></CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/io/PushbackReader.html#reader">reader</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The underlying reader.</TD>
-</TR>
-</TABLE>
-&nbsp;
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
 
 <A NAME="constructor_summary"><!-- --></A>
@@ -172,11 +123,10 @@ My own PushbackReader. This one has an unlimited buffer and maintains the curren
 <B>Constructor Summary</B></FONT></TH>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE><B><A HREF="../../solidstack/io/PushbackReader.html#PushbackReader(java.io.Reader, int)">PushbackReader</A></B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/io/Reader.html?is-external=true" title="class or interface in java.io">Reader</A>&nbsp;reader,
-               int&nbsp;currentLineNumber)</CODE>
+<TD><CODE><B><A HREF="../../solidstack/io/PushbackReader.html#PushbackReader(solidstack.io.SourceReader)">PushbackReader</A></B>(<A HREF="../../solidstack/io/SourceReader.html" title="interface in solidstack.io">SourceReader</A>&nbsp;reader)</CODE>
 
 <BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Constructs a new instance of the PushbackReader.</TD>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
 </TR>
 </TABLE>
 &nbsp;
@@ -190,15 +140,31 @@ My own PushbackReader. This one has an unlimited buffer and maintains the curren
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>&nbsp;void</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../solidstack/io/PushbackReader.html#close()">close</A></B>()</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Close the reader.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
 <CODE>&nbsp;int</CODE></FONT></TD>
 <TD><CODE><B><A HREF="../../solidstack/io/PushbackReader.html#getLineNumber()">getLineNumber</A></B>()</CODE>
 
 <BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the current line number.</TD>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>&nbsp;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/io/Reader.html?is-external=true" title="class or interface in java.io">Reader</A></CODE></FONT></TD>
+<CODE>&nbsp;<A HREF="../../solidstack/io/SourceLocation.html" title="class in solidstack.io">SourceLocation</A></CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../solidstack/io/PushbackReader.html#getLocation()">getLocation</A></B>()</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>&nbsp;<A HREF="../../solidstack/io/SourceReader.html" title="interface in solidstack.io">SourceReader</A></CODE></FONT></TD>
 <TD><CODE><B><A HREF="../../solidstack/io/PushbackReader.html#getReader()">getReader</A></B>()</CODE>
 
 <BR>
@@ -207,10 +173,10 @@ My own PushbackReader. This one has an unlimited buffer and maintains the curren
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
 <CODE>&nbsp;void</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/io/PushbackReader.html#mark(int)">mark</A></B>(int&nbsp;limit)</CODE>
+<TD><CODE><B><A HREF="../../solidstack/io/PushbackReader.html#mark(int)">mark</A></B>(int&nbsp;maxLength)</CODE>
 
 <BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Marks the current position in the reader.</TD>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Marks the current position in the stream.</TD>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
@@ -250,7 +216,7 @@ My own PushbackReader. This one has an unlimited buffer and maintains the curren
 <TD><CODE><B><A HREF="../../solidstack/io/PushbackReader.html#reset()">reset</A></B>()</CODE>
 
 <BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Resets the reader to the marked position.</TD>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Resets the reader to the mark.</TD>
 </TR>
 </TABLE>
 &nbsp;<A NAME="methods_inherited_from_class_java.lang.Object"><!-- --></A>
@@ -265,75 +231,6 @@ My own PushbackReader. This one has an unlimited buffer and maintains the curren
 &nbsp;
 <P>
 
-<!-- ============ FIELD DETAIL =========== -->
-
-<A NAME="field_detail"><!-- --></A>
-<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
-<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
-<TH ALIGN="left" COLSPAN="1"><FONT SIZE="+2">
-<B>Field Detail</B></FONT></TH>
-</TR>
-</TABLE>
-
-<A NAME="reader"><!-- --></A><H3>
-reader</H3>
-<PRE>
-protected <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/io/Reader.html?is-external=true" title="class or interface in java.io">Reader</A> <B>reader</B></PRE>
-<DL>
-<DD>The underlying reader.
-<P>
-<DL>
-</DL>
-</DL>
-<HR>
-
-<A NAME="buffer"><!-- --></A><H3>
-buffer</H3>
-<PRE>
-protected <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/StringBuilder.html?is-external=true" title="class or interface in java.lang">StringBuilder</A> <B>buffer</B></PRE>
-<DL>
-<DD>The push back buffer.
-<P>
-<DL>
-</DL>
-</DL>
-<HR>
-
-<A NAME="mark"><!-- --></A><H3>
-mark</H3>
-<PRE>
-protected <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/StringBuilder.html?is-external=true" title="class or interface in java.lang">StringBuilder</A> <B>mark</B></PRE>
-<DL>
-<DD>The mark buffer.
-<P>
-<DL>
-</DL>
-</DL>
-<HR>
-
-<A NAME="markLimit"><!-- --></A><H3>
-markLimit</H3>
-<PRE>
-protected int <B>markLimit</B></PRE>
-<DL>
-<DD>The mark limit.
-<P>
-<DL>
-</DL>
-</DL>
-<HR>
-
-<A NAME="lineNumber"><!-- --></A><H3>
-lineNumber</H3>
-<PRE>
-protected int <B>lineNumber</B></PRE>
-<DL>
-<DD>The current line number.
-<P>
-<DL>
-</DL>
-</DL>
-
 <!-- ========= CONSTRUCTOR DETAIL ======== -->
 
 <A NAME="constructor_detail"><!-- --></A>
@@ -344,16 +241,13 @@ protected int <B>lineNumber</B></PRE>
 </TR>
 </TABLE>
 
-<A NAME="PushbackReader(java.io.Reader, int)"><!-- --></A><H3>
+<A NAME="PushbackReader(solidstack.io.SourceReader)"><!-- --></A><H3>
 PushbackReader</H3>
 <PRE>
-public <B>PushbackReader</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/io/Reader.html?is-external=true" title="class or interface in java.io">Reader</A>&nbsp;reader,
-                      int&nbsp;currentLineNumber)</PRE>
+public <B>PushbackReader</B>(<A HREF="../../solidstack/io/SourceReader.html" title="interface in solidstack.io">SourceReader</A>&nbsp;reader)</PRE>
 <DL>
-<DD>Constructs a new instance of the PushbackReader.
-<P>
 <DL>
-<DT><B>Parameters:</B><DD><CODE>reader</CODE> - The underlying reader.<DD><CODE>currentLineNumber</CODE> - The current line number in the reader.</DL>
+<DT><B>Parameters:</B><DD><CODE>reader</CODE> - A source reader.</DL>
 </DL>
 
 <!-- ============ METHOD DETAIL ========== -->
@@ -371,8 +265,6 @@ getLineNumber</H3>
 <PRE>
 public int <B>getLineNumber</B>()</PRE>
 <DL>
-<DD>Returns the current line number.
-<P>
 <DD><DL>
 
 <DT><B>Returns:</B><DD>The current line number.</DL>
@@ -380,10 +272,22 @@ public int <B>getLineNumber</B>()</PRE>
 </DL>
 <HR>
 
+<A NAME="getLocation()"><!-- --></A><H3>
+getLocation</H3>
+<PRE>
+public <A HREF="../../solidstack/io/SourceLocation.html" title="class in solidstack.io">SourceLocation</A> <B>getLocation</B>()</PRE>
+<DL>
+<DD><DL>
+
+<DT><B>Returns:</B><DD>The current location in the source.</DL>
+</DD>
+</DL>
+<HR>
+
 <A NAME="getReader()"><!-- --></A><H3>
 getReader</H3>
 <PRE>
-public <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/io/Reader.html?is-external=true" title="class or interface in java.io">Reader</A> <B>getReader</B>()</PRE>
+public <A HREF="../../solidstack/io/SourceReader.html" title="interface in solidstack.io">SourceReader</A> <B>getReader</B>()</PRE>
 <DL>
 <DD>Returns the underlying reader. But only if the back buffer is empty, otherwise an IllegalStateException is thrown.
 <P>
@@ -415,7 +319,7 @@ push</H3>
 <PRE>
 public void <B>push</B>(int&nbsp;ch)</PRE>
 <DL>
-<DD>Push a character back into the reader. The current line number is decremented when a newline character is pushed back. If a mark is present it will expire.
+<DD>Push a character back into the reader. The current line number is decremented when a newline character is pushed back.
 <P>
 <DD><DL>
 <DT><B>Parameters:</B><DD><CODE>ch</CODE> - The character to push back. -1 is ignored.</DL>
@@ -428,7 +332,7 @@ push</H3>
 <PRE>
 public void <B>push</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/StringBuilder.html?is-external=true" title="class or interface in java.lang">StringBuilder</A>&nbsp;builder)</PRE>
 <DL>
-<DD>Push a complete <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/StringBuilder.html?is-external=true" title="class or interface in java.lang"><CODE>StringBuilder</CODE></A> back into the reader. The current line number is decremented for each newline encountered. If a mark is present it will expire.
+<DD>Push a complete <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/StringBuilder.html?is-external=true" title="class or interface in java.lang"><CODE>StringBuilder</CODE></A> back into the reader. The current line number is decremented for each newline encountered.
 <P>
 <DD><DL>
 <DT><B>Parameters:</B><DD><CODE>builder</CODE> - The <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/StringBuilder.html?is-external=true" title="class or interface in java.lang"><CODE>StringBuilder</CODE></A> to push back.</DL>
@@ -441,7 +345,7 @@ push</H3>
 <PRE>
 public void <B>push</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</A>&nbsp;string)</PRE>
 <DL>
-<DD>Push a complete <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang"><CODE>String</CODE></A> back into the reader. The current line number is decremented for each newline encountered. If a mark is present it will expire.
+<DD>Push a complete <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang"><CODE>String</CODE></A> back into the reader. The current line number is decremented for each newline encountered.
 <P>
 <DD><DL>
 <DT><B>Parameters:</B><DD><CODE>string</CODE> - The <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang"><CODE>String</CODE></A> to push back.</DL>
@@ -452,13 +356,12 @@ public void <B>push</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/la
 <A NAME="mark(int)"><!-- --></A><H3>
 mark</H3>
 <PRE>
-public void <B>mark</B>(int&nbsp;limit)</PRE>
+public void <B>mark</B>(int&nbsp;maxLength)</PRE>
 <DL>
-<DD>Marks the current position in the reader. The mark will expire whenever one of the push methods is called or when
- more characters are being read than the limit allows.
+<DD>Marks the current position in the stream.
 <P>
 <DD><DL>
-<DT><B>Parameters:</B><DD><CODE>limit</CODE> - When more characters are being read than this limit signifies, the mark is expired.<DT><B>See Also:</B><DD><A HREF="../../solidstack/io/PushbackReader.html#reset()"><CODE>reset()</CODE></A></DL>
+<DT><B>Parameters:</B><DD><CODE>maxLength</CODE> - If characters are read beyond the limit, the mark is lost.</DL>
 </DD>
 </DL>
 <HR>
@@ -468,10 +371,23 @@ reset</H3>
 <PRE>
 public void <B>reset</B>()</PRE>
 <DL>
-<DD>Resets the reader to the marked position.
+<DD>Resets the reader to the mark.
 <P>
 <DD><DL>
-<DT><B>See Also:</B><DD><A HREF="../../solidstack/io/PushbackReader.html#mark(int)"><CODE>mark(int)</CODE></A></DL>
+</DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="close()"><!-- --></A><H3>
+close</H3>
+<PRE>
+public void <B>close</B>()</PRE>
+<DL>
+<DD>Close the reader.
+<P>
+<DD><DL>
+</DL>
 </DD>
 </DL>
 <!-- ========= END OF CLASS DATA ========= -->
@@ -504,8 +420,8 @@ public void <B>reset</B>()</PRE>
 
 <TR>
 <TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
-&nbsp;PREV CLASS&nbsp;
-&nbsp;NEXT CLASS</FONT></TD>
+&nbsp;<A HREF="../../solidstack/io/NonClosingOutputStream.html" title="class in solidstack.io"><B>PREV CLASS</B></A>&nbsp;
+&nbsp;<A HREF="../../solidstack/io/RandomAccessSourceReader.html" title="class in solidstack.io"><B>NEXT CLASS</B></A></FONT></TD>
 <TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
   <A HREF="../../index.html?solidstack/io/PushbackReader.html" target="_top"><B>FRAMES</B></A>  &nbsp;
 &nbsp;<A HREF="PushbackReader.html" target="_top"><B>NO FRAMES</B></A>  &nbsp;
@@ -525,9 +441,9 @@ public void <B>reset</B>()</PRE>
 </TR>
 <TR>
 <TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
-  SUMMARY:&nbsp;NESTED&nbsp;|&nbsp;<A HREF="#field_summary">FIELD</A>&nbsp;|&nbsp;<A HREF="#constructor_summary">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_summary">METHOD</A></FONT></TD>
+  SUMMARY:&nbsp;NESTED&nbsp;|&nbsp;FIELD&nbsp;|&nbsp;<A HREF="#constructor_summary">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_summary">METHOD</A></FONT></TD>
 <TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
-DETAIL:&nbsp;<A HREF="#field_detail">FIELD</A>&nbsp;|&nbsp;<A HREF="#constructor_detail">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_detail">METHOD</A></FONT></TD>
+DETAIL:&nbsp;FIELD&nbsp;|&nbsp;<A HREF="#constructor_detail">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_detail">METHOD</A></FONT></TD>
 </TR>
 </TABLE>
 <A NAME="skip-navbar_bottom"></A>
