@@ -37,6 +37,9 @@ public class ClassPathResource extends Resource
 	 */
 	protected URI uri;
 
+	/**
+	 * The class loader used to find the resource.
+	 */
 	protected ClassLoader classLoader;
 
 

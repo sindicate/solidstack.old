@@ -93,6 +93,12 @@ public class EncodingDetector implements solidstack.io.EncodingDetector
 		return CHARSET_UTF_32BE; // TODO Throw undetectable when length < 4
 	}
 
+	/**
+	 * Filters out ASCII bytes smaller than 128 and returns the result as a string.
+	 *
+	 * @param chars The bytes to filter.
+	 * @return The ASCII bytes smaller than 128.
+	 */
 	static public String toAscii( byte[] chars )
 	{
 		int len = chars.length;
