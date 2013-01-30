@@ -57,7 +57,7 @@ public class HibernateQueryAdapter
 	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return a {@link ResultSet}.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
-	 * @see Query#resultSet(Connection, Map)
+	 * @see Query#resultSet(Connection, Object)
 	 */
 	public ResultSet resultSet( Session session, Object args )
 	{
@@ -71,7 +71,7 @@ public class HibernateQueryAdapter
 	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return a {@link List} of {@link Object} arrays.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
-	 * @see Query#listOfArrays(Connection, Map)
+	 * @see Query#listOfArrays(Connection, Object)
 	 */
 	public List< Object[] > listOfArrays( final Session session, Object args )
 	{
@@ -85,7 +85,7 @@ public class HibernateQueryAdapter
 	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return A {@link List} of {@link Map}s.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
-	 * @see Query#listOfMaps(Connection, Map)
+	 * @see Query#listOfMaps(Connection, Object)
 	 */
 	public List< Map< String, Object > > listOfMaps( final Session session, Object args )
 	{
@@ -99,7 +99,7 @@ public class HibernateQueryAdapter
 	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
-	 * @see Query#updateChecked(Connection, Map)
+	 * @see Query#updateChecked(Connection, Object)
 	 */
 	public int update( Session session, Object args )
 	{
