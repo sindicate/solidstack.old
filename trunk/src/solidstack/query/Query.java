@@ -162,7 +162,7 @@ public class Query
 	 * @param connection The {@link Connection} to use.
 	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return a {@link ResultSet}.
-	 * @see #resultSet(Connection, Map)
+	 * @see #resultSet(Connection, Object)
 	 */
 	// TODO Test the args map with groovy script.
 	public ResultSet resultSet( Connection connection, Object args )

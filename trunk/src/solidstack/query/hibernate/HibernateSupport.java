@@ -52,7 +52,7 @@ public class HibernateSupport
 	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return a {@link ResultSet}.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
-	 * @see Query#resultSet(Connection, Map)
+	 * @see Query#resultSet(Connection, Object)
 	 */
 	static public ResultSet resultSet( final Query query, Session session, final Object args )
 	{
@@ -84,7 +84,7 @@ public class HibernateSupport
 	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return a {@link List} of {@link Object} arrays.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
-	 * @see Query#listOfArrays(Connection, Map)
+	 * @see Query#listOfArrays(Connection, Object)
 	 */
 	static public List< Object[] > listOfArrays( final Query query, final Session session, final Object args )
 	{
@@ -116,7 +116,7 @@ public class HibernateSupport
 	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return A {@link List} of {@link Map}s.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
-	 * @see Query#listOfMaps(Connection, Map)
+	 * @see Query#listOfMaps(Connection, Object)
 	 */
 	static public List< Map< String, Object > > listOfMaps( final Query query, final Session session, final Object args )
 	{
@@ -148,7 +148,7 @@ public class HibernateSupport
 	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
-	 * @see Query#updateChecked(Connection, Map)
+	 * @see Query#updateChecked(Connection, Object)
 	 */
 	static public int update( final Query query, Session session, final Object args )
 	{
