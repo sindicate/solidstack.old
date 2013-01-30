@@ -7,7 +7,7 @@
 	
 	<groupId>solidstack</groupId>
 	<artifactId>solidstack</artifactId>
-	<version>1.9.2-beta</version>
+	<version>1.9.3-beta</version>
 	<packaging>jar</packaging>
 
 	<name>SolidStack</name>
