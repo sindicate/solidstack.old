@@ -54,8 +54,8 @@ function windowTitle()
 
 <TR>
 <TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
-&nbsp;<A HREF="../../solidstack/io/package-summary.html"><B>PREV PACKAGE</B></A>&nbsp;
-&nbsp;<A HREF="../../solidstack/template/package-summary.html"><B>NEXT PACKAGE</B></A></FONT></TD>
+&nbsp;<A HREF="../../solidstack/lang/package-summary.html"><B>PREV PACKAGE</B></A>&nbsp;
+&nbsp;<A HREF="../../solidstack/query/hibernate/package-summary.html"><B>NEXT PACKAGE</B></A></FONT></TD>
 <TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
   <A HREF="../../index.html?solidstack/query/package-summary.html" target="_top"><B>FRAMES</B></A>  &nbsp;
 &nbsp;<A HREF="package-summary.html" target="_top"><B>NO FRAMES</B></A>  &nbsp;
@@ -88,28 +88,28 @@ Package solidstack.query
 <B>Class Summary</B></FONT></TH>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
-<TD WIDTH="15%"><B><A HREF="../../solidstack/query/GStringBuilder.html" title="class in solidstack.query">GStringBuilder</A></B></TD>
-<TD>A builder for Groovy's <CODE>GString</CODE>.</TD>
+<TD WIDTH="15%"><B><A HREF="../../solidstack/query/Loggers.html" title="class in solidstack.query">Loggers</A></B></TD>
+<TD>Loggers for the query template engine.</TD>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD WIDTH="15%"><B><A HREF="../../solidstack/query/Query.html" title="class in solidstack.query">Query</A></B></TD>
-<TD>A query object will normally be constructed by a call to <A HREF="../../solidstack/query/QueryManager.html#bind(java.lang.String, java.util.Map)"><CODE>QueryManager.bind(String, Map)</CODE></A>.</TD>
+<TD>A query object.</TD>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
-<TD WIDTH="15%"><B><A HREF="../../solidstack/query/QueryManager.html" title="class in solidstack.query">QueryManager</A></B></TD>
+<TD WIDTH="15%"><B><A HREF="../../solidstack/query/Query.PreparedSQL.html" title="class in solidstack.query">Query.PreparedSQL</A></B></TD>
+<TD>Prepared SQL combined with a parameter list.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD WIDTH="15%"><B><A HREF="../../solidstack/query/QueryEncodingWriter.html" title="class in solidstack.query">QueryEncodingWriter</A></B></TD>
+<TD>A writer that keeps values separate from the string segments.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD WIDTH="15%"><B><A HREF="../../solidstack/query/QueryLoader.html" title="class in solidstack.query">QueryLoader</A></B></TD>
 <TD>Reads, compiles and caches the queries.</TD>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
-<TD WIDTH="15%"><B><A HREF="../../solidstack/query/QueryTemplate.html" title="class in solidstack.query">QueryTemplate</A></B></TD>
-<TD>Represents the query template.</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD WIDTH="15%"><B><A HREF="../../solidstack/query/QueryTransformer.html" title="class in solidstack.query">QueryTransformer</A></B></TD>
-<TD>Translates a query template into a Groovy <CODE>Closure</CODE>.</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
 <TD WIDTH="15%"><B><A HREF="../../solidstack/query/ResultHolder.html" title="class in solidstack.query">ResultHolder&lt;T&gt;</A></B></TD>
-<TD>Needed to store results from an anonymous inner class method.</TD>
+<TD>Needed to store results from an anonymous inner class method that has no return value.</TD>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD WIDTH="15%"><B><A HREF="../../solidstack/query/ResultList.html" title="class in solidstack.query">ResultList</A></B></TD>
@@ -117,15 +117,11 @@ Package solidstack.query
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD WIDTH="15%"><B><A HREF="../../solidstack/query/ResultListIterator.html" title="class in solidstack.query">ResultListIterator</A></B></TD>
-<TD>Wraps a iterator from the list of arrays and gives Map instances instead of arrays.</TD>
+<TD>Wraps a iterator from the list of arrays and returns Map instances instead of arrays.</TD>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
-<TD WIDTH="15%"><B><A HREF="../../solidstack/query/UrlResource.html" title="class in solidstack.query">UrlResource</A></B></TD>
-<TD>A resource described by a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/net/URL.html?is-external=true" title="class or interface in java.net"><CODE>URL</CODE></A>.</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD WIDTH="15%"><B><A HREF="../../solidstack/query/Util.html" title="class in solidstack.query">Util</A></B></TD>
-<TD>Generic utilities.</TD>
+<TD WIDTH="15%"><B><A HREF="../../solidstack/query/Test.html" title="class in solidstack.query">Test</A></B></TD>
+<TD>Main class to test the jar.</TD>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD WIDTH="15%"><B><A HREF="../../solidstack/query/ValuesMap.html" title="class in solidstack.query">ValuesMap</A></B></TD>
@@ -139,11 +135,29 @@ Package solidstack.query
 <TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
 <TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
 <TH ALIGN="left" COLSPAN="2"><FONT SIZE="+2">
+<B>Enum Summary</B></FONT></TH>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD WIDTH="15%"><B><A HREF="../../solidstack/query/Query.Language.html" title="enum in solidstack.query">Query.Language</A></B></TD>
+<TD>The query language.</TD>
+</TR>
+</TABLE>
+&nbsp;
+
+<P>
+
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
+<TH ALIGN="left" COLSPAN="2"><FONT SIZE="+2">
 <B>Exception Summary</B></FONT></TH>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
-<TD WIDTH="15%"><B><A HREF="../../solidstack/query/QueryNotFoundException.html" title="class in solidstack.query">QueryNotFoundException</A></B></TD>
-<TD>The requested query is not found.</TD>
+<TD WIDTH="15%"><B><A HREF="../../solidstack/query/QueryException.html" title="class in solidstack.query">QueryException</A></B></TD>
+<TD>Query exception.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD WIDTH="15%"><B><A HREF="../../solidstack/query/QuerySQLException.html" title="class in solidstack.query">QuerySQLException</A></B></TD>
+<TD>This exception wraps a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/SQLException.html?is-external=true" title="class or interface in java.sql"><CODE>SQLException</CODE></A>.</TD>
 </TR>
 </TABLE>
 &nbsp;
@@ -180,8 +194,8 @@ Package solidstack.query
 
 <TR>
 <TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
-&nbsp;<A HREF="../../solidstack/io/package-summary.html"><B>PREV PACKAGE</B></A>&nbsp;
-&nbsp;<A HREF="../../solidstack/template/package-summary.html"><B>NEXT PACKAGE</B></A></FONT></TD>
+&nbsp;<A HREF="../../solidstack/lang/package-summary.html"><B>PREV PACKAGE</B></A>&nbsp;
+&nbsp;<A HREF="../../solidstack/query/hibernate/package-summary.html"><B>NEXT PACKAGE</B></A></FONT></TD>
 <TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
   <A HREF="../../index.html?solidstack/query/package-summary.html" target="_top"><B>FRAMES</B></A>  &nbsp;
 &nbsp;<A HREF="package-summary.html" target="_top"><B>NO FRAMES</B></A>  &nbsp;

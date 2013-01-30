@@ -54,8 +54,8 @@ function windowTitle()
 
 <TR>
 <TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
-&nbsp;<A HREF="../../solidstack/query/package-summary.html"><B>PREV PACKAGE</B></A>&nbsp;
-&nbsp;<A HREF="../../solidstack/util/package-summary.html"><B>NEXT PACKAGE</B></A></FONT></TD>
+&nbsp;<A HREF="../../solidstack/query/jpa/package-summary.html"><B>PREV PACKAGE</B></A>&nbsp;
+&nbsp;<A HREF="../../solidstack/template/groovy/package-summary.html"><B>NEXT PACKAGE</B></A></FONT></TD>
 <TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
   <A HREF="../../index.html?solidstack/template/package-summary.html" target="_top"><B>FRAMES</B></A>  &nbsp;
 &nbsp;<A HREF="package-summary.html" target="_top"><B>NO FRAMES</B></A>  &nbsp;
@@ -85,15 +85,81 @@ Package solidstack.template
 <TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
 <TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
 <TH ALIGN="left" COLSPAN="2"><FONT SIZE="+2">
+<B>Interface Summary</B></FONT></TH>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD WIDTH="15%"><B><A HREF="../../solidstack/template/ConvertingWriter.html" title="interface in solidstack.template">ConvertingWriter</A></B></TD>
+<TD>Accepts writes from the template.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD WIDTH="15%"><B><A HREF="../../solidstack/template/EncodingWriter.html" title="interface in solidstack.template">EncodingWriter</A></B></TD>
+<TD>An encoding writer.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD WIDTH="15%"><B><A HREF="../../solidstack/template/EncodingWriterFactory.html" title="interface in solidstack.template">EncodingWriterFactory</A></B></TD>
+<TD>Creates a new <A HREF="../../solidstack/template/EncodingWriter.html" title="interface in solidstack.template"><CODE>EncodingWriter</CODE></A>.</TD>
+</TR>
+</TABLE>
+&nbsp;
+
+<P>
+
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
+<TH ALIGN="left" COLSPAN="2"><FONT SIZE="+2">
 <B>Class Summary</B></FONT></TH>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
-<TD WIDTH="15%"><B><A HREF="../../solidstack/template/JSPLikeTemplateParser.html" title="class in solidstack.template">JSPLikeTemplateParser</A></B></TD>
-<TD>Parses a template using the old JSP syntax.</TD>
+<TD WIDTH="15%"><B><A HREF="../../solidstack/template/DefiningClassLoader.html" title="class in solidstack.template">DefiningClassLoader</A></B></TD>
+<TD>Defining class loader for generated classes.</TD>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
-<TD WIDTH="15%"><B><A HREF="../../solidstack/template/JSPLikeTemplateParser.ModalWriter.html" title="class in solidstack.template">JSPLikeTemplateParser.ModalWriter</A></B></TD>
-<TD>A writer that writes in different modes.</TD>
+<TD WIDTH="15%"><B><A HREF="../../solidstack/template/EncodingDetector.html" title="class in solidstack.template">EncodingDetector</A></B></TD>
+<TD>An encoding detector for templates.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD WIDTH="15%"><B><A HREF="../../solidstack/template/JSPLikeTemplateParser.html" title="class in solidstack.template">JSPLikeTemplateParser</A></B></TD>
+<TD>A pull parser for the JSP template syntax.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD WIDTH="15%"><B><A HREF="../../solidstack/template/JSPLikeTemplateParser.Directive.html" title="class in solidstack.template">JSPLikeTemplateParser.Directive</A></B></TD>
+<TD>A directive found in the template.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD WIDTH="15%"><B><A HREF="../../solidstack/template/JSPLikeTemplateParser.ParseEvent.html" title="class in solidstack.template">JSPLikeTemplateParser.ParseEvent</A></B></TD>
+<TD>Represents a parse event.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD WIDTH="15%"><B><A HREF="../../solidstack/template/Loggers.html" title="class in solidstack.template">Loggers</A></B></TD>
+<TD>Loggers for the template engine.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD WIDTH="15%"><B><A HREF="../../solidstack/template/NoEncodingWriter.html" title="class in solidstack.template">NoEncodingWriter</A></B></TD>
+<TD>An encoding writer that passes through everything unmodified.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD WIDTH="15%"><B><A HREF="../../solidstack/template/Template.html" title="class in solidstack.template">Template</A></B></TD>
+<TD>A compiled template.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD WIDTH="15%"><B><A HREF="../../solidstack/template/TemplateCompiler.html" title="class in solidstack.template">TemplateCompiler</A></B></TD>
+<TD>Template compiler.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD WIDTH="15%"><B><A HREF="../../solidstack/template/TemplateCompilerContext.html" title="class in solidstack.template">TemplateCompilerContext</A></B></TD>
+<TD>&nbsp;</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD WIDTH="15%"><B><A HREF="../../solidstack/template/TemplateLoader.html" title="class in solidstack.template">TemplateLoader</A></B></TD>
+<TD>Reads, compiles and caches the templates.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD WIDTH="15%"><B><A HREF="../../solidstack/template/Util.html" title="class in solidstack.template">Util</A></B></TD>
+<TD>Generic utilities.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD WIDTH="15%"><B><A HREF="../../solidstack/template/XMLEncodingWriter.html" title="class in solidstack.template">XMLEncodingWriter</A></B></TD>
+<TD>An encoding writer for XML.</TD>
 </TR>
 </TABLE>
 &nbsp;
@@ -106,8 +172,8 @@ Package solidstack.template
 <B>Enum Summary</B></FONT></TH>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
-<TD WIDTH="15%"><B><A HREF="../../solidstack/template/JSPLikeTemplateParser.ModalWriter.Mode.html" title="enum in solidstack.template">JSPLikeTemplateParser.ModalWriter.Mode</A></B></TD>
-<TD>The different modes that the <A HREF="../../solidstack/template/JSPLikeTemplateParser.ModalWriter.html" title="class in solidstack.template"><CODE>JSPLikeTemplateParser.ModalWriter</CODE></A> should be able to work in.</TD>
+<TD WIDTH="15%"><B><A HREF="../../solidstack/template/JSPLikeTemplateParser.EVENT.html" title="enum in solidstack.template">JSPLikeTemplateParser.EVENT</A></B></TD>
+<TD>Possible pull events.</TD>
 </TR>
 </TABLE>
 &nbsp;
@@ -121,7 +187,19 @@ Package solidstack.template
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD WIDTH="15%"><B><A HREF="../../solidstack/template/ParseException.html" title="class in solidstack.template">ParseException</A></B></TD>
-<TD>Something has gone wrong with parsing the SQL template.</TD>
+<TD>Something has gone wrong during template parsing.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD WIDTH="15%"><B><A HREF="../../solidstack/template/TemplateException.html" title="class in solidstack.template">TemplateException</A></B></TD>
+<TD>An exception occurred during template processing.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD WIDTH="15%"><B><A HREF="../../solidstack/template/TemplateNotFoundException.html" title="class in solidstack.template">TemplateNotFoundException</A></B></TD>
+<TD>The requested template is not found.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD WIDTH="15%"><B><A HREF="../../solidstack/template/UnsupportedEncodingException.html" title="class in solidstack.template">UnsupportedEncodingException</A></B></TD>
+<TD>The character encoding is not supported.</TD>
 </TR>
 </TABLE>
 &nbsp;
@@ -158,8 +236,8 @@ Package solidstack.template
 
 <TR>
 <TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
-&nbsp;<A HREF="../../solidstack/query/package-summary.html"><B>PREV PACKAGE</B></A>&nbsp;
-&nbsp;<A HREF="../../solidstack/util/package-summary.html"><B>NEXT PACKAGE</B></A></FONT></TD>
+&nbsp;<A HREF="../../solidstack/query/jpa/package-summary.html"><B>PREV PACKAGE</B></A>&nbsp;
+&nbsp;<A HREF="../../solidstack/template/groovy/package-summary.html"><B>NEXT PACKAGE</B></A></FONT></TD>
 <TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
   <A HREF="../../index.html?solidstack/template/package-summary.html" target="_top"><B>FRAMES</B></A>  &nbsp;
 &nbsp;<A HREF="package-summary.html" target="_top"><B>NO FRAMES</B></A>  &nbsp;

@@ -54,8 +54,8 @@ function windowTitle()
 
 <TR>
 <TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
-&nbsp;PREV CLASS&nbsp;
-&nbsp;<A HREF="../../solidstack/template/JSPLikeTemplateParser.ModalWriter.html" title="class in solidstack.template"><B>NEXT CLASS</B></A></FONT></TD>
+&nbsp;<A HREF="../../solidstack/template/EncodingWriterFactory.html" title="interface in solidstack.template"><B>PREV CLASS</B></A>&nbsp;
+&nbsp;<A HREF="../../solidstack/template/JSPLikeTemplateParser.Directive.html" title="class in solidstack.template"><B>NEXT CLASS</B></A></FONT></TD>
 <TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
   <A HREF="../../index.html?solidstack/template/JSPLikeTemplateParser.html" target="_top"><B>FRAMES</B></A>  &nbsp;
 &nbsp;<A HREF="JSPLikeTemplateParser.html" target="_top"><B>NO FRAMES</B></A>  &nbsp;
@@ -75,9 +75,9 @@ function windowTitle()
 </TR>
 <TR>
 <TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
-  SUMMARY:&nbsp;<A HREF="#nested_class_summary">NESTED</A>&nbsp;|&nbsp;FIELD&nbsp;|&nbsp;<A HREF="#constructor_summary">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_summary">METHOD</A></FONT></TD>
+  SUMMARY:&nbsp;<A HREF="#nested_class_summary">NESTED</A>&nbsp;|&nbsp;<A HREF="#field_summary">FIELD</A>&nbsp;|&nbsp;<A HREF="#constructor_summary">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_summary">METHOD</A></FONT></TD>
 <TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
-DETAIL:&nbsp;FIELD&nbsp;|&nbsp;<A HREF="#constructor_detail">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_detail">METHOD</A></FONT></TD>
+DETAIL:&nbsp;<A HREF="#field_detail">FIELD</A>&nbsp;|&nbsp;<A HREF="#constructor_detail">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_detail">METHOD</A></FONT></TD>
 </TR>
 </TABLE>
 <A NAME="skip-navbar_top"></A>
@@ -100,7 +100,7 @@ Class JSPLikeTemplateParser</H2>
 </PRE>
 
 <P>
-Parses a template using the old JSP syntax.
+A pull parser for the JSP template syntax.
 <P>
 
 <P>
@@ -122,10 +122,51 @@ Parses a template using the old JSP syntax.
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
 <CODE>static&nbsp;class</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/template/JSPLikeTemplateParser.ModalWriter.html" title="class in solidstack.template">JSPLikeTemplateParser.ModalWriter</A></B></CODE>
+<TD><CODE><B><A HREF="../../solidstack/template/JSPLikeTemplateParser.Directive.html" title="class in solidstack.template">JSPLikeTemplateParser.Directive</A></B></CODE>
 
 <BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A writer that writes in different modes.</TD>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A directive found in the template.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>static&nbsp;class</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../solidstack/template/JSPLikeTemplateParser.EVENT.html" title="enum in solidstack.template">JSPLikeTemplateParser.EVENT</A></B></CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Possible pull events.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>static&nbsp;class</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../solidstack/template/JSPLikeTemplateParser.ParseEvent.html" title="class in solidstack.template">JSPLikeTemplateParser.ParseEvent</A></B></CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Represents a parse event.</TD>
+</TR>
+</TABLE>
+&nbsp;<!-- =========== FIELD SUMMARY =========== -->
+
+<A NAME="field_summary"><!-- --></A>
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
+<TH ALIGN="left" COLSPAN="2"><FONT SIZE="+2">
+<B>Field Summary</B></FONT></TH>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>static&nbsp;<A HREF="../../solidstack/template/JSPLikeTemplateParser.ParseEvent.html" title="class in solidstack.template">JSPLikeTemplateParser.ParseEvent</A></CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../solidstack/template/JSPLikeTemplateParser.html#EOF">EOF</A></B></CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The EOF parse event.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>static&nbsp;<A HREF="../../solidstack/template/JSPLikeTemplateParser.ParseEvent.html" title="class in solidstack.template">JSPLikeTemplateParser.ParseEvent</A></CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../solidstack/template/JSPLikeTemplateParser.html#NEWLINE">NEWLINE</A></B></CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The newline parse event.</TD>
 </TR>
 </TABLE>
 &nbsp;
@@ -138,10 +179,10 @@ Parses a template using the old JSP syntax.
 <B>Constructor Summary</B></FONT></TH>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE><B><A HREF="../../solidstack/template/JSPLikeTemplateParser.html#JSPLikeTemplateParser()">JSPLikeTemplateParser</A></B>()</CODE>
+<TD><CODE><B><A HREF="../../solidstack/template/JSPLikeTemplateParser.html#JSPLikeTemplateParser(solidstack.io.SourceReader)">JSPLikeTemplateParser</A></B>(<A HREF="../../solidstack/io/SourceReader.html" title="interface in solidstack.io">SourceReader</A>&nbsp;reader)</CODE>
 
 <BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Constructor.</TD>
 </TR>
 </TABLE>
 &nbsp;
@@ -155,12 +196,11 @@ Parses a template using the old JSP syntax.
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>&nbsp;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</A></CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/template/JSPLikeTemplateParser.html#parse(solidstack.io.PushbackReader, solidstack.template.JSPLikeTemplateParser.ModalWriter)">parse</A></B>(<A HREF="../../solidstack/io/PushbackReader.html" title="class in solidstack.io">PushbackReader</A>&nbsp;reader,
-      <A HREF="../../solidstack/template/JSPLikeTemplateParser.ModalWriter.html" title="class in solidstack.template">JSPLikeTemplateParser.ModalWriter</A>&nbsp;writer)</CODE>
+<CODE>&nbsp;<A HREF="../../solidstack/template/JSPLikeTemplateParser.ParseEvent.html" title="class in solidstack.template">JSPLikeTemplateParser.ParseEvent</A></CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../solidstack/template/JSPLikeTemplateParser.html#next()">next</A></B>()</CODE>
 
 <BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Parse the template.</TD>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retrieves the next event.</TD>
 </TR>
 </TABLE>
 &nbsp;<A NAME="methods_inherited_from_class_java.lang.Object"><!-- --></A>
@@ -175,6 +215,39 @@ Parses a template using the old JSP syntax.
 &nbsp;
 <P>
 
+<!-- ============ FIELD DETAIL =========== -->
+
+<A NAME="field_detail"><!-- --></A>
+<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
+<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
+<TH ALIGN="left" COLSPAN="1"><FONT SIZE="+2">
+<B>Field Detail</B></FONT></TH>
+</TR>
+</TABLE>
+
+<A NAME="EOF"><!-- --></A><H3>
+EOF</H3>
+<PRE>
+public static final <A HREF="../../solidstack/template/JSPLikeTemplateParser.ParseEvent.html" title="class in solidstack.template">JSPLikeTemplateParser.ParseEvent</A> <B>EOF</B></PRE>
+<DL>
+<DD>The EOF parse event.
+<P>
+<DL>
+</DL>
+</DL>
+<HR>
+
+<A NAME="NEWLINE"><!-- --></A><H3>
+NEWLINE</H3>
+<PRE>
+public static final <A HREF="../../solidstack/template/JSPLikeTemplateParser.ParseEvent.html" title="class in solidstack.template">JSPLikeTemplateParser.ParseEvent</A> <B>NEWLINE</B></PRE>
+<DL>
+<DD>The newline parse event.
+<P>
+<DL>
+</DL>
+</DL>
+
 <!-- ========= CONSTRUCTOR DETAIL ======== -->
 
 <A NAME="constructor_detail"><!-- --></A>
@@ -185,11 +258,15 @@ Parses a template using the old JSP syntax.
 </TR>
 </TABLE>
 
-<A NAME="JSPLikeTemplateParser()"><!-- --></A><H3>
+<A NAME="JSPLikeTemplateParser(solidstack.io.SourceReader)"><!-- --></A><H3>
 JSPLikeTemplateParser</H3>
 <PRE>
-public <B>JSPLikeTemplateParser</B>()</PRE>
+public <B>JSPLikeTemplateParser</B>(<A HREF="../../solidstack/io/SourceReader.html" title="interface in solidstack.io">SourceReader</A>&nbsp;reader)</PRE>
 <DL>
+<DD>Constructor.
+<P>
+<DL>
+<DT><B>Parameters:</B><DD><CODE>reader</CODE> - The reader from which to read the source of the template.</DL>
 </DL>
 
 <!-- ============ METHOD DETAIL ========== -->
@@ -202,17 +279,16 @@ public <B>JSPLikeTemplateParser</B>()</PRE>
 </TR>
 </TABLE>
 
-<A NAME="parse(solidstack.io.PushbackReader, solidstack.template.JSPLikeTemplateParser.ModalWriter)"><!-- --></A><H3>
-parse</H3>
+<A NAME="next()"><!-- --></A><H3>
+next</H3>
 <PRE>
-public <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</A> <B>parse</B>(<A HREF="../../solidstack/io/PushbackReader.html" title="class in solidstack.io">PushbackReader</A>&nbsp;reader,
-                    <A HREF="../../solidstack/template/JSPLikeTemplateParser.ModalWriter.html" title="class in solidstack.template">JSPLikeTemplateParser.ModalWriter</A>&nbsp;writer)</PRE>
+public <A HREF="../../solidstack/template/JSPLikeTemplateParser.ParseEvent.html" title="class in solidstack.template">JSPLikeTemplateParser.ParseEvent</A> <B>next</B>()</PRE>
 <DL>
-<DD>Parse the template.
+<DD>Retrieves the next event.
 <P>
 <DD><DL>
-<DT><B>Parameters:</B><DD><CODE>reader</CODE> - The input reader.<DD><CODE>writer</CODE> - This writer produces the right Groovy code.
-<DT><B>Returns:</B><DD>The resulting Groovy code.</DL>
+
+<DT><B>Returns:</B><DD>The next event.</DL>
 </DD>
 </DL>
 <!-- ========= END OF CLASS DATA ========= -->
@@ -245,8 +321,8 @@ public <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/String.html?is
 
 <TR>
 <TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
-&nbsp;PREV CLASS&nbsp;
-&nbsp;<A HREF="../../solidstack/template/JSPLikeTemplateParser.ModalWriter.html" title="class in solidstack.template"><B>NEXT CLASS</B></A></FONT></TD>
+&nbsp;<A HREF="../../solidstack/template/EncodingWriterFactory.html" title="interface in solidstack.template"><B>PREV CLASS</B></A>&nbsp;
+&nbsp;<A HREF="../../solidstack/template/JSPLikeTemplateParser.Directive.html" title="class in solidstack.template"><B>NEXT CLASS</B></A></FONT></TD>
 <TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
   <A HREF="../../index.html?solidstack/template/JSPLikeTemplateParser.html" target="_top"><B>FRAMES</B></A>  &nbsp;
 &nbsp;<A HREF="JSPLikeTemplateParser.html" target="_top"><B>NO FRAMES</B></A>  &nbsp;
@@ -266,9 +342,9 @@ public <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/String.html?is
 </TR>
 <TR>
 <TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
-  SUMMARY:&nbsp;<A HREF="#nested_class_summary">NESTED</A>&nbsp;|&nbsp;FIELD&nbsp;|&nbsp;<A HREF="#constructor_summary">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_summary">METHOD</A></FONT></TD>
+  SUMMARY:&nbsp;<A HREF="#nested_class_summary">NESTED</A>&nbsp;|&nbsp;<A HREF="#field_summary">FIELD</A>&nbsp;|&nbsp;<A HREF="#constructor_summary">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_summary">METHOD</A></FONT></TD>
 <TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
-DETAIL:&nbsp;FIELD&nbsp;|&nbsp;<A HREF="#constructor_detail">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_detail">METHOD</A></FONT></TD>
+DETAIL:&nbsp;<A HREF="#field_detail">FIELD</A>&nbsp;|&nbsp;<A HREF="#constructor_detail">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_detail">METHOD</A></FONT></TD>
 </TR>
 </TABLE>
 <A NAME="skip-navbar_bottom"></A>
