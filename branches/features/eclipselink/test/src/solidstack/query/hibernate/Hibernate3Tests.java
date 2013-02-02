@@ -58,7 +58,6 @@ public class Hibernate3Tests
 		session.close();
 	}
 
-
 	@Test
 	public void testHQL() throws SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{

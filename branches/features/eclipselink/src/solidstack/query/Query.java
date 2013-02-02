@@ -33,6 +33,7 @@ import java.util.Map;
 
 import solidstack.lang.Assert;
 import solidstack.lang.SystemException;
+import solidstack.query.eclipselink.EclipseLinkQueryAdapter;
 import solidstack.query.hibernate.HibernateConnectedQueryAdapter;
 import solidstack.query.hibernate.HibernateQueryAdapter;
 import solidstack.query.jpa.JPAConnectedQueryAdapter;
@@ -104,6 +105,23 @@ public class Query
 	{
 		return this.language;
 	}
+
+	/**
+	 * @return An adapter which enables you to use the query with Hibernate.
+	 */
+	public EclipseLinkQueryAdapter eclipselink()
+	{
+		return new EclipseLinkQueryAdapter( this );
+	}
+
+//	/**
+//	 * @param session A Hibernate session.
+//	 * @return An adapter which enables you to use the query with Hibernate.
+//	 */
+//	public HibernateConnectedQueryAdapter eclipselink( Object session )
+//	{
+//		return new HibernateConnectedQueryAdapter( this, session );
+//	}
 
 	/**
 	 * @return An adapter which enables you to use the query with Hibernate.

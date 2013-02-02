@@ -18,5 +18,6 @@
 	<classpathentry kind="lib" path="lib/spring31/org.springframework.beans-3.1.1.RELEASE.jar"/>
 	<classpathentry kind="lib" path="../ojdbc6-11.2.0.3.jar"/>
 	<classpathentry kind="lib" path="../mysql-connector-java-5.1.20-bin.jar"/>
+	<classpathentry kind="lib" path="lib/eclipselink24/eclipselink-2.4.1.jar" sourcepath="/eclipselink-src-2.4.1"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

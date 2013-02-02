@@ -89,6 +89,7 @@
 
 	<path id="test.classpath">
 		<path refid="test_.classpath" />
+		<fileset dir="lib/eclipselink24" includes="*.jar" />
 		<fileset dir="lib/hibernate41" includes="*.jar" />
 		<fileset dir="lib/spring31" includes="*.jar" />
 		<fileset dir="test/lib/hibernate41" includes="*.jar" />
@@ -202,7 +203,7 @@
 	<target name="test" depends="buildtest,instrument" description="Run the tests">
 		<dependencyCheck failOnUnwantedDependencies="true">
 			<fileset dir="${build.home}/classes"><include name="**/*.class" /></fileset>
-			[query] = solidstack.query.* excluding solidstack.query.jpa.* solidstack.query.hibernate.*
+			[query] = solidstack.query.* excluding solidstack.query.jpa.* solidstack.query.hibernate.* solidstack.query.eclipselink.*
 			[template] = solidstack.template.* excluding solidstack.template.groovy.* solidstack.template.javascript.*
 			check solidstack.cache.*               dependentOnlyOn java.* javax.* solidstack.* org.slf4j.*
 			check solidstack.io.*                  dependentOnlyOn java.* javax.* solidstack.*
@@ -210,6 +211,7 @@
 			check [query]                          dependentOnlyOn java.* javax.* solidstack.* org.slf4j.*
 			check solidstack.query.jpa.*           dependentOnlyOn java.* javax.* solidstack.*
 			check solidstack.query.hibernate.*     dependentOnlyOn java.* javax.* solidstack.* org.hibernate.*
+			check solidstack.query.eclipselink.*   dependentOnlyOn java.* javax.* solidstack.* org.eclipse.persistence.*
 			check [template]                       dependentOnlyOn java.* javax.* solidstack.* org.slf4j.*
 			check solidstack.template.groovy.*     dependentOnlyOn java.* javax.* solidstack.* groovy.* org.codehaus.groovy.*
 			check solidstack.template.javascript.* dependentOnlyOn java.* javax.* solidstack.* org.mozilla.javascript.*
