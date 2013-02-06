@@ -19,9 +19,6 @@ package solidstack.script.objects;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-
-import funny.Symbol;
 
 import solidstack.lang.Assert;
 import solidstack.script.Returning;
@@ -29,11 +26,13 @@ import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
+import solidstack.script.operators.Assign;
 import solidstack.script.operators.Function;
 import solidstack.script.operators.Spread;
 import solidstack.script.scopes.AbstractScope;
 import solidstack.script.scopes.ParameterScope;
 import solidstack.script.scopes.Scope;
+import funny.Symbol;
 
 public class FunctionObject implements solidstack.script.java.Function
 {
@@ -98,6 +97,29 @@ public class FunctionObject implements solidstack.script.java.Function
 				if( o < oCount )
 					throw new ThrowException( "Collecting parameter must be the last parameter", thread.cloneStack() ); // TODO Also in the middle
 			}
+			else if( parameter instanceof Assign )
+			{
+				Assign assign = (Assign)parameter;
+				Assert.isInstanceOf( assign.getLeft(), Identifier.class );
+				Object par;
+				if( pw.hasNext() )
+					par = pw.get();
+				else
+				{
+					AbstractScope old = thread.swapScope( this.scope );
+					try
+					{
+						par = assign.getRight().evaluate( thread );
+					}
+					finally
+					{
+						thread.swapScope( old );
+					}
+				}
+				symbols[ o ] = ( (Identifier)assign.getLeft() ).getSymbol();
+				values[ o ] = par;
+				o++;
+			}
 			else
 			{
 				if( !pw.hasNext() )
@@ -121,22 +143,46 @@ public class FunctionObject implements solidstack.script.java.Function
 		Symbol[] symbols = new Symbol[ oCount ];
 		Object[] values = new Object[ oCount ];
 
-		for( Entry<Symbol, Object> entry : args.entrySet() )
-		{
-			boolean found = false;
-			Symbol label = entry.getKey();
-			for( int i = 0; i < oCount; i++ )
-				if( ( (Identifier)parameters[ i ] ).getSymbol().equals( label ) )
-				{
-					values[ i ] = entry.getValue();
-					found = true;
-					break;
-				}
-			if( !found )
-				throw new ThrowException( "Parameter '" + label + "' undefined", thread.cloneStack() );
-		}
 		for( int i = 0; i < oCount; i++ )
-			symbols[ i ] = ( (Identifier)parameters[ i ] ).getSymbol();
+		{
+			Expression parameter = parameters[ i ];
+			if( parameter instanceof Assign )
+			{
+				Assign assign = (Assign)parameter;
+				Assert.isInstanceOf( assign.getLeft(), Identifier.class );
+				Symbol symbol = ( (Identifier)assign.getLeft() ).getSymbol();
+				symbols[ i ] = symbol;
+				if( args.containsKey( symbol ) )
+					values[ i ] = args.remove( symbol );
+				else
+				{
+					AbstractScope old = thread.swapScope( this.scope );
+					try
+					{
+						values[ i ] = assign.getRight().evaluate( thread );
+					}
+					finally
+					{
+						thread.swapScope( old );
+					}
+				}
+			}
+			else
+			{
+				Symbol symbol = ( (Identifier)parameters[ i ] ).getSymbol();
+				symbols[ i ] = symbol;
+				if( args.containsKey( symbol ) )
+					values[ i ] = args.remove( symbol );
+				else
+					throw new ThrowException( "No value specified for parameter '" + symbol + "'", thread.cloneStack() );
+			}
+		}
+
+		if( !args.isEmpty() )
+		{
+			Symbol symbol = args.keySet().iterator().next();
+			throw new ThrowException( "Parameter '" + symbol + "' undefined", thread.cloneStack() );
+		}
 
 		return call( thread, symbols, values );
 	}

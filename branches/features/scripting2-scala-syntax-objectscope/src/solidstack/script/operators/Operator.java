@@ -273,6 +273,16 @@ abstract public class Operator implements Expression
 		return null;
 	}
 
+	public Expression getLeft()
+	{
+		return this.left;
+	}
+
+	public Expression getRight()
+	{
+		return this.right;
+	}
+
 	public Object evaluateRef( ThreadContext thread )
 	{
 		return evaluate( thread );

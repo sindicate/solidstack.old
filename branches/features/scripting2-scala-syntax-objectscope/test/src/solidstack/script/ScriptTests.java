@@ -467,9 +467,21 @@ public class ScriptTests extends Util
 	{
 		// TODO Calling default global methods with named parameter
 		test( "f = (a,b,c) => a; f( b = 1, c = 2, a = 3 )", 3 );
-		test( "f = (a,b,c) => a; f( a = 3 )", 3 );
-		test( "f = (a,b,c) => a; f( a = null )", null );
+		test( "f = (a,b=0,c=0) => a; f( a = 3 )", 3 );
+		test( "f = (a,b=0,c=0) => a; f( a = null )", null );
+		test( "f = (a=0,b,c=0) => a; f( b = 1 )", 0 );
 		test( "f = () => (); f()", null );
+		test( "f = (a=1) => a; f()", 1 );
+		test( "f = (a=1) => a; f(2)", 2 );
+		fail( "f = (a=1) => a; f(2,3)", ScriptException.class, "Too many parameters" );
+		test( "f = (a=1,b=2) => a+b; f()", 3 );
+		test( "f = (a=1,b=2) => a+b; f(3)", 5 );
+		test( "f = (a=1,b=2) => a+b; f(3,4)", 7 ); // TODO _ as placeholder
+		fail( "f = (a=1,b=2) => a+b; f(3,4,5)", ScriptException.class, "Too many parameters" );
+		test( "f = (a=1,b=2) => a+b; f(a=3)", 5 );
+		test( "f = (a=1,b=2) => a+b; f(b=4)", 5 );
+		test( "f = (a=1,b=2) => a+b; f(b=4,a=3)", 7 );
+		test( "x=5; f = (a=x,b=2) => a+b; { var x=7; f() }", 7 );
 	}
 
 	@Test
@@ -651,7 +663,8 @@ public class ScriptTests extends Util
 		fail( "throw()", ScriptException.class, "throw() needs exactly one parameter" );
 		fail( "val()", ScriptException.class, "val() needs exactly one parameter" );
 		fail( "val( 1 )", ScriptException.class, "val() needs a variable identifier as parameter" );
-		fail( "f = ( a ) => (); f( b = 1 )", ScriptException.class, "Parameter 'b' undefined" );
+		fail( "f = ( a = 1 ) => (); f( b = 1 )", ScriptException.class, "Parameter 'b' undefined" );
+		fail( "f = ( a ) => (); f( b = 1 )", ScriptException.class, "No value specified for parameter 'a'" );
 		fail( "f = ( a, b ) => (); f( a = 1, 2 )", ScriptException.class, "All parameters must be named" );
 		fail( "f = ( a, b ) => (); f( 1, b = 2 )", ScriptException.class, "All parameters must be named" );
 		fail( "f = ( a ) => (); f( \"a\" = 1 )", ScriptException.class, "Parameter must be named with a variable identifier" );
