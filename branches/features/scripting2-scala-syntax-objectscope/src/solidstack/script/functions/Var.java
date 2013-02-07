@@ -16,22 +16,22 @@
 
 package solidstack.script.functions;
 
-import funny.Symbol;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.scopes.AbstractScope.Ref;
+import funny.Symbol;
 
-public class Def extends FunctionObject
+public class Var extends FunctionObject
 {
 	@Override
 	public Object call( ThreadContext thread, Object... parameters )
 	{
 		if( parameters.length != 1 ) // TODO Maybe this could be more than one
-			throw new ThrowException( "def() needs exactly one parameter", thread.cloneStack() );
+			throw new ThrowException( "var() needs exactly one parameter", thread.cloneStack() );
 		Object object = parameters[ 0 ];
 		if( !( object instanceof Ref ) )
-			throw new ThrowException( "def() needs a variable identifier as parameter", thread.cloneStack() );
+			throw new ThrowException( "var() needs a variable identifier as parameter", thread.cloneStack() );
 		Symbol symbol = ( (Ref)object ).getKey();
 		return thread.getScope().def( symbol, null );
 	}

@@ -463,7 +463,7 @@ public class ScriptTests extends Util
 	}
 
 	@Test
-	static public void test23()
+	static public void testNamedParameters()
 	{
 		// TODO Calling default global methods with named parameter
 		test( "f = (a,b,c) => a; f( b = 1, c = 2, a = 3 )", 3 );
@@ -482,7 +482,14 @@ public class ScriptTests extends Util
 		test( "f = (a=1,b=2) => a+b; f(b=4)", 5 );
 		test( "f = (a=1,b=2) => a+b; f(b=4,a=3)", 7 );
 		test( "x=5; f = (a=x,b=2) => a+b; { var x=7; f() }", 7 );
+//		test( "f = ( =>a, =>b ) => a; f(b=4,a=3)", 7 );
 	}
+
+//	@Test
+//	static public void testDef()
+//	{
+//		test( "def f(a) = a; f(1)", 1 );
+//	}
 
 	@Test
 	static public void test24()
@@ -652,8 +659,8 @@ public class ScriptTests extends Util
 //		fail( "null++", ScriptException.class, "Can't apply ++ to a null" );
 		fail( "Map( a -> 1, 2 )", ScriptException.class, "No such method: static java.util.Map.apply() is applicable" );
 		fail( "'1", SourceException.class, "Unexpected character" );
-		fail( "var", ScriptException.class, "def() needs exactly one parameter" );
-		fail( "var 1", ScriptException.class, "def() needs a variable identifier as parameter" );
+		fail( "var", ScriptException.class, "var() needs exactly one parameter" );
+		fail( "var 1", ScriptException.class, "var() needs a variable identifier as parameter" );
 		fail( "defined()", ScriptException.class, "defined() needs exactly one parameter" );
 		fail( "defined( 1 )", ScriptException.class, "defined() needs a variable identifier as parameter" );
 		fail( "print()", ScriptException.class, "print() needs exactly one parameter" );

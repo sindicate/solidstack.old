@@ -312,7 +312,7 @@ public class ScriptParser
 				return new BooleanLiteral( token.getLocation(), false );
 
 			case VAR:
-				return new Apply( "(", new Identifier( token.getLocation(), "def" ), parseAtom() );
+				return new Apply( "(", new Identifier( token.getLocation(), "var" ), parseAtom() );
 
 			case IDENTIFIER:
 			case THROW: // TODO Make a statement instead of a function

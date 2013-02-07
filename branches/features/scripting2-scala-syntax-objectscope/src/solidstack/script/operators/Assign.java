@@ -41,7 +41,7 @@ public class Assign extends Operator
 			// TODO This is ugly
 			Apply apply = (Apply)this.left;
 			Expression object = apply.left;
-			if( !( object instanceof Identifier && ( (Identifier)object ).getSymbol().toString().equals( "def" ) ) )
+			if( !( object instanceof Identifier && ( (Identifier)object ).getSymbol().toString().equals( "var" ) ) )
 			{
 				Expression pars = apply.right;
 				if( !( pars instanceof BuildTuple ) ) // TODO And what if it is?
