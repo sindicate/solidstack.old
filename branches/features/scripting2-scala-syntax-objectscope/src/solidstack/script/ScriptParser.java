@@ -40,6 +40,7 @@ import solidstack.script.expressions.Parenthesis;
 import solidstack.script.expressions.StringExpression;
 import solidstack.script.expressions.StringLiteral;
 import solidstack.script.expressions.SymbolExpression;
+import solidstack.script.expressions.Throw;
 import solidstack.script.expressions.Var;
 import solidstack.script.expressions.While;
 import solidstack.script.operators.Operator;
@@ -317,8 +318,16 @@ public class ScriptParser
 					return new Var( token.getLocation(), new Identifier( token2.getLocation(), token2.getValue() ) );
 				throw new SourceException( "identifier expected after 'var', not " + token2, token2.getLocation() );
 
+			case THROW:
+				Expression exception = parseExpression();
+				if( exception == null )
+					throw new SourceException( "expression expected after 'throw'", token.getLocation() );
+				token2 = this.tokenizer.last();
+				Assert.isTrue( token2.getType() == this.stop || token2.getType() == TokenType.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
+				this.tokenizer.push();
+				return new Throw( token.getLocation(), exception );
+
 			case IDENTIFIER:
-			case THROW: // TODO Make a statement instead of a function
 			case RETURN: // TODO Make a statement instead of a function
 			case VAL: // TODO Make a statement instead of a function
 			case THIS:

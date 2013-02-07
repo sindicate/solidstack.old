@@ -667,7 +667,9 @@ public class ScriptTests extends Util
 		fail( "println()", ScriptException.class, "println() needs exactly one parameter" );
 		fail( "scope()", ScriptException.class, "scope() needs exactly one parameter" );
 		fail( "scope( 1 )", ScriptException.class, "scope() needs a map parameter" );
-		fail( "throw()", ScriptException.class, "throw() needs exactly one parameter" );
+		fail( "throw", SourceException.class, "expression expected after 'throw'" );
+		fail( "throw;", SourceException.class, "expression expected after 'throw'" );
+		fail( "throw()", ScriptException.class, "null" );
 //		fail( "val()", ScriptException.class, "val() needs exactly one parameter" );
 //		fail( "val( 1 )", ScriptException.class, "val() needs a variable identifier as parameter" );
 		fail( "f = ( a = 1 ) => (); f( b = 1 )", ScriptException.class, "Parameter 'b' undefined" );

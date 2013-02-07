@@ -14,21 +14,32 @@
  * limitations under the License.
  */
 
-package solidstack.script.functions;
+package solidstack.script.expressions;
 
+import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
-import solidstack.script.objects.FunctionObject;
-import solidstack.script.objects.Util;
 
-public class Throw extends FunctionObject
+
+public class Throw extends LocalizedExpression
 {
-	@Override
-	public Object call( ThreadContext thread, Object... parameters )
+	private Expression expression;
+
+
+	public Throw( SourceLocation location, Expression expression )
 	{
-		if( parameters.length != 1 )
-			throw new ThrowException( "throw() needs exactly one parameter", thread.cloneStack() );
-		Object object = Util.deref( parameters[ 0 ] );
-		throw new ThrowException( object, thread.cloneStack() );
+		super( location );
+		this.expression = expression;
+	}
+
+	public Object evaluate( ThreadContext thread )
+	{
+		throw new ThrowException( this.expression.evaluate( thread ), thread.cloneStack() );
+	}
+
+	public void writeTo( StringBuilder out )
+	{
+		out.append( "throw " );
+		this.expression.writeTo( out );
 	}
 }

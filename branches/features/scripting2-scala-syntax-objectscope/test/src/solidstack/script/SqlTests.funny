@@ -4,7 +4,7 @@ sql = loadClass( "funny.sql.Sql" )( "org.apache.derby.jdbc.EmbeddedDriver", "jdb
 sql.eachResult( "SELECT * FROM SYS.SYSTABLES", result => println( result.getString( "TABLENAME" ) ) );
 
 tables = sql.list( "SELECT * FROM SYS.SYSTABLES" );
-if( !tables ) throw( "Expected some tables" );
+if( !tables ) throw "Expected some tables";
 
 tables.foreach( table => println( table.tablename ) );
 
