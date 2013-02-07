@@ -40,8 +40,8 @@ import solidstack.script.expressions.Parenthesis;
 import solidstack.script.expressions.StringExpression;
 import solidstack.script.expressions.StringLiteral;
 import solidstack.script.expressions.SymbolExpression;
+import solidstack.script.expressions.Var;
 import solidstack.script.expressions.While;
-import solidstack.script.operators.Apply;
 import solidstack.script.operators.Operator;
 import solidstack.script.operators.Spread;
 import funny.Symbol;
@@ -312,7 +312,10 @@ public class ScriptParser
 				return new BooleanLiteral( token.getLocation(), false );
 
 			case VAR:
-				return new Apply( "(", new Identifier( token.getLocation(), "var" ), parseAtom() );
+				token2 = this.tokenizer.next();
+				if( token2.getType() == TokenType.IDENTIFIER )
+					return new Var( token.getLocation(), new Identifier( token2.getLocation(), token2.getValue() ) );
+				throw new SourceException( "identifier expected after 'var', not " + token2, token2.getLocation() );
 
 			case IDENTIFIER:
 			case THROW: // TODO Make a statement instead of a function

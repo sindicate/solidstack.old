@@ -659,8 +659,8 @@ public class ScriptTests extends Util
 //		fail( "null++", ScriptException.class, "Can't apply ++ to a null" );
 		fail( "Map( a -> 1, 2 )", ScriptException.class, "No such method: static java.util.Map.apply() is applicable" );
 		fail( "'1", SourceException.class, "Unexpected character" );
-		fail( "var", ScriptException.class, "var() needs exactly one parameter" );
-		fail( "var 1", ScriptException.class, "var() needs a variable identifier as parameter" );
+		fail( "var", SourceException.class, "identifier expected after 'var', not EOF, at line 1" );
+		fail( "var 1", SourceException.class, "identifier expected after 'var', not 1" );
 		fail( "defined()", ScriptException.class, "defined() needs exactly one parameter" );
 		fail( "defined( 1 )", ScriptException.class, "defined() needs a variable identifier as parameter" );
 		fail( "print()", ScriptException.class, "print() needs exactly one parameter" );
@@ -668,8 +668,8 @@ public class ScriptTests extends Util
 		fail( "scope()", ScriptException.class, "scope() needs exactly one parameter" );
 		fail( "scope( 1 )", ScriptException.class, "scope() needs a map parameter" );
 		fail( "throw()", ScriptException.class, "throw() needs exactly one parameter" );
-		fail( "val()", ScriptException.class, "val() needs exactly one parameter" );
-		fail( "val( 1 )", ScriptException.class, "val() needs a variable identifier as parameter" );
+//		fail( "val()", ScriptException.class, "val() needs exactly one parameter" );
+//		fail( "val( 1 )", ScriptException.class, "val() needs a variable identifier as parameter" );
 		fail( "f = ( a = 1 ) => (); f( b = 1 )", ScriptException.class, "Parameter 'b' undefined" );
 		fail( "f = ( a ) => (); f( b = 1 )", ScriptException.class, "No value specified for parameter 'a'" );
 		fail( "f = ( a, b ) => (); f( a = 1, 2 )", ScriptException.class, "All parameters must be named" );

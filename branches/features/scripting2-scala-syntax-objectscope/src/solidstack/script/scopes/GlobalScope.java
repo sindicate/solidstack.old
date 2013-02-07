@@ -40,8 +40,6 @@ import solidstack.script.functions.Print;
 import solidstack.script.functions.Println;
 import solidstack.script.functions.Return;
 import solidstack.script.functions.Throw;
-import solidstack.script.functions.Val;
-import solidstack.script.functions.Var;
 import solidstack.script.objects.Type;
 import funny.Symbol;
 
@@ -64,8 +62,6 @@ public class GlobalScope extends Scope
 		val( Symbol.apply( "return" ), new Return() ); // TODO Remove
 		val( Symbol.apply( "scope" ), new solidstack.script.functions.Scope() ); // TODO Remove
 		val( Symbol.apply( "throw" ), new Throw() ); // TODO Remove
-		val( Symbol.apply( "val" ), new Val() ); // TODO Remove
-		val( Symbol.apply( "var" ), new Var() ); // TODO Remove
 
 		// Primitives
 
