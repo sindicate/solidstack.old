@@ -31,7 +31,7 @@ import org.testng.annotations.Test;
 
 import solidstack.io.SourceException;
 import solidstack.script.java.Java;
-import solidstack.script.objects.FunnyString;
+import solidstack.script.objects.PString;
 import solidstack.script.scopes.DefaultScope;
 import funny.Symbol;
 
@@ -306,17 +306,17 @@ public class ScriptTests extends Util
 	@Test
 	static public void test15()
 	{
-		test( "a = 1; s\"a = ${a}\"", "a = 1" );
-		test( "a = 1; s = s\"a = ${a}\"; a = 2; s", "a = 1" );
+		test( "a = 1; s\"a = ${a}\".toString()", "a = 1" );
+		test( "a = 1; s = s\"a = ${a}\"; a = 2; s.toString()", "a = 1" );
 		test( "a = 1; s\"a = \\${a}\"", "a = ${a}" );
-		test( "s\"${1}\"", "1" );
+		test( "s\"${1}\".toString()", "1" );
 		test( "s\"${}\"", "" );
 		test( "s\"\".getClass()", String.class );
 		test( "s\"x\".getClass()", String.class );
-		test( "s\"${1}\".getClass()", FunnyString.class );
-		test( "s\"x${1}x\".getClass()", FunnyString.class );
+		test( "s\"${1}\".getClass()", PString.class );
+		test( "s\"x${1}x\".getClass()", PString.class );
 		test( "s\"x${1}x\".size()", 3 );
-		test( "s\"${\"x\"}\"", "x" );
+		test( "s\"${\"x\"}\".toString()", "x" );
 		fail( "\"${\"x\"}\"", SourceException.class, "Unexpected token 'x'" );
 	}
 
@@ -809,6 +809,7 @@ public class ScriptTests extends Util
 	// TODO Adding tuples or appending values to it.
 	// TODO Always remember the lexical scope. Needed if we want script file specific settings.
 	// TODO Axis: owner = lexical owner, delegate, prototype, global, this
+	// TODO Add resource attribute or resource() method which returns the resource of the current script
 
 	@SuppressWarnings( "unused" )
 	static public class TestObject1

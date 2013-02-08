@@ -21,8 +21,8 @@ public class Util
 		Object result = Util.deref( value );
 		if( result == null )
 			return null;
-		if( result instanceof FunnyString )
-			return result.toString();
+//		if( result instanceof PString )
+//			return result.toString();
 		if( result instanceof Type )
 			return ( (Type)result ).theClass();
 		return result;

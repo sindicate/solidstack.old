@@ -402,7 +402,7 @@ public class ScriptParser
 		{
 			Expression expression = parser.parse();
 			if( expression != null ) // TODO Unit test
-				result.append( expression );
+				result.append( expression instanceof StringLiteral ? new Parenthesis( expression.getLocation(), expression ) : expression );
 			fragment = t.getFragment();
 			if( fragment.length() != 0 )
 				result.append( new StringLiteral( fragment.getLocation(), fragment.getValue() ) );

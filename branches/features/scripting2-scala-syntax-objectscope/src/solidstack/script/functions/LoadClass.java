@@ -23,6 +23,7 @@ import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Type;
 import solidstack.script.objects.Util;
 
+// TODO Why did we abandon the Class() method?
 public class LoadClass extends FunctionObject
 {
 	@Override

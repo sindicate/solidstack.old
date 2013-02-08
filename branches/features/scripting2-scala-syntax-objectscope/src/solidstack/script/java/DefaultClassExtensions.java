@@ -35,7 +35,7 @@ import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.objects.Assoc;
-import solidstack.script.objects.FunnyString;
+import solidstack.script.objects.PString;
 import solidstack.script.scopes.DefaultScope;
 import solidstack.script.scopes.Scope;
 import solidstack.util.ObjectArrayListIterator;
@@ -444,7 +444,7 @@ public class DefaultClassExtensions
 		return STRIPMARGIN_PATTERN.matcher( string ).replaceAll( "" );
 	}
 
-	static public String stripMargin( FunnyString string )
+	static public String stripMargin( PString string ) // TODO This method should not be needed
 	{
 		return stripMargin( string.toString() );
 	}

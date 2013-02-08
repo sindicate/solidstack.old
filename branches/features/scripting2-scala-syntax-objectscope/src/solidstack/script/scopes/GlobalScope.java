@@ -42,6 +42,7 @@ import solidstack.script.functions.Println;
 import solidstack.script.functions.Return;
 import solidstack.script.objects.Type;
 import funny.Symbol;
+import funny.sql.JDBC;
 
 
 
@@ -114,7 +115,8 @@ public class GlobalScope extends DefaultScope
 
 		// funny
 
-		val( Symbol.apply( "Symbol" ), new Type( Symbol.class ) );
+		val( Symbol.apply( "JDBC" ), new Type( JDBC.class ) );
 		val( Symbol.apply( "Scope" ), new Type( Scope.class ) );
+		val( Symbol.apply( "Symbol" ), new Type( Symbol.class ) );
 	}
 }

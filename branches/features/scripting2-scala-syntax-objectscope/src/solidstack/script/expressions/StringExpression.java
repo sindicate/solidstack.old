@@ -21,7 +21,7 @@ import java.util.List;
 
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
-import solidstack.script.objects.FunnyString;
+import solidstack.script.objects.PString;
 import solidstack.script.objects.Util;
 
 
@@ -36,12 +36,22 @@ public class StringExpression extends LocalizedExpression
 		super( location );
 	}
 
-	public FunnyString evaluate( ThreadContext thread )
+	public PString evaluate( ThreadContext thread )
 	{
+		List<String> fragments = new ArrayList<String>(); // TODO Or LinkedList?
 		List<Object> values = new ArrayList<Object>();
 		for( Expression expression : this.expressions )
-			values.add( Util.deref( expression.evaluate( thread ) ) ); // TODO Or without single()?
-		return new FunnyString( values );
+		{
+			Object object = Util.deref( expression.evaluate( thread ) ); // TODO deref() needed here?
+			if( expression instanceof StringLiteral )
+				fragments.add( (String)object );
+			else
+			{
+				fragments.add( null ); // This is the value indicator
+				values.add( object );
+			}
+		}
+		return new PString( fragments.toArray( new String[ fragments.size() ] ), values.toArray() );
 	}
 
 	public void append( Expression expression )
