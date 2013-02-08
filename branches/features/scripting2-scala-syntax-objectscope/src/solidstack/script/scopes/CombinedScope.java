@@ -22,9 +22,9 @@ import funny.Symbol;
 
 public class CombinedScope extends AbstractScope
 {
-	private AbstractScope scope1, scope2;
+	private Scope scope1, scope2;
 
-	public CombinedScope( AbstractScope scope1, AbstractScope scope2 )
+	public CombinedScope( Scope scope1, Scope scope2 )
 	{
 		this.scope1 = scope1;
 		this.scope2 = scope2;

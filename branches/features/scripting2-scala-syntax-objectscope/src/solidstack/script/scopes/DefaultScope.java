@@ -21,15 +21,22 @@ import funny.Symbol;
 
 
 
-
-public class ParameterScope extends AbstractScope
+public class DefaultScope extends AbstractScope
 {
+	static public final Symbol THIS = Symbol.apply( "this" );
+
 	private Scope parent;
 
 	private ValueMap<Value> values = new ValueMap<Value>();
 
-	public ParameterScope( Scope parent )
+	public DefaultScope()
 	{
+		def( THIS, this );
+	}
+
+	public DefaultScope( Scope parent )
+	{
+		this();
 		this.parent = parent;
 	}
 
@@ -44,23 +51,24 @@ public class ParameterScope extends AbstractScope
 		Value v = findLocalValue( symbol );
 		if( v != null )
 			return v;
-		return this.parent.findRef( symbol );
-	}
-
-	public void defParameter( Symbol symbol, Object value )
-	{
-		this.values.put( new Variable( symbol, value ) );
+		if( this.parent != null )
+			return this.parent.findRef( symbol );
+		return GlobalScope.INSTANCE.findLocalValue( symbol );
 	}
 
 	@Override
 	public Variable def( Symbol symbol, Object value )
 	{
-		return this.parent.def( symbol, value );
+		Variable result = new Variable( symbol, value );
+		this.values.put( result );
+		return result;
 	}
 
 	@Override
 	public Value val( Symbol symbol, Object value )
 	{
-		return this.parent.val( symbol, value );
+		Value result = new Value( symbol, value );
+		this.values.put( result );
+		return result;
 	}
 }

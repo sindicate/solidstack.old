@@ -31,7 +31,7 @@ import solidstack.script.java.MissingFieldException;
 import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Type;
 import solidstack.script.objects.Util;
-import solidstack.script.scopes.AbstractScope;
+import solidstack.script.scopes.Scope;
 import solidstack.script.scopes.ScopeException;
 import funny.Symbol;
 
@@ -51,8 +51,8 @@ public class Member extends Operator
 			Assert.isInstanceOf( this.right, Identifier.class );
 			Symbol right = ( (Identifier)this.right ).getSymbol();
 			Assert.isFalse( left == null, "member: " + right.toString() );
-			if( left instanceof AbstractScope ) // TODO This is part of the OO we want
-				return ( (AbstractScope)left ).getRef( right );
+			if( left instanceof Scope ) // TODO This is part of the OO we want
+				return ( (Scope)left ).getRef( right );
 			if( left instanceof Map )
 				return ( (Map)left ).get( right.toString() );
 			try
@@ -88,8 +88,8 @@ public class Member extends Operator
 			Assert.isInstanceOf( this.right, Identifier.class );
 			Symbol right = ( (Identifier)this.right ).getSymbol();
 			Assert.isFalse( left == null, "member: " + right.toString() );
-			if( left instanceof AbstractScope ) // TODO This is part of the OO we want
-				return ( (AbstractScope)left ).getRef( right );
+			if( left instanceof Scope ) // TODO This is part of the OO we want
+				return ( (Scope)left ).getRef( right );
 			// TODO Also read properties to look for Functions
 			return new ObjectMember( left, right );
 		}

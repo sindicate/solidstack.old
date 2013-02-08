@@ -22,7 +22,7 @@ import solidstack.script.scopes.ValueMap.Entry;
 import funny.Symbol;
 
 
-abstract public class AbstractScope
+abstract public class AbstractScope implements Scope
 {
 	abstract public Ref findRef( Symbol symbol );
 

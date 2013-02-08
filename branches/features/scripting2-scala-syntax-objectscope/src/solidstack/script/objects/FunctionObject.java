@@ -29,7 +29,7 @@ import solidstack.script.expressions.Identifier;
 import solidstack.script.operators.Assign;
 import solidstack.script.operators.Function;
 import solidstack.script.operators.Spread;
-import solidstack.script.scopes.AbstractScope;
+import solidstack.script.scopes.DefaultScope;
 import solidstack.script.scopes.ParameterScope;
 import solidstack.script.scopes.Scope;
 import funny.Symbol;
@@ -37,14 +37,14 @@ import funny.Symbol;
 public class FunctionObject implements solidstack.script.java.Function
 {
 	private Function function;
-	private AbstractScope scope;
+	private Scope scope;
 	private boolean assigned; // FIXME Remove this, it does not work correctly. For example, with functions returning functions.
 
 	public FunctionObject()
 	{
 	}
 
-	public FunctionObject( Function function, AbstractScope scope )
+	public FunctionObject( Function function, Scope scope )
 	{
 		this.function = function;
 		this.scope = scope; // FIXME Possibly need to clone the whole scope hierarchy (flattened).
@@ -106,7 +106,7 @@ public class FunctionObject implements solidstack.script.java.Function
 					par = pw.get();
 				else
 				{
-					AbstractScope old = thread.swapScope( this.scope );
+					Scope old = thread.swapScope( this.scope );
 					try
 					{
 						par = assign.getRight().evaluate( thread );
@@ -156,7 +156,7 @@ public class FunctionObject implements solidstack.script.java.Function
 					values[ i ] = args.remove( symbol );
 				else
 				{
-					AbstractScope old = thread.swapScope( this.scope );
+					Scope old = thread.swapScope( this.scope );
 					try
 					{
 						values[ i ] = assign.getRight().evaluate( thread );
@@ -191,10 +191,10 @@ public class FunctionObject implements solidstack.script.java.Function
 	{
 		int count = values.length;
 
-		AbstractScope newScope;
+		Scope newScope;
 		if( this.function.subScope() )
 		{
-			Scope scope = new Scope( this.scope );
+			DefaultScope scope = new DefaultScope( this.scope );
 			for( int i = 0; i < count; i++ )
 				scope.def( symbols[ i ], Util.deref( values[ i ] ) ); // TODO If we keep the Link we get output parameters!
 			newScope = scope;
@@ -209,7 +209,7 @@ public class FunctionObject implements solidstack.script.java.Function
 		else
 			newScope = this.scope;
 
-		AbstractScope old = thread.swapScope( newScope );
+		Scope old = thread.swapScope( newScope );
 		try
 		{
 			return this.function.getExpression().evaluate( thread );

@@ -16,26 +16,22 @@
 
 package solidstack.script.functions;
 
-import java.util.Map;
-
+import solidstack.script.Script;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Util;
-import solidstack.script.scopes.MapScope;
 
-
-// TODO Rename to toScope()?
-public class Scope extends FunctionObject
+public class Compile extends FunctionObject
 {
 	@Override
-	public Object call( ThreadContext thread, Object... parameters )
+	public Script call( ThreadContext thread, Object... parameters )
 	{
 		if( parameters.length != 1 )
-			throw new ThrowException( "scope() needs exactly one parameter", thread.cloneStack() );
-		Object object = Util.deref( parameters[ 0 ] );
-		if( !( object instanceof Map ) )
-			throw new ThrowException( "scope() needs a map parameter", thread.cloneStack() );
-		return new MapScope( (Map<Object, Object>)object );
+			throw new ThrowException( "compile() needs exactly one parameter", thread.cloneStack() );
+		Object object = Util.toJava( parameters[ 0 ] );
+		if( !( object instanceof String ) )
+			throw new ThrowException( "compile() needs a string parameter", thread.cloneStack() );
+		return Script.compile( (String)object );
 	}
 }

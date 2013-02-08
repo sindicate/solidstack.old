@@ -18,7 +18,7 @@ package solidstack.script.expressions;
 
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
-import solidstack.script.scopes.AbstractScope;
+import solidstack.script.scopes.DefaultScope;
 import solidstack.script.scopes.Scope;
 
 
@@ -40,8 +40,8 @@ public class Block extends LocalizedExpression // TODO Is this localized needed?
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Scope scope = new Scope( thread.getScope() );
-		AbstractScope old = thread.swapScope( scope );
+		DefaultScope scope = new DefaultScope( thread.getScope() );
+		Scope old = thread.swapScope( scope );
 		try
 		{
 			return this.expression.evaluate( thread );

@@ -33,6 +33,7 @@ import java.util.Set;
 
 import solidstack.script.functions.Call;
 import solidstack.script.functions.ClassOf;
+import solidstack.script.functions.Compile;
 import solidstack.script.functions.Defined;
 import solidstack.script.functions.Load;
 import solidstack.script.functions.LoadClass;
@@ -45,7 +46,7 @@ import funny.Symbol;
 
 
 
-public class GlobalScope extends Scope
+public class GlobalScope extends DefaultScope
 {
 	static public final GlobalScope INSTANCE = new GlobalScope();
 
@@ -53,13 +54,14 @@ public class GlobalScope extends Scope
 	{
 		val( Symbol.apply( "call" ), new Call() );
 		val( Symbol.apply( "classOf" ), new ClassOf() );
+		val( Symbol.apply( "compile" ), new Compile() );
 		val( Symbol.apply( "defined" ), new Defined() );
 		val( Symbol.apply( "load" ), new Load() );
 		val( Symbol.apply( "loadClass" ), new LoadClass() ); // TODO Or loadType?
 		val( Symbol.apply( "print" ), new Print() );
 		val( Symbol.apply( "println" ), new Println() );
 		val( Symbol.apply( "return" ), new Return() ); // TODO Remove
-		val( Symbol.apply( "scope" ), new solidstack.script.functions.Scope() ); // TODO Remove
+//		val( Symbol.apply( "scope" ), new solidstack.script.functions.Scope() ); // TODO Remove
 
 		// Primitives
 
@@ -113,5 +115,6 @@ public class GlobalScope extends Scope
 		// funny
 
 		val( Symbol.apply( "Symbol" ), new Type( Symbol.class ) );
+		val( Symbol.apply( "Scope" ), new Type( Scope.class ) );
 	}
 }

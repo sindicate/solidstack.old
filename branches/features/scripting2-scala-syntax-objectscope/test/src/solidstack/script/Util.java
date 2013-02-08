@@ -11,7 +11,7 @@ import java.io.Reader;
 import org.testng.Assert;
 
 import solidstack.io.SourceException;
-import solidstack.script.scopes.Scope;
+import solidstack.script.scopes.DefaultScope;
 
 public class Util
 {
@@ -58,7 +58,7 @@ public class Util
 		fail( expression, null, exception, message );
 	}
 
-	static public void fail( String expression, Scope scope, Class<? extends Exception> exception, String message )
+	static public void fail( String expression, DefaultScope scope, Class<? extends Exception> exception, String message )
 	{
 		try
 		{

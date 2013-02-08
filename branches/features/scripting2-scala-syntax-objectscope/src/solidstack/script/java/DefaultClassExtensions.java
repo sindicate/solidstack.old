@@ -32,9 +32,14 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import solidstack.script.Script;
+import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
 import solidstack.script.objects.Assoc;
 import solidstack.script.objects.FunnyString;
+import solidstack.script.scopes.DefaultScope;
+import solidstack.script.scopes.Scope;
 import solidstack.util.ObjectArrayListIterator;
+import funny.Symbol;
 
 
 /**
@@ -174,6 +179,19 @@ public class DefaultClassExtensions
 		HashMap result = new HashMap();
 		for( Assoc labeled : entries )
 			result.put( labeled.getLabel(), labeled.getValue() );
+		return result;
+	}
+
+	static public Scope static_apply( Scope scope, Assoc... entries )
+	{
+		Scope result = new DefaultScope();
+		for( Assoc labeled : entries )
+		{
+			Object label = labeled.getLabel();
+			if( !( label instanceof String ) )
+				throw new ThrowException( "A Scope() constructor needs keys of type String", ThreadContext.get().cloneStack() );
+			result.def( Symbol.apply( (String)label ), labeled.getValue() );
+		}
 		return result;
 	}
 

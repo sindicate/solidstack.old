@@ -32,7 +32,7 @@ import org.testng.annotations.Test;
 import solidstack.io.SourceException;
 import solidstack.script.java.Java;
 import solidstack.script.objects.FunnyString;
-import solidstack.script.scopes.Scope;
+import solidstack.script.scopes.DefaultScope;
 import funny.Symbol;
 
 
@@ -42,7 +42,7 @@ public class ScriptTests extends Util
 	@Test
 	static public void test1()
 	{
-		Scope scope = new Scope();
+		DefaultScope scope = new DefaultScope();
 		scope.set( "var1", "Value" );
 		test( "var1", scope, "Value" );
 		test( "", null );
@@ -51,7 +51,7 @@ public class ScriptTests extends Util
 	@Test
 	static public void test2()
 	{
-		Scope scope = new Scope();
+		DefaultScope scope = new DefaultScope();
 		scope.set( "var1", 1 );
 		test( "var1 + 1", scope, 2 );
 	}
@@ -130,7 +130,7 @@ public class ScriptTests extends Util
 	@Test
 	static public void test5()
 	{
-		Scope scope = new Scope();
+		DefaultScope scope = new DefaultScope();
 
 		test( "a = 1", scope, 1 );
 		Assert.assertEquals( scope.get( "a" ), 1 );
@@ -249,7 +249,7 @@ public class ScriptTests extends Util
 	@Test
 	static public void test13()
 	{
-		Scope scope = new Scope();
+		DefaultScope scope = new DefaultScope();
 		scope.set( "s", "sinterklaas" );
 		test( "s.length()", scope, 11 );
 		test( "s.substring( 6 )", scope, "klaas" );
@@ -279,7 +279,7 @@ public class ScriptTests extends Util
 	@Test
 	static public void test13_2()
 	{
-		Scope scope = new Scope();
+		DefaultScope scope = new DefaultScope();
 		test( "c = loadClass( \"solidstack.script.ScriptTests$TestObject1\" );", scope, TestObject1.class );
 		test( "new c().value", scope, 0 );
 		test( "new c( 3.14 ).value", scope, 2 );
@@ -390,21 +390,24 @@ public class ScriptTests extends Util
 		test( "map = Map( \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ); map( \"second\" )", 2 );
 		test( "map = Map( \"fir\" + \"st\" -> 1, \"second\" -> 2, \"third\" -> 3 ); map( \"first\" )", 1 );
 		test( "map = Map( \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ); map( \"fourth\" )", null ); // TODO Undefined? Then we assign to it too.
-		test( "map = scope( Map( \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ) ); map.third", 3 );
-		test( "map = scope( Map( \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ) ); map.fourth", null ); // TODO What about undefined?
-		test( "map = Map(); s = scope( map ); s.first = 1; map( \"first\" )", 1 );
+		test( "map = Map( \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ); map.third", 3 );
+		test( "map = Map( \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ); map.fourth", null ); // TODO What about undefined?
+		test( "map = Map(); map.first = 1; map( \"first\" )", 1 );
 		test( "map = Map(); map( \"fourth\" )", null );
 		test( "map = Map(); map.size()", 0 );
 		test( "map = Map(); map( \"third\" ) = 3; map( \"third\" )", 3 );
 		test( "map = LinkedHashMap( 0 -> 1 ); map.size()", 1 );
 
 		test( "set = Set( 0 ); set.size()", 1 );
-		test( "set = LinkedHashSet( 0, 1 ); set.size()", 2 );
+		test( "set = LinkedHashSet( 0, 1, 0 ); set.size()", 2 );
 
 		test( "props = Properties( \"prop1\" -> \"value1\" ); props.prop1", "value1" );
 
-		test( "array = loadClass( \"java.lang.reflect.Array\" ).newInstance( loadClass( \"java.lang.String\" ), 10 ); array.size()", 10 ); // TODO Array()
+		test( "array = loadClass( \"java.lang.reflect.Array\" ).newInstance( loadClass( \"java.lang.String\" ), 10 ); array.size()", 10 );
 		test( "array = loadClass( \"java.lang.reflect.Array\" ).newInstance( loadClass( \"int\" ), 10 ); array.size()", 10 );
+
+		test( "scope = Scope( \"test\" -> 1 ); scope.test", 1 );
+		test( "scope = Scope(); compile( \"test = 1\" ).eval( scope ); scope.test", 1 );
 
 		eval( "( a => a )( null )" );
 		eval( "( a => a )( if( false; 1 ) )" );
@@ -631,7 +634,7 @@ public class ScriptTests extends Util
 	@Test
 	static public void test27()
 	{
-		Scope scope = new Scope();
+		DefaultScope scope = new DefaultScope();
 		scope.set( "o1", new TestObject1() );
 
 		fail( "1 = 1", ScriptException.class, "Can't assign to a java.lang.Integer" );
@@ -665,8 +668,8 @@ public class ScriptTests extends Util
 		fail( "defined( 1 )", ScriptException.class, "defined() needs a variable identifier as parameter" );
 		fail( "print()", ScriptException.class, "print() needs exactly one parameter" );
 		fail( "println()", ScriptException.class, "println() needs exactly one parameter" );
-		fail( "scope()", ScriptException.class, "scope() needs exactly one parameter" );
-		fail( "scope( 1 )", ScriptException.class, "scope() needs a map parameter" );
+//		fail( "scope()", ScriptException.class, "scope() needs exactly one parameter" );
+//		fail( "scope( 1 )", ScriptException.class, "scope() needs a map parameter" );
 		fail( "throw", SourceException.class, "expression expected after 'throw'" );
 		fail( "throw;", SourceException.class, "expression expected after 'throw'" );
 		fail( "throw()", ScriptException.class, "null" );
@@ -718,7 +721,7 @@ public class ScriptTests extends Util
 	static public void test31() throws IOException
 	{
 		Object object = new TestObject4();
-		Scope scope = new Scope();
+		DefaultScope scope = new DefaultScope();
 		scope.def( Symbol.apply( "o" ), object );
 		test( "o.field1", scope, 1 );
 		test( "o.field1 = 2; o.field2", scope, 2 );
@@ -746,7 +749,7 @@ public class ScriptTests extends Util
 		Map map = new HashMap();
 		map.put( "field1", 1 );
 		map.put( "field2", 2 );
-		Scope scope = new Scope();
+		DefaultScope scope = new DefaultScope();
 		scope.def( Symbol.apply( "o" ), map );
 		test( "o.field1", scope, 1 );
 		test( "o.field1 = 2; o.field2", scope, 2 );
@@ -805,6 +808,7 @@ public class ScriptTests extends Util
 	// TODO Compartmentalization like Java does with classloaders. This means name spaces too.
 	// TODO Adding tuples or appending values to it.
 	// TODO Always remember the lexical scope. Needed if we want script file specific settings.
+	// TODO Axis: owner = lexical owner, delegate, prototype, global, this
 
 	@SuppressWarnings( "unused" )
 	static public class TestObject1

@@ -25,8 +25,8 @@ import solidstack.script.expressions.Expression;
 import solidstack.script.java.Types;
 import solidstack.script.objects.Tuple;
 import solidstack.script.objects.Util;
-import solidstack.script.scopes.AbstractScope;
 import solidstack.script.scopes.AbstractScope.Ref;
+import solidstack.script.scopes.DefaultScope;
 import solidstack.script.scopes.MapScope;
 import solidstack.script.scopes.ObjectScope;
 import solidstack.script.scopes.Scope;
@@ -49,11 +49,11 @@ public class Script
 			return null;
 
 		if( scope == null )
-			scope = new Scope();
+			scope = new DefaultScope();
 
-		AbstractScope s;
-		if( scope instanceof AbstractScope )
-			s = (AbstractScope)scope;
+		Scope s;
+		if( scope instanceof Scope )
+			s = (Scope)scope;
 		else if( scope instanceof Map )
 			s = new MapScope( (Map)scope );
 		else
@@ -83,7 +83,7 @@ public class Script
 		return Util.toJava( eval0( expression, scope ) );
 	}
 
-	static public boolean evalBoolean( Expression expression, AbstractScope scope )
+	static public boolean evalBoolean( Expression expression, Scope scope )
 	{
 		return isTrue( eval0( expression, scope ) );
 	}
@@ -121,7 +121,7 @@ public class Script
 		return eval( this.expression, scope );
 	}
 
-	public boolean evalBoolean( AbstractScope scope )
+	public boolean evalBoolean( Scope scope )
 	{
 		return evalBoolean( this.expression, scope );
 	}
