@@ -60,6 +60,13 @@ public class JDBC
 			function.call( result );
 	}
 
+	public void eachRow( PString query, Function function ) throws SQLException
+	{
+		ResultSet result = query( query );
+		while( result.next() )
+			function.call( result );
+	}
+
 	public ResultSet query( String query ) throws SQLException
 	{
 		return this.connection.createStatement().executeQuery( query );
@@ -68,20 +75,16 @@ public class JDBC
 	// TODO Do this with the query template package
 	public ResultSet query( PString query ) throws SQLException
 	{
-		Object[] values = query.getValues();
-		int len = values.length;
-		Object[] parameters = new Object[ len ];
-		System.arraycopy( values, 0, parameters, 0, len );
-		for( int i = 0; i < len; i++ )
-			values[ i ] = "?";
-		System.out.println( query.toString() );
-		PreparedStatement statement = this.connection.prepareStatement( query.toString() );
-		for( int i = 0; i < len; i++ )
-			statement.setObject( i + 1, parameters[ i ] );
-		return statement.executeQuery();
+		return prepare( query ).executeQuery();
 	}
 
 	public List list( String query ) throws SQLException
+	{
+		ResultSet resultSet = query( query );
+		return new ResultList( Query.listOfArrays( resultSet, true ), Query.getColumnLabelMap( resultSet.getMetaData() ) );
+	}
+
+	public List list( PString query ) throws SQLException
 	{
 		ResultSet resultSet = query( query );
 		return new ResultList( Query.listOfArrays( resultSet, true ), Query.getColumnLabelMap( resultSet.getMetaData() ) );
@@ -92,9 +95,34 @@ public class JDBC
 		return this.connection.createStatement().execute( query );
 	}
 
+	public boolean execute( PString query ) throws SQLException
+	{
+		return prepare( query ).execute();
+	}
+
 	public int update( String query ) throws SQLException
 	{
 		return this.connection.createStatement().executeUpdate( query );
+	}
+
+	public int update( PString query ) throws SQLException
+	{
+		return prepare( query ).executeUpdate();
+	}
+
+	// TODO Do this with the query template package
+	private PreparedStatement prepare( PString query ) throws SQLException
+	{
+		Object[] values = query.getValues();
+		int len = values.length;
+		Object[] parameters = new Object[ len ];
+		System.arraycopy( values, 0, parameters, 0, len );
+		for( int i = 0; i < len; i++ )
+			values[ i ] = "?";
+		PreparedStatement statement = this.connection.prepareStatement( query.toString() );
+		for( int i = 0; i < len; i++ )
+			statement.setObject( i + 1, parameters[ i ] );
+		return statement;
 	}
 
 	static class JDBCMonad
