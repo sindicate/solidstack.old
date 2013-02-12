@@ -29,6 +29,7 @@ import solidstack.script.ScriptTokenizer.TokenType;
 import solidstack.script.StringTokenizer.Fragment;
 import solidstack.script.expressions.Block;
 import solidstack.script.expressions.BooleanLiteral;
+import solidstack.script.expressions.CharLiteral;
 import solidstack.script.expressions.DecimalLiteral;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Expressions;
@@ -216,6 +217,9 @@ public class ScriptParser
 				//$FALL-THROUGH$
 			case SEMICOLON:
 				return null;
+
+			case CHAR:
+				return new CharLiteral( token.getLocation(), token.getValue().charAt( 0 ) );
 
 			case DECIMAL:
 				return new DecimalLiteral( token.getLocation(), new BigDecimal( token.getValue() ) );

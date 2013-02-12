@@ -319,6 +319,8 @@ public class ScriptTests extends Util
 		test( "s\"x${1}x\".size()", 3 );
 		test( "s\"${\"x\"}\".toString()", "x" );
 		fail( "\"${\"x\"}\"", SourceException.class, "Unexpected token 'x'" );
+		test( "s\"\\\"${1}\\\"\".toString()", "\"1\"" );
+		test( "s\"\\\"${\"X\"}\\\"\".toString()", "\"X\"" );
 	}
 
 	@Test
@@ -415,6 +417,13 @@ public class ScriptTests extends Util
 		eval( "( a => a )( if( false; 1 ) )" );
 		eval( "( a => a )( while( false ) 1 )" );
 		eval( "( a => a )( List().foreach( a => () ) )" );
+	}
+
+	@Test
+	static public void toStringTests()
+	{
+		test( "List().toString()", "[]" ); // JDK
+		test( "Map().toString()", "{}" ); // JDK
 	}
 
 	@Test
@@ -662,7 +671,8 @@ public class ScriptTests extends Util
 //		fail( "++null", ScriptException.class, "Can't apply ++ to a null" );
 //		fail( "null--", ScriptException.class, "Can't apply -- to a null" );
 //		fail( "null++", ScriptException.class, "Can't apply ++ to a null" );
-		fail( "Map( a -> 1, 2 )", ScriptException.class, "No such method: static java.util.Map.apply() is applicable" );
+		fail( "Map( a -> 2 )", ScriptException.class, "'a' undefined" );
+		fail( "Map( 1 -> 2, 3 )", ScriptException.class, "No such method: static java.util.Map.apply() is applicable" );
 		fail( "'1", SourceException.class, "Unexpected character" );
 		fail( "var", SourceException.class, "identifier expected after 'var', not EOF, at line 1" );
 		fail( "var 1", SourceException.class, "identifier expected after 'var', not 1" );

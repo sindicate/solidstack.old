@@ -210,6 +210,7 @@
 			check solidstack.query.jpa.*           dependentOnlyOn java.* javax.* solidstack.*
 			check solidstack.query.hibernate.*     dependentOnlyOn java.* javax.* solidstack.* org.hibernate.*
 			check [template]                       dependentOnlyOn java.* javax.* solidstack.* org.slf4j.*
+			check solidstack.script.*              dependentOnlyOn java.* javax.* solidstack.* funny.*
 			check solidstack.template.groovy.*     dependentOnlyOn java.* javax.* solidstack.* groovy.* org.codehaus.groovy.*
 			check solidstack.template.javascript.* dependentOnlyOn java.* javax.* solidstack.* org.mozilla.javascript.*
 			check solidstack.util.*                dependentOnlyOn java.* javax.* solidstack.*

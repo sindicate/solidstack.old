@@ -33,7 +33,7 @@ import solidstack.script.objects.Util;
 public class Load extends FunctionObject
 {
 	@Override
-	public Object call( ThreadContext thread, Object... parameters )
+	public Script call( ThreadContext thread, Object... parameters )
 	{
 		if( parameters.length != 1 )
 			throw new ThrowException( "call() needs exactly one parameter", thread.cloneStack() );

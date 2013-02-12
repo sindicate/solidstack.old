@@ -19,8 +19,7 @@ package solidstack.script.operators;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.util.Assert;
-
+import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Block;
 import solidstack.script.expressions.Expression;

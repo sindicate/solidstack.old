@@ -88,10 +88,12 @@ public class StringTokenizer extends ScriptTokenizer
 
 				case '\\':
 					ch2 = in.read();
-					if( ch2 != '$' )
-						in.push( ch2 );
-					else
+					if( this.doubleQuoted && ch2 == '"' )
+						ch = '"';
+					else if( ch2 == '$' )
 						ch = '$';
+					else
+						in.push( ch2 );
 					break;
 
 			}

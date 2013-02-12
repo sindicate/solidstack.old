@@ -22,30 +22,47 @@ public class JDBC
 
 	static public JDBC apply( String driver, String url ) throws ClassNotFoundException, SQLException
 	{
-		return new JDBC( driver, url );
+		Class.forName( driver );
+		return new JDBC( url, null, null );
+	}
+
+	static public JDBC apply( String driver, String url, String username, String password ) throws ClassNotFoundException, SQLException
+	{
+		Class.forName( driver );
+		return new JDBC( url, username, password );
 	}
 
 	static public JDBCMonad doWith( String driver, String url ) throws ClassNotFoundException, SQLException
 	{
 		Class.forName( driver );
-		return new JDBCMonad( url );
+		return new JDBCMonad( url, null, null );
 	}
 
-	private JDBC( String driver, String url ) throws ClassNotFoundException, SQLException
+	static public JDBCMonad doWith( String driver, String url, String username, String password ) throws ClassNotFoundException, SQLException
 	{
 		Class.forName( driver );
-		connect( url );
+		return new JDBCMonad( url, username, password );
 	}
 
-	private JDBC( String url ) throws ClassNotFoundException, SQLException
+	private JDBC( String url, String username, String password ) throws ClassNotFoundException, SQLException
 	{
-		connect( url );
+		connect( url, username, password );
 	}
 
-	private void connect( String url ) throws SQLException
+	private void connect( String url, String username, String password ) throws SQLException
 	{
 		this.url = url;
-		this.connection = DriverManager.getConnection( this.url );
+		this.connection = DriverManager.getConnection( this.url, username, password );
+	}
+
+	public boolean getAutoCommit() throws SQLException
+	{
+		return this.connection.getAutoCommit();
+	}
+
+	public void setAutoCommit( boolean autoCommit ) throws SQLException
+	{
+		this.connection.setAutoCommit( autoCommit );
 	}
 
 	public void close() throws SQLException
@@ -128,15 +145,24 @@ public class JDBC
 	static class JDBCMonad
 	{
 		private String url;
+		private String username;
+		private String password;
 
-		public JDBCMonad( String url )
+//		public JDBCMonad( String url )
+//		{
+//			this.url = url;
+//		}
+
+		public JDBCMonad( String url, String username, String password )
 		{
 			this.url = url;
+			this.username = username;
+			this.password = password;
 		}
 
 		public Object apply( FunctionObject function ) throws ClassNotFoundException, SQLException
 		{
-			JDBC jdbc = new JDBC( this.url );
+			JDBC jdbc = new JDBC( this.url, this.username, this.password );
 			try
 			{
 				return function.call( jdbc );

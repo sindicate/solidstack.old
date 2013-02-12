@@ -83,7 +83,7 @@ public class Script
 		return Util.toJava( eval0( expression, scope ) );
 	}
 
-	static public boolean evalBoolean( Expression expression, Scope scope )
+	static public boolean evalBoolean( Expression expression, Object scope )
 	{
 		return isTrue( eval0( expression, scope ) );
 	}
@@ -121,9 +121,19 @@ public class Script
 		return eval( this.expression, scope );
 	}
 
-	public boolean evalBoolean( Scope scope )
+	public Object eval()
+	{
+		return eval( this.expression, null );
+	}
+
+	public boolean evalBoolean( Object scope )
 	{
 		return evalBoolean( this.expression, scope );
+	}
+
+	public boolean evalBoolean()
+	{
+		return evalBoolean( this.expression, null );
 	}
 
 	// TODO WriteTo should actually be used to write the output of the script execution.

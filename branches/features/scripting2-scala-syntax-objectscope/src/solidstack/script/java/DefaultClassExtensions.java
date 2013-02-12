@@ -126,6 +126,33 @@ public class DefaultClassExtensions
 		return buf;
 	}
 
+	static public StringBuilder addString( Map map, StringBuilder buf )
+	{
+		return addString( map, buf, "", "", "" );
+	}
+
+	static public StringBuilder addString( Map map, StringBuilder buf, String separator )
+	{
+		return addString( map, buf, "", separator, "" );
+	}
+
+	static public StringBuilder addString( Map map, StringBuilder buf, String start, String separator, String end )
+	{
+		buf.append( start );
+		Iterator<Entry> iterator = map.entrySet().iterator();
+		boolean first = true;
+		while( iterator.hasNext() )
+		{
+			if( first ) first = false; else buf.append( separator );
+			Entry entry = iterator.next();
+			buf.append( entry.getKey() );
+			buf.append( " -> " );
+			buf.append( entry.getValue() );
+		}
+		buf.append( end );
+		return buf;
+	}
+
 	static public StringBuilder addString( Object[] array, StringBuilder buf )
 	{
 		return addString( array, buf, "", "", "" );
@@ -222,6 +249,11 @@ public class DefaultClassExtensions
 	static public Object apply( Object[] array, int index )
 	{
 		return array[ index ];
+	}
+
+	static public boolean apply( Set set, Object o )
+	{
+		return set.contains( o );
 	}
 
 	static public List filter( Iterable iterable, Function function )
@@ -368,6 +400,21 @@ public class DefaultClassExtensions
 	static public String mkString( Iterator iterator, String start, String separator, String end )
 	{
 		return addString( iterator, new StringBuilder(), start, separator, end ).toString();
+	}
+
+	static public String mkString( Map map )
+	{
+		return mkString( map, "", "", "" );
+	}
+
+	static public String mkString( Map map, String separator )
+	{
+		return mkString( map, "", separator, "" );
+	}
+
+	static public String mkString( Map map, String start, String separator, String end )
+	{
+		return addString( map, new StringBuilder(), start, separator, end ).toString();
 	}
 
 	static public String mkString( Object[] array )

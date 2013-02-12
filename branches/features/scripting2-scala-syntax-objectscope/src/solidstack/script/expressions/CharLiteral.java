@@ -14,25 +14,30 @@
  * limitations under the License.
  */
 
-package solidstack.script.operators;
+package solidstack.script.expressions;
 
+import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
-import solidstack.script.expressions.Expression;
-import solidstack.script.objects.Assoc;
-import solidstack.script.objects.Util;
 
-
-public class Associate extends Operator
+public class CharLiteral extends LocalizedExpression
 {
-	public Associate( String name, Expression left, Expression right)
+	private char value;
+
+
+	public CharLiteral( SourceLocation location, char value )
 	{
-		super( name, left, right );
+		super( location );
+
+		this.value = value;
 	}
 
-	public Object evaluate( ThreadContext thread )
+	public Character evaluate( ThreadContext thread )
 	{
-		Object left = Util.deref( this.left.evaluate( thread ) );
-		Object right = Util.deref( this.right.evaluate( thread ) );
-		return new Assoc( left, right );
+		return this.value;
+	}
+
+	public void writeTo( StringBuilder out )
+	{
+		out.append( this.value );
 	}
 }

@@ -89,6 +89,7 @@ public class GlobalScope extends DefaultScope
 		val( Symbol.apply( "Float" ), new Type( Float.class ) );
 		val( Symbol.apply( "Double" ), new Type( Double.class ) );
 		val( Symbol.apply( "String" ), new Type( String.class ) );
+		val( Symbol.apply( "System" ), new Type( System.class ) );
 
 		// java.math
 
