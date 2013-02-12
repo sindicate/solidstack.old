@@ -33,6 +33,7 @@ import solidstack.io.SourceException;
 import solidstack.script.java.Java;
 import solidstack.script.objects.PString;
 import solidstack.script.scopes.DefaultScope;
+import solidstack.script.scopes.Scope;
 import funny.Symbol;
 
 
@@ -407,6 +408,7 @@ public class ScriptTests extends Util
 		test( "array = loadClass( \"java.lang.reflect.Array\" ).newInstance( loadClass( \"int\" ), 10 ); array.size()", 10 );
 
 		test( "scope = Scope( \"test\" -> 1 ); scope.test", 1 );
+		test( "scope = Scope(); with( scope )( test = 1 ); scope.test", 1 );
 		test( "scope = Scope(); compile( \"test = 1\" ).eval( scope ); scope.test", 1 );
 
 		eval( "( a => a )( null )" );
@@ -715,6 +717,15 @@ public class ScriptTests extends Util
 		test( "field2 = 3; field2", scope, 3 );
 		test( "getField2()", scope, 3 );
 		test( "setField2( 4 ); field2", scope, 4 );
+
+		Scope scope2 = new DefaultScope();
+		scope2.def( Symbol.apply( "obj" ), new TestObject4() );
+		test( "with( obj ) field1", scope2, 1 );
+		test( "with( obj ) ( field1 = 2; field2 )", scope2, 2 );
+		test( "with( obj ) field2", scope2, 2 );
+		test( "with( obj ) ( field2 = 3; field2 )", scope2, 3 );
+		test( "with( obj ) getField2()", scope2, 3 );
+		test( "with( obj ) ( setField2( 4 ); field2 )", scope2, 4 );
 	}
 
 	@Test

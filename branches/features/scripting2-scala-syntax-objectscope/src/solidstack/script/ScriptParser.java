@@ -43,6 +43,7 @@ import solidstack.script.expressions.SymbolExpression;
 import solidstack.script.expressions.Throw;
 import solidstack.script.expressions.Var;
 import solidstack.script.expressions.While;
+import solidstack.script.expressions.With;
 import solidstack.script.operators.Operator;
 import solidstack.script.operators.Spread;
 import funny.Symbol;
@@ -272,7 +273,7 @@ public class ScriptParser
 			case WHILE:
 				Token token2 = this.tokenizer.next();
 				if( token2.getType() != TokenType.PAREN_OPEN )
-					throw new SourceException( "Expected an opening parenthesis", token2.getLocation() );
+					throw new SourceException( "Expected an opening parenthesis after 'while', not " + token2, token2.getLocation() );
 				oldStop = swapStops( TokenType.PAREN_CLOSE );
 				Expressions expressions = parseExpressions();
 				swapStops( oldStop );
@@ -282,10 +283,23 @@ public class ScriptParser
 				this.tokenizer.push();
 				return new While( token.getLocation(), expressions, left );
 
+			case WITH:
+				token2 = this.tokenizer.next();
+				if( token2.getType() != TokenType.PAREN_OPEN )
+					throw new SourceException( "Expected an opening parenthesis after 'with', not " + token2, token2.getLocation() );
+				oldStop = swapStops( TokenType.PAREN_CLOSE );
+				expressions = parseExpressions();
+				swapStops( oldStop );
+				left = parseExpression();
+				token2 = this.tokenizer.last();
+				Assert.isTrue( token2.getType() == this.stop || token2.getType() == TokenType.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
+				this.tokenizer.push();
+				return new With( token.getLocation(), expressions, left );
+
 			case IF:
 				token2 = this.tokenizer.next();
 				if( token2.getType() != TokenType.PAREN_OPEN )
-					throw new SourceException( "Expected an opening parenthesis", token2.getLocation() );
+					throw new SourceException( "Expected an opening parenthesis after 'if', not " + token2, token2.getLocation() );
 				oldStop = swapStops( TokenType.PAREN_CLOSE );
 				expressions = parseExpressions();
 				swapStops( oldStop );
@@ -355,6 +369,8 @@ public class ScriptParser
 				return new SymbolExpression( token.getLocation(), Symbol.apply( token.getValue() ) );
 
 			default:
+				if( token.getType().isReserved() )
+					throw new SourceException( "Unexpected reserved word " + token, token.getLocation() );
 				throw new SourceException( "Unexpected token " + token, token.getLocation() );
 		}
 	}

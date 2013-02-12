@@ -65,6 +65,7 @@ public class ScriptTokenizer
 		private TokenType( String word ) { this( word, true ); }
 		private TokenType( String word, boolean reserved ) { this.word = word; this.reserved = reserved; }
 		@Override public String toString() { if( this.word != null ) return this.word; return super.toString(); }
+		public boolean isReserved() { return this.reserved; }
 	}
 
 	/**
