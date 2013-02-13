@@ -88,7 +88,7 @@ public class Util
 //			return list;
 //		}
 		if( value instanceof Ref )
-			value = ( (Ref)value ).get();
+			return ( (Ref)value ).get();
 		return value;
 	}
 }

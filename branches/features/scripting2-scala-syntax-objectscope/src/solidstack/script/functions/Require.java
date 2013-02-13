@@ -30,16 +30,16 @@ import solidstack.script.ThrowException;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Util;
 
-public class Load extends FunctionObject
+public class Require extends FunctionObject
 {
 	@Override
-	public Script call( ThreadContext thread, Object... parameters )
+	public Object call( ThreadContext thread, Object... parameters )
 	{
 		if( parameters.length != 1 )
-			throw new ThrowException( "load() needs exactly one parameter", thread.cloneStack() );
+			throw new ThrowException( "require() needs exactly one parameter", thread.cloneStack() );
 		Object object = Util.toJava( parameters[ 0 ] );
 		if( !( object instanceof String ) )
-			throw new ThrowException( "load() needs a string parameter", thread.cloneStack() );
+			throw new ThrowException( "require() needs a string parameter", thread.cloneStack() );
 		String name = (String)object;
 		SourceLocation location = thread.getStackHead();
 		Resource resource = location.getResource();
@@ -56,10 +56,9 @@ public class Load extends FunctionObject
 			throw new ThrowException( "File not found: " + resource, thread.cloneStack() );
 		}
 
-		Script script;
 		try
 		{
-			return Script.compile( reader );
+			return Script.compile( reader ).eval();
 		}
 		catch( SourceException e )
 		{

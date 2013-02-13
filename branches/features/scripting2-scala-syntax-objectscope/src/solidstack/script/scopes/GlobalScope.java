@@ -39,6 +39,7 @@ import solidstack.script.functions.Load;
 import solidstack.script.functions.LoadClass;
 import solidstack.script.functions.Print;
 import solidstack.script.functions.Println;
+import solidstack.script.functions.Require;
 import solidstack.script.functions.Return;
 import solidstack.script.objects.Type;
 import funny.Symbol;
@@ -49,10 +50,18 @@ import funny.sql.JDBC;
 
 public class GlobalScope extends DefaultScope
 {
-	static public final GlobalScope INSTANCE = new GlobalScope();
+	static public final GlobalScope instance = new GlobalScope();
 
 	public GlobalScope()
 	{
+		reset();
+	}
+
+	// For testing
+	public void reset()
+	{
+		clear();
+
 		val( Symbol.apply( "call" ), new Call() );
 		val( Symbol.apply( "classOf" ), new ClassOf() );
 		val( Symbol.apply( "compile" ), new Compile() );
@@ -61,8 +70,8 @@ public class GlobalScope extends DefaultScope
 		val( Symbol.apply( "loadClass" ), new LoadClass() ); // TODO Or loadType?
 		val( Symbol.apply( "print" ), new Print() );
 		val( Symbol.apply( "println" ), new Println() );
+		val( Symbol.apply( "require" ), new Require() );
 		val( Symbol.apply( "return" ), new Return() ); // TODO Remove
-//		val( Symbol.apply( "scope" ), new solidstack.script.functions.Scope() ); // TODO Remove
 
 		// Primitives
 

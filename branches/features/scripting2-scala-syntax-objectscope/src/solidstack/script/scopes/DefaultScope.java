@@ -40,6 +40,12 @@ public class DefaultScope extends AbstractScope
 		this.parent = parent;
 	}
 
+	// For testing
+	public void clear()
+	{
+		this.values.clear();
+	}
+
 	Value findLocalValue( Symbol symbol )
 	{
 		return this.values.get( symbol );
@@ -53,7 +59,7 @@ public class DefaultScope extends AbstractScope
 			return v;
 		if( this.parent != null )
 			return this.parent.findRef( symbol );
-		return GlobalScope.INSTANCE.findLocalValue( symbol );
+		return GlobalScope.instance.findLocalValue( symbol );
 	}
 
 	@Override

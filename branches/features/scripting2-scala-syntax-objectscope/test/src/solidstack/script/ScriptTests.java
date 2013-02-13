@@ -18,6 +18,7 @@ package solidstack.script;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -29,10 +30,13 @@ import java.util.Map;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import solidstack.io.SourceException;
+import solidstack.io.SourceReader;
+import solidstack.io.memfs.Folder;
+import solidstack.io.memfs.Resource;
 import solidstack.script.java.Java;
 import solidstack.script.objects.PString;
 import solidstack.script.scopes.DefaultScope;
+import solidstack.script.scopes.GlobalScope;
 import solidstack.script.scopes.Scope;
 import funny.Symbol;
 
@@ -318,7 +322,7 @@ public class ScriptTests extends Util
 		test( "s\"x${1}x\".getClass()", PString.class );
 		test( "s\"x${1}x\".size()", 3 );
 		test( "s\"${\"x\"}\".toString()", "x" );
-		fail( "\"${\"x\"}\"", SourceException.class, "Unexpected token 'x'" );
+		failParse( "\"${\"x\"}\"", "Unexpected token 'x'" );
 		test( "s\"\\\"${1}\\\"\".toString()", "\"1\"" );
 		test( "s\"\\\"${\"X\"}\\\"\".toString()", "\"X\"" );
 	}
@@ -675,17 +679,17 @@ public class ScriptTests extends Util
 //		fail( "null++", ScriptException.class, "Can't apply ++ to a null" );
 		fail( "Map( a -> 2 )", ScriptException.class, "'a' undefined" );
 		fail( "Map( 1 -> 2, 3 )", ScriptException.class, "No such method: static java.util.Map.apply() is applicable" );
-		fail( "'1", SourceException.class, "Unexpected character" );
-		fail( "var", SourceException.class, "identifier expected after 'var', not EOF, at line 1" );
-		fail( "var 1", SourceException.class, "identifier expected after 'var', not 1" );
+		failParse( "'1", "Unexpected character" );
+		failParse( "var", "identifier expected after 'var', not EOF, at line 1" );
+		failParse( "var 1", "identifier expected after 'var', not 1" );
 		fail( "defined()", ScriptException.class, "defined() needs exactly one parameter" );
 		fail( "defined( 1 )", ScriptException.class, "defined() needs a variable identifier as parameter" );
 		fail( "print()", ScriptException.class, "print() needs exactly one parameter" );
 		fail( "println()", ScriptException.class, "println() needs exactly one parameter" );
 //		fail( "scope()", ScriptException.class, "scope() needs exactly one parameter" );
 //		fail( "scope( 1 )", ScriptException.class, "scope() needs a map parameter" );
-		fail( "throw", SourceException.class, "expression expected after 'throw'" );
-		fail( "throw;", SourceException.class, "expression expected after 'throw'" );
+		failParse( "throw", "expression expected after 'throw'" );
+		failParse( "throw;", "expression expected after 'throw'" );
 		fail( "throw()", ScriptException.class, "null" );
 //		fail( "val()", ScriptException.class, "val() needs exactly one parameter" );
 //		fail( "val( 1 )", ScriptException.class, "val() needs a variable identifier as parameter" );
@@ -781,10 +785,31 @@ public class ScriptTests extends Util
 	}
 
 	@Test
-	static public void modules()
+	static public void modules() throws FileNotFoundException
 	{
 		eval( "module( \"m1\" )( m2 = 3 )" );
 		test( "m1.m2", 3 );
+
+		Folder root = new Folder();
+		Resource module = root.putFile( "module.funny", "module( \"m1\" )( m2 = 3 )" );
+		root.putFile( "script.funny", "require( \"module.funny\" ); m1.m2" );
+
+		SourceReader reader = root.getSourceReader( "script.funny" );
+		Script script = load( reader );
+
+		GlobalScope.instance.reset();
+		test( script, 3 );
+
+		// ---- Second time skips
+		module.setContents( "module( \"m1\" )( throw \"Should not come here\" )" );
+		script.eval();
+
+		// TODO Require does nothing more than execute the script file
+		// ---- Circular tests
+		GlobalScope.instance.reset();
+		root.putFile( "module.funny", "module( \"m1\" )( require( \"module2.funny\" ) )" );
+		root.putFile( "module2.funny", "module( \"m2\" )( require( \"module.funny\" ) )" );
+		fail( script, ScriptException.class, "Circular module dependency detected" );
 	}
 
 	@Test

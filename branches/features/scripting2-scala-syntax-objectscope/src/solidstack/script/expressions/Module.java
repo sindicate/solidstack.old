@@ -20,6 +20,7 @@ import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.objects.Util;
+import solidstack.script.scopes.AbstractScope.Ref;
 import solidstack.script.scopes.CombinedScope;
 import solidstack.script.scopes.DefaultScope;
 import solidstack.script.scopes.GlobalScope;
@@ -49,16 +50,28 @@ public class Module extends LocalizedExpression
 			throw new ThrowException( "Expected a String as module name", thread.cloneStack( getLocation() ) );
 		String name = (String)object;
 
+		Ref moduleRef = GlobalScope.instance.getRef( Symbol.apply( name ) );
+		if( !moduleRef.isUndefined() )
+		{
+			Scope module = (Scope)moduleRef.get();
+			if( !(Boolean)module.get( Symbol.apply( "initialized" ) ) )
+				throw new ThrowException( "Circular module dependency detected", thread.cloneStack( getLocation() ) );
+			return module;
+		}
+
 		// Create module scope and define globally
 		DefaultScope module = new DefaultScope();
-		GlobalScope.INSTANCE.def( Symbol.apply( name ), module );
+		moduleRef.set( module );
+		Ref initializedRef = module.def( Symbol.apply( "initialized" ), false );
 
 		// Continue processing with the module scope
 		Scope scope = new CombinedScope( module, thread.getScope() );
 		scope = thread.swapScope( scope );
 		try
 		{
-			return this.expression.evaluate( thread );
+			this.expression.evaluate( thread );
+			initializedRef.set( true );
+			return module;
 		}
 		finally
 		{
