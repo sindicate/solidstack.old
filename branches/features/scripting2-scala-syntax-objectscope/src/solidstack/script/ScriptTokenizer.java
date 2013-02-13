@@ -46,6 +46,8 @@ public class ScriptTokenizer
 		PAREN_OPEN( "(", false ), PAREN_CLOSE( ")", false ), BRACKET_OPEN( "[", false ), BRACKET_CLOSE( "]", false ), BRACE_OPEN( "{", false ), BRACE_CLOSE( "}", false ),
 		BACKQUOTE( "`", false ), /* QUOTE( "'", false ), */ DOT( ".", false ), SEMICOLON( ";", false ), COMMA( ",", false ),
 		EOF,
+		// My reserved words
+		MODULE( "module" ),
 		// Reserved words
 		ABSTRACT( "abstract" ), CASE( "case" ), CATCH( "catch" ), /* CLASS( "class" ), */
 		DEF( "def" ), DO( "do" ), ELSE( "else" ), EXTENDS( "extends" ),

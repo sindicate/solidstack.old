@@ -36,6 +36,7 @@ import solidstack.script.expressions.Expressions;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.expressions.If;
 import solidstack.script.expressions.IntegerLiteral;
+import solidstack.script.expressions.Module;
 import solidstack.script.expressions.NullLiteral;
 import solidstack.script.expressions.Parenthesis;
 import solidstack.script.expressions.StringExpression;
@@ -299,6 +300,19 @@ public class ScriptParser
 				Assert.isTrue( token2.getType() == this.stop || token2.getType() == TokenType.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
 				this.tokenizer.push();
 				return new With( token.getLocation(), expressions, left );
+
+			case MODULE:
+				token2 = this.tokenizer.next();
+				if( token2.getType() != TokenType.PAREN_OPEN )
+					throw new SourceException( "Expected an opening parenthesis after 'module', not " + token2, token2.getLocation() );
+				oldStop = swapStops( TokenType.PAREN_CLOSE );
+				expressions = parseExpressions();
+				swapStops( oldStop );
+				left = parseExpression();
+				token2 = this.tokenizer.last();
+				Assert.isTrue( token2.getType() == this.stop || token2.getType() == TokenType.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
+				this.tokenizer.push();
+				return new Module( token.getLocation(), expressions, left );
 
 			case IF:
 				token2 = this.tokenizer.next();

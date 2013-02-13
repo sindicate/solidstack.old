@@ -37,7 +37,7 @@ import solidstack.script.scopes.Scope;
 import funny.Symbol;
 
 
-@SuppressWarnings( "javadoc" )
+@SuppressWarnings( { "javadoc", "unchecked", "rawtypes" } )
 public class ScriptTests extends Util
 {
 	@Test
@@ -364,7 +364,7 @@ public class ScriptTests extends Util
 	}
 
 	@Test
-	static public void test20() throws ClassNotFoundException, InstantiationException, IllegalAccessException
+	static public void test20() throws ClassNotFoundException
 	{
 		Object test = new String[ 10 ][ 10 ];
 		assert test instanceof Object[];
@@ -412,6 +412,8 @@ public class ScriptTests extends Util
 		test( "scope = Scope( \"test\" -> 1 ); scope.test", 1 );
 		test( "scope = Scope(); with( scope )( test = 1 ); scope.test", 1 );
 		test( "scope = Scope(); compile( \"test = 1\" ).eval( scope ); scope.test", 1 );
+//		test( "scope = Scope(); x = =>( test = 1 ); x.eval( scope ); scope.test", 1 );
+//		test( "scope = Scope(); scope.do( test = 1 ); scope.test", 1 );
 
 		eval( "( a => a )( null )" );
 		eval( "( a => a )( if( false; 1 ) )" );
@@ -703,7 +705,7 @@ public class ScriptTests extends Util
 	}
 
 	@Test
-	static public void test29() throws IOException
+	static public void test29()
 	{
 		test( "List( 1, 2, 3 ).mkString( \"; \" )", "1; 2; 3" );
 		test( "List( 1, 2, 3 ).mkString( \"List( \", \", \", \" )\" )", "List( 1, 2, 3 )" );
@@ -718,7 +720,7 @@ public class ScriptTests extends Util
 	}
 
 	@Test
-	static public void test30() throws IOException
+	static public void test30()
 	{
 		Object scope = new TestObject4();
 		test( "field1", scope, 1 );
@@ -739,7 +741,7 @@ public class ScriptTests extends Util
 	}
 
 	@Test
-	static public void test31() throws IOException
+	static public void test31()
 	{
 		Object object = new TestObject4();
 		DefaultScope scope = new DefaultScope();
@@ -753,7 +755,7 @@ public class ScriptTests extends Util
 	}
 
 	@Test
-	static public void test32() throws IOException
+	static public void test32()
 	{
 		Map scope = new HashMap();
 		scope.put( "field1", 1 );
@@ -765,7 +767,7 @@ public class ScriptTests extends Util
 	}
 
 	@Test
-	static public void test33() throws IOException
+	static public void test33()
 	{
 		Map map = new HashMap();
 		map.put( "field1", 1 );
@@ -776,6 +778,13 @@ public class ScriptTests extends Util
 		test( "o.field1 = 2; o.field2", scope, 2 );
 		test( "o.field2", scope, 2 );
 		test( "o.field2 = 3; o.field2", scope, 3 );
+	}
+
+	@Test
+	static public void modules()
+	{
+		eval( "module( \"m1\" )( m2 = 3 )" );
+		test( "m1.m2", 3 );
 	}
 
 	@Test
@@ -793,10 +802,10 @@ public class ScriptTests extends Util
 	}
 
 	// DONE Calls with named parameters
-	// TODO A function without parameters, does not need the FunctionObject. Its just an unevaluated expression.
 	// TODO Exceptions, catch & finally
 	// TODO MethodMissing
-	// TODO Default parameter values
+	// TODO Scala dynamic?
+	// DONE Default parameter values
 	// TODO def & val
 	// TODO Store tuples in variables?
 	// TODO Binary and hexadecimal literals
@@ -808,7 +817,7 @@ public class ScriptTests extends Util
 	// TODO Ranges
 	// TODO Synchronization
 	// TODO Return, switch, break, continue
-	// TODO Threads & sleep, etc
+	// TODO Threads, sleep, wait, notify, join, etc
 	// TODO Assert with lazy evaluation of its arguments
 	// TODO Optional? Lazy evaluation of all arguments
 	// DONE // Comments, /* comments
@@ -817,12 +826,9 @@ public class ScriptTests extends Util
 	// TODO Token interceptors that work on the token stream, or custom script parsers for eval
 	// DONE Symbols :red
 	// TODO Mixins
-	// TODO Lazy evaluation
 	// TODO Class extension pluggable
-	// TODO Extensions: unique/each(WithIndex)/find(All)/collect/contains/every/indexOf/flatten/groupBy/inject/join/max/min/removeAll/replaceAll/reverse/sum/tail/traverse/withReader(etc)
 	// TODO with() to execute a function with a different scope
 	// TODO Multiple parameters lists: fun(args)(args)
-	// TODO Global namespaces
 	// TODO Operator calling method on first operand, operator overloading
 	// TODO Hints for null parameters: a as String which evaluates to a TypedNull object if a is null
 	// TODO Compilation errors including column number
@@ -831,6 +837,9 @@ public class ScriptTests extends Util
 	// TODO Always remember the lexical scope. Needed if we want script file specific settings.
 	// TODO Axis: owner = lexical owner, delegate, prototype, global, this
 	// TODO Add resource attribute or resource() method which returns the resource of the current script
+	// TODO Reloadable scripts, need ResourceLoader (like the TemplateLoader)
+	// TODO Caching of loaded and compiled scripts (to execute repeatedly)
+	// TODO Modules and namespaces
 
 	@SuppressWarnings( "unused" )
 	static public class TestObject1
@@ -869,7 +878,6 @@ public class ScriptTests extends Util
 		public int test( int i1, int i2 ) { return 1; }
 	}
 
-	@SuppressWarnings( "unused" )
 	static public class TestObject3
 	{
 		public void throwException() throws Exception
@@ -878,12 +886,11 @@ public class ScriptTests extends Util
 		}
 	}
 
-	@SuppressWarnings( "unused" )
 	static public class TestObject4
 	{
 		public int field1 = 1;
 		private int _field2 = 2;
-		public int getField2() { return this._field2; };
+		public int getField2() { return this._field2; }
 		public void setField2( int value ) { this._field2 = value; }
 	}
 }

@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 
 import solidstack.query.Query;
@@ -130,15 +131,15 @@ public class JDBC
 	// TODO Do this with the query template package
 	private PreparedStatement prepare( PString query ) throws SQLException
 	{
-		Object[] values = query.getValues();
+		Object[] values = query.getValues(); // Get the values
 		int len = values.length;
-		Object[] parameters = new Object[ len ];
-		System.arraycopy( values, 0, parameters, 0, len );
-		for( int i = 0; i < len; i++ )
-			values[ i ] = "?";
+		Object[] parameters = Arrays.copyOf( values, len ); // Copy to parameter array
+		Arrays.fill( values, "?" ); // Replace values with ?
+
 		PreparedStatement statement = this.connection.prepareStatement( query.toString() );
 		for( int i = 0; i < len; i++ )
 			statement.setObject( i + 1, parameters[ i ] );
+
 		return statement;
 	}
 
