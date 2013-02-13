@@ -33,6 +33,7 @@ public class JDBC
 		return new JDBC( url, username, password );
 	}
 
+	// TODO Expression by name, so that there is no added stackframe
 	static public JDBCMonad doWith( String driver, String url ) throws ClassNotFoundException, SQLException
 	{
 		Class.forName( driver );

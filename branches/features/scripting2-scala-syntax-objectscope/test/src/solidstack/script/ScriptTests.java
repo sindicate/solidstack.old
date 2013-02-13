@@ -309,7 +309,7 @@ public class ScriptTests extends Util
 	}
 
 	@Test
-	static public void test15()
+	static public void pStrings()
 	{
 		test( "a = 1; s\"a = ${a}\".toString()", "a = 1" );
 		test( "a = 1; s = s\"a = ${a}\"; a = 2; s.toString()", "a = 1" );
@@ -328,7 +328,7 @@ public class ScriptTests extends Util
 	}
 
 	@Test
-	static public void test16()
+	static public void nestedScopes()
 	{
 		test( "var a = 1;", 1 );
 
@@ -810,6 +810,15 @@ public class ScriptTests extends Util
 		root.putFile( "module.funny", "module( \"m1\" )( require( \"module2.funny\" ) )" );
 		root.putFile( "module2.funny", "module( \"m2\" )( require( \"module.funny\" ) )" );
 		fail( script, ScriptException.class, "Circular module dependency detected" );
+
+		// ---- Constructor
+		GlobalScope.instance.reset();
+		root = new Folder();
+		root.putFile( "deployer.funny", "module( \"Deployer\" )( var Deployer = x => x * 2 )" );
+		root.putFile( "script.funny", "require( \"deployer.funny\" ); var deployer = Deployer.Deployer( 1 )" );
+		reader = root.getSourceReader( "script.funny" );
+		script = load( reader );
+		test( script, 2 );
 	}
 
 	@Test

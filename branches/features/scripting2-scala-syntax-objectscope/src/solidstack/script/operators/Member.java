@@ -51,7 +51,8 @@ public class Member extends Operator
 			Assert.isInstanceOf( this.right, Identifier.class );
 			Symbol right = ( (Identifier)this.right ).getSymbol();
 			if( left == null )
-				throw new ThrowException( "NullPointerException: member: " + right.toString(), thread.cloneStack( getLocation() ) );
+				// TODO Use the Java exception hierarchy
+				throw new ThrowException( "null reference: member: " + right.toString(), thread.cloneStack( getLocation() ) );
 			if( left instanceof Scope ) // TODO This is part of the OO we want
 				return ( (Scope)left ).getRef( right );
 			if( left instanceof Map )
@@ -88,7 +89,8 @@ public class Member extends Operator
 			Object left = Util.deref( this.left.evaluate( thread ) );
 			Assert.isInstanceOf( this.right, Identifier.class );
 			Symbol right = ( (Identifier)this.right ).getSymbol();
-			Assert.isFalse( left == null, "member: " + right.toString() );
+			if( left == null )
+				throw new ThrowException( "null reference: member: " + right.toString(), thread.cloneStack( getLocation() ) );
 			if( left instanceof Scope ) // TODO This is part of the OO we want
 				return ( (Scope)left ).getRef( right );
 			// TODO Also read properties to look for Functions
