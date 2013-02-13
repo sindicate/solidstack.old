@@ -16,6 +16,7 @@
 
 package solidstack.script.scopes;
 
+import java.io.File;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -99,6 +100,10 @@ public class GlobalScope extends DefaultScope
 		val( Symbol.apply( "Double" ), new Type( Double.class ) );
 		val( Symbol.apply( "String" ), new Type( String.class ) );
 		val( Symbol.apply( "System" ), new Type( System.class ) );
+
+		// java.io
+
+		val( Symbol.apply( "File" ), new Type( File.class ) );
 
 		// java.math
 

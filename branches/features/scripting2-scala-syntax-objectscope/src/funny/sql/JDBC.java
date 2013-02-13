@@ -67,6 +67,16 @@ public class JDBC
 		this.connection.setAutoCommit( autoCommit );
 	}
 
+	public void commit() throws SQLException
+	{
+		this.connection.commit();
+	}
+
+	public void rollback() throws SQLException
+	{
+		this.connection.rollback();
+	}
+
 	public void close() throws SQLException
 	{
 		this.connection.close();

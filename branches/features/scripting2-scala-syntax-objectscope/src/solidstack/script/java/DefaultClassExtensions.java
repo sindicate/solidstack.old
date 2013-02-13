@@ -16,6 +16,11 @@
 
 package solidstack.script.java;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -215,9 +220,14 @@ public class DefaultClassExtensions
 		for( Assoc labeled : entries )
 		{
 			Object label = labeled.getLabel();
-			if( !( label instanceof String ) )
-				throw new ThrowException( "A Scope() constructor needs keys of type String", ThreadContext.get().cloneStack() );
-			result.def( Symbol.apply( (String)label ), labeled.getValue() );
+			Symbol symbol;
+			if( label instanceof String )
+				symbol = Symbol.apply( (String)label );
+			else if( label instanceof Symbol )
+				symbol = (Symbol)label;
+			else
+				throw new ThrowException( "A Scope() constructor needs keys of type String or Symbol", ThreadContext.get().cloneStack() );
+			result.def( symbol, labeled.getValue() );
 		}
 		return result;
 	}
@@ -339,6 +349,25 @@ public class DefaultClassExtensions
 	static public Object foreachValue( Map<?,?> map, Function function )
 	{
 		return foreach( map.values(), function );
+	}
+
+	// TODO Use CharBuffer?
+	static public String getText( File file, String encoding ) throws IOException
+	{
+		Reader in = new InputStreamReader( new FileInputStream( file ), encoding );
+		try
+		{
+			StringBuilder builder = new StringBuilder();
+			char[] buffer = new char[ 4096 ];
+			int len;
+			while( ( len = in.read( buffer ) ) != -1 )
+				builder.append( buffer, 0, len );
+			return builder.toString();
+		}
+		finally
+		{
+			in.close();
+		}
 	}
 
 	static public List map( Iterable iterable, Function function )

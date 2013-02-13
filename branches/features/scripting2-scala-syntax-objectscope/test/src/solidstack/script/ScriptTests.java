@@ -368,7 +368,7 @@ public class ScriptTests extends Util
 	}
 
 	@Test
-	static public void test20() throws ClassNotFoundException
+	static public void collections() throws ClassNotFoundException
 	{
 		Object test = new String[ 10 ][ 10 ];
 		assert test instanceof Object[];
@@ -413,7 +413,7 @@ public class ScriptTests extends Util
 		test( "array = loadClass( \"java.lang.reflect.Array\" ).newInstance( loadClass( \"java.lang.String\" ), 10 ); array.size()", 10 );
 		test( "array = loadClass( \"java.lang.reflect.Array\" ).newInstance( loadClass( \"int\" ), 10 ); array.size()", 10 );
 
-		test( "scope = Scope( \"test\" -> 1 ); scope.test", 1 );
+		test( "scope = Scope( \"test\" -> 1, 'test2 -> 2 ); scope.test", 1 );
 		test( "scope = Scope(); with( scope )( test = 1 ); scope.test", 1 );
 		test( "scope = Scope(); compile( \"test = 1\" ).eval( scope ); scope.test", 1 );
 //		test( "scope = Scope(); x = =>( test = 1 ); x.eval( scope ); scope.test", 1 );
@@ -874,6 +874,7 @@ public class ScriptTests extends Util
 	// TODO Reloadable scripts, need ResourceLoader (like the TemplateLoader)
 	// TODO Caching of loaded and compiled scripts (to execute repeatedly)
 	// TODO Modules and namespaces
+	// TODO Values with extra attributes. For example: val is a String, but val.kind is something else
 
 	@SuppressWarnings( "unused" )
 	static public class TestObject1
