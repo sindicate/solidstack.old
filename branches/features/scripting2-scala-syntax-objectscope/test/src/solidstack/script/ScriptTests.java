@@ -47,6 +47,7 @@ public class ScriptTests extends Util
 	@Test
 	static public void test1()
 	{
+		test( "println( \"Hello World!\" )", "Hello World!" );
 		DefaultScope scope = new DefaultScope();
 		scope.set( "var1", "Value" );
 		test( "var1", scope, "Value" );

@@ -59,7 +59,7 @@ public class DefaultScope extends AbstractScope
 			return v;
 		if( this.parent != null )
 			return this.parent.findRef( symbol );
-		return GlobalScope.instance.findLocalValue( symbol );
+		return GlobalScope.instance.findRef( symbol );
 	}
 
 	@Override

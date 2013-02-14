@@ -50,6 +50,7 @@ import funny.Symbol;
 /**
  * Default Java extensions.
  */
+// TODO Move this out of the java package. May need plugin mechanism.
 public class DefaultClassExtensions
 {
 	// TODO: count(), distinct(), filter(), filterNot(), find(), findIndexOf(), fold(), forall(), foreach(), groupBy(), intersect(), map(), partition(), reduce(), reverse(), reverseMap()
