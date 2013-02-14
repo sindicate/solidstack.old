@@ -1,0 +1,77 @@
+<%@ template version="1.0" language="groovy" contentType="text/html; charset=UTF-8" %>
+<%
+def view = args.view
+
+include( template: "/template", title: "View ${view}", body: {
+
+	def recordCount = args.count
+	def result = args.result
+	
+	if( result.next() )
+	{
+		def meta = result.metaData
+		def count = meta.columnCount
+%>
+		<div id="popup" style="visibility: hidden; left: 0px; top: 0px;">
+			<a href="detail1">detail1</a><br/>
+			<a href="detail2">detail2</a>
+		</div>
+		<table>
+			<tr><th colspan="${count}">View ${view} - ${recordCount} records</th></tr>
+			<tr><% for( int i = 1; i <= count; i++ ) { %><th>${meta.getColumnLabel(i)}</th><% } %></tr>
+<%
+		def next = true
+		while( next )
+		{
+%>
+			<tr class="data"></td><%
+			for( int i = 1; i <= count; i++ )
+			{
+				def object = result.getObject( i )
+				if( object != null ) { %><td>${object}</td><% } else { %><td class="null"></td><% }
+			}
+			%></tr>
+<%
+			next = result.next()
+		}
+%>
+		</table>
+		<script>
+			var popup = document.getElementById( "popup" )
+			popup.onmouseover = function() { popup.style.visibility = "visible" }
+			popup.onmouseout = function() { popup.style.visibility = "hidden" }
+			
+			function detailClick() { return false }
+			function dataRowClick()
+			{
+				popup.style.left = ( event.clientX - 10 ) + "px"
+				popup.style.top = ( event.clientY - 10 ) + "px"
+				popup.style.visibility = "visible"
+				return false
+			}
+			
+			walker( document.body,
+				function( node )
+				{
+					if( node instanceof HTMLTableRowElement )
+					{
+						if( node.className == "data" )
+							node.onclick = dataRowClick
+					}
+					return true
+				}
+			)
+		</script>
+<%
+	}
+	else
+	{
+%>
+		<table>
+			<tr><th>View ${view}, ${recordCount} records</th></tr>
+			<tr><td class="null">No records.</td></tr>
+		</table>
+<%
+	}
+%>
+<% } ) %>

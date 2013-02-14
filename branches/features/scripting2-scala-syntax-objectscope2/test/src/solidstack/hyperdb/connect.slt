@@ -1,0 +1,14 @@
+<%@ template version="1.0" language="funny" contentType="text/html; charset=UTF-8" %>
+<%
+database = request.getParameter( "database" );
+include( template: "/template", title: "Connect to ${database}", body: () -> (
+%>
+		<form method="post">
+			<table>
+				<tr><th colspan="2">Connect to ${database}</th></tr>
+				<tr><td>Username:</td><td><input name="username" type="text" placeholder="Username" /></td></tr>
+				<tr><td>Password:</td><td><input name="password" type="password" placeholder="Password" /></td></tr>
+				<tr><td colspan="2"><input name="login" type="submit" value="Login" /></td></tr>
+			</table>
+		</form>
+<% ) ) %>

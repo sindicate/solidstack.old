@@ -1,0 +1,84 @@
+/*  Prim's algorithm
+
+1.  Make a queue (Q) with all the vertices of G (V);
+2.  For each member of Q set the priority to INFINITY;
+3.  Only for the starting vertex (s) set the priority to 0;
+4.  The parent of (s) should be NULL;
+5.  While Q isn’t empty
+6.     Get the minimum from Q – let’s say (u); (priority queue);
+7.     For each adjacent vertex to (v) to (u)
+8.        If (v) is in Q and weight of (u, v) < priority of (v) then
+9.           The parent of (v) is set to be (u)
+10.          The priority of (v) is the weight of (u, v)
+*/
+
+INFINITY = Integer#MAX_VALUE;
+
+Vertice = ( id ) => { edges = List(); this };
+Edge = ( vert1, vert2, weight ) => { vert1.edges.add( this ); vert2.edges.add( this ); this };
+
+vert0 = Vertice( 0 );
+vert1 = Vertice( 1 );
+vert2 = Vertice( 2 );
+vert3 = Vertice( 3 );
+vert4 = Vertice( 4 );
+vert5 = Vertice( 5 );
+vert6 = Vertice( 6 );
+vert7 = Vertice( 7 );
+vert8 = Vertice( 8 );
+
+Edge( vert0, vert1, 4 );
+Edge( vert0, vert8, 8 );
+
+Edge( vert1, vert2, 8 );
+Edge( vert1, vert8, 11 );
+
+Edge( vert2, vert3, 7 );
+Edge( vert2, vert5, 4 );
+Edge( vert2, vert6, 2 );
+
+Edge( vert3, vert4, 9 );
+Edge( vert3, vert5, 14 );
+
+Edge( vert4, vert5, 10 );
+
+Edge( vert5, vert7, 2 );
+
+Edge( vert6, vert7, 6 );
+Edge( vert6, vert8, 7 );
+
+Edge( vert7, vert8, 1 );
+
+graph = List( vert0, vert1, vert2, vert3, vert4, vert5, vert6, vert7, vert8 );
+
+
+
+prim = ( graph, start ) =>
+{
+	queue = Map(); graph.each( vertice => queue[ vertice ] = INFINITY );
+	parent = Map();
+ 
+ 	queue[ graph( start ) ] = 0;
+ 	parent[ graph( start ) ] = null;
+ 
+ 	while( queue )
+ 	(
+        // get the minimum value
+        priority = INFINITY; vertice = -1;
+        queue.each( ( v, p ) => if( p < priority ) vertice = v, priority = p );
+
+		vertice.edges.each( edge =>
+//			other = if( vertice == edge.vert1 ) edge.vert2 else edge.vert1;
+			if( vertice == edge.vert1 ) other = edge.vert2 else other = edge.vert1;
+			otherPrio = queue( other );
+			if( otherPrio != null && edge.weight < otherPrio ) (
+				parent[ other ] = vertice;
+				queue[ other ] = edge.weight;
+			)
+		);
+ 
+ 		queue.remove( vertice );
+    );
+};
+ 
+println( prim( graph, 5 ) );

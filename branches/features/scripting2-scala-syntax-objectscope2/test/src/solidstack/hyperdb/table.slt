@@ -1,0 +1,75 @@
+<%@ template version="1.0" language="funny" contentType="text/html; charset=UTF-8" %>
+<%
+args = scope( args );
+table = args.table;
+
+include( template: "/template", title: "Table ${table}", body: () -> (
+
+	recordCount = args.count;
+	result = args.result;
+	
+	if( result.next(); (
+		meta = result.metaData;
+		count = meta.columnCount;
+%>
+		<div id="popup" style="visibility: hidden; left: 0px; top: 0px;">
+			<a href="detail1">detail1</a><br/>
+			<a href="detail2">detail2</a>
+		</div>
+		<table>
+			<tr><th colspan="${count}">Table ${table} - ${recordCount} records</th></tr>
+			<tr><% i = 1; while( i <= count; ( %><th>${meta.getColumnLabel(i++)}</th><% ) ) %></tr>
+<%
+		recordsWritten = 0;
+		next = true;
+		while( next && recordsWritten < 1000;
+%>
+			<tr class="data"></td><% i = 1; while( i <= count; object = result.getObject( i++ ); if( object != null; ( %><td>${object}</td><% ); ( %><td class="null" /><% ) ) ); %></tr>
+<%
+			recordsWritten ++;
+			next = result.next()
+		);
+		if( recordsWritten >= 1000; (
+%>
+			<tr><td class="null" colspan="${count}">Too many records, only ${recordsWritten} displayed.</td></tr>
+<%
+		) );
+%>
+		</table>
+		<script>
+			var popup = document.getElementById( "popup" )
+			popup.onmouseover = function() { popup.style.visibility = "visible" }
+			popup.onmouseout = function() { popup.style.visibility = "hidden" }
+			
+			function detailClick() { return false }
+			function dataRowClick()
+			{
+				popup.style.left = ( event.clientX - 10 ) + "px"
+				popup.style.top = ( event.clientY - 10 ) + "px"
+				popup.style.visibility = "visible"
+				return false
+			}
+			
+			walker( document.body,
+				function( node )
+				{
+					if( node instanceof HTMLTableRowElement )
+					{
+						if( node.className == "data" )
+							node.onclick = dataRowClick
+					}
+					return true
+				}
+			)
+		</script>
+<%
+	); (
+%>
+		<table>
+			<tr><th>Table ${table}, ${recordCount} records</th></tr>
+			<tr><td class="null">No records.</td></tr>
+		</table>
+<%
+	) )
+%>
+<% ) ) %>
