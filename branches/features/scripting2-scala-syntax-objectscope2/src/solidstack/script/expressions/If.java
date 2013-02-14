@@ -40,7 +40,7 @@ public class If extends LocalizedExpression
 
 	public Object evaluate( ThreadContext thread )
 	{
-		if( Script.isTrue( this.condition.evaluate( thread ) ) )
+		if( Script.isTrue( thread, this.condition ) )
 		{
 			if( this.left != null )
 				return this.left.evaluate( thread );

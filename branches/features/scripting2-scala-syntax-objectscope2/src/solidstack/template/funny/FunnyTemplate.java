@@ -53,13 +53,13 @@ public class FunnyTemplate extends Template
 
 		DefaultScope scope = new DefaultScope();
 		for( Entry<String, Object> entry : params.entrySet() )
-			scope.def( Symbol.apply( entry.getKey() ), entry.getValue() );
+			scope.var( Symbol.apply( entry.getKey() ), entry.getValue() );
 		// TODO What about 'this'?
-		scope.def( OUT, out );
+		scope.var( OUT, out );
 
 		FunnyTemplateHelper helper = new FunnyTemplateHelper( this, params, writer );
 		// TODO In the future this must be done with a prototype
-		scope.def( Symbol.apply( "include" ), new ObjectMember( helper, Symbol.apply( "include" ) ) );
+		scope.var( Symbol.apply( "include" ), new ObjectMember( helper, Symbol.apply( "include" ) ) );
 
 		this.script.eval( scope );
 

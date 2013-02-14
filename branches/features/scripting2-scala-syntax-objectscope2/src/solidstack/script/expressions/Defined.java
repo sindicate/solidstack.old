@@ -18,32 +18,37 @@ package solidstack.script.expressions;
 
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
+import solidstack.script.UndefinedPropertyException;
 
 
-public class Var extends LocalizedExpression
+
+public class Defined extends LocalizedExpression
 {
-	private Identifier identifier;
+	private Expression expression;
 
-
-	public Var( SourceLocation location, Identifier identifier )
+	public Defined( SourceLocation location, Expression expression )
 	{
 		super( location );
-		this.identifier = identifier;
+		this.expression = expression;
 	}
 
 	public Object evaluate( ThreadContext thread )
 	{
-		return thread.getScope().var( this.identifier.getSymbol(), null );
-	}
-
-	public Object assign( ThreadContext thread, Object right )
-	{
-		return thread.getScope().var( this.identifier.getSymbol(), right );
+		try
+		{
+			this.expression.evaluate( thread );
+			return true;
+		}
+		catch( UndefinedPropertyException e )
+		{
+			return false;
+		}
 	}
 
 	public void writeTo( StringBuilder out )
 	{
-		out.append( "var " );
-		this.identifier.writeTo( out );
+		out.append( "defined(" );
+		this.expression.writeTo( out );
+		out.append( ')' );
 	}
 }

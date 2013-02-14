@@ -25,13 +25,13 @@ public class DefaultScope extends AbstractScope
 {
 	static public final Symbol THIS = Symbol.apply( "this" );
 
-	private Scope parent;
+	protected Scope parent;
 
 	private ValueMap<Value> values = new ValueMap<Value>();
 
 	public DefaultScope()
 	{
-		def( THIS, this );
+		var( THIS, this );
 	}
 
 	public DefaultScope( Scope parent )
@@ -46,24 +46,47 @@ public class DefaultScope extends AbstractScope
 		this.values.clear();
 	}
 
-	Value findLocalValue( Symbol symbol )
-	{
-		return this.values.get( symbol );
-	}
-
 	@Override
-	public Ref findRef( Symbol symbol )
+	public Object get( Symbol symbol )
 	{
-		Value v = findLocalValue( symbol );
-		if( v != null )
-			return v;
+		Value ref = this.values.get( symbol );
+		if( ref != null )
+			return ref.get();
 		if( this.parent != null )
-			return this.parent.findRef( symbol );
-		return GlobalScope.instance.findRef( symbol );
+			return this.parent.get( symbol );
+		throw new UndefinedException();
 	}
 
 	@Override
-	public Variable def( Symbol symbol, Object value )
+	protected void set0( Symbol symbol, Object value )
+	{
+		Value ref = this.values.get( symbol );
+		if( ref == null )
+			throw new UndefinedException();
+		if( ref instanceof Variable )
+			( (Variable)ref ).set( value );
+		else
+			throw new ReadOnlyException();
+	}
+
+//	Value findLocalValue( Symbol symbol )
+//	{
+//		return this.values.get( symbol );
+//	}
+
+//	@Override
+//	public Ref findRef( Symbol symbol )
+//	{
+//		Value v = findLocalValue( symbol );
+//		if( v != null )
+//			return v;
+//		if( this.parent != null )
+//			return this.parent.findRef( symbol );
+//		return GlobalScope.instance.findRef( symbol );
+//	}
+
+	@Override
+	public Variable var( Symbol symbol, Object value )
 	{
 		Variable result = new Variable( symbol, value );
 		this.values.put( result );

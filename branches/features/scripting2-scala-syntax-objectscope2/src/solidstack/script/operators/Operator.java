@@ -22,7 +22,6 @@ import java.util.HashMap;
 
 import solidstack.io.SourceLocation;
 import solidstack.lang.Assert;
-import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.java.Types;
 import solidstack.script.scopes.CombinedScope;
@@ -283,10 +282,10 @@ abstract public class Operator implements Expression
 		return this.right;
 	}
 
-	public Object evaluateRef( ThreadContext thread )
-	{
-		return evaluate( thread );
-	}
+//	public Object evaluateRef( ThreadContext thread )
+//	{
+//		return evaluate( thread );
+//	}
 
 	static protected Object add( Object left, Object right )
 	{

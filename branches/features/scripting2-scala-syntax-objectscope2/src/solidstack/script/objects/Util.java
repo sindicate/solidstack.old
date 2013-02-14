@@ -76,6 +76,7 @@ public class Util
 		return new Object[] { values };
 	}
 
+	// TODO Remove
 	static public Object deref( Object value )
 	{
 //		if( value instanceof List )

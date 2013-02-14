@@ -228,7 +228,7 @@ public class DefaultClassExtensions
 				symbol = (Symbol)label;
 			else
 				throw new ThrowException( "A Scope() constructor needs keys of type String or Symbol", ThreadContext.get().cloneStack() );
-			result.def( symbol, labeled.getValue() );
+			result.var( symbol, labeled.getValue() );
 		}
 		return result;
 	}

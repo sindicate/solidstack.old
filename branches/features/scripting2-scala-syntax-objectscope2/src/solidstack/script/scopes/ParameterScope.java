@@ -33,19 +33,42 @@ public class ParameterScope extends AbstractScope
 		this.parent = parent;
 	}
 
-	Value findLocalValue( Symbol symbol )
+	@Override
+	public Object get( Symbol symbol )
 	{
-		return this.values.get( symbol );
+		Value ref = this.values.get( symbol );
+		if( ref != null )
+			return ref.get();
+		if( this.parent != null )
+			return this.parent.get( symbol );
+		throw new UndefinedException();
 	}
 
 	@Override
-	public Ref findRef( Symbol symbol )
+	protected void set0( Symbol symbol, Object value )
 	{
-		Value v = findLocalValue( symbol );
-		if( v != null )
-			return v;
-		return this.parent.findRef( symbol );
+		Value ref = this.values.get( symbol );
+		if( ref == null )
+			throw new UndefinedException();
+		if( ref instanceof Variable )
+			( (Variable)ref ).set( value );
+		else
+			throw new ReadOnlyException();
 	}
+
+//	Value findLocalValue( Symbol symbol )
+//	{
+//		return this.values.get( symbol );
+//	}
+
+//	@Override
+//	public Ref findRef( Symbol symbol )
+//	{
+//		Value v = findLocalValue( symbol );
+//		if( v != null )
+//			return v;
+//		return this.parent.findRef( symbol );
+//	}
 
 	public void defParameter( Symbol symbol, Object value )
 	{
@@ -53,9 +76,9 @@ public class ParameterScope extends AbstractScope
 	}
 
 	@Override
-	public Variable def( Symbol symbol, Object value )
+	public Variable var( Symbol symbol, Object value )
 	{
-		return this.parent.def( symbol, value );
+		return this.parent.var( symbol, value );
 	}
 
 	@Override

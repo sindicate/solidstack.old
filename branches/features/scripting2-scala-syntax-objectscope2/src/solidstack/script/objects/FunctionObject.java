@@ -196,7 +196,7 @@ public class FunctionObject implements solidstack.script.java.Function
 		{
 			DefaultScope scope = new DefaultScope( this.scope );
 			for( int i = 0; i < count; i++ )
-				scope.def( symbols[ i ], Util.deref( values[ i ] ) ); // TODO If we keep the Link we get output parameters!
+				scope.var( symbols[ i ], Util.deref( values[ i ] ) ); // TODO If we keep the Link we get output parameters!
 			newScope = scope;
 		}
 		else if( count > 0 )

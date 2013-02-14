@@ -40,6 +40,11 @@ public class BuildTuple extends Operator
 		return this;
 	}
 
+	public int size()
+	{
+		return this.expressions.size();
+	}
+
 	public List<Expression> getExpressions()
 	{
 		return this.expressions;

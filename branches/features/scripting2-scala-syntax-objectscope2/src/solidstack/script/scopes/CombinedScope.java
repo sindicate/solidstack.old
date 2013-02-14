@@ -31,21 +31,35 @@ public class CombinedScope extends AbstractScope
 	}
 
 	@Override
-	public Ref findRef( Symbol symbol )
+	public Object get( Symbol symbol )
 	{
-		Ref v = this.scope1.findRef( symbol );
-		if( v != null )
-			return v;
-		v = this.scope2.findRef( symbol );
-		if( v != null )
-			return v;
-		return null;
+		try
+		{
+			return this.scope1.get( symbol );
+		}
+		catch( UndefinedException e )
+		{
+			return this.scope2.get( symbol );
+		}
 	}
 
 	@Override
-	public Variable def( Symbol symbol, Object value )
+	public void set0( Symbol symbol, Object value )
 	{
-		return this.scope1.def( symbol, value );
+		try
+		{
+			this.scope1.set( symbol, value );
+		}
+		catch( UndefinedException e )
+		{
+			this.scope2.set( symbol, value );
+		}
+	}
+
+	@Override
+	public Variable var( Symbol symbol, Object value )
+	{
+		return this.scope1.var( symbol, value );
 	}
 
 	@Override

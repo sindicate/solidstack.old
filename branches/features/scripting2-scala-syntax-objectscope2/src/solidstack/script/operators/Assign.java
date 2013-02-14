@@ -16,15 +16,18 @@
 
 package solidstack.script.operators;
 
+import java.util.List;
+import java.util.Map;
+
 import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
-import solidstack.script.objects.FunctionObject;
+import solidstack.script.expressions.Parenthesis;
+import solidstack.script.expressions.Var;
 import solidstack.script.objects.Tuple;
 import solidstack.script.objects.Util;
-import solidstack.script.scopes.AbstractScope.Ref;
 
 
 public class Assign extends Operator
@@ -53,43 +56,89 @@ public class Assign extends Operator
 			}
 		}
 
-		Object left = this.left.evaluateRef( thread );
 		Object right = Util.deref( this.right.evaluate( thread ) );
 
-		if( left instanceof Tuple )
+		Object left = this.left;
+		if( left instanceof Parenthesis )
+			left = ( (Parenthesis)left ).getExpression();
+
+		if( left instanceof BuildTuple )
 		{
-			if( right instanceof Tuple )
-			{
-				Tuple leftTuple = (Tuple)left;
-				Tuple rightTuple = (Tuple)right;
-				int len = leftTuple.size();
-				Assert.isTrue( rightTuple.size() == len );
-				for( int i = 0; i < len; i++ )
-				{
-					Object l = leftTuple.get( i );
-					Object r = rightTuple.get( i );
-					assign( l, r, thread );
-				}
-			}
-			else
+			if( !( right instanceof Tuple ) )
 				throw new UnsupportedOperationException();
+
+			List<Expression> leftTuple = ((BuildTuple)left).getExpressions();
+			Tuple rightTuple = (Tuple)right;
+			int len = leftTuple.size();
+			Assert.isTrue( rightTuple.size() == len );
+			for( int i = 0; i < len; i++ )
+			{
+				Expression l = leftTuple.get( i );
+				Assert.isTrue( l instanceof Identifier ); // TODO And vars
+				Object r = rightTuple.get( i );
+				( (Identifier)l ).assign( thread, r );
+			}
+			return right;
 		}
-		else
-			assign( left, right, thread );
 
-		return right; // TODO Or should it be left? Or should we do assignment like this 1 => a?
-	}
-
-	private void assign( Object var, Object value, ThreadContext thread )
-	{
-		Assert.notNull( var );
-		value = Util.finalize( value );
-		if( value instanceof Tuple )
+		if( right instanceof Tuple )
 			throw new ThrowException( "Can't assign tuples to variables", thread.cloneStack( getLocation() ) );
-		if( value instanceof FunctionObject )
-			( (FunctionObject)value ).setAssigned();
-		if( !( var instanceof Ref ) )
-			throw new ThrowException( "Can't assign to a " + var.getClass().getName(), thread.cloneStack( getLocation() ) );
-		( (Ref)var ).set( value );
+
+		if( this.left instanceof Identifier )
+			return ( (Identifier)this.left ).assign( thread, right );
+
+		if( left instanceof Var )
+			return ( (Var)left ).assign( thread, right );
+
+		if( left instanceof Member )
+		{
+			Object l = ( (Member)left ).getLeft().evaluate( thread );
+			if( l instanceof Map )
+			{
+				( (Map)l ).put( ( (Identifier)( (Member)left ).getRight() ).getSymbol().toString(), right );
+				return right;
+			}
+			throw new UnsupportedOperationException();
+		}
+
+		throw new ThrowException( "Can't assign to a " + right.getClass().getName(), thread.cloneStack( getLocation() ) );
+
+//		Object left = this.left.evaluateRef( thread );
+//
+//		if( left instanceof Tuple )
+//		{
+//			if( right instanceof Tuple )
+//			{
+//				Tuple leftTuple = (Tuple)left;
+//				Tuple rightTuple = (Tuple)right;
+//				int len = leftTuple.size();
+//				Assert.isTrue( rightTuple.size() == len );
+//				for( int i = 0; i < len; i++ )
+//				{
+//					Object l = leftTuple.get( i );
+//					Object r = rightTuple.get( i );
+//					assign( l, r, thread );
+//				}
+//			}
+//			else
+//				throw new UnsupportedOperationException();
+//		}
+//		else
+//			assign( left, right, thread );
+//
+//		return right; // TODO Or should it be left? Or should we do assignment like this 1 => a?
 	}
+
+//	private void assign( Object var, Object value, ThreadContext thread )
+//	{
+//		Assert.notNull( var );
+//		value = Util.finalize( value );
+//		if( value instanceof Tuple )
+//			throw new ThrowException( "Can't assign tuples to variables", thread.cloneStack( getLocation() ) );
+//		if( value instanceof FunctionObject )
+//			( (FunctionObject)value ).setAssigned();
+//		if( !( var instanceof Ref ) )
+//			throw new ThrowException( "Can't assign to a " + var.getClass().getName(), thread.cloneStack( getLocation() ) );
+//		( (Ref)var ).set( value );
+//	}
 }

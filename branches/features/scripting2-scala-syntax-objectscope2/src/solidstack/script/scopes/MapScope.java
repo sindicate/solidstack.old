@@ -14,13 +14,32 @@ public class MapScope extends AbstractScope
 	}
 
 	@Override
-	public Ref findRef( Symbol symbol )
+	public Object get( Symbol symbol )
 	{
-		return new MapRef( symbol.toString() );
+		Object result = this.map.get( symbol.toString() );
+		if( result != null )
+			return result;
+		if( this.map.containsKey( symbol.toString() ) )
+			return null;
+		throw new UndefinedException();
 	}
 
 	@Override
-	public Variable def( Symbol symbol, Object value )
+	protected void set0( Symbol symbol, Object value )
+	{
+		if( !this.map.containsKey( symbol.toString() ) )
+			throw new UndefinedException();
+		this.map.put( symbol.toString(), value );
+	}
+
+//	@Override
+//	public Ref findRef( Symbol symbol )
+//	{
+//		return new MapRef( symbol.toString() );
+//	}
+
+	@Override
+	public Variable var( Symbol symbol, Object value )
 	{
 		throw new UnsupportedOperationException();
 	}

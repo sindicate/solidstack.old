@@ -28,7 +28,6 @@ import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.java.Java;
 import solidstack.script.java.MissingFieldException;
-import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Type;
 import solidstack.script.objects.Util;
 import solidstack.script.scopes.Scope;
@@ -54,7 +53,7 @@ public class Member extends Operator
 				// TODO Use the Java exception hierarchy
 				throw new ThrowException( "null reference: member: " + right.toString(), thread.cloneStack( getLocation() ) );
 			if( left instanceof Scope ) // TODO This is part of the OO we want
-				return ( (Scope)left ).getRef( right );
+				return ( (Scope)left ).get( right );
 			if( left instanceof Map )
 				return ( (Map)left ).get( right.toString() );
 			try
@@ -81,24 +80,64 @@ public class Member extends Operator
 		}
 	}
 
-	@Override
-	public Object evaluateRef( ThreadContext thread )
+//	@Override
+//	public Object evaluateRef( ThreadContext thread )
+//	{
+//		try
+//		{
+//			Object left = Util.deref( this.left.evaluate( thread ) );
+//			Assert.isInstanceOf( this.right, Identifier.class );
+//			Symbol right = ( (Identifier)this.right ).getSymbol();
+//			if( left == null )
+//				throw new ThrowException( "null reference: member: " + right.toString(), thread.cloneStack( getLocation() ) );
+//			if( left instanceof Scope ) // TODO This is part of the OO we want
+//				return ( (Scope)left ).getRef( right );
+//			// TODO Also read properties to look for Functions
+//			return new ObjectMember( left, right );
+//		}
+//		catch( ScopeException e )
+//		{
+//			throw new ThrowException( e.getMessage(), thread.cloneStack( getLocation() ) );
+//		}
+//	}
+
+	public Object apply( ThreadContext thread, Expression args )
 	{
+		Object object = this.left.evaluate( thread );
+		String name = ( (Identifier)this.right ).getSymbol().toString();
+
+//		ObjectMember ref = (ObjectMember)left;
+//		Object object = ref.getObject();
+//		String name = ref.getKey().toString();
+
+		Object[] pars = args != null ? Util.toArray( args.evaluate( thread ) ) : Util.EMPTY_ARRAY; // TODO Shouldn't this happen outside the try catch?
+		pars = Util.toJavaParameters( thread, pars );
+		thread.pushStack( getLocation() );
 		try
 		{
-			Object left = Util.deref( this.left.evaluate( thread ) );
-			Assert.isInstanceOf( this.right, Identifier.class );
-			Symbol right = ( (Identifier)this.right ).getSymbol();
-			if( left == null )
-				throw new ThrowException( "null reference: member: " + right.toString(), thread.cloneStack( getLocation() ) );
-			if( left instanceof Scope ) // TODO This is part of the OO we want
-				return ( (Scope)left ).getRef( right );
-			// TODO Also read properties to look for Functions
-			return new ObjectMember( left, right );
+			if( object instanceof Type )
+				return Java.invokeStatic( ( (Type)object ).theClass(), name, pars );
+			return Java.invoke( object, name, pars );
 		}
-		catch( ScopeException e )
+		catch( InvocationTargetException e )
 		{
-			throw new ThrowException( e.getMessage(), thread.cloneStack( getLocation() ) );
+			Throwable t = e.getCause();
+			if( t instanceof Returning )
+				throw (Returning)t;
+			throw new JavaException( t, thread.cloneStack( getLocation() ) );
+		}
+		catch( Returning e )
+		{
+			throw e;
+		}
+		catch( Exception e )
+		{
+			throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), thread.cloneStack( getLocation() ) );
+//			throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
+		}
+		finally
+		{
+			thread.popStack();
 		}
 	}
 }

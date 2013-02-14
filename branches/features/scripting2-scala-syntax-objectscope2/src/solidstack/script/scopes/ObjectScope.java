@@ -19,13 +19,53 @@ public class ObjectScope extends AbstractScope
 	}
 
 	@Override
-	public Ref findRef( Symbol symbol )
+	public Object get( Symbol symbol )
 	{
-		return new ObjectRef( symbol.toString() );
+		try
+		{
+			return Java.get( this.object, symbol.toString() ); // TODO Use resolve() instead.
+		}
+		catch( InvocationTargetException e )
+		{
+			Throwable t = e.getCause();
+			if( t instanceof Returning )
+				throw (Returning)t;
+			throw new JavaException( t, ThreadContext.get().cloneStack( /* TODO getLocation() */ ) );
+		}
+		catch( MissingFieldException e )
+		{
+			throw new UndefinedException();
+		}
 	}
 
 	@Override
-	public Variable def( Symbol symbol, Object value )
+	protected void set0( Symbol symbol, Object value )
+	{
+		try
+		{
+			Java.set( this.object, symbol.toString(), value ); // TODO Use resolve() instead.
+		}
+		catch( InvocationTargetException e )
+		{
+			Throwable t = e.getCause();
+			if( t instanceof Returning )
+				throw (Returning)t;
+			throw new JavaException( t, ThreadContext.get().cloneStack( /* TODO getLocation() */ ) );
+		}
+		catch( MissingFieldException e )
+		{
+			throw new UndefinedException();
+		}
+	}
+
+//	@Override
+//	public Ref findRef( Symbol symbol )
+//	{
+//		return new ObjectRef( symbol.toString() );
+//	}
+
+	@Override
+	public Variable var( Symbol symbol, Object value )
 	{
 		throw new UnsupportedOperationException();
 	}

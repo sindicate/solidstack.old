@@ -24,58 +24,53 @@ import funny.Symbol;
 
 abstract public class AbstractScope implements Scope
 {
-	abstract public Ref findRef( Symbol symbol );
+//	abstract public Ref findRef( Symbol symbol );
 
-	public Ref getRef( Symbol symbol )
-	{
-		Ref v = findRef( symbol );
-		if( v == null )
-			return new Undefined( symbol );
-		return v;
-	}
+//	public Ref getRef( Symbol symbol )
+//	{
+//		Ref v = findRef( symbol );
+//		if( v == null )
+//			return new Undefined( symbol );
+//		return v;
+//	}
 
-	public Object get( Symbol symbol )
-	{
-		Ref v = findRef( symbol );
-		if( v == null )
-			return null;
-		return v.get();
-	}
+	abstract public Object get( Symbol symbol );
+	abstract protected void set0( Symbol symbol, Object value );
 
-	public Object get( String name )
-	{
-		return get( Symbol.apply( name ) );
-	}
-
-	abstract public Variable def( Symbol symbol, Object value );
+	abstract public Variable var( Symbol symbol, Object value );
 
 	abstract public Value val( Symbol symbol, Object value );
 
-	public void set( String name, Object value )
-	{
-		set( Symbol.apply( name ), value );
-	}
+//	public void set( String name, Object value )
+//	{
+//		set( Symbol.apply( name ), value );
+//	}
 
 	public void set( Symbol symbol, Object value )
 	{
-		if( setIfExists( symbol, value ) )
-			return;
-		def( symbol, value );
+		try
+		{
+			set0( symbol, value );
+		}
+		catch( UndefinedException e )
+		{
+			var( symbol, value );
+		}
 	}
 
-	public boolean setIfExists( Symbol symbol, Object value )
-	{
-		Ref v = findRef( symbol );
-		if( v == null )
-			return false;
-		v.set( value );
-		return true;
-	}
+//	public boolean setIfExists( Symbol symbol, Object value )
+//	{
+//		Ref v = findRef( symbol );
+//		if( v == null )
+//			return false;
+//		v.set( value );
+//		return true;
+//	}
 
 	public void setAll( Map<String, ? extends Object> parameters )
 	{
 		for( java.util.Map.Entry<String, ? extends Object> entry : parameters.entrySet() )
-			set( entry.getKey(), entry.getValue() );
+			set( Symbol.apply( entry.getKey() ), entry.getValue() );
 	}
 
 	static public interface Ref
@@ -142,7 +137,7 @@ abstract public class AbstractScope implements Scope
 
 		public void set( Object value )
 		{
-			def( getKey(), value );
+			var( getKey(), value );
 		}
 
 		public boolean isUndefined()

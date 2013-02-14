@@ -45,11 +45,11 @@ import funny.Symbol;
 public class ScriptTests extends Util
 {
 	@Test
-	static public void test1()
+	static public void helloWorld()
 	{
 		test( "println( \"Hello World!\" )", "Hello World!" );
 		DefaultScope scope = new DefaultScope();
-		scope.set( "var1", "Value" );
+		scope.set( Symbol.apply( "var1" ), "Value" );
 		test( "var1", scope, "Value" );
 		test( "", null );
 	}
@@ -58,7 +58,7 @@ public class ScriptTests extends Util
 	static public void test2()
 	{
 		DefaultScope scope = new DefaultScope();
-		scope.set( "var1", 1 );
+		scope.set( Symbol.apply( "var1" ), 1 );
 		test( "var1 + 1", scope, 2 );
 	}
 
@@ -139,17 +139,17 @@ public class ScriptTests extends Util
 		DefaultScope scope = new DefaultScope();
 
 		test( "a = 1", scope, 1 );
-		Assert.assertEquals( scope.get( "a" ), 1 );
+		Assert.assertEquals( scope.get( Symbol.apply( "a" ) ), 1 );
 
 		test( "a = b = 1", scope, 1 );
-		Assert.assertEquals( scope.get( "a" ), 1 );
-		Assert.assertEquals( scope.get( "b" ), 1 );
+		Assert.assertEquals( scope.get( Symbol.apply( "a" ) ), 1 );
+		Assert.assertEquals( scope.get( Symbol.apply( "b" ) ), 1 );
 
 		test( "1 + ( a = 1 )", scope, 2 );
-		Assert.assertEquals( scope.get( "a" ), 1 );
+		Assert.assertEquals( scope.get( Symbol.apply( "a" ) ), 1 );
 
 		test( "1 + ( a = 1 ) + a", scope, 3 );
-		Assert.assertEquals( scope.get( "a" ), 1 );
+		Assert.assertEquals( scope.get( Symbol.apply( "a" ) ), 1 );
 	}
 
 	@Test
@@ -256,14 +256,14 @@ public class ScriptTests extends Util
 	static public void test13()
 	{
 		DefaultScope scope = new DefaultScope();
-		scope.set( "s", "sinterklaas" );
+		scope.set( Symbol.apply( "s" ), "sinterklaas" );
 		test( "s.length()", scope, 11 );
 		test( "s.substring( 6 )", scope, "klaas" );
 		test( "s.substring( 1, 6 )", scope, "inter" );
 		test( "s.contains( \"kl\" )", scope, true );
 
 		TestObject1 o1 = new TestObject1();
-		scope.set( "o1", o1 );
+		scope.set( Symbol.apply( "o1" ), o1 );
 		test( "o1.test()", scope, 0 );
 		test( "o1.test( 1.0 )", scope, 2 );
 		test( "o1.test( \"string\" )", scope, 3 );
@@ -278,7 +278,7 @@ public class ScriptTests extends Util
 //		test( "o1.test( a = 1, b = 2 )", scope, 8 ); TODO
 
 		TestObject2 o2 = new TestObject2();
-		scope.set( "o2", o2 );
+		scope.set( Symbol.apply( "o2" ), o2 );
 		test( "o2.test( 1, 1 )", scope, 1 );
 	}
 
@@ -653,7 +653,7 @@ public class ScriptTests extends Util
 	static public void test27()
 	{
 		DefaultScope scope = new DefaultScope();
-		scope.set( "o1", new TestObject1() );
+		scope.set( Symbol.apply( "o1" ), new TestObject1() );
 
 		fail( "1 = 1", ScriptException.class, "Can't assign to a java.lang.Integer" );
 		fail( "loadClass( \"xxx\" )", ScriptException.class, "Class not found: xxx" );
@@ -683,8 +683,8 @@ public class ScriptTests extends Util
 		failParse( "'1", "Unexpected character" );
 		failParse( "var", "identifier expected after 'var', not EOF, at line 1" );
 		failParse( "var 1", "identifier expected after 'var', not 1" );
-		fail( "defined()", ScriptException.class, "defined() needs exactly one parameter" );
-		fail( "defined( 1 )", ScriptException.class, "defined() needs a variable identifier as parameter" );
+//		fail( "defined()", ScriptException.class, "defined() needs exactly one parameter" ); TODO
+//		fail( "defined( 1 )", ScriptException.class, "defined() needs a variable identifier as parameter" ); TODO?
 		fail( "print()", ScriptException.class, "print() needs exactly one parameter" );
 		fail( "println()", ScriptException.class, "println() needs exactly one parameter" );
 //		fail( "scope()", ScriptException.class, "scope() needs exactly one parameter" );
@@ -701,13 +701,13 @@ public class ScriptTests extends Util
 		fail( "f = ( a ) => (); f( \"a\" = 1 )", ScriptException.class, "Parameter must be named with a variable identifier" );
 	}
 
-	@Test
-	static public void test28()
-	{
-		test( "if( true ) return( true ); return( false )", true );
-		test( "l = List( 1, 2, 3 ); l.foreach( i => return( i ) ); 4", 1 );
-		test( "l = List( 1, 2, 3 ); f = i => return( i ); l.foreach( f ); 4", 4 );
-	}
+//	@Test TODO
+//	static public void test28()
+//	{
+//		test( "if( true ) return( true ); return( false )", true );
+//		test( "l = List( 1, 2, 3 ); l.foreach( i => return( i ) ); 4", 1 );
+//		test( "l = List( 1, 2, 3 ); f = i => return( i ); l.foreach( f ); 4", 4 );
+//	}
 
 	@Test
 	static public void test29()
@@ -736,7 +736,7 @@ public class ScriptTests extends Util
 		test( "setField2( 4 ); field2", scope, 4 );
 
 		Scope scope2 = new DefaultScope();
-		scope2.def( Symbol.apply( "obj" ), new TestObject4() );
+		scope2.var( Symbol.apply( "obj" ), new TestObject4() );
 		test( "with( obj ) field1", scope2, 1 );
 		test( "with( obj ) ( field1 = 2; field2 )", scope2, 2 );
 		test( "with( obj ) field2", scope2, 2 );
@@ -750,7 +750,7 @@ public class ScriptTests extends Util
 	{
 		Object object = new TestObject4();
 		DefaultScope scope = new DefaultScope();
-		scope.def( Symbol.apply( "o" ), object );
+		scope.var( Symbol.apply( "o" ), object );
 		test( "o.field1", scope, 1 );
 		test( "o.field1 = 2; o.field2", scope, 2 );
 		test( "o.field2", scope, 2 );
@@ -778,7 +778,7 @@ public class ScriptTests extends Util
 		map.put( "field1", 1 );
 		map.put( "field2", 2 );
 		DefaultScope scope = new DefaultScope();
-		scope.def( Symbol.apply( "o" ), map );
+		scope.var( Symbol.apply( "o" ), map );
 		test( "o.field1", scope, 1 );
 		test( "o.field1 = 2; o.field2", scope, 2 );
 		test( "o.field2", scope, 2 );

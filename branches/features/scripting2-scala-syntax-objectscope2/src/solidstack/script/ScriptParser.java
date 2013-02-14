@@ -31,6 +31,7 @@ import solidstack.script.expressions.Block;
 import solidstack.script.expressions.BooleanLiteral;
 import solidstack.script.expressions.CharLiteral;
 import solidstack.script.expressions.DecimalLiteral;
+import solidstack.script.expressions.Defined;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Expressions;
 import solidstack.script.expressions.Identifier;
@@ -313,6 +314,15 @@ public class ScriptParser
 				Assert.isTrue( token2.getType() == this.stop || token2.getType() == TokenType.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
 				this.tokenizer.push();
 				return new Module( token.getLocation(), expressions, left );
+
+			case DEFINED:
+				token2 = this.tokenizer.next();
+				if( token2.getType() != TokenType.PAREN_OPEN )
+					throw new SourceException( "Expected an opening parenthesis after 'defined', not " + token2, token2.getLocation() );
+				oldStop = swapStops( TokenType.PAREN_CLOSE );
+				expressions = parseExpressions();
+				swapStops( oldStop );
+				return new Defined( token.getLocation(), expressions );
 
 			case IF:
 				token2 = this.tokenizer.next();

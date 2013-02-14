@@ -35,7 +35,6 @@ import java.util.Set;
 import solidstack.script.functions.Call;
 import solidstack.script.functions.ClassOf;
 import solidstack.script.functions.Compile;
-import solidstack.script.functions.Defined;
 import solidstack.script.functions.Load;
 import solidstack.script.functions.LoadClass;
 import solidstack.script.functions.Print;
@@ -66,7 +65,6 @@ public class GlobalScope extends DefaultScope
 		val( Symbol.apply( "call" ), new Call() );
 		val( Symbol.apply( "classOf" ), new ClassOf() );
 		val( Symbol.apply( "compile" ), new Compile() );
-		val( Symbol.apply( "defined" ), new Defined() );
 		val( Symbol.apply( "load" ), new Load() );
 		val( Symbol.apply( "loadClass" ), new LoadClass() ); // TODO Or loadType?
 		val( Symbol.apply( "print" ), new Print() );

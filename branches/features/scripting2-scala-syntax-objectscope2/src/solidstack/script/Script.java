@@ -107,6 +107,22 @@ public class Script
 		return Types.castToBoolean( Util.toJava( object ) );
 	}
 
+	static public boolean isTrue( ThreadContext thread, Object object )
+	{
+		if( object instanceof Expression )
+		{
+			try
+			{
+				object = ((Expression)object).evaluate( thread );
+			}
+			catch( UndefinedPropertyException e ) // TODO But what if deeper into the expression this exception is thrown?
+			{
+				return false;
+			}
+		}
+		return isTrue( object );
+	}
+
 	// --- Non static members
 
 	private Expression expression;

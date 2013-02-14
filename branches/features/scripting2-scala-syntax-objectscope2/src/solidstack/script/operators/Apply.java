@@ -31,11 +31,8 @@ import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.java.Java;
 import solidstack.script.objects.FunctionObject;
-import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Type;
 import solidstack.script.objects.Util;
-import solidstack.script.scopes.ObjectScope.ObjectRef;
-import solidstack.script.scopes.ScopeException;
 import funny.Symbol;
 
 
@@ -82,88 +79,84 @@ public class Apply extends Operator
 			}
 		}
 
-		Object left = this.left.evaluateRef( thread );
+//		Object left = this.left.evaluateRef( thread );
+//
+//		if( left instanceof ObjectMember )
+//		{
+//			ObjectMember ref = (ObjectMember)left;
+//			Object object = ref.getObject();
+//			String name = ref.getKey().toString();
+//			Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY; // TODO Shouldn't this happen outside the try catch?
+//			pars = Util.toJavaParameters( thread, pars );
+//			thread.pushStack( getLocation() );
+//			try
+//			{
+//				if( object instanceof Type )
+//					return Java.invokeStatic( ( (Type)object ).theClass(), name, pars );
+//				return Java.invoke( object, name, pars );
+//			}
+//			catch( InvocationTargetException e )
+//			{
+//				Throwable t = e.getCause();
+//				if( t instanceof Returning )
+//					throw (Returning)t;
+//				throw new JavaException( t, thread.cloneStack( getLocation() ) );
+//			}
+//			catch( Returning e )
+//			{
+//				throw e;
+//			}
+//			catch( Exception e )
+//			{
+//				throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), thread.cloneStack( getLocation() ) );
+////				throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
+//			}
+//			finally
+//			{
+//				thread.popStack();
+//			}
+//		}
+//
+//		if( left instanceof ObjectRef )
+//		{
+//			ObjectRef ref = (ObjectRef)left;
+//			Object object = ref.getObject();
+//			String name = ref.getKey().toString();
+//			Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY; // TODO Shouldn't this happen outside the try catch?
+//			pars = Util.toJavaParameters( thread, pars );
+//			thread.pushStack( getLocation() );
+//			try
+//			{
+//				if( object instanceof Type )
+//					return Java.invokeStatic( ( (Type)object ).theClass(), name, pars );
+//				return Java.invoke( object, name, pars );
+//			}
+//			catch( InvocationTargetException e )
+//			{
+//				Throwable t = e.getCause();
+//				if( t instanceof Returning )
+//					throw (Returning)t;
+//				throw new JavaException( t, thread.cloneStack( getLocation() ) );
+//			}
+//			catch( Returning e )
+//			{
+//				throw e;
+//			}
+//			catch( Exception e )
+//			{
+//				throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), thread.cloneStack( getLocation() ) );
+////				throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
+//			}
+//			finally
+//			{
+//				thread.popStack();
+//			}
+//		}
 
-		if( left instanceof ObjectMember )
-		{
-			ObjectMember ref = (ObjectMember)left;
-			Object object = ref.getObject();
-			String name = ref.getKey().toString();
-			Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY; // TODO Shouldn't this happen outside the try catch?
-			pars = Util.toJavaParameters( thread, pars );
-			thread.pushStack( getLocation() );
-			try
-			{
-				if( object instanceof Type )
-					return Java.invokeStatic( ( (Type)object ).theClass(), name, pars );
-				return Java.invoke( object, name, pars );
-			}
-			catch( InvocationTargetException e )
-			{
-				Throwable t = e.getCause();
-				if( t instanceof Returning )
-					throw (Returning)t;
-				throw new JavaException( t, thread.cloneStack( getLocation() ) );
-			}
-			catch( Returning e )
-			{
-				throw e;
-			}
-			catch( Exception e )
-			{
-				throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), thread.cloneStack( getLocation() ) );
-//				throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
-			}
-			finally
-			{
-				thread.popStack();
-			}
-		}
+		if( this.left instanceof Member )
+			return ( (Member)this.left ).apply( thread, this.right );
 
-		if( left instanceof ObjectRef )
-		{
-			ObjectRef ref = (ObjectRef)left;
-			Object object = ref.getObject();
-			String name = ref.getKey().toString();
-			Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY; // TODO Shouldn't this happen outside the try catch?
-			pars = Util.toJavaParameters( thread, pars );
-			thread.pushStack( getLocation() );
-			try
-			{
-				if( object instanceof Type )
-					return Java.invokeStatic( ( (Type)object ).theClass(), name, pars );
-				return Java.invoke( object, name, pars );
-			}
-			catch( InvocationTargetException e )
-			{
-				Throwable t = e.getCause();
-				if( t instanceof Returning )
-					throw (Returning)t;
-				throw new JavaException( t, thread.cloneStack( getLocation() ) );
-			}
-			catch( Returning e )
-			{
-				throw e;
-			}
-			catch( Exception e )
-			{
-				throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), thread.cloneStack( getLocation() ) );
-//				throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
-			}
-			finally
-			{
-				thread.popStack();
-			}
-		}
-
-		try
-		{
-			left = Util.deref( left );
-		}
-		catch( ScopeException e )
-		{
-			throw new ThrowException( e.getMessage(), thread.cloneStack( getLocation() ) );
-		}
+		Object left = this.left.evaluate( thread );
 		if( left == null )
 			throw new ThrowException( "Function is null", thread.cloneStack( getLocation() ) );
 
