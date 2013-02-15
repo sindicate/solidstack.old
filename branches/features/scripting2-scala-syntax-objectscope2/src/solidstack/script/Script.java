@@ -73,10 +73,10 @@ public class Script
 		{
 			throw new ScriptException( e );
 		}
-//		catch( JavaException e )
-//		{
-//			throw new ScriptException( e );
-//		}
+		catch( JavaException e )
+		{
+			throw new ScriptException( e );
+		}
 		finally
 		{
 			thread.swapScope( s );

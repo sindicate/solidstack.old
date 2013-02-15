@@ -7,7 +7,7 @@ loaded.eval( this );
 if( !test; throw( "Expected test" ) );
 println( test );
 
-// load, call, run, eval, exec, include, import, required, optional, module
+// load, call, run, eval, exec, include, import, require, optional, module, compile
 // classpath: protocol will find 'system' modules
 
 // load(string): loads and parses the given file as a script, returns a script object

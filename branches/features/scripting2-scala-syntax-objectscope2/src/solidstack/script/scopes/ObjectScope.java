@@ -9,6 +9,7 @@ import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.java.Java;
 import solidstack.script.java.MissingFieldException;
+import solidstack.script.java.MissingMethodException;
 import solidstack.script.objects.Util;
 import funny.Symbol;
 
@@ -90,6 +91,10 @@ public class ObjectScope extends AbstractScope
 		catch( Returning e )
 		{
 			throw e;
+		}
+		catch( MissingMethodException e )
+		{
+			throw new UndefinedException();
 		}
 		catch( Exception e )
 		{

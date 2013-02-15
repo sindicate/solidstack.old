@@ -32,14 +32,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import solidstack.script.functions.Call;
-import solidstack.script.functions.ClassOf;
-import solidstack.script.functions.Compile;
-import solidstack.script.functions.Load;
-import solidstack.script.functions.LoadClass;
-import solidstack.script.functions.Print;
-import solidstack.script.functions.Println;
-import solidstack.script.functions.Require;
+import solidstack.script.GlobalFunctions;
 import solidstack.script.functions.Return;
 import solidstack.script.objects.Type;
 import funny.Symbol;
@@ -54,6 +47,7 @@ public class GlobalScope extends DefaultScope
 
 	public GlobalScope()
 	{
+		super( new ObjectScope( new GlobalFunctions() ) );
 		reset();
 	}
 
@@ -62,15 +56,7 @@ public class GlobalScope extends DefaultScope
 	{
 		clear();
 
-		val( Symbol.apply( "call" ), new Call() );
-		val( Symbol.apply( "classOf" ), new ClassOf() );
-		val( Symbol.apply( "compile" ), new Compile() );
-		val( Symbol.apply( "load" ), new Load() );
-		val( Symbol.apply( "loadClass" ), new LoadClass() ); // TODO Or loadType?
-		val( Symbol.apply( "print" ), new Print() );
-		val( Symbol.apply( "println" ), new Println() );
-		val( Symbol.apply( "require" ), new Require() );
-		val( Symbol.apply( "return" ), new Return() ); // TODO Remove
+		val( Symbol.apply( "return" ), new Return() ); // TODO Remove, should be keyword
 
 		// Primitives
 

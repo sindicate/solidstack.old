@@ -225,7 +225,7 @@ public class Apply extends Operator
 
 			if( left instanceof Identifier )
 			{
-				thread.pushStack( getLocation() );
+				thread.pushStack( getLocation() ); // TODO And above at Member? And when getting/setting a property?
 				try
 				{
 					return ( (Identifier)left ).apply( thread, args );

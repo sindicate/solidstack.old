@@ -365,7 +365,7 @@ public class ScriptTests extends Util
 	@Test
 	static public void test19()
 	{
-		fail( "o = new ( loadClass( \"solidstack.script.ScriptTests$TestObject3\" ) )(); o.throwException()", JavaException.class, "test exception" );
+		fail( "o = new ( loadClass( \"solidstack.script.ScriptTests$TestObject3\" ) )(); o.throwException()", ScriptException.class, "test exception" );
 	}
 
 	@Test
@@ -685,8 +685,8 @@ public class ScriptTests extends Util
 		failParse( "var 1", "identifier expected after 'var', not 1" );
 //		fail( "defined()", ScriptException.class, "defined() needs exactly one parameter" ); TODO
 //		fail( "defined( 1 )", ScriptException.class, "defined() needs a variable identifier as parameter" ); TODO?
-		fail( "print()", ScriptException.class, "print() needs exactly one parameter" );
-		fail( "println()", ScriptException.class, "println() needs exactly one parameter" );
+		fail( "print()", ScriptException.class, "'print' undefined" );
+		fail( "println()", ScriptException.class, "'println' undefined" );
 //		fail( "scope()", ScriptException.class, "scope() needs exactly one parameter" );
 //		fail( "scope( 1 )", ScriptException.class, "scope() needs a map parameter" );
 		failParse( "throw", "expression expected after 'throw'" );
