@@ -18,6 +18,7 @@ package solidstack.script.expressions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
@@ -34,6 +35,14 @@ public class StringExpression extends LocalizedExpression
 	public StringExpression( SourceLocation location )
 	{
 		super( location );
+	}
+
+	public Expression compile()
+	{
+		ListIterator<Expression> i = this.expressions.listIterator();
+		while( i.hasNext() )
+			i.set( i.next().compile() );
+		return this;
 	}
 
 	public PString evaluate( ThreadContext thread )

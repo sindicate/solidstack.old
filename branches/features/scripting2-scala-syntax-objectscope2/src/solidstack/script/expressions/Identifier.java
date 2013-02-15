@@ -43,6 +43,11 @@ public class Identifier extends LocalizedExpression
 		return this.symbol;
 	}
 
+	public Expression compile()
+	{
+		return this;
+	}
+
 	public Object evaluate( ThreadContext thread )
 	{
 		try

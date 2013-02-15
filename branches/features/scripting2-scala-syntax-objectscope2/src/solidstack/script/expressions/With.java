@@ -40,6 +40,13 @@ public class With extends LocalizedExpression
 		this.expression = expression;
 	}
 
+	public Expression compile()
+	{
+		this.object = this.object.compile();
+		this.expression = this.expression.compile();
+		return this;
+	}
+
 	public Object evaluate( ThreadContext thread )
 	{
 		Object object = Util.deref( this.object.evaluate( thread ) );

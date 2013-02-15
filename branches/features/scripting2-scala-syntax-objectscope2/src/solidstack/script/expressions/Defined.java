@@ -18,6 +18,7 @@ package solidstack.script.expressions;
 
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
 import solidstack.script.UndefinedPropertyException;
 
 
@@ -32,10 +33,18 @@ public class Defined extends LocalizedExpression
 		this.expression = expression;
 	}
 
+	public Expression compile()
+	{
+		this.expression = this.expression.compile();
+		return this;
+	}
+
 	public Object evaluate( ThreadContext thread )
 	{
 		try
 		{
+			if( this.expression == null ) // TODO This could be moved to compile()
+				throw new ThrowException( "defined() expects a parameter", thread.cloneStack( getLocation() ) );
 			this.expression.evaluate( thread );
 			return true;
 		}

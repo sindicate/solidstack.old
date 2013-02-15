@@ -38,6 +38,20 @@ public class Expressions implements Expression
 			append( expression );
 	}
 
+	public Expression compile()
+	{
+		List<Expression> result = new ArrayList<Expression>();
+		for( Expression expression : this.expressions )
+		{
+			if( expression != null ) expression = expression.compile();
+			if( expression != null ) result.add( expression );
+		}
+		if( result.isEmpty() ) return null;
+		if( result.size() == 1 ) return result.get( 0 );
+		this.expressions = result;
+		return this;
+	}
+
 	public Object evaluate( ThreadContext thread )
 	{
 		Object result = null;
@@ -45,11 +59,6 @@ public class Expressions implements Expression
 			if( e != null )
 				result = e.evaluate( thread );
 		return result;
-	}
-
-	public Object evaluateRef( ThreadContext thread )
-	{
-		return evaluate( thread );
 	}
 
 	public Expressions append( Expression expression )

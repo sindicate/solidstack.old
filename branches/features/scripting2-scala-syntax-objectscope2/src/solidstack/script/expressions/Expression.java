@@ -31,6 +31,14 @@ public interface Expression
 	 * @param thread The thread context.
 	 * @return The result of evaluating this expression.
 	 */
+	Expression compile();
+
+	/**
+	 * Evaluate the expression.
+	 *
+	 * @param thread The thread context.
+	 * @return The result of evaluating this expression.
+	 */
 	Object evaluate( ThreadContext thread );
 
 	/**

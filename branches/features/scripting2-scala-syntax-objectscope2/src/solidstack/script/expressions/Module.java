@@ -42,6 +42,13 @@ public class Module extends LocalizedExpression
 		this.expression = expression;
 	}
 
+	public Expression compile()
+	{
+		this.object = this.object.compile();
+		this.expression = this.expression.compile();
+		return this;
+	}
+
 	// TODO This resembles with() a lot
 	public Object evaluate( ThreadContext thread )
 	{

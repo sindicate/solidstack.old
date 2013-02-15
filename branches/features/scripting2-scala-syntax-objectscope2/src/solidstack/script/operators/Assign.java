@@ -23,7 +23,6 @@ import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
-import solidstack.script.expressions.Parenthesis;
 import solidstack.script.expressions.Var;
 import solidstack.script.objects.Tuple;
 import solidstack.script.objects.Util;
@@ -57,16 +56,12 @@ public class Assign extends Operator
 
 		Object right = Util.deref( this.right.evaluate( thread ) );
 
-		Object left = this.left;
-		if( left instanceof Parenthesis )
-			left = ( (Parenthesis)left ).getExpression();
-
-		if( left instanceof BuildTuple )
+		if( this.left instanceof BuildTuple )
 		{
 			if( !( right instanceof Tuple ) )
 				throw new UnsupportedOperationException();
 
-			List<Expression> leftTuple = ((BuildTuple)left).getExpressions();
+			List<Expression> leftTuple = ((BuildTuple)this.left).getExpressions();
 			Tuple rightTuple = (Tuple)right;
 			int len = leftTuple.size();
 			Assert.isTrue( rightTuple.size() == len );
@@ -86,11 +81,11 @@ public class Assign extends Operator
 		if( this.left instanceof Identifier )
 			return ( (Identifier)this.left ).assign( thread, right );
 
-		if( left instanceof Var )
-			return ( (Var)left ).assign( thread, right );
+		if( this.left instanceof Var )
+			return ( (Var)this.left ).assign( thread, right );
 
-		if( left instanceof Member )
-			return ( (Member)left ).assign( thread, right );
+		if( this.left instanceof Member )
+			return ( (Member)this.left ).assign( thread, right );
 
 		throw new ThrowException( "Can't assign to a " + right.getClass().getName(), thread.cloneStack( getLocation() ) );
 

@@ -81,27 +81,6 @@ public class Member extends Operator
 		}
 	}
 
-//	@Override
-//	public Object evaluateRef( ThreadContext thread )
-//	{
-//		try
-//		{
-//			Object left = Util.deref( this.left.evaluate( thread ) );
-//			Assert.isInstanceOf( this.right, Identifier.class );
-//			Symbol right = ( (Identifier)this.right ).getSymbol();
-//			if( left == null )
-//				throw new ThrowException( "null reference: member: " + right.toString(), thread.cloneStack( getLocation() ) );
-//			if( left instanceof Scope ) // TODO This is part of the OO we want
-//				return ( (Scope)left ).getRef( right );
-//			// TODO Also read properties to look for Functions
-//			return new ObjectMember( left, right );
-//		}
-//		catch( ScopeException e )
-//		{
-//			throw new ThrowException( e.getMessage(), thread.cloneStack( getLocation() ) );
-//		}
-//	}
-
 	public Object assign( ThreadContext thread, Object value )
 	{
 		Object object = this.left.evaluate( thread );

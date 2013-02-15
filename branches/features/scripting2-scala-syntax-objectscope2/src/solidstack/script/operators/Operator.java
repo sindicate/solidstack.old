@@ -272,6 +272,13 @@ abstract public class Operator implements Expression
 		return null;
 	}
 
+	public Expression compile()
+	{
+		if( this.left != null ) this.left = this.left.compile();
+		if( this.right != null ) this.right = this.right.compile();
+		return this;
+	}
+
 	public Expression getLeft()
 	{
 		return this.left;
@@ -281,11 +288,6 @@ abstract public class Operator implements Expression
 	{
 		return this.right;
 	}
-
-//	public Object evaluateRef( ThreadContext thread )
-//	{
-//		return evaluate( thread );
-//	}
 
 	static protected Object add( Object left, Object right )
 	{
@@ -583,6 +585,8 @@ abstract public class Operator implements Expression
 
 	public SourceLocation getLocation()
 	{
+		if( this.left == null )
+			throw new NullPointerException( getClass().getName() );
 		return this.left.getLocation();
 	}
 

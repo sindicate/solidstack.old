@@ -28,6 +28,11 @@ public class NullLiteral extends LocalizedExpression
 		super( location );
 	}
 
+	public Expression compile()
+	{
+		return this;
+	}
+
 	public Object evaluate( ThreadContext thread )
 	{
 		return null;

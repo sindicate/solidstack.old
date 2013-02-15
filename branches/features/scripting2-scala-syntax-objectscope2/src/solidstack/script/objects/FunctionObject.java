@@ -212,6 +212,8 @@ public class FunctionObject implements solidstack.script.java.Function
 		Scope old = thread.swapScope( newScope );
 		try
 		{
+			if( this.function.getExpression() == null )
+				return null;
 			return this.function.getExpression().evaluate( thread );
 		}
 		catch( Returning e )

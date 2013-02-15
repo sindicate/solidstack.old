@@ -692,7 +692,7 @@ public class ScriptTests extends Util
 //		fail( "scope( 1 )", ScriptException.class, "scope() needs a map parameter" );
 		failParse( "throw", "expression expected after 'throw'" );
 		failParse( "throw;", "expression expected after 'throw'" );
-		fail( "throw()", ScriptException.class, "null" );
+		fail( "throw()", ScriptException.class, "'throw' expects an expression" );
 //		fail( "val()", ScriptException.class, "val() needs exactly one parameter" );
 //		fail( "val( 1 )", ScriptException.class, "val() needs a variable identifier as parameter" );
 		fail( "f = ( a = 1 ) => (); f( b = 1 )", ScriptException.class, "Parameter 'b' undefined" );
