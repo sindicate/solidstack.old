@@ -40,8 +40,7 @@ public class Block extends LocalizedExpression // TODO Is this localized needed?
 
 	public Object evaluate( ThreadContext thread )
 	{
-		DefaultScope scope = new DefaultScope( thread.getScope() );
-		Scope old = thread.swapScope( scope );
+		Scope old = thread.swapScope( new DefaultScope( thread.getScope() ) );
 		try
 		{
 			return this.expression.evaluate( thread );
