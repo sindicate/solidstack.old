@@ -20,7 +20,6 @@ import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
 import solidstack.script.objects.Assoc;
-import solidstack.script.objects.Util;
 import solidstack.script.scopes.ScopeException;
 
 
@@ -35,8 +34,8 @@ public class Associate extends Operator
 	{
 		try // TODO And the other derefs?
 		{
-			Object left = Util.deref( this.left.evaluate( thread ) );
-			Object right = Util.deref( this.right.evaluate( thread ) );
+			Object left = this.left.evaluate( thread );
+			Object right = this.right.evaluate( thread );
 			return new Assoc( left, right );
 		}
 		catch( ScopeException e )

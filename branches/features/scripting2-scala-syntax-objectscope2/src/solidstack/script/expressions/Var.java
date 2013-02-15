@@ -41,9 +41,10 @@ public class Var extends LocalizedExpression
 		return thread.getScope().var( this.identifier.getSymbol(), null );
 	}
 
-	public Object assign( ThreadContext thread, Object right )
+	public Object assign( ThreadContext thread, Object value )
 	{
-		return thread.getScope().var( this.identifier.getSymbol(), right );
+		thread.getScope().var( this.identifier.getSymbol(), value );
+		return value;
 	}
 
 	public void writeTo( StringBuilder out )

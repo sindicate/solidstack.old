@@ -47,7 +47,7 @@ public class Member extends Operator
 	{
 		try
 		{
-			Object left = Util.deref( this.left.evaluate( thread ) );
+			Object left = this.left.evaluate( thread );
 			Assert.isInstanceOf( this.right, Identifier.class );
 			Symbol right = ( (Identifier)this.right ).getSymbol();
 			if( left == null )

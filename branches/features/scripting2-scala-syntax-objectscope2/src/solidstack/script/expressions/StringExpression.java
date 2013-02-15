@@ -23,7 +23,6 @@ import java.util.ListIterator;
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
 import solidstack.script.objects.PString;
-import solidstack.script.objects.Util;
 
 
 
@@ -63,7 +62,7 @@ public class StringExpression extends LocalizedExpression
 				fragments.add( fragment );
 			else
 			{
-				Object object = Util.deref( this.expressions.get( i++ ).evaluate( thread ) ); // TODO deref() needed here?
+				Object object = this.expressions.get( i++ ).evaluate( thread );
 				values.add( object );
 				fragments.add( null ); // This is the value indicator
 			}

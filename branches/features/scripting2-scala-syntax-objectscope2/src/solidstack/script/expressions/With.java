@@ -20,7 +20,6 @@ import java.util.Map;
 
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
-import solidstack.script.objects.Util;
 import solidstack.script.scopes.CombinedScope;
 import solidstack.script.scopes.MapScope;
 import solidstack.script.scopes.ObjectScope;
@@ -49,7 +48,7 @@ public class With extends LocalizedExpression
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object object = Util.deref( this.object.evaluate( thread ) );
+		Object object = this.object.evaluate( thread );
 		Scope scope;
 		if( object instanceof Scope )
 			scope = (Scope)object;

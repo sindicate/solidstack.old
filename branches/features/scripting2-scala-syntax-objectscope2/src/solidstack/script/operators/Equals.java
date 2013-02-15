@@ -18,7 +18,6 @@ package solidstack.script.operators;
 
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
-import solidstack.script.objects.Util;
 
 
 public class Equals extends Operator
@@ -30,8 +29,8 @@ public class Equals extends Operator
 
 	public Boolean evaluate( ThreadContext thread )
 	{
-		Object left = Util.deref( this.left.evaluate( thread ) );
-		Object right = Util.deref( this.right.evaluate( thread ) );
+		Object left = this.left.evaluate( thread );
+		Object right = this.right.evaluate( thread );
 		if( ( left instanceof Number || left instanceof Character ) && ( right instanceof Number || right instanceof Character ) )
 			return Operator.compare( left, right ) == 0;
 		return left != null ? left.equals( right ) : right == null;

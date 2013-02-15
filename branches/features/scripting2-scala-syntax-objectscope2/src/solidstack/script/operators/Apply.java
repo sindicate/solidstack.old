@@ -47,7 +47,7 @@ public class Apply extends Operator
 	{
 		if( this.left instanceof New )
 		{
-			Object left = Util.deref( ( (New)this.left ).evaluateForApply( thread ) );
+			Object left = ( (New)this.left ).evaluateForApply( thread );
 			if( !( left instanceof Type ) )
 				throw new ThrowException( "The new operator needs a type argument, not a " + left.getClass().getName(), thread.cloneStack( getLocation() ) );
 

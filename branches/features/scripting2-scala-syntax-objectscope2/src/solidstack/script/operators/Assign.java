@@ -25,7 +25,6 @@ import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.expressions.Var;
 import solidstack.script.objects.Tuple;
-import solidstack.script.objects.Util;
 
 
 public class Assign extends Operator
@@ -54,7 +53,7 @@ public class Assign extends Operator
 			}
 		}
 
-		Object right = Util.deref( this.right.evaluate( thread ) );
+		Object right = this.right.evaluate( thread );
 
 		if( this.left instanceof BuildTuple )
 		{

@@ -19,7 +19,6 @@ package solidstack.script.expressions;
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
-import solidstack.script.objects.Util;
 import solidstack.script.scopes.AbstractScope.Ref;
 import solidstack.script.scopes.CombinedScope;
 import solidstack.script.scopes.DefaultScope;
@@ -53,7 +52,7 @@ public class Module extends LocalizedExpression
 	public Object evaluate( ThreadContext thread )
 	{
 		// The name
-		Object object = Util.deref( this.object.evaluate( thread ) );
+		Object object = this.object.evaluate( thread );
 		if( !( object instanceof String ) )
 			throw new ThrowException( "Expected a String as module name", thread.cloneStack( getLocation() ) );
 		String name = (String)object;

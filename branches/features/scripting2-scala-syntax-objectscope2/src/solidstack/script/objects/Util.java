@@ -4,27 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import solidstack.script.objects.FunctionObject.ParWalker;
-import solidstack.script.scopes.AbstractScope.Ref;
 
 public class Util
 {
-	static public Object finalize( Object value )
-	{
-		return Util.deref( value );
-	}
-
 	static public Object toJava( Object value )
 	{
 		if( value instanceof Tuple )
 			return ( (Tuple)value ).list();
-		Object result = Util.deref( value );
-		if( result == null )
+		if( value == null )
 			return null;
-//		if( result instanceof PString )
-//			return result.toString();
-		if( result instanceof Type )
-			return ( (Type)result ).theClass();
-		return result;
+//		if( value instanceof PString )
+//			return value.toString();
+		if( value instanceof Type )
+			return ( (Type)value ).theClass();
+		return value;
 	}
 
 	static public Object[] toJavaParameters( Object... pars )
@@ -44,22 +37,5 @@ public class Util
 		if( values instanceof Tuple )
 			return ( (Tuple)values ).list().toArray();
 		return new Object[] { values };
-	}
-
-	// TODO Remove
-	static public Object deref( Object value )
-	{
-//		if( value instanceof List )
-//		{
-//			// TODO Deep deref?
-//			// TODO Or create a new list?
-//			List<Object> list = (List<Object>)value;
-//			for( ListIterator<Object> i = list.listIterator(); i.hasNext(); )
-//				i.set( deref( i.next() ) );
-//			return list;
-//		}
-		if( value instanceof Ref )
-			return ( (Ref)value ).get();
-		return value;
 	}
 }
