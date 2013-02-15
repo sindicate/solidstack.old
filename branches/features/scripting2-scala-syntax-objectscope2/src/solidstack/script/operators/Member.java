@@ -102,11 +102,54 @@ public class Member extends Operator
 //		}
 //	}
 
-	public Object apply( ThreadContext thread, Expression args )
+	public Object assign( ThreadContext thread, Object value )
+	{
+		Object object = this.left.evaluate( thread );
+		Symbol symbol = ( (Identifier)this.right ).getSymbol();
+
+		if( object instanceof Map )
+		{
+			( (Map)object ).put( symbol.toString(), value );
+			return value;
+		}
+
+		if( object instanceof Scope )
+		{
+			( (Scope)object ).set( symbol, value );
+			return value;
+		}
+
+//		ObjectMember ref = (ObjectMember)left;
+//		Object object = ref.getObject();
+//		String name = ref.getKey().toString();
+
+		try
+		{
+			Java.set( object, symbol.toString(), value );
+			return value;
+		}
+		catch( InvocationTargetException e )
+		{
+			Throwable t = e.getCause();
+			if( t instanceof Returning )
+				throw (Returning)t;
+			throw new JavaException( t, thread.cloneStack( getLocation() ) );
+		}
+		catch( Returning e )
+		{
+			throw e;
+		}
+		catch( Exception e )
+		{
+			throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), thread.cloneStack( getLocation() ) );
+//			throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
+		}
+	}
+
+	public Object apply( ThreadContext thread, Object[] pars )
 	{
 		Object object = this.left.evaluate( thread );
 		String name = ( (Identifier)this.right ).getSymbol().toString();
-		Object[] pars = args != null ? Util.toArray( args.evaluate( thread ) ) : Util.EMPTY_ARRAY; // TODO What about named parameters?
 
 		if( object instanceof Scope ) // TODO And Map?
 		{
@@ -147,5 +190,10 @@ public class Member extends Operator
 		{
 			thread.popStack();
 		}
+	}
+
+	public Object apply( ThreadContext thread, Map args )
+	{
+		throw new UnsupportedOperationException();
 	}
 }

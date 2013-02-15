@@ -16,10 +16,11 @@
 
 package solidstack.script.expressions;
 
+import java.util.Map;
+
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
 import solidstack.script.UndefinedPropertyException;
-import solidstack.script.objects.Util;
 import solidstack.script.scopes.GlobalScope;
 import solidstack.script.scopes.UndefinedException;
 import funny.Symbol;
@@ -67,18 +68,36 @@ public class Identifier extends LocalizedExpression
 		return value;
 	}
 
-	public Object apply( ThreadContext thread, Expression args )
+	public Object apply( ThreadContext thread, Object[] args )
 	{
-		Object[] pars = args != null ? Util.toArray( args.evaluate( thread ) ) : Util.EMPTY_ARRAY; // TODO What about named parameters?
 		try
 		{
-			return thread.getScope().apply( this.symbol, pars );
+			return thread.getScope().apply( this.symbol, args );
 		}
 		catch( UndefinedException e )
 		{
 			try
 			{
-				return GlobalScope.instance.apply( this.symbol, pars );
+				return GlobalScope.instance.apply( this.symbol, args );
+			}
+			catch( UndefinedException f )
+			{
+				throw new UndefinedPropertyException( this.symbol.toString(), thread.cloneStack( getLocation() ) );
+			}
+		}
+	}
+
+	public Object apply( ThreadContext thread, Map args )
+	{
+		try
+		{
+			return thread.getScope().apply( this.symbol, args );
+		}
+		catch( UndefinedException e )
+		{
+			try
+			{
+				return GlobalScope.instance.apply( this.symbol, args );
 			}
 			catch( UndefinedException f )
 			{

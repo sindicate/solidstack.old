@@ -16,6 +16,8 @@
 
 package solidstack.script.scopes;
 
+import java.util.Map;
+
 import funny.Symbol;
 
 
@@ -78,5 +80,10 @@ public class CombinedScope extends AbstractScope
 		{
 			return this.scope2.apply( symbol, pars );
 		}
+	}
+
+	public Object apply( Symbol symbol, Map args )
+	{
+		throw new UnsupportedOperationException();
 	}
 }

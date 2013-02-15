@@ -17,6 +17,7 @@
 package solidstack.script.scopes;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 
 import solidstack.script.JavaException;
 import solidstack.script.Returning;
@@ -130,6 +131,25 @@ public class DefaultScope extends AbstractScope
 				throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), ThreadContext.get().cloneStack() );
 //				throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
 			}
+		}
+		if( this.parent != null )
+			return this.parent.apply( symbol, args );
+		throw new UndefinedException();
+	}
+
+	public Object apply( Symbol symbol, Map args )
+	{
+		Value ref = this.values.get( symbol );
+		if( ref != null )
+		{
+			Object object = ref.get();
+			if( object == null )
+				throw new ThrowException( "Function is null", ThreadContext.get().cloneStack() );
+
+			if( object instanceof FunctionObject )
+				return ( (FunctionObject)object ).call( ThreadContext.get(), args );
+
+			throw new UnsupportedOperationException();
 		}
 		if( this.parent != null )
 			return this.parent.apply( symbol, args );

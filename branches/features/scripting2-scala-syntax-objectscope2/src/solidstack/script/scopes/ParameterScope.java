@@ -17,6 +17,7 @@
 package solidstack.script.scopes;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 
 import solidstack.script.JavaException;
 import solidstack.script.Returning;
@@ -119,5 +120,10 @@ public class ParameterScope extends AbstractScope
 		if( this.parent != null )
 			return this.parent.apply( symbol, args );
 		throw new UndefinedException();
+	}
+
+	public Object apply( Symbol symbol, Map args )
+	{
+		throw new UnsupportedOperationException();
 	}
 }

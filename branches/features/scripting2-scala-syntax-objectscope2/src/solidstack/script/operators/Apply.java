@@ -153,37 +153,109 @@ public class Apply extends Operator
 //			}
 //		}
 
-		if( this.left instanceof Member )
-			return ( (Member)this.left ).apply( thread, this.right );
+		Expression left = this.left;
+//		while( left instanceof Parenthesis )
+//			left = ( (Parenthesis)left ).getExpression();
 
-		if( this.left instanceof Identifier )
+		// Build parameters
+
+		List<Expression> vals;
+		if( this.right instanceof BuildTuple )
+			vals = ( (BuildTuple)this.right ).getExpressions();
+		else if( this.right != null )
+			vals = Arrays.asList( this.right );
+		else
+			vals = Collections.emptyList();
+
+		if( !vals.isEmpty() && vals.get( 0 ) instanceof Assign )
 		{
-			thread.pushStack( getLocation() );
-			try
+			Map<Symbol, Object> args = new HashMap<Symbol, Object>();
+			for( Expression expression : vals )
 			{
-				return ( (Identifier)this.left ).apply( thread, this.right );
+				if( !( expression instanceof Assign ) )
+					throw new ThrowException( "All parameters must be named", thread.cloneStack( expression.getLocation() ) );
+				Assign assign = (Assign)expression;
+				if( !( assign.left instanceof Identifier ) )
+					throw new ThrowException( "Parameter must be named with a variable identifier", thread.cloneStack( assign.left.getLocation() ) );
+				args.put( ( (Identifier)assign.left ).getSymbol(), assign.right.evaluate( thread ) ); // TODO Error message
 			}
-			finally
+
+			if( left instanceof Member )
+				return ( (Member)left ).apply( thread, args );
+
+			if( left instanceof Identifier )
 			{
-				thread.popStack();
+				thread.pushStack( getLocation() );
+				try
+				{
+					return ( (Identifier)left ).apply( thread, args );
+				}
+				finally
+				{
+					thread.popStack();
+				}
 			}
+
+			Object l = left.evaluate( thread );
+
+			if( l instanceof FunctionObject )
+			{
+				thread.pushStack( getLocation() );
+				try
+				{
+					return ( (FunctionObject)l ).call( thread, args );
+				}
+				finally
+				{
+					thread.popStack();
+				}
+			}
+
+			throw new UnsupportedOperationException();
 		}
-
-		// TODO What is still used below?
-
-		Object left = this.left.evaluate( thread );
-		if( left == null )
-			throw new ThrowException( "Function is null", thread.cloneStack( getLocation() ) );
-
-		if( left instanceof Type )
+		else
 		{
-			Class<?> cls = ( (Type)left ).theClass();
-			Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY; // TODO Shouldn't this happen outside the try catch?
-			pars = Util.toJavaParameters( pars );
+			for( Expression expression : vals )
+				if( expression instanceof Assign )
+					throw new ThrowException( "All parameters must be named", thread.cloneStack( expression.getLocation() ) );
+			Object[] args = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY;
+
+			if( left instanceof Member )
+				return ( (Member)left ).apply( thread, args );
+
+			if( left instanceof Identifier )
+			{
+				thread.pushStack( getLocation() );
+				try
+				{
+					return ( (Identifier)left ).apply( thread, args );
+				}
+				finally
+				{
+					thread.popStack();
+				}
+			}
+
+			Object l = left.evaluate( thread );
+
+			if( l instanceof FunctionObject )
+			{
+				thread.pushStack( getLocation() );
+				try
+				{
+					return ( (FunctionObject)l ).call( thread, args );
+				}
+				finally
+				{
+					thread.popStack();
+				}
+			}
+
+			args = Util.toJavaParameters( args );
 			thread.pushStack( getLocation() );
 			try
 			{
-				return Java.invokeStatic( cls, "apply", pars );
+				return Java.invoke( l, "apply", args );
 			}
 			catch( InvocationTargetException e )
 			{
@@ -207,81 +279,119 @@ public class Apply extends Operator
 			}
 		}
 
-		if( left instanceof FunctionObject )
-		{
-			FunctionObject f = (FunctionObject)left;
-			List<Expression> vals;
-			if( this.right instanceof BuildTuple )
-				vals = ( (BuildTuple)this.right ).getExpressions();
-			else if( this.right != null )
-				vals = Arrays.asList( this.right );
-			else
-				vals = Collections.emptyList();
-			if( !vals.isEmpty() && vals.get( 0 ) instanceof Assign )
-			{
-				Map<Symbol, Object> pars = new HashMap<Symbol, Object>();
-				for( Expression expression : vals )
-				{
-					if( !( expression instanceof Assign ) )
-						throw new ThrowException( "All parameters must be named", thread.cloneStack( expression.getLocation() ) );
-					Assign assign = (Assign)expression;
-					if( !( assign.left instanceof Identifier ) )
-						throw new ThrowException( "Parameter must be named with a variable identifier", thread.cloneStack( assign.left.getLocation() ) );
-					pars.put( ( (Identifier)assign.left ).getSymbol(), assign.right.evaluate( thread ) ); // TODO Error message
-				}
-				thread.pushStack( getLocation() );
-				try
-				{
-					return f.call( thread, pars );
-				}
-				finally
-				{
-					thread.popStack();
-				}
-			}
-
-			for( Expression expression : vals )
-				if( expression instanceof Assign )
-					throw new ThrowException( "All parameters must be named", thread.cloneStack( expression.getLocation() ) );
-			Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY;
-			thread.pushStack( getLocation() );
-			try
-			{
-				return f.call( thread, pars );
-			}
-			finally
-			{
-				thread.popStack();
-			}
-		}
-
-		Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY; // TODO Shouldn't this happen outside the try catch?
-		pars = Util.toJavaParameters( pars );
-		thread.pushStack( getLocation() );
-		try
-		{
-			return Java.invoke( left, "apply", pars );
-		}
-		catch( InvocationTargetException e )
-		{
-			Throwable t = e.getCause();
-			if( t instanceof Returning )
-				throw (Returning)t;
-			throw new JavaException( t, thread.cloneStack( getLocation() ) );
-		}
-		catch( Returning e )
-		{
-			throw e;
-		}
-		catch( Exception e )
-		{
-			throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), thread.cloneStack( getLocation() ) );
-//			throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
-		}
-		finally
-		{
-			thread.popStack();
-		}
+//		// TODO What is still used below?
+//
+//		Object left = this.left.evaluate( thread );
+//		if( left == null )
+//			throw new ThrowException( "Function is null", thread.cloneStack( getLocation() ) );
+//
+//		if( left instanceof Type )
+//		{
+//			Class<?> cls = ( (Type)left ).theClass();
+//			Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY; // TODO Shouldn't this happen outside the try catch?
+//			pars = Util.toJavaParameters( pars );
+//			thread.pushStack( getLocation() );
+//			try
+//			{
+//				return Java.invokeStatic( cls, "apply", pars );
+//			}
+//			catch( InvocationTargetException e )
+//			{
+//				Throwable t = e.getCause();
+//				if( t instanceof Returning )
+//					throw (Returning)t;
+//				throw new JavaException( t, thread.cloneStack( getLocation() ) );
+//			}
+//			catch( Returning e )
+//			{
+//				throw e;
+//			}
+//			catch( Exception e )
+//			{
+//				throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), thread.cloneStack( getLocation() ) );
+////				throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
+//			}
+//			finally
+//			{
+//				thread.popStack();
+//			}
+//		}
+//
+//		if( left instanceof FunctionObject )
+//		{
+//			FunctionObject f = (FunctionObject)left;
+//			List<Expression> vals;
+//			if( this.right instanceof BuildTuple )
+//				vals = ( (BuildTuple)this.right ).getExpressions();
+//			else if( this.right != null )
+//				vals = Arrays.asList( this.right );
+//			else
+//				vals = Collections.emptyList();
+//			if( !vals.isEmpty() && vals.get( 0 ) instanceof Assign )
+//			{
+//				Map<Symbol, Object> pars = new HashMap<Symbol, Object>();
+//				for( Expression expression : vals )
+//				{
+//					if( !( expression instanceof Assign ) )
+//						throw new ThrowException( "All parameters must be named", thread.cloneStack( expression.getLocation() ) );
+//					Assign assign = (Assign)expression;
+//					if( !( assign.left instanceof Identifier ) )
+//						throw new ThrowException( "Parameter must be named with a variable identifier", thread.cloneStack( assign.left.getLocation() ) );
+//					pars.put( ( (Identifier)assign.left ).getSymbol(), assign.right.evaluate( thread ) ); // TODO Error message
+//				}
+//				thread.pushStack( getLocation() );
+//				try
+//				{
+//					return f.call( thread, pars );
+//				}
+//				finally
+//				{
+//					thread.popStack();
+//				}
+//			}
+//
+//			for( Expression expression : vals )
+//				if( expression instanceof Assign )
+//					throw new ThrowException( "All parameters must be named", thread.cloneStack( expression.getLocation() ) );
+//			Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY;
+//			thread.pushStack( getLocation() );
+//			try
+//			{
+//				return f.call( thread, pars );
+//			}
+//			finally
+//			{
+//				thread.popStack();
+//			}
+//		}
+//
+//		Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY; // TODO Shouldn't this happen outside the try catch?
+//		pars = Util.toJavaParameters( pars );
+//		thread.pushStack( getLocation() );
+//		try
+//		{
+//			return Java.invoke( left, "apply", pars );
+//		}
+//		catch( InvocationTargetException e )
+//		{
+//			Throwable t = e.getCause();
+//			if( t instanceof Returning )
+//				throw (Returning)t;
+//			throw new JavaException( t, thread.cloneStack( getLocation() ) );
+//		}
+//		catch( Returning e )
+//		{
+//			throw e;
+//		}
+//		catch( Exception e )
+//		{
+//			throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), thread.cloneStack( getLocation() ) );
+////			throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
+//		}
+//		finally
+//		{
+//			thread.popStack();
+//		}
 	}
 
 	@Override

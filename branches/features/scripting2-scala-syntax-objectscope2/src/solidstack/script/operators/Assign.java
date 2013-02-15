@@ -17,7 +17,6 @@
 package solidstack.script.operators;
 
 import java.util.List;
-import java.util.Map;
 
 import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
@@ -91,15 +90,7 @@ public class Assign extends Operator
 			return ( (Var)left ).assign( thread, right );
 
 		if( left instanceof Member )
-		{
-			Object l = ( (Member)left ).getLeft().evaluate( thread );
-			if( l instanceof Map )
-			{
-				( (Map)l ).put( ( (Identifier)( (Member)left ).getRight() ).getSymbol().toString(), right );
-				return right;
-			}
-			throw new UnsupportedOperationException();
-		}
+			return ( (Member)left ).assign( thread, right );
 
 		throw new ThrowException( "Can't assign to a " + right.getClass().getName(), thread.cloneStack( getLocation() ) );
 

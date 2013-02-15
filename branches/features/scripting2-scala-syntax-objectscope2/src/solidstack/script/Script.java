@@ -59,7 +59,8 @@ public class Script
 		else
 			s = new ObjectScope( scope );
 
-		ThreadContext thread = ThreadContext.init( s );
+		ThreadContext thread = ThreadContext.get();
+		s = thread.swapScope( s );
 		try
 		{
 			return expression.evaluate( thread );
@@ -76,6 +77,10 @@ public class Script
 //		{
 //			throw new ScriptException( e );
 //		}
+		finally
+		{
+			thread.swapScope( s );
+		}
 	}
 
 	static public Object eval( Expression expression, Object scope )

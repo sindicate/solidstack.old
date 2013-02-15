@@ -48,4 +48,9 @@ public class MapScope extends AbstractScope
 	{
 		throw new UnsupportedOperationException();
 	}
+
+	public Object apply( Symbol symbol, Map args )
+	{
+		throw new UnsupportedOperationException();
+	}
 }

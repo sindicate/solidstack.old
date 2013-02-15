@@ -1,6 +1,7 @@
 package solidstack.script.scopes;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 
 import solidstack.script.JavaException;
 import solidstack.script.Returning;
@@ -95,5 +96,10 @@ public class ObjectScope extends AbstractScope
 			throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), ThreadContext.get().cloneStack() );
 //			throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
 		}
+	}
+
+	public Object apply( Symbol symbol, Map args )
+	{
+		throw new UnsupportedOperationException();
 	}
 }
