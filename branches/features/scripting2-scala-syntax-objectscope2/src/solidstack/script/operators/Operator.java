@@ -202,20 +202,10 @@ abstract public class Operator implements Expression
 					return new Apply( name, left, right );
 				break;
 
-			case '[':
-				if( name.equals( "[" ) )
-					return new Index( name, left, right );
-				break;
-
 			case '.':
 				if( name.equals( "." ) )
 					return new Member( name, left, right );
 				break;
-
-//			case '#':
-//				if( name.equals( "#" ) )
-//					return new StaticMember( name, left, right );
-//				break;
 
 			case ':':
 				if( name.equals( ":" ) )
