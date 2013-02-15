@@ -31,6 +31,18 @@ public class CombinedScope extends AbstractScope
 	}
 
 	@Override
+	public Variable var( Symbol symbol, Object value )
+	{
+		return this.scope1.var( symbol, value );
+	}
+
+	@Override
+	public Value val( Symbol symbol, Object value )
+	{
+		return this.scope1.val( symbol, value );
+	}
+
+	@Override
 	public Object get( Symbol symbol )
 	{
 		try
@@ -56,15 +68,15 @@ public class CombinedScope extends AbstractScope
 		}
 	}
 
-	@Override
-	public Variable var( Symbol symbol, Object value )
+	public Object apply( Symbol symbol, Object... pars )
 	{
-		return this.scope1.var( symbol, value );
-	}
-
-	@Override
-	public Value val( Symbol symbol, Object value )
-	{
-		return this.scope1.val( symbol, value );
+		try
+		{
+			return this.scope1.apply( symbol, pars );
+		}
+		catch( UndefinedException e )
+		{
+			return this.scope2.apply( symbol, pars );
+		}
 	}
 }

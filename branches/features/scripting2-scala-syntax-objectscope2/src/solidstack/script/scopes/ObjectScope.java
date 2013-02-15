@@ -5,8 +5,10 @@ import java.lang.reflect.InvocationTargetException;
 import solidstack.script.JavaException;
 import solidstack.script.Returning;
 import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
 import solidstack.script.java.Java;
 import solidstack.script.java.MissingFieldException;
+import solidstack.script.objects.Util;
 import funny.Symbol;
 
 public class ObjectScope extends AbstractScope
@@ -16,6 +18,18 @@ public class ObjectScope extends AbstractScope
 	public ObjectScope( Object object )
 	{
 		this.object = object;
+	}
+
+	@Override
+	public Variable var( Symbol symbol, Object value )
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Value val( Symbol symbol, Object value )
+	{
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -58,84 +72,28 @@ public class ObjectScope extends AbstractScope
 		}
 	}
 
-//	@Override
-//	public Ref findRef( Symbol symbol )
-//	{
-//		return new ObjectRef( symbol.toString() );
-//	}
-
-	@Override
-	public Variable var( Symbol symbol, Object value )
+	public Object apply( Symbol symbol, Object... pars )
 	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Value val( Symbol symbol, Object value )
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	public class ObjectRef implements Ref
-	{
-		private String key; // TODO Not Symbol?
-
-		public ObjectRef( String key )
+		pars = Util.toJavaParameters( pars );
+		try
 		{
-			this.key = key;
+			return Java.invoke( this.object, symbol.toString(), pars );
 		}
-
-		public Object getObject()
+		catch( InvocationTargetException e )
 		{
-			return ObjectScope.this.object;
+			Throwable t = e.getCause();
+			if( t instanceof Returning )
+				throw (Returning)t;
+			throw new JavaException( t, ThreadContext.get().cloneStack() );
 		}
-
-		public Symbol getKey()
+		catch( Returning e )
 		{
-			return Symbol.apply( this.key );
+			throw e;
 		}
-
-		public Object get()
+		catch( Exception e )
 		{
-			try
-			{
-				return Java.get( ObjectScope.this.object, this.key ); // TODO Use resolve() instead.
-			}
-			catch( InvocationTargetException e )
-			{
-				Throwable t = e.getCause();
-				if( t instanceof Returning )
-					throw (Returning)t;
-				throw new JavaException( t, ThreadContext.get().cloneStack( /* TODO getLocation() */ ) );
-			}
-			catch( MissingFieldException e )
-			{
-				throw new ScopeException( "'" + this.key + "' undefined" );
-			}
-		}
-
-		public void set( Object value )
-		{
-			try
-			{
-				Java.set( ObjectScope.this.object, this.key, value ); // TODO Use resolve() instead.
-			}
-			catch( InvocationTargetException e )
-			{
-				Throwable t = e.getCause();
-				if( t instanceof Returning )
-					throw (Returning)t;
-				throw new JavaException( t, ThreadContext.get().cloneStack( /* TODO getLocation() */ ) );
-			}
-			catch( MissingFieldException e )
-			{
-				throw new ScopeException( "'" + this.key + "' undefined" );
-			}
-		}
-
-		public boolean isUndefined()
-		{
-			throw new UnsupportedOperationException(); // TODO
+			throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), ThreadContext.get().cloneStack() );
+//			throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
 		}
 	}
 }

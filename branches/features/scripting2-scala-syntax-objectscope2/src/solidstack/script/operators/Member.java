@@ -28,6 +28,7 @@ import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.java.Java;
 import solidstack.script.java.MissingFieldException;
+import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Type;
 import solidstack.script.objects.Util;
 import solidstack.script.scopes.Scope;
@@ -105,13 +106,20 @@ public class Member extends Operator
 	{
 		Object object = this.left.evaluate( thread );
 		String name = ( (Identifier)this.right ).getSymbol().toString();
+		Object[] pars = args != null ? Util.toArray( args.evaluate( thread ) ) : Util.EMPTY_ARRAY; // TODO What about named parameters?
+
+		if( object instanceof Scope ) // TODO And Map?
+		{
+			Object function = ( (Scope)object ).get( Symbol.apply( name ) );
+			Assert.isInstanceOf( function, FunctionObject.class );
+			return ( (FunctionObject)function ).call( thread, pars );
+		}
 
 //		ObjectMember ref = (ObjectMember)left;
 //		Object object = ref.getObject();
 //		String name = ref.getKey().toString();
 
-		Object[] pars = args != null ? Util.toArray( args.evaluate( thread ) ) : Util.EMPTY_ARRAY; // TODO Shouldn't this happen outside the try catch?
-		pars = Util.toJavaParameters( thread, pars );
+		pars = Util.toJavaParameters( pars );
 		thread.pushStack( getLocation() );
 		try
 		{

@@ -59,7 +59,7 @@ public class Apply extends Operator
 				thread.pushStack( getLocation() );
 				try
 				{
-					return Java.construct( cls, Util.toJavaParameters( thread, pars ) );
+					return Java.construct( cls, Util.toJavaParameters( pars ) );
 				}
 				finally
 				{
@@ -156,6 +156,21 @@ public class Apply extends Operator
 		if( this.left instanceof Member )
 			return ( (Member)this.left ).apply( thread, this.right );
 
+		if( this.left instanceof Identifier )
+		{
+			thread.pushStack( getLocation() );
+			try
+			{
+				return ( (Identifier)this.left ).apply( thread, this.right );
+			}
+			finally
+			{
+				thread.popStack();
+			}
+		}
+
+		// TODO What is still used below?
+
 		Object left = this.left.evaluate( thread );
 		if( left == null )
 			throw new ThrowException( "Function is null", thread.cloneStack( getLocation() ) );
@@ -164,7 +179,7 @@ public class Apply extends Operator
 		{
 			Class<?> cls = ( (Type)left ).theClass();
 			Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY; // TODO Shouldn't this happen outside the try catch?
-			pars = Util.toJavaParameters( thread, pars );
+			pars = Util.toJavaParameters( pars );
 			thread.pushStack( getLocation() );
 			try
 			{
@@ -241,7 +256,7 @@ public class Apply extends Operator
 		}
 
 		Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY; // TODO Shouldn't this happen outside the try catch?
-		pars = Util.toJavaParameters( thread, pars );
+		pars = Util.toJavaParameters( pars );
 		thread.pushStack( getLocation() );
 		try
 		{

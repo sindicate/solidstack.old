@@ -3,7 +3,6 @@ package solidstack.script.objects;
 import java.util.ArrayList;
 import java.util.List;
 
-import solidstack.script.ThreadContext;
 import solidstack.script.objects.FunctionObject.ParWalker;
 import solidstack.script.scopes.AbstractScope.Ref;
 
@@ -45,20 +44,8 @@ public class Util
 //		return result;
 //	}
 
-	static public Object[] toJavaParameters( ThreadContext thread, Object... pars )
+	static public Object[] toJavaParameters( Object... pars )
 	{
-//		// TODO Not all parameters need to be named here: example method( String, String, Map )
-//		if( pars.length > 0 && pars[ 0 ] instanceof Labeled )
-//		{
-//			pars = toNamedParameters( pars, thread );
-//			int count = pars.length;
-//			int index = 0;
-//			Map< String, Object> map = new HashMap<String, Object>();
-//			while( index < count )
-//				map.put( ( (Symbol)pars[ index++ ] ).toString(), pars[ index++ ] );
-//			return new Object[] { map };
-//		}
-
 		List<Object> result = new ArrayList<Object>();
 		ParWalker pw = new ParWalker( pars );
 		while( pw.hasNext() )

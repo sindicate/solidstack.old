@@ -16,6 +16,16 @@
 
 package solidstack.script.scopes;
 
+import java.lang.reflect.InvocationTargetException;
+
+import solidstack.script.JavaException;
+import solidstack.script.Returning;
+import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
+import solidstack.script.java.Java;
+import solidstack.script.objects.FunctionObject;
+import solidstack.script.objects.Type;
+import solidstack.script.objects.Util;
 import funny.Symbol;
 
 
@@ -31,6 +41,18 @@ public class ParameterScope extends AbstractScope
 	public ParameterScope( Scope parent )
 	{
 		this.parent = parent;
+	}
+
+	@Override
+	public Variable var( Symbol symbol, Object value )
+	{
+		return this.parent.var( symbol, value );
+	}
+
+	@Override
+	public Value val( Symbol symbol, Object value )
+	{
+		return this.parent.val( symbol, value );
 	}
 
 	@Override
@@ -56,34 +78,46 @@ public class ParameterScope extends AbstractScope
 			throw new ReadOnlyException();
 	}
 
-//	Value findLocalValue( Symbol symbol )
-//	{
-//		return this.values.get( symbol );
-//	}
-
-//	@Override
-//	public Ref findRef( Symbol symbol )
-//	{
-//		Value v = findLocalValue( symbol );
-//		if( v != null )
-//			return v;
-//		return this.parent.findRef( symbol );
-//	}
-
 	public void defParameter( Symbol symbol, Object value )
 	{
 		this.values.put( new Variable( symbol, value ) );
 	}
 
-	@Override
-	public Variable var( Symbol symbol, Object value )
+	public Object apply( Symbol symbol, Object... args )
 	{
-		return this.parent.var( symbol, value );
-	}
+		Value ref = this.values.get( symbol );
+		if( ref != null )
+		{
+			Object function = ref.get();
+			if( function instanceof FunctionObject )
+				return ( (FunctionObject)function ).call( ThreadContext.get(), args );
 
-	@Override
-	public Value val( Symbol symbol, Object value )
-	{
-		return this.parent.val( symbol, value );
+			Object[] pars = Util.toJavaParameters( args );
+			try
+			{
+				if( function instanceof Type )
+					return Java.invokeStatic( ( (Type)function ).theClass(), "apply", pars );
+				return Java.invoke( function, "apply", pars );
+			}
+			catch( InvocationTargetException e )
+			{
+				Throwable t = e.getCause();
+				if( t instanceof Returning )
+					throw (Returning)t;
+				throw new JavaException( t, ThreadContext.get().cloneStack() );
+			}
+			catch( Returning e )
+			{
+				throw e;
+			}
+			catch( Exception e )
+			{
+				throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), ThreadContext.get().cloneStack() );
+//				throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
+			}
+		}
+		if( this.parent != null )
+			return this.parent.apply( symbol, args );
+		throw new UndefinedException();
 	}
 }

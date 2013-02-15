@@ -33,4 +33,6 @@ public interface Scope
 
 	Object get( Symbol symbol );
 	void set( Symbol symbol, Object value );
+
+	Object apply( Symbol symbol, Object... pars );
 }
