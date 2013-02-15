@@ -98,10 +98,6 @@ public class Member extends Operator
 			return value;
 		}
 
-//		ObjectMember ref = (ObjectMember)left;
-//		Object object = ref.getObject();
-//		String name = ref.getKey().toString();
-
 		try
 		{
 			Java.set( object, symbol.toString(), value );
@@ -136,10 +132,6 @@ public class Member extends Operator
 			Assert.isInstanceOf( function, FunctionObject.class );
 			return ( (FunctionObject)function ).call( thread, pars );
 		}
-
-//		ObjectMember ref = (ObjectMember)left;
-//		Object object = ref.getObject();
-//		String name = ref.getKey().toString();
 
 		pars = Util.toJavaParameters( pars );
 		thread.pushStack( getLocation() );

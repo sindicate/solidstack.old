@@ -20,8 +20,6 @@ import java.lang.reflect.Array;
 import java.util.List;
 import java.util.Map;
 
-import funny.Symbol;
-
 import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
@@ -29,6 +27,7 @@ import solidstack.script.expressions.Expression;
 import solidstack.script.objects.Util;
 import solidstack.script.scopes.AbstractScope.Ref;
 import solidstack.script.scopes.ScopeException;
+import funny.Symbol;
 
 
 public class Index extends Operator
@@ -71,6 +70,7 @@ public class Index extends Operator
 		}
 	}
 
+	// TODO Are these refs still needed?
 	static class MapItemRef implements Ref
 	{
 		private Map map;

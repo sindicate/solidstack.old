@@ -57,12 +57,6 @@ public class MethodCall
 		return this.method.getParameterTypes();
 	}
 
-//	public Class getDeclaringClass()
-//	{
-//		// TODO What do we do if it is an extension method?
-//		return this.method.getDeclaringClass();
-//	}
-
 	public Object invoke() throws InvocationTargetException
 	{
 		try
@@ -113,13 +107,6 @@ public class MethodCall
 		return this.method;
 	}
 
-//	public String getName()
-//	{
-//		if( this.extMethod != null )
-//			return this.extMethod.getMethod().getName();
-//		return this.method.getName();
-//	}
-
 	public boolean isVararg()
 	{
 		if( this.constructor != null )
@@ -130,13 +117,6 @@ public class MethodCall
 			return false;
 		return ( this.method.getModifiers() & Modifier.TRANSIENT ) != 0;
 	}
-
-//	public Object getReturnType()
-//	{
-//		if( this.extMethod != null )
-//			return this.extMethod.getMethod().getReturnType();
-//		return this.method.getReturnType();
-//	}
 
 	public Object[] getArgs()
 	{

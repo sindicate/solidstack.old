@@ -88,43 +88,5 @@ public class Assign extends Operator
 			return ( (Member)this.left ).assign( thread, right );
 
 		throw new ThrowException( "Can't assign to a " + right.getClass().getName(), thread.cloneStack( getLocation() ) );
-
-//		Object left = this.left.evaluateRef( thread );
-//
-//		if( left instanceof Tuple )
-//		{
-//			if( right instanceof Tuple )
-//			{
-//				Tuple leftTuple = (Tuple)left;
-//				Tuple rightTuple = (Tuple)right;
-//				int len = leftTuple.size();
-//				Assert.isTrue( rightTuple.size() == len );
-//				for( int i = 0; i < len; i++ )
-//				{
-//					Object l = leftTuple.get( i );
-//					Object r = rightTuple.get( i );
-//					assign( l, r, thread );
-//				}
-//			}
-//			else
-//				throw new UnsupportedOperationException();
-//		}
-//		else
-//			assign( left, right, thread );
-//
-//		return right; // TODO Or should it be left? Or should we do assignment like this 1 => a?
 	}
-
-//	private void assign( Object var, Object value, ThreadContext thread )
-//	{
-//		Assert.notNull( var );
-//		value = Util.finalize( value );
-//		if( value instanceof Tuple )
-//			throw new ThrowException( "Can't assign tuples to variables", thread.cloneStack( getLocation() ) );
-//		if( value instanceof FunctionObject )
-//			( (FunctionObject)value ).setAssigned();
-//		if( !( var instanceof Ref ) )
-//			throw new ThrowException( "Can't assign to a " + var.getClass().getName(), thread.cloneStack( getLocation() ) );
-//		( (Ref)var ).set( value );
-//	}
 }

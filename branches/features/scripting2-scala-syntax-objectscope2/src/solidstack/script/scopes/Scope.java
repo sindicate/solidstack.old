@@ -30,9 +30,6 @@ public interface Scope
 	Variable var( Symbol symbol, Object value ); // TODO Rename to var
 	Value val( Symbol symbol, Object value );
 
-//	Ref findRef( Symbol symbol );
-//	Ref getRef( Symbol symbol );
-
 	Object get( Symbol symbol );
 	void set( Symbol symbol, Object value );
 

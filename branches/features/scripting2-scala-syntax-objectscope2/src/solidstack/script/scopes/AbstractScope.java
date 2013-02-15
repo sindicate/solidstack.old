@@ -24,27 +24,12 @@ import funny.Symbol;
 
 abstract public class AbstractScope implements Scope
 {
-//	abstract public Ref findRef( Symbol symbol );
-
-//	public Ref getRef( Symbol symbol )
-//	{
-//		Ref v = findRef( symbol );
-//		if( v == null )
-//			return new Undefined( symbol );
-//		return v;
-//	}
-
 	abstract public Object get( Symbol symbol );
 	abstract protected void set0( Symbol symbol, Object value );
 
 	abstract public Variable var( Symbol symbol, Object value );
 
 	abstract public Value val( Symbol symbol, Object value );
-
-//	public void set( String name, Object value )
-//	{
-//		set( Symbol.apply( name ), value );
-//	}
 
 	public void set( Symbol symbol, Object value )
 	{
@@ -57,15 +42,6 @@ abstract public class AbstractScope implements Scope
 			var( symbol, value );
 		}
 	}
-
-//	public boolean setIfExists( Symbol symbol, Object value )
-//	{
-//		Ref v = findRef( symbol );
-//		if( v == null )
-//			return false;
-//		v.set( value );
-//		return true;
-//	}
 
 	public void setAll( Map<String, ? extends Object> parameters )
 	{
