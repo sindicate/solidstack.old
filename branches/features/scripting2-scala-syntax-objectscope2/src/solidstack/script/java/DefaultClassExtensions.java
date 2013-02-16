@@ -526,7 +526,7 @@ public class DefaultClassExtensions
 		return stripMargin( string.toString() );
 	}
 
-	static public Object update( List list, int index, Object value )
+	static public Object update( List list, Object value, int index )
 	{
 		if( index >= list.size() )
 		{
@@ -540,13 +540,13 @@ public class DefaultClassExtensions
 		return value;
 	}
 
-	static public Object update( Map map, Object key, Object value )
+	static public Object update( Map map, Object value, Object key )
 	{
 		map.put( key, value );
 		return value;
 	}
 
-	static public Object update( Object[] array, int index, Object value )
+	static public Object update( Object[] array, Object value, int index )
 	{
 		array[ index ] = value;
 		return value;

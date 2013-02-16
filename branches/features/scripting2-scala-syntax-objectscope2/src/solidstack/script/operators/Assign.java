@@ -29,33 +29,41 @@ import solidstack.script.objects.Tuple;
 
 public class Assign extends Operator
 {
-	public Assign( String name, Expression left, Expression right)
+	public Assign( String name, Expression left, Expression right )
 	{
 		super( name, left, right );
 	}
 
-	public Object evaluate( ThreadContext thread )
+	@Override
+	public Expression compile()
 	{
+		super.compile();
+
+		// exp(args)=value ---> exp.update(value,args)
 		if( this.left instanceof Apply )
 		{
-			// TODO This is ugly
+			// Extract the parts
 			Apply apply = (Apply)this.left;
-			Expression object = apply.left;
-			if( !( object instanceof Identifier && ( (Identifier)object ).getSymbol().toString().equals( "var" ) ) )
+			Expression exp = apply.left;
+			Expression value = this.right;
+			Expression args = apply.right;
+
+			if( !( args instanceof BuildTuple ) ) // TODO And what if it is?
 			{
-				Expression pars = apply.right;
-				if( !( pars instanceof BuildTuple ) ) // TODO And what if it is?
-				{
-					Member update = new Member( ".", object, new Identifier( getLocation(), "update" ) );
-					BuildTuple par = new BuildTuple( ",", pars, this.right );
-					return new Apply( "(", update, par ).evaluate( thread );
-				}
+				// Build new expression from those parts
+				Member update = new Member( ".", exp, new Identifier( getLocation(), "update" ) );
+				return new Apply( "(", update, new BuildTuple( ",", value, args ) );
 			}
 		}
 
+		return this;
+	}
+
+	public Object evaluate( ThreadContext thread )
+	{
 		Object right = this.right.evaluate( thread );
 
-		if( this.left instanceof BuildTuple )
+		if( this.left instanceof BuildTuple ) // TODO Move to BuildTuple itself
 		{
 			if( !( right instanceof Tuple ) )
 				throw new UnsupportedOperationException();
@@ -74,8 +82,8 @@ public class Assign extends Operator
 			return right;
 		}
 
-		if( right instanceof Tuple )
-			throw new ThrowException( "Can't assign tuples to variables", thread.cloneStack( getLocation() ) );
+//		if( right instanceof Tuple )
+//			throw new ThrowException( "Can't assign tuples to variables", thread.cloneStack( getLocation() ) );
 
 		if( this.left instanceof Identifier )
 			return ( (Identifier)this.left ).assign( thread, right );

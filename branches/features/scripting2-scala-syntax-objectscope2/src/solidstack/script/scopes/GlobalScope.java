@@ -34,6 +34,7 @@ import java.util.Set;
 
 import solidstack.script.GlobalFunctions;
 import solidstack.script.functions.Return;
+import solidstack.script.objects.Tuple;
 import solidstack.script.objects.Type;
 import funny.Symbol;
 import funny.sql.JDBC;
@@ -117,5 +118,6 @@ public class GlobalScope extends DefaultScope
 		val( Symbol.apply( "JDBC" ), new Type( JDBC.class ) );
 		val( Symbol.apply( "Scope" ), new Type( Scope.class ) );
 		val( Symbol.apply( "Symbol" ), new Type( Symbol.class ) );
+		val( Symbol.apply( "Tuple" ), new Type( Tuple.class ) );
 	}
 }

@@ -390,7 +390,6 @@ public class ScriptTests extends Util
 		// TODO Add Array
 		test( "list = List( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ); list( 3 )", 4 );
 		test( "list = LinkedList( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ); list( 3 )", 4 );
-		test( "set = Set( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ); set.contains( 3 ) && set( 3 )", true );
 		test( "array = List( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ).toArray(); array( 3 )", 4 );
 		test( "list = List(); list.size()", 0 );
 		test( "list = List(); list( 0 ) = 1", 1 );
@@ -409,17 +408,21 @@ public class ScriptTests extends Util
 
 		test( "set = Set( 0 ); set.size()", 1 );
 		test( "set = LinkedHashSet( 0, 1, 0 ); set.size()", 2 );
+		test( "set = Set( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ); set.contains( 3 ) && set( 4 )", true );
 
 		test( "props = Properties( \"prop1\" -> \"value1\" ); props.prop1", "value1" );
 
 		test( "array = loadClass( \"java.lang.reflect.Array\" ).newInstance( loadClass( \"java.lang.String\" ), 10 ); array.size()", 10 );
 		test( "array = loadClass( \"java.lang.reflect.Array\" ).newInstance( loadClass( \"int\" ), 10 ); array.size()", 10 );
 
+		test( "scope = Scope(); scope.test = 1; scope.test", 1 );
 		test( "scope = Scope( \"test\" -> 1, 'test2 -> 2 ); scope.test", 1 );
 		test( "scope = Scope(); with( scope )( test = 1 ); scope.test", 1 );
 		test( "scope = Scope(); compile( \"test = 1\" ).eval( scope ); scope.test", 1 );
 //		test( "scope = Scope(); x = =>( test = 1 ); x.eval( scope ); scope.test", 1 );
 //		test( "scope = Scope(); scope.do( test = 1 ); scope.test", 1 );
+
+		test( "tuple = Tuple( 1, 2, 3 ); tuple( 0 )", 1 );
 
 		eval( "( a => a )( null )" );
 		eval( "( a => a )( if( false; 1 ) )" );
@@ -478,8 +481,10 @@ public class ScriptTests extends Util
 		test( "a = List( 1, List( 2, 3, 4 ), 5 ); ( (a,b,c) => a+b+c )( *a( 1 ) )", 9 );
 
 		fail( "f = a => (); f( 1, 2, 3 );", ScriptException.class, "Too many parameters" );
-		fail( "a = *List( 1, 2, 3 ); ( b, c, d ) = a; b + c + d", ScriptException.class, "Can't assign tuples to variables" );
-		fail( "a = ( 1, 2, 3 ); ( b, c, d ) = a; b + c + d", ScriptException.class, "Can't assign tuples to variables" );
+		test( "a = *List( 1, 2, 3 ); ( b, c, d ) = a; b + c + d", 6 );
+		test( "a = ( 1, 2, 3 ); ( b, c, d ) = a; b + c + d", 6 );
+		test( "list = List( 0 ); map = Map( 1 -> 2 ); ( list( 0 ), map( 1 ), z ) = ( 3, 4, 5 ); list( 0 ) + map( 1 ) + z", 12 );
+		// TODO ( list(1), z ) = ( x, y ) becomes: $ = ( x, y ); ( list.update($0,1), z = $1 )
 
 		// TODO Key value tuples for named parameters?
 	}
@@ -667,7 +672,7 @@ public class ScriptTests extends Util
 		fail( "f()", ScriptException.class, "'f' undefined" );
 		fail( "f = null; f()", ScriptException.class, "Function is null" );
 		fail( "f = 1; f()", ScriptException.class, "No such method: java.lang.Integer.apply()" );
-		fail( "a = ( 1, 2 )", ScriptException.class, "Can't assign tuples to variables" );
+//		fail( "a = ( 1, 2 )", ScriptException.class, "Can't assign tuples to variables" );
 //		fail( "f = null; f[]", ScriptException.class, "Null can't be indexed" );
 //		fail( "f = 1; f[]", ScriptException.class, "Missing index" );
 //		fail( "f = 1; f[ 1 ]", ScriptException.class, "Can't index a java.lang.Integer" );

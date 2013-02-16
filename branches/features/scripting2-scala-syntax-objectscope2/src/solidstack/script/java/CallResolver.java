@@ -72,6 +72,7 @@ public class CallResolver
 	}
 
 
+	// TODO prefer non-static access?
 	static private MethodCall resolveMethodCall0( CallResolutionContext context )
 	{
 		boolean needStatic = context.staticCall();
