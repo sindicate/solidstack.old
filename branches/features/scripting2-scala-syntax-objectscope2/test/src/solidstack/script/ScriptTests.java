@@ -475,16 +475,15 @@ public class ScriptTests extends Util
 		test( "( a, b, c ) = *List( 1, 2, 3 ); a + b + c", 6 );
 		test( "a = List( 1, 2, 3 ); ( b, c, d ) = *a; b + c + d", 6 );
 		test( "( 1, 2, 3 ).list().size()", 3 );
-//		test( "*a = ( 1, 2, 3 ); a.size()", 3 ); // TODO
-//		test( "( a, *b ) = ( 1, 2, 3 )", 3 ); TODO
-//		test( "( a, *b ) = ( *[ 1, 2 ], 3 )", 3 ); TODO
+//		test( "*a = ( 1, 2, 3 ); a.size()", 3 ); // TODO Can only assign tuple if *identifier
+//		test( "( a, *b ) = ( 1, 2, 3 )", 3 ); // TODO
+//		test( "( a, *b ) = ( *[ 1, 2 ], 3 )", 3 ); // TODO
 		test( "a = List( 1, List( 2, 3, 4 ), 5 ); ( (a,b,c) => a+b+c )( *a( 1 ) )", 9 );
 
 		fail( "f = a => (); f( 1, 2, 3 );", ScriptException.class, "Too many parameters" );
 		test( "a = *List( 1, 2, 3 ); ( b, c, d ) = a; b + c + d", 6 );
 		test( "a = ( 1, 2, 3 ); ( b, c, d ) = a; b + c + d", 6 );
-		test( "list = List( 0 ); map = Map( 1 -> 2 ); ( list( 0 ), map( 1 ), z ) = ( 3, 4, 5 ); list( 0 ) + map( 1 ) + z", 12 );
-		// TODO ( list(1), z ) = ( x, y ) becomes: $ = ( x, y ); ( list.update($0,1), z = $1 )
+		test( "list = List( 0 ); map = Map( true -> 2 ); ( list( 0 ), map( true ), z ) = ( 3, 4, 5 ); list( 0 ) + map( true ) + z", 12 );
 
 		// TODO Key value tuples for named parameters?
 	}
@@ -692,7 +691,7 @@ public class ScriptTests extends Util
 //		fail( "defined()", ScriptException.class, "defined() needs exactly one parameter" ); TODO
 //		fail( "defined( 1 )", ScriptException.class, "defined() needs a variable identifier as parameter" ); TODO?
 		fail( "print()", ScriptException.class, "'print' undefined" );
-		fail( "println()", ScriptException.class, "'println' undefined" );
+//		fail( "println()", ScriptException.class, "'println' undefined" );
 //		fail( "scope()", ScriptException.class, "scope() needs exactly one parameter" );
 //		fail( "scope( 1 )", ScriptException.class, "scope() needs a map parameter" );
 		failParse( "throw", "expression expected after 'throw'" );
@@ -832,6 +831,13 @@ public class ScriptTests extends Util
 	static public void prims() throws IOException
 	{
 		String script = readFile( "Prim's Minimum Spanning Tree.funny" );
+		eval( script );
+	}
+
+	@Test
+	static public void prims2() throws IOException
+	{
+		String script = readFile( "Prim's Minimum Spanning Tree2.funny" );
 		eval( script );
 	}
 

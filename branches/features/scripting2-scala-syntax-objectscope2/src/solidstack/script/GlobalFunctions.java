@@ -85,7 +85,13 @@ public class GlobalFunctions
 		return object;
 	}
 
-	public Object println( Object object )
+	public Object println()
+	{
+		System.out.println();
+		return null;
+	}
+
+	public Object println( Object object ) // TODO Vararg?
 	{
 		System.out.println( object.toString() ); // Or should we call toString() through reflection?
 		return object;

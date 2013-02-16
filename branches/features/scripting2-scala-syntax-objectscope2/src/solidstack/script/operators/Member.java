@@ -24,6 +24,7 @@ import solidstack.script.JavaException;
 import solidstack.script.Returning;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
+import solidstack.script.UndefinedPropertyException;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.java.Java;
@@ -33,6 +34,7 @@ import solidstack.script.objects.Type;
 import solidstack.script.objects.Util;
 import solidstack.script.scopes.Scope;
 import solidstack.script.scopes.ScopeException;
+import solidstack.script.scopes.UndefinedException;
 import funny.Symbol;
 
 
@@ -54,7 +56,17 @@ public class Member extends Operator
 				// TODO Use the Java exception hierarchy
 				throw new ThrowException( "null reference: member: " + right.toString(), thread.cloneStack( getLocation() ) );
 			if( left instanceof Scope ) // TODO This is part of the OO we want
-				return ( (Scope)left ).get( right );
+			{
+				Scope scope = (Scope)left;
+				try
+				{
+					return scope.get( right );
+				}
+				catch( UndefinedException e )
+				{
+					throw new UndefinedPropertyException( right.toString(), thread.cloneStack( getLocation() ) );
+				}
+			}
 			if( left instanceof Map )
 				return ( (Map)left ).get( right.toString() );
 			try

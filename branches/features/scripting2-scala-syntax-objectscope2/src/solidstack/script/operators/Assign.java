@@ -17,12 +17,16 @@
 package solidstack.script.operators;
 
 import java.util.List;
+import java.util.ListIterator;
 
 import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
+import solidstack.script.expressions.Expressions;
 import solidstack.script.expressions.Identifier;
+import solidstack.script.expressions.Load;
+import solidstack.script.expressions.Save;
 import solidstack.script.expressions.Var;
 import solidstack.script.objects.Tuple;
 
@@ -54,6 +58,21 @@ public class Assign extends Operator
 				Member update = new Member( ".", exp, new Identifier( getLocation(), "update" ) );
 				return new Apply( "(", update, new BuildTuple( ",", value, args ) );
 			}
+		}
+		else if( this.left instanceof BuildTuple )
+		{
+			Save save = new Save( this.right.compile() );
+
+			ListIterator<Expression> i = ( (BuildTuple)this.left ).getExpressions().listIterator();
+			int j = 0;
+			while( i.hasNext() )
+			{
+				Expression expression = i.next();
+				expression = new Assign( "=", expression, new Load( j++ ) );
+				i.set( expression.compile() );
+			}
+
+			return new Expressions( save, this.left );
 		}
 
 		return this;

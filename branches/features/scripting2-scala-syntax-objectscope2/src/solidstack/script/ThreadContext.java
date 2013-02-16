@@ -21,6 +21,7 @@ import java.util.Deque;
 
 import solidstack.io.SourceLocation;
 import solidstack.lang.Assert;
+import solidstack.script.objects.Tuple;
 import solidstack.script.scopes.Scope;
 
 public class ThreadContext
@@ -41,6 +42,7 @@ public class ThreadContext
 
 	private Scope scope;
 	private Deque<SourceLocation> stack = new ArrayDeque<SourceLocation>();
+	private Tuple saved;
 
 	private ThreadContext()
 	{
@@ -85,5 +87,20 @@ public class ThreadContext
 		SourceLocation[] result = cloneStack();
 		popStack();
 		return result;
+	}
+
+	public void save( Object tuple )
+	{
+//		Assert.isNull( this.saved );
+		if( tuple instanceof Tuple )
+			this.saved = (Tuple)tuple;
+		else
+			this.saved = new Tuple( tuple );
+	}
+
+	public Object load( int index )
+	{
+		Assert.notNull( this.saved );
+		return this.saved.get( index );
 	}
 }

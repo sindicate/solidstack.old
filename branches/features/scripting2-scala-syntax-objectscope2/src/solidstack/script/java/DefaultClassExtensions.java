@@ -284,6 +284,22 @@ public class DefaultClassExtensions
 		return result;
 	}
 
+	static public Object find( Iterable iterable, Function function )
+	{
+		return find( iterable.iterator(), function );
+	}
+
+	static public Object find( Iterator iterator, Function function )
+	{
+		while( iterator.hasNext() )
+		{
+			Object object = iterator.next();
+			if( Script.isTrue( function.call( object ) ) )
+				return object;
+		}
+		return null;
+	}
+
 	static public Object fold( Iterable iterable, Object start, Function function )
 	{
 		return fold( iterable.iterator(), start, function );
