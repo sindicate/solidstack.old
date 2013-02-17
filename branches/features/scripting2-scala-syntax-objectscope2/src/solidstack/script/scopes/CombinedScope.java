@@ -33,15 +33,15 @@ public class CombinedScope extends AbstractScope
 	}
 
 	@Override
-	public Variable var( Symbol symbol, Object value )
+	public void var( Symbol symbol, Object value )
 	{
-		return this.scope1.var( symbol, value );
+		this.scope1.var( symbol, value );
 	}
 
 	@Override
-	public Value val( Symbol symbol, Object value )
+	public void val( Symbol symbol, Object value )
 	{
-		return this.scope1.val( symbol, value );
+		this.scope1.val( symbol, value );
 	}
 
 	@Override

@@ -35,6 +35,7 @@ import solidstack.io.memfs.Folder;
 import solidstack.io.memfs.Resource;
 import solidstack.script.java.Java;
 import solidstack.script.objects.PString;
+import solidstack.script.objects.Type;
 import solidstack.script.scopes.DefaultScope;
 import solidstack.script.scopes.GlobalScope;
 import solidstack.script.scopes.Scope;
@@ -253,7 +254,7 @@ public class ScriptTests extends Util
 	}
 
 	@Test
-	static public void test13()
+	static public void javaMethods()
 	{
 		DefaultScope scope = new DefaultScope();
 		scope.set( Symbol.apply( "s" ), "sinterklaas" );
@@ -283,7 +284,7 @@ public class ScriptTests extends Util
 	}
 
 	@Test
-	static public void test13_2()
+	static public void javaConstructors()
 	{
 		DefaultScope scope = new DefaultScope();
 		test( "c = loadClass( \"solidstack.script.ScriptTests$TestObject1\" );", scope, TestObject1.class );
@@ -298,6 +299,38 @@ public class ScriptTests extends Util
 
 		test( "c2 = loadClass( \"solidstack.script.ScriptTests$TestObject2\" );", scope, TestObject2.class );
 		test( "new c2( 1, 1 ).value", scope, 1 );
+	}
+
+	@Test
+	static public void objectScope()
+	{
+		// statics on class
+		test( "static1 + ( static1 = \"***\"; static1 )", new Type( TestObject4.class ), "static1***" ); TestObject4.static1 = "static1";
+		test( "static2()", new Type( TestObject4.class ), "static2" );
+		test( "getStatic3() + ( setStatic3( \"***\" ); getStatic3() )", new Type( TestObject4.class ), "static3***" ); TestObject4._static3 = "static3";
+		test( "static3 + ( static3 = \"***\"; static3 )", new Type( TestObject4.class ), "static3***" ); TestObject4._static3 = "static3";
+
+		// statics on object
+		test( "static1 + ( static1 = \"***\"; static1 )", new TestObject4(), "static1***" ); TestObject4.static1 = "static1";
+		test( "static2()", new TestObject4(), "static2" );
+		test( "getStatic3() + ( setStatic3( \"***\" ); getStatic3() )", new TestObject4(), "static3***" ); TestObject4._static3 = "static3";
+		test( "static3 + ( static3 = \"***\"; static3 )", new TestObject4(), "static3***" ); TestObject4._static3 = "static3";
+
+		// non-statics on object
+		test( "string1 + ( string1 = \"***\"; string1 )", new TestObject4(), "string1***" );
+		test( "string2()", new TestObject4(), "string2" );
+		test( "getString3() + ( setString3( \"***\" ); getString3() )", new TestObject4(), "string3***" );
+		test( "string3 + ( string3 = \"***\"; string3 )", new TestObject4(), "string3***" );
+	}
+
+	@Test
+	static public void mapScope()
+	{
+		Map map = new HashMap();
+		map.put( "key1", "value1" );
+		test( "key1 + ( key1 = \"***\"; key1 )", map, "value1***" );
+		test( "key2 = \"***\"; key2", map, "***" ); // TODO Test that key2 is undefined before it has been assigned a value
+		test( "f = x => x*x; f(3) + f(x=4)", map, 25 );
 	}
 
 	@Test
@@ -536,7 +569,7 @@ public class ScriptTests extends Util
 	}
 
 	@Test
-	static public void test25()
+	static public void conversions()
 	{
 //		test( "a as boolean", false ); // TODO Should this fail or give 'false'?
 		test( "null as boolean", false );
@@ -936,7 +969,20 @@ public class ScriptTests extends Util
 
 	static public class TestObject4
 	{
+		static public String static1 = "static1";
+		static public String static2() { return "static2"; }
+		static private String _static3 = "static3";
+		static public String getStatic3() { return _static3; }
+		static public void setStatic3( String value ) { _static3 = value; }
+
+		public String string1 = "string1";
+		public String string2() { return "string2"; }
+		private String _string3 = "string3";
+		public String getString3() { return this._string3; }
+		public void setString3( String value ) { this._string3 = value; }
+
 		public int field1 = 1;
+
 		private int _field2 = 2;
 		public int getField2() { return this._field2; }
 		public void setField2( int value ) { this._field2 = value; }

@@ -10,6 +10,7 @@ import solidstack.script.ThrowException;
 import solidstack.script.java.Java;
 import solidstack.script.java.MissingFieldException;
 import solidstack.script.java.MissingMethodException;
+import solidstack.script.objects.Type;
 import solidstack.script.objects.Util;
 import funny.Symbol;
 
@@ -23,13 +24,13 @@ public class ObjectScope extends AbstractScope
 	}
 
 	@Override
-	public Variable var( Symbol symbol, Object value )
+	public void var( Symbol symbol, Object value )
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public Value val( Symbol symbol, Object value )
+	public void val( Symbol symbol, Object value )
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -39,6 +40,8 @@ public class ObjectScope extends AbstractScope
 	{
 		try
 		{
+			if( this.object instanceof Type )
+				return Java.getStatic( ( (Type)this.object ).theClass(), symbol.toString() );
 			return Java.get( this.object, symbol.toString() ); // TODO Use resolve() instead.
 		}
 		catch( InvocationTargetException e )
@@ -59,7 +62,10 @@ public class ObjectScope extends AbstractScope
 	{
 		try
 		{
-			Java.set( this.object, symbol.toString(), value ); // TODO Use resolve() instead.
+			if( this.object instanceof Type )
+				Java.setStatic( ( (Type)this.object ).theClass(), symbol.toString(), value );
+			else
+				Java.set( this.object, symbol.toString(), value ); // TODO Use resolve() instead.
 		}
 		catch( InvocationTargetException e )
 		{
@@ -74,12 +80,14 @@ public class ObjectScope extends AbstractScope
 		}
 	}
 
-	public Object apply( Symbol symbol, Object... pars )
+	public Object apply( Symbol symbol, Object... args )
 	{
-		pars = Util.toJavaParameters( pars );
+		args = Util.toJavaParameters( args );
 		try
 		{
-			return Java.invoke( this.object, symbol.toString(), pars );
+			if( this.object instanceof Type )
+				return Java.invokeStatic( ( (Type)this.object ).theClass(), symbol.toString(), args );
+			return Java.invoke( this.object, symbol.toString(), args );
 		}
 		catch( InvocationTargetException e )
 		{

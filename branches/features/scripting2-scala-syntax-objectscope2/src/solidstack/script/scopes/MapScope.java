@@ -14,13 +14,13 @@ public class MapScope extends AbstractScope
 	}
 
 	@Override
-	public Variable var( Symbol symbol, Object value )
+	public void var( Symbol symbol, Object value )
 	{
-		throw new UnsupportedOperationException();
+		this.map.put( symbol.toString(), value );
 	}
 
 	@Override
-	public Value val( Symbol symbol, Object value )
+	public void val( Symbol symbol, Object value )
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -39,18 +39,18 @@ public class MapScope extends AbstractScope
 	@Override
 	protected void set0( Symbol symbol, Object value )
 	{
-		if( !this.map.containsKey( symbol.toString() ) )
+		if( !this.map.containsKey( symbol.toString() ) ) // TODO Huh?
 			throw new UndefinedException();
 		this.map.put( symbol.toString(), value );
 	}
 
-	public Object apply( Symbol symbol, Object... pars )
+	public Object apply( Symbol symbol, Object... args )
 	{
-		throw new UnsupportedOperationException();
+		return DefaultScope.apply( get( symbol ), args );
 	}
 
 	public Object apply( Symbol symbol, Map args )
 	{
-		throw new UnsupportedOperationException();
+		return DefaultScope.apply( get( symbol ), args );
 	}
 }

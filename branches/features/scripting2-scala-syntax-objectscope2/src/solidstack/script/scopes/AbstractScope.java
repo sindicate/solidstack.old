@@ -27,9 +27,9 @@ abstract public class AbstractScope implements Scope
 	abstract public Object get( Symbol symbol );
 	abstract protected void set0( Symbol symbol, Object value );
 
-	abstract public Variable var( Symbol symbol, Object value );
+	abstract public void var( Symbol symbol, Object value );
 
-	abstract public Value val( Symbol symbol, Object value );
+	abstract public void val( Symbol symbol, Object value );
 
 	public void set( Symbol symbol, Object value )
 	{

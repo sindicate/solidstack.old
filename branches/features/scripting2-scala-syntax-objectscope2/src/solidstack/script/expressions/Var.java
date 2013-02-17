@@ -38,7 +38,8 @@ public class Var extends LocalizedExpression
 
 	public Object evaluate( ThreadContext thread )
 	{
-		return thread.getScope().var( this.identifier.getSymbol(), null );
+		thread.getScope().var( this.identifier.getSymbol(), null );
+		return null;
 	}
 
 	public Object assign( ThreadContext thread, Object value )

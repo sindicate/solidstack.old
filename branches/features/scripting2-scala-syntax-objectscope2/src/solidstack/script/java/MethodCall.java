@@ -65,7 +65,10 @@ public class MethodCall
 			{
 				if( !this.field.isAccessible() )
 					this.field.setAccessible( true );
-				return this.field.get( this.object );
+				if( this.args == null )
+					return this.field.get( this.object );
+				this.field.set( this.object, this.args[0] ); // TODO Parameter transformation?
+				return null;
 			}
 			if( this.args != null )
 				this.args = Types.transformArguments( getParameterTypes(), this.args ); // TODO Why this.args?

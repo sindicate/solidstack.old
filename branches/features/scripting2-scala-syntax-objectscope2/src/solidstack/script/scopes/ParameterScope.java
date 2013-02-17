@@ -45,15 +45,15 @@ public class ParameterScope extends AbstractScope
 	}
 
 	@Override
-	public Variable var( Symbol symbol, Object value )
+	public void var( Symbol symbol, Object value )
 	{
-		return this.parent.var( symbol, value );
+		this.parent.var( symbol, value );
 	}
 
 	@Override
-	public Value val( Symbol symbol, Object value )
+	public void val( Symbol symbol, Object value )
 	{
-		return this.parent.val( symbol, value );
+		this.parent.val( symbol, value );
 	}
 
 	@Override

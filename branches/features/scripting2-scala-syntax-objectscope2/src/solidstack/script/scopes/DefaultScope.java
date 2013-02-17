@@ -58,19 +58,15 @@ public class DefaultScope extends AbstractScope
 	}
 
 	@Override
-	public Variable var( Symbol symbol, Object value )
+	public void var( Symbol symbol, Object value )
 	{
-		Variable result = new Variable( symbol, value );
-		this.values.put( result );
-		return result;
+		this.values.put( new Variable( symbol, value ) );
 	}
 
 	@Override
-	public Value val( Symbol symbol, Object value )
+	public void val( Symbol symbol, Object value )
 	{
-		Value result = new Value( symbol, value );
-		this.values.put( result );
-		return result;
+		this.values.put( new Value( symbol, value ) );
 	}
 
 	@Override
@@ -100,59 +96,63 @@ public class DefaultScope extends AbstractScope
 	{
 		Value ref = this.values.get( symbol );
 		if( ref != null )
-		{
-			Object object = ref.get();
-			if( object == null )
-				throw new ThrowException( "Function is null", ThreadContext.get().cloneStack() );
-
-			if( object instanceof FunctionObject )
-				return ( (FunctionObject)object ).call( ThreadContext.get(), args );
-
-			Object[] pars = Util.toJavaParameters( args );
-			try
-			{
-				if( object instanceof Type )
-					return Java.invokeStatic( ( (Type)object ).theClass(), "apply", pars );
-				return Java.invoke( object, "apply", pars );
-			}
-			catch( InvocationTargetException e )
-			{
-				Throwable t = e.getCause();
-				if( t instanceof Returning )
-					throw (Returning)t;
-				throw new JavaException( t, ThreadContext.get().cloneStack() );
-			}
-			catch( Returning e )
-			{
-				throw e;
-			}
-			catch( Exception e )
-			{
-				throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), ThreadContext.get().cloneStack() );
-//				throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
-			}
-		}
+			return apply( ref.get(), args );
 		if( this.parent != null )
 			return this.parent.apply( symbol, args );
 		throw new UndefinedException();
+	}
+
+	static Object apply( Object object, Object... args )
+	{
+		if( object == null )
+			throw new ThrowException( "Function is null", ThreadContext.get().cloneStack() );
+
+		if( object instanceof FunctionObject )
+			return ( (FunctionObject)object ).call( ThreadContext.get(), args );
+
+		Object[] pars = Util.toJavaParameters( args );
+		try
+		{
+			if( object instanceof Type )
+				return Java.invokeStatic( ( (Type)object ).theClass(), "apply", pars );
+			return Java.invoke( object, "apply", pars );
+		}
+		catch( InvocationTargetException e )
+		{
+			Throwable t = e.getCause();
+			if( t instanceof Returning )
+				throw (Returning)t;
+			throw new JavaException( t, ThreadContext.get().cloneStack() );
+		}
+		catch( Returning e )
+		{
+			throw e;
+		}
+		catch( Exception e )
+		{
+			throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), ThreadContext.get().cloneStack() );
+//			throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
+		}
 	}
 
 	public Object apply( Symbol symbol, Map args )
 	{
 		Value ref = this.values.get( symbol );
 		if( ref != null )
-		{
-			Object object = ref.get();
-			if( object == null )
-				throw new ThrowException( "Function is null", ThreadContext.get().cloneStack() );
-
-			if( object instanceof FunctionObject )
-				return ( (FunctionObject)object ).call( ThreadContext.get(), args );
-
-			throw new UnsupportedOperationException();
-		}
+			return apply( ref.get(), args );
 		if( this.parent != null )
 			return this.parent.apply( symbol, args );
 		throw new UndefinedException();
+	}
+
+	static Object apply( Object object, Map args )
+	{
+		if( object == null )
+			throw new ThrowException( "Function is null", ThreadContext.get().cloneStack() );
+
+		if( object instanceof FunctionObject )
+			return ( (FunctionObject)object ).call( ThreadContext.get(), args );
+
+		throw new UnsupportedOperationException();
 	}
 }

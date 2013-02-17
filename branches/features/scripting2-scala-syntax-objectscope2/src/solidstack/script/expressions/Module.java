@@ -19,7 +19,6 @@ package solidstack.script.expressions;
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
-import solidstack.script.scopes.AbstractScope.Ref;
 import solidstack.script.scopes.CombinedScope;
 import solidstack.script.scopes.DefaultScope;
 import solidstack.script.scopes.GlobalScope;
@@ -69,7 +68,7 @@ public class Module extends LocalizedExpression
 			// Create module scope and define globally
 			DefaultScope module = new DefaultScope();
 			GlobalScope.instance.set( Symbol.apply( name ), module );
-			Ref initializedRef = module.var( Symbol.apply( "initialized" ), false );
+			module.var( Symbol.apply( "initialized" ), false ); // TODO Make constant symbol (any others?)
 
 			// Continue processing with the module scope
 			Scope scope = new CombinedScope( module, thread.getScope() );
@@ -77,7 +76,7 @@ public class Module extends LocalizedExpression
 			try
 			{
 				this.expression.evaluate( thread );
-				initializedRef.set( true );
+				module.var( Symbol.apply( "initialized" ), true );
 				return module;
 			}
 			finally
