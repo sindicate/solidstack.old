@@ -112,7 +112,10 @@ public class Member extends Operator
 
 		try
 		{
-			Java.set( object, symbol.toString(), value );
+			if( object instanceof Type )
+				Java.setStatic( ( (Type)object ).theClass(), symbol.toString(), value );
+			else
+				Java.set( object, symbol.toString(), value );
 			return value;
 		}
 		catch( InvocationTargetException e )

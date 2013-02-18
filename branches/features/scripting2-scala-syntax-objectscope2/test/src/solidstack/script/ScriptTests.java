@@ -302,6 +302,60 @@ public class ScriptTests extends Util
 	}
 
 	@Test
+	static public void javaObject()
+	{
+		Scope scope = new DefaultScope();
+		TestObject4 obj = new TestObject4();
+		scope.var( Symbol.apply( "obj" ), obj );
+		scope.var( Symbol.apply( "cls" ), new Type( TestObject4.class ) );
+
+		// statics on class
+		test( "cls.static1 + ( cls.static1 = \"***\"; cls.static1 )", scope, "static1***" ); TestObject4.static1 = "static1";
+		test( "cls.static2()", scope, "static2" );
+		test( "cls.getStatic3() + ( cls.setStatic3( \"***\" ); cls.getStatic3() )", scope, "static3***" ); TestObject4._static3 = "static3";
+		test( "cls.static3 + ( cls.static3 = \"***\"; cls.static3 )", scope, "static3***" ); TestObject4._static3 = "static3";
+
+		// statics on object
+		test( "obj.static1 + ( obj.static1 = \"***\"; obj.static1 )", scope, "static1***" ); TestObject4.static1 = "static1";
+		test( "obj.static2()", scope, "static2" );
+		test( "obj.getStatic3() + ( obj.setStatic3( \"***\" ); obj.getStatic3() )", scope, "static3***" ); TestObject4._static3 = "static3";
+		test( "obj.static3 + ( obj.static3 = \"***\"; obj.static3 )", scope, "static3***" ); TestObject4._static3 = "static3";
+
+		// non-statics on object
+		test( "obj.string1 + ( obj.string1 = \"***\"; obj.string1 )", scope, "string1***" );
+		test( "obj.string2()", scope, "string2" );
+		test( "obj.getString3() + ( obj.setString3( \"***\" ); obj.getString3() )", scope, "string3***" ); obj._string3 = "string3";
+		test( "obj.string3 + ( obj.string3 = \"***\"; obj.string3 )", scope, "string3***" );
+	}
+
+	@Test
+	static public void withObject()
+	{
+		Scope scope = new DefaultScope();
+		TestObject4 obj = new TestObject4();
+		scope.var( Symbol.apply( "obj" ), obj );
+		scope.var( Symbol.apply( "cls" ), new Type( TestObject4.class ) );
+
+		// statics on class
+		test( "with( cls ) static1 + ( static1 = \"***\"; static1 )", scope, "static1***" ); TestObject4.static1 = "static1";
+		test( "with( cls ) static2()", scope, "static2" );
+		test( "with( cls ) getStatic3() + ( setStatic3( \"***\" ); getStatic3() )", scope, "static3***" ); TestObject4._static3 = "static3";
+		test( "with( cls ) static3 + ( static3 = \"***\"; static3 )", scope, "static3***" ); TestObject4._static3 = "static3";
+
+		// statics on object
+		test( "with( obj ) static1 + ( static1 = \"***\"; static1 )", scope, "static1***" ); TestObject4.static1 = "static1";
+		test( "with( obj ) static2()", scope, "static2" );
+		test( "with( obj ) getStatic3() + ( setStatic3( \"***\" ); getStatic3() )", scope, "static3***" ); TestObject4._static3 = "static3";
+		test( "with( obj ) static3 + ( static3 = \"***\"; static3 )", scope, "static3***" ); TestObject4._static3 = "static3";
+
+		// non-statics on object
+		test( "with( obj ) string1 + ( string1 = \"***\"; string1 )", scope, "string1***" );
+		test( "with( obj ) string2()", scope, "string2" );
+		test( "with( obj ) getString3() + ( setString3( \"***\" ); getString3() )", scope, "string3***" ); obj._string3 = "string3";
+		test( "with( obj ) string3 + ( string3 = \"***\"; string3 )", scope, "string3***" );
+	}
+
+	@Test
 	static public void objectScope()
 	{
 		// statics on class
@@ -324,6 +378,26 @@ public class ScriptTests extends Util
 	}
 
 	@Test
+	static public void javaMap()
+	{
+		DefaultScope scope = new DefaultScope();
+		Map map = new HashMap();
+		map.put( "key1", "value1" );
+		scope.var( Symbol.apply( "map" ), map );
+		test( "map.key1 + ( map.key1 = \"***\"; map.key1 )", scope, "value1***" );
+	}
+
+	@Test
+	static public void withMap()
+	{
+		DefaultScope scope = new DefaultScope();
+		Map map = new HashMap();
+		map.put( "key1", "value1" );
+		scope.var( Symbol.apply( "map" ), map );
+		test( "with( map ) key1 + ( key1 = \"***\"; key1 )", scope, "value1***" );
+	}
+
+	@Test
 	static public void mapScope()
 	{
 		Map map = new HashMap();
@@ -334,7 +408,7 @@ public class ScriptTests extends Util
 	}
 
 	@Test
-	static public void test14()
+	static public void multiAssign()
 	{
 		test( "( a, b ) = ( 1, 2 ); a + b", 3 );
 		test( "( a, b ) = ( 1, 2 ); a + b", 3 );
@@ -495,7 +569,7 @@ public class ScriptTests extends Util
 	}
 
 	@Test
-	static public void test22()
+	static public void varargAndSpread()
 	{
 		test( "f = (a,b,c) => a+b+c; g = (*a) => f(*a); g(1,2,3)", 6 );
 		test( "f = *a => \"sinterklaas\".charAt( *a ); f( 1 )", 'i' );
@@ -522,7 +596,7 @@ public class ScriptTests extends Util
 	}
 
 	@Test
-	static public void testNamedParameters()
+	static public void namedParameters()
 	{
 		// TODO Calling default global methods with named parameter
 		test( "f = (a,b,c) => a; f( b = 1, c = 2, a = 3 )", 3 );
@@ -551,7 +625,7 @@ public class ScriptTests extends Util
 //	}
 
 	@Test
-	static public void test24()
+	static public void symbols()
 	{
 		Symbol real1 = Symbol.apply( "symbol" );
 		Symbol real2 = Symbol.apply( "symbol" );
@@ -688,7 +762,7 @@ public class ScriptTests extends Util
 	}
 
 	@Test
-	static public void test27()
+	static public void errors()
 	{
 		DefaultScope scope = new DefaultScope();
 		scope.set( Symbol.apply( "o1" ), new TestObject1() );
@@ -760,67 +834,6 @@ public class ScriptTests extends Util
 		test( "List( 1, 2, 3 ).filter( n => () )", Arrays.asList() );
 		test( "List( 1, 2, 3 ).map( n => s\"${n}.0\".toString() )", Arrays.asList( "1.0", "2.0", "3.0" ) );
 		test( "List( 1, 2, 3 ).fold( 0, ( a, b ) => a + b )", 6 );
-	}
-
-	@Test
-	static public void test30()
-	{
-		Object scope = new TestObject4();
-		test( "field1", scope, 1 );
-		test( "field1 = 2; field2", scope, 2 );
-		test( "field2", scope, 2 );
-		test( "field2 = 3; field2", scope, 3 );
-		test( "getField2()", scope, 3 );
-		test( "setField2( 4 ); field2", scope, 4 );
-
-		Scope scope2 = new DefaultScope();
-		scope2.var( Symbol.apply( "obj" ), new TestObject4() );
-		test( "with( obj ) field1", scope2, 1 );
-		test( "with( obj ) ( field1 = 2; field2 )", scope2, 2 );
-		test( "with( obj ) field2", scope2, 2 );
-		test( "with( obj ) ( field2 = 3; field2 )", scope2, 3 );
-		test( "with( obj ) getField2()", scope2, 3 );
-		test( "with( obj ) ( setField2( 4 ); field2 )", scope2, 4 );
-	}
-
-	@Test
-	static public void test31()
-	{
-		Object object = new TestObject4();
-		DefaultScope scope = new DefaultScope();
-		scope.var( Symbol.apply( "o" ), object );
-		test( "o.field1", scope, 1 );
-		test( "o.field1 = 2; o.field2", scope, 2 );
-		test( "o.field2", scope, 2 );
-		test( "o.field2 = 3; o.field2", scope, 3 );
-		test( "o.getField2()", scope, 3 );
-		test( "o.setField2( 4 ); o.field2", scope, 4 );
-	}
-
-	@Test
-	static public void test32()
-	{
-		Map scope = new HashMap();
-		scope.put( "field1", 1 );
-		scope.put( "field2", 2 );
-		test( "field1", scope, 1 );
-		test( "field1 = 2; field2", scope, 2 );
-		test( "field2", scope, 2 );
-		test( "field2 = 3; field2", scope, 3 );
-	}
-
-	@Test
-	static public void test33()
-	{
-		Map map = new HashMap();
-		map.put( "field1", 1 );
-		map.put( "field2", 2 );
-		DefaultScope scope = new DefaultScope();
-		scope.var( Symbol.apply( "o" ), map );
-		test( "o.field1", scope, 1 );
-		test( "o.field1 = 2; o.field2", scope, 2 );
-		test( "o.field2", scope, 2 );
-		test( "o.field2 = 3; o.field2", scope, 3 );
 	}
 
 	@Test
@@ -980,11 +993,5 @@ public class ScriptTests extends Util
 		private String _string3 = "string3";
 		public String getString3() { return this._string3; }
 		public void setString3( String value ) { this._string3 = value; }
-
-		public int field1 = 1;
-
-		private int _field2 = 2;
-		public int getField2() { return this._field2; }
-		public void setField2( int value ) { this._field2 = value; }
 	}
 }
