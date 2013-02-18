@@ -104,79 +104,46 @@ public class Apply extends Operator
 				args.put( ( (Identifier)assign.left ).getSymbol(), assign.right.evaluate( thread ) ); // TODO Error message
 			}
 
-			if( left instanceof Member )
-				return ( (Member)left ).apply( thread, args );
-
-			if( left instanceof Identifier )
+			thread.pushStack( getLocation() );
+			try
 			{
-				thread.pushStack( getLocation() );
-				try
-				{
+				if( left instanceof Member )
+					return ( (Member)left ).apply( thread, args );
+
+				if( left instanceof Identifier )
 					return ( (Identifier)left ).apply( thread, args );
-				}
-				finally
-				{
-					thread.popStack();
-				}
-			}
 
-			Object l = left.evaluate( thread );
-
-			if( l instanceof FunctionObject )
-			{
-				thread.pushStack( getLocation() );
-				try
-				{
+				Object l = left.evaluate( thread );
+				if( l instanceof FunctionObject )
 					return ( (FunctionObject)l ).call( thread, args );
-				}
-				finally
-				{
-					thread.popStack();
-				}
-			}
 
-			throw new UnsupportedOperationException();
+				throw new ThrowException( "Can't apply named parameters to a Java object", thread.cloneStack() );
+			}
+			finally
+			{
+				thread.popStack();
+			}
 		}
-		else
-		{
-			for( Expression expression : vals )
-				if( expression instanceof Assign )
-					throw new ThrowException( "All parameters must be named", thread.cloneStack( expression.getLocation() ) );
-			Object[] args = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY;
 
+		for( Expression expression : vals )
+			if( expression instanceof Assign )
+				throw new ThrowException( "All parameters must be named", thread.cloneStack( expression.getLocation() ) );
+		Object[] args = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY;
+
+		thread.pushStack( getLocation() );
+		try
+		{
 			if( left instanceof Member )
 				return ( (Member)left ).apply( thread, args );
 
 			if( left instanceof Identifier )
-			{
-				thread.pushStack( getLocation() ); // TODO And above at Member? And when getting/setting a property?
-				try
-				{
-					return ( (Identifier)left ).apply( thread, args );
-				}
-				finally
-				{
-					thread.popStack();
-				}
-			}
+				return ( (Identifier)left ).apply( thread, args );
 
 			Object l = left.evaluate( thread );
-
 			if( l instanceof FunctionObject )
-			{
-				thread.pushStack( getLocation() );
-				try
-				{
-					return ( (FunctionObject)l ).call( thread, args );
-				}
-				finally
-				{
-					thread.popStack();
-				}
-			}
+				return ( (FunctionObject)l ).call( thread, args );
 
 			args = Util.toJavaParameters( args );
-			thread.pushStack( getLocation() );
 			try
 			{
 				return Java.invoke( l, "apply", args );
@@ -195,12 +162,12 @@ public class Apply extends Operator
 			catch( Exception e )
 			{
 				throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), thread.cloneStack( getLocation() ) );
-//				throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
+	//			throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
 			}
-			finally
-			{
-				thread.popStack();
-			}
+		}
+		finally
+		{
+			thread.popStack();
 		}
 	}
 

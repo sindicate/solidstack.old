@@ -29,7 +29,6 @@ import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.java.Java;
 import solidstack.script.java.MissingFieldException;
-import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Type;
 import solidstack.script.objects.Util;
 import solidstack.script.scopes.Scope;
@@ -139,22 +138,26 @@ public class Member extends Operator
 	public Object apply( ThreadContext thread, Object[] pars )
 	{
 		Object object = this.left.evaluate( thread );
-		String name = ( (Identifier)this.right ).getSymbol().toString();
+		Symbol symbol = ( (Identifier)this.right ).getSymbol();
 
 		if( object instanceof Scope ) // TODO And Map?
 		{
-			Object function = ( (Scope)object ).get( Symbol.apply( name ) );
-			Assert.isInstanceOf( function, FunctionObject.class );
-			return ( (FunctionObject)function ).call( thread, pars );
+			try
+			{
+				return ( (Scope)object ).apply( symbol, pars );
+			}
+			catch( UndefinedException e )
+			{
+				throw new UndefinedPropertyException( symbol.toString(), thread.cloneStack() );
+			}
 		}
 
 		pars = Util.toJavaParameters( pars );
-		thread.pushStack( getLocation() );
 		try
 		{
 			if( object instanceof Type )
-				return Java.invokeStatic( ( (Type)object ).theClass(), name, pars );
-			return Java.invoke( object, name, pars );
+				return Java.invokeStatic( ( (Type)object ).theClass(), symbol.toString(), pars );
+			return Java.invoke( object, symbol.toString(), pars );
 		}
 		catch( InvocationTargetException e )
 		{
@@ -171,10 +174,6 @@ public class Member extends Operator
 		{
 			throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), thread.cloneStack( getLocation() ) );
 //			throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
-		}
-		finally
-		{
-			thread.popStack();
 		}
 	}
 

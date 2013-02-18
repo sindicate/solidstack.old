@@ -1,11 +1,14 @@
-called = call( "callee.funny" );
-called.test || throw( "Expected called.test" );
-println( called.test );
+result = call( "callee.funny" );
+result == "result" || throw "Expected 'result'";
+println( result );
+
+compileFile( "callee.funny" ).eval( this );
+if( !test ) throw "Expected test";
+println( test );
 
 loaded = load( "callee.funny" );
-loaded.eval( this );
-if( !test; throw( "Expected test" ) );
-println( test );
+if( !loaded.test ) throw "Expected loaded.test";
+println( loaded.test );
 
 // load, call, run, eval, exec, include, import, require, optional, module, compile
 // classpath: protocol will find 'system' modules

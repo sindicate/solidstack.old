@@ -11,6 +11,7 @@ import solidstack.io.UTFEncodingDetector;
 import solidstack.script.java.Java;
 import solidstack.script.objects.Type;
 import solidstack.script.scopes.DefaultScope;
+import solidstack.script.scopes.Scope;
 
 
 // TODO Not used yet
@@ -18,7 +19,7 @@ public class GlobalFunctions
 {
 	public Object call( String path )
 	{
-		return load( path ).eval( new DefaultScope() );
+		return compileFile( path ).eval( new DefaultScope() );
 	}
 
 	public Class classOf( Class cls )
@@ -31,7 +32,7 @@ public class GlobalFunctions
 		return Script.compile( source );
 	}
 
-	public Script load( String path )
+	public Script compileFile( String path )
 	{
 		ThreadContext thread = ThreadContext.get();
 
@@ -59,6 +60,13 @@ public class GlobalFunctions
 		{
 			throw new ThrowException( e.getMessage(), thread.cloneStack() );
 		}
+	}
+
+	public Scope load( String path )
+	{
+		Scope result = new DefaultScope();
+		compileFile( path ).eval( result );
+		return result;
 	}
 
 	public Type loadClass( Class cls )
