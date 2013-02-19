@@ -28,7 +28,6 @@ abstract public class AbstractScope implements Scope
 	abstract protected void set0( Symbol symbol, Object value );
 
 	abstract public void var( Symbol symbol, Object value );
-
 	abstract public void val( Symbol symbol, Object value );
 
 	public void set( Symbol symbol, Object value )
@@ -49,15 +48,7 @@ abstract public class AbstractScope implements Scope
 			set( Symbol.apply( entry.getKey() ), entry.getValue() );
 	}
 
-	static public interface Ref
-	{
-		Symbol getKey();
-		boolean isUndefined();
-		Object get();
-		void set( Object value );
-	}
-
-	static public class Value extends Entry implements Ref
+	static public class Value extends Entry
 	{
 		Object value;
 
@@ -96,29 +87,6 @@ abstract public class AbstractScope implements Scope
 		public void set( Object value )
 		{
 			this.value = value;
-		}
-	}
-
-	public class Undefined extends Entry implements Ref
-	{
-		Undefined( Symbol symbol )
-		{
-			super( symbol );
-		}
-
-		public Object get()
-		{
-			throw new ScopeException( "'" + getKey() + "' undefined" );
-		}
-
-		public void set( Object value )
-		{
-			var( getKey(), value );
-		}
-
-		public boolean isUndefined()
-		{
-			return true;
 		}
 	}
 }

@@ -494,7 +494,7 @@ public class ScriptTests extends Util
 		Assert.assertEquals( Java.forName( "int[][][][]", loader ), int[][][][].class );
 		Assert.assertEquals( Java.forName( "int[][]", loader ), int[][].class );
 
-		// TODO Add Array
+		// TODO Add Array: IntArray = Java.forName("int[]"); IntArray(1,2,3)
 		test( "list = List( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ); list( 3 )", 4 );
 		test( "list = LinkedList( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ); list( 3 )", 4 );
 		test( "array = List( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ).toArray(); array( 3 )", 4 );
@@ -933,7 +933,9 @@ public class ScriptTests extends Util
 	// TODO Reloadable scripts, need ResourceLoader (like the TemplateLoader)
 	// TODO Caching of loaded and compiled scripts (to execute repeatedly)
 	// TODO Modules and namespaces
-	// TODO Values with extra attributes. For example: val is a String, but val.kind is something else
+	// TODO Values with extra attributes. For example: val is a String, but val.kind is something else. Like a value scope.
+	// TODO Ant integration
+	// TODO Optional semicolons
 
 	@SuppressWarnings( "unused" )
 	static public class TestObject1

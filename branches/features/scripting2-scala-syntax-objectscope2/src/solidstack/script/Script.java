@@ -25,7 +25,6 @@ import solidstack.script.expressions.Expression;
 import solidstack.script.java.Types;
 import solidstack.script.objects.Tuple;
 import solidstack.script.objects.Util;
-import solidstack.script.scopes.AbstractScope.Ref;
 import solidstack.script.scopes.DefaultScope;
 import solidstack.script.scopes.MapScope;
 import solidstack.script.scopes.ObjectScope;
@@ -97,12 +96,6 @@ public class Script
 
 	static public boolean isTrue( Object object )
 	{
-		if( object instanceof Ref )
-		{
-			if( ( (Ref)object ).isUndefined() )
-				return false;
-			object = ( (Ref)object ).get();
-		}
 		if( object instanceof Tuple )
 		{
 			// TODO Maybe we shouldn't even do this

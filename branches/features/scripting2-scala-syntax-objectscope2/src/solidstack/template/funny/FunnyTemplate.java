@@ -22,8 +22,8 @@ import java.util.Map.Entry;
 
 import solidstack.io.FatalIOException;
 import solidstack.script.Script;
-import solidstack.script.objects.ObjectMember;
 import solidstack.script.scopes.DefaultScope;
+import solidstack.script.scopes.ObjectScope;
 import solidstack.template.ConvertingWriter;
 import solidstack.template.EncodingWriter;
 import solidstack.template.Template;
@@ -49,17 +49,15 @@ public class FunnyTemplate extends Template
 	@Override
 	public void apply( Map< String, Object > params, EncodingWriter writer )
 	{
-		ConvertingWriter out = new FunnyConvertingWriter( writer );
+		FunnyTemplateHelper helper = new FunnyTemplateHelper( this, params, writer );
 
-		DefaultScope scope = new DefaultScope();
+		DefaultScope scope = new DefaultScope( new ObjectScope( helper ) );
 		for( Entry<String, Object> entry : params.entrySet() )
 			scope.var( Symbol.apply( entry.getKey() ), entry.getValue() );
-		// TODO What about 'this'?
-		scope.var( OUT, out );
 
-		FunnyTemplateHelper helper = new FunnyTemplateHelper( this, params, writer );
-		// TODO In the future this must be done with a prototype
-		scope.var( Symbol.apply( "include" ), new ObjectMember( helper, Symbol.apply( "include" ) ) );
+		// TODO What about 'this'?
+		ConvertingWriter out = new FunnyConvertingWriter( writer );
+		scope.var( OUT, out );
 
 		this.script.eval( scope );
 
