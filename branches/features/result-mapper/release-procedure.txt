@@ -1,0 +1,18 @@
+Increase version number in 3 files
+ant dist
+ant maven:deploy
+	First, update to the revision on the trunk or branch, otherwise you won't get a correct revXXX
+	This deploys to the local solidbase-repository which is a checked out folder from subversion.
+	Check this folder, a folder should be created for the correct solidbase version
+		Open the jar and check MANIFEST.MF, version.properties
+ant javadoc
+	Add all new html always with Tortoise, otherwise the tsvn:autoprops will not work
+	Check the mime types of the html files
+commit
+Tag the revision that you want to deploy
+Check and commit this local solidbase-repository
+	Check that the size of the jar is indeed small (under 400KB)
+	Comment "Released 1.6.0-RC1"
+Check the content on the site
+	Add the jar to the downloads
+	Add a news item
