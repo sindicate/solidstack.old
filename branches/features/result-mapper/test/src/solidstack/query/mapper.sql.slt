@@ -1,0 +1,24 @@
+<%@ template version="1.0" language = "groovy" %>
+SELECT T.TABLEID, T.TABLENAME, T.TABLETYPE, T.SCHEMAID,
+	C.COLUMNNAME, C.COLUMNNUMBER
+FROM SYS.SYSTABLES T
+JOIN SYS.SYSCOLUMNS C ON C.REFERENCEID = T.TABLEID
+ORDER BY T.TABLENAME, C.COLUMNNAME
+<%
+
+queryModel = [
+	entity(
+		name: "systable",
+		attributes: [ "SCHEMAID", "TABLEID", "TABLENAME", "TABLETYPE" ],
+		key: "TABLEID",
+		collections: [ columns: "syscolumn" ]
+	),
+	entity(
+		name: "syscolumn",
+		attributes: [ "COLUMNNAME", "COLUMNNUMBER" ],
+		key: [ "TABLEID", "COLUMNNAME" ],
+		references: [ table: "systable" ]
+	)
+]
+
+%>
