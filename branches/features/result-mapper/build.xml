@@ -74,6 +74,7 @@
 		<pathelement location="${build.home}/classes" />
 		<path refid="compile.classpath" />
 		<path refid="testng.classpath" />
+		<fileset dir="test/lib" includes="fest*.jar" /> <!-- TODO split folder into compile and runtime -->
 	</path>
 
 	<path id="test_.classpath">

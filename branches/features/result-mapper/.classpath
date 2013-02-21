@@ -18,5 +18,7 @@
 	<classpathentry kind="lib" path="lib/spring31/org.springframework.beans-3.1.1.RELEASE.jar"/>
 	<classpathentry kind="lib" path="../ojdbc6-11.2.0.3.jar"/>
 	<classpathentry kind="lib" path="../mysql-connector-java-5.1.20-bin.jar"/>
+	<classpathentry kind="lib" path="test/lib/fest-assert-core-2.0M8.jar"/>
+	<classpathentry kind="lib" path="test/lib/fest-util-1.2.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

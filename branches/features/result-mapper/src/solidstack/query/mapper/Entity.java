@@ -1,0 +1,51 @@
+package solidstack.query.mapper;
+
+import java.util.Map;
+import java.util.Map.Entry;
+
+import solidstack.query.QueryException;
+
+public class Entity
+{
+	private String name;
+	private String[] attributes;
+	private String[] key;
+	private Map<String,Object> collections;
+	private Map<String,Object> references;
+
+	public Entity( String name, String[] attributes, String[] key, Map<String,Object> collections, Map<String,Object> references )
+	{
+		this.name = name;
+		this.attributes = attributes;
+		this.key = key;
+		this.collections = collections;
+		this.references = references;
+	}
+
+	public String getName()
+	{
+		return this.name;
+	}
+
+	public void compile( Map<String,Entity> entities )
+	{
+		if( this.collections != null )
+			for( Entry<String,Object> entry : this.collections.entrySet() )
+			{
+				String name = (String)entry.getValue();
+				Entity other = entities.get( name );
+				if( other == null )
+					throw new QueryException( "Entity '" + name + "' not found" );
+				entry.setValue( other );
+			}
+		if( this.references != null )
+			for( Entry<String,Object> entry : this.references.entrySet() )
+			{
+				String name = (String)entry.getValue();
+				Entity other = entities.get( name );
+				if( other == null )
+					throw new QueryException( "Entity '" + name + "' not found" );
+				entry.setValue( other );
+			}
+	}
+}

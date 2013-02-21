@@ -30,7 +30,6 @@ import org.testng.annotations.Test;
 import solidstack.io.Resource;
 import solidstack.io.Resources;
 import solidstack.io.SourceReaders;
-import solidstack.query.Query.PreparedSQL;
 import solidstack.template.ParseException;
 import solidstack.template.Template;
 import solidstack.template.TemplateCompiler;
@@ -183,7 +182,7 @@ public class Basic
 		params.put( "prefix", "SYST" );
 		params.put( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } );
 		Query query = queries.getQuery( "test.sql" );
-		PreparedSQL sql = query.getPreparedSQL( params );
+		PreparedQuery sql = query.prepare( params );
 
 		// TODO SQL or Sql?
 		assert sql.getSQL().equals( "SELECT *\n" +
@@ -240,7 +239,7 @@ public class Basic
 		params.put( "name", null );
 		params.put( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } );
 		Query query = queries.getQuery( "testjs.sql" );
-		PreparedSQL sql = query.getPreparedSQL( params );
+		PreparedQuery sql = query.prepare( params );
 
 		assert sql.getSQL().equals( "SELECT *\n" +
 				"FROM SYS.SYSTABLES\n" +
@@ -267,7 +266,7 @@ public class Basic
 				"SYSTABLES", "SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS", "SYSTABLES",
 				"SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS" } ) );
 		Query query = queries.getQuery( "bigin.sql" );
-		PreparedSQL sql = query.getPreparedSQL( params );
+		PreparedQuery sql = query.prepare( params );
 
 		assert sql.getSQL().equals( "SELECT *\n" +
 				"FROM SYS.SYSTABLES\n" +

@@ -6,7 +6,7 @@ JOIN SYS.SYSCOLUMNS C ON C.REFERENCEID = T.TABLEID
 ORDER BY T.TABLENAME, C.COLUMNNAME
 <%
 
-queryModel = [
+resultModel = [
 	entity(
 		name: "systable",
 		attributes: [ "SCHEMAID", "TABLEID", "TABLENAME", "TABLETYPE" ],

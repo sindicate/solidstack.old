@@ -16,6 +16,8 @@
 
 package solidstack.query;
 
+import static org.fest.assertions.api.Assertions.assertThat;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -42,6 +44,6 @@ public class Mapper
 		Query query = queries.getQuery( "mapper.sql" );
 
 		List< Map< String, Object > > result = query.listOfMaps( connection, Pars.EMPTY );
-		assert result.size() == 22;
+		assertThat( result.size() ).isGreaterThan( 142 );
 	}
 }

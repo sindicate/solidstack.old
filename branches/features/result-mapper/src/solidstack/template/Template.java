@@ -113,13 +113,15 @@ abstract public class Template
 		return writer.toString();
 	}
 
+	abstract public void apply( TemplateContext context );
+
 	/**
 	 * Applies the given parameters to the template and writes the output to the given encoding writer.
 	 *
 	 * @param params The parameters to apply to the template.
 	 * @param writer The writer to write the result to.
 	 */
-	abstract public void apply( Object params, EncodingWriter writer );
+	abstract public void apply( Object params, EncodingWriter writer ); // TODO Not needed anymore?
 
 	/**
 	 * Returns the EncodingWriter for the configured MIME type.

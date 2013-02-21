@@ -29,9 +29,9 @@ import org.hibernate.Session;
 import org.hibernate.jdbc.Work;
 
 import solidstack.lang.Assert;
+import solidstack.query.PreparedQuery;
 import solidstack.query.Query;
 import solidstack.query.Query.Language;
-import solidstack.query.Query.PreparedSQL;
 import solidstack.query.QuerySQLException;
 import solidstack.query.ResultHolder;
 import solidstack.query.jpa.JPASupport;
@@ -221,17 +221,17 @@ public class HibernateSupport
 	 */
 	static public org.hibernate.Query createQuery( Query query, Session session, Object args )
 	{
-		PreparedSQL preparedSql = query.getPreparedSQL( args );
+		PreparedQuery prepared = query.prepare( args );
 
 		org.hibernate.Query result;
 		if( query.getLanguage() == Language.SQL )
-			result = session.createSQLQuery( preparedSql.getSQL() );
+			result = session.createSQLQuery( prepared.getSQL() );
 		else if( query.getLanguage() == Language.HQL )
-			result = session.createQuery( preparedSql.getSQL() );
+			result = session.createQuery( prepared.getSQL() );
 		else
 			throw new QueryException( "Query type '" + query.getLanguage() + "' not recognized" );
 
-		List< Object > pars = preparedSql.getParameters();
+		List< Object > pars = prepared.getParameters();
 		int i = 0;
 		for( Object par : pars )
 		{

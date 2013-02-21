@@ -351,12 +351,12 @@ public class Query
 	 */
 	public PreparedStatement getPreparedStatement( Connection connection, Object args )
 	{
-		PreparedSQL preparedSql = getPreparedSQL( args );
-		List< Object > pars = preparedSql.getParameters();
+		PreparedQuery prepared = prepare( args );
+		List< Object > pars = prepared.getParameters();
 
 		try
 		{
-			PreparedStatement statement = connection.prepareStatement( preparedSql.getSQL() );
+			PreparedStatement statement = connection.prepareStatement( prepared.getSQL() );
 			int i = 0;
 			for( Object par : pars )
 			{
@@ -410,10 +410,11 @@ public class Query
 	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return A prepared SQL string together with a parameters array.
 	 */
-	public PreparedSQL getPreparedSQL( Object args )
+	public PreparedQuery prepare( Object args )
 	{
 		QueryEncodingWriter gsql = new QueryEncodingWriter();
-		this.template.apply( args, gsql );
+		QueryContext context = new QueryContext( this.template, args, gsql );
+		this.template.apply( context );
 
 		List< Object > pars = new ArrayList< Object >();
 		StringBuilder result = new StringBuilder();
@@ -429,46 +430,52 @@ public class Query
 				result.append( (String)values.get( i ) );
 
 		if( Loggers.execution.isDebugEnabled() )
+			log( result, pars );
+
+		if( context.getResultModel() != null )
+			context.getResultModel().compile();
+
+		return new PreparedQuery( result.toString(), pars, context.getResultModel() );
+	}
+
+	private void log( StringBuilder result, List<Object> pars )
+	{
+		StringBuilder debug = new StringBuilder();
+		debug.append( "Prepare statement: " ).append( this.template.getPath() ).append( '\n' );
+		if( Loggers.execution.isTraceEnabled() )
+			debug.append( result ).append( '\n' );
+		debug.append( "Parameters:" );
+		if( pars.size() == 0 )
+			debug.append( "\n\t(none)" );
+		int i = 1;
+		for( Object par : pars )
 		{
-			StringBuilder debug = new StringBuilder();
-			debug.append( "Prepare statement: " ).append( this.template.getPath() ).append( '\n' );
-			if( Loggers.execution.isTraceEnabled() )
-				debug.append( result ).append( '\n' );
-			debug.append( "Parameters:" );
-			if( pars.size() == 0 )
-				debug.append( "\n\t(none)" );
-			int i = 1;
-			for( Object par : pars )
+			debug.append( '\n' ).append( i++ ).append( ":\t" );
+			if( par == null )
+				debug.append( "(null)" );
+			else
 			{
-				debug.append( '\n' ).append( i++ ).append( ":\t" );
-				if( par == null )
-					debug.append( "(null)" );
+				debug.append( '(' ).append( par.getClass().getName() ).append( ')' );
+				if( !par.getClass().isArray() )
+					debug.append( par.toString() );
 				else
 				{
-					debug.append( '(' ).append( par.getClass().getName() ).append( ')' );
-					if( !par.getClass().isArray() )
-						debug.append( par.toString() );
-					else
+					debug.append( '[' );
+					int size = Array.getLength( par );
+					for( int j = 0; j < size; j++ )
 					{
-						debug.append( '[' );
-						int size = Array.getLength( par );
-						for( int j = 0; j < size; j++ )
-						{
-							if( j > 0 )
-								debug.append( ',' );
-							debug.append( Array.get( par, j ) );
-						}
-						debug.append( ',' );
+						if( j > 0 )
+							debug.append( ',' );
+						debug.append( Array.get( par, j ) );
 					}
+					debug.append( ',' );
 				}
 			}
-			if( Loggers.execution.isTraceEnabled() )
-				Loggers.execution.trace( debug.toString() );
-			else
-				Loggers.execution.debug( debug.toString() );
 		}
-
-		return new PreparedSQL( result.toString(), pars );
+		if( Loggers.execution.isTraceEnabled() )
+			Loggers.execution.trace( debug.toString() );
+		else
+			Loggers.execution.debug( debug.toString() );
 	}
 
 	static private void appendExtraQuestionMarks( StringBuilder s, int count )
@@ -477,49 +484,6 @@ public class Query
 		{
 			s.append( ",?" );
 			count--;
-		}
-	}
-
-	/**
-	 * Prepared SQL combined with a parameter list.
-	 *
-	 * @author René de Bloois
-	 */
-	static public class PreparedSQL
-	{
-		private String sql;
-		private List< Object > pars;
-
-		/**
-		 * Constructor.
-		 *
-		 * @param sql The prepared SQL string.
-		 * @param pars The parameter list.
-		 */
-		protected PreparedSQL( String sql, List< Object > pars )
-		{
-			this.sql = sql;
-			this.pars = pars;
-		}
-
-		/**
-		 * Returns the prepared SQL string.
-		 *
-		 * @return The prepared SQL string.
-		 */
-		public String getSQL()
-		{
-			return this.sql;
-		}
-
-		/**
-		 * Returns the parameter list.
-		 *
-		 * @return The parameter list.
-		 */
-		public List< Object > getParameters()
-		{
-			return this.pars;
 		}
 	}
 }
