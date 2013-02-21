@@ -27,4 +27,9 @@ public class ResultModel
 		for( Entity entity : this.entities )
 			entity.compile( entities );
 	}
+
+	public List<Entity> getEntities()
+	{
+		return this.entities;
+	}
 }

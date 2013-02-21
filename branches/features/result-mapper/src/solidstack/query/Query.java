@@ -22,7 +22,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -30,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import solidstack.lang.Assert;
 import solidstack.lang.SystemException;
@@ -37,6 +37,8 @@ import solidstack.query.hibernate.HibernateConnectedQueryAdapter;
 import solidstack.query.hibernate.HibernateQueryAdapter;
 import solidstack.query.jpa.JPAConnectedQueryAdapter;
 import solidstack.query.jpa.JPAQueryAdapter;
+import solidstack.query.mapper.Entity;
+import solidstack.query.mapper.Key;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.Template;
 
@@ -169,7 +171,8 @@ public class Query
 	{
 		try
 		{
-			PreparedStatement statement = getPreparedStatement( connection, args );
+			PreparedQuery prepared = prepare( args );
+			PreparedStatement statement = prepared.prepareStatement( connection );
 			return statement.executeQuery();
 		}
 		catch( SQLException e )
@@ -281,11 +284,13 @@ public class Query
 	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return A {@link List} of {@link Map}s.
 	 */
-	public List< Map< String, Object > > listOfMaps( Connection connection, Object args )
+	public List<Map<String,Object>> listOfMaps( Connection connection, Object args )
 	{
 		try
 		{
-			ResultSet resultSet = resultSet( connection, args );
+			PreparedQuery prepared = prepare( args );
+			PreparedStatement statement = prepared.prepareStatement( connection ); // FIXME We should close the statement here!
+			ResultSet resultSet = statement.executeQuery();
 			try
 			{
 				ResultSetMetaData metaData = resultSet.getMetaData();
@@ -296,8 +301,11 @@ public class Query
 				for( int col = 0; col < columnCount; col++ )
 					names.put( metaData.getColumnLabel( col + 1 ).toLowerCase( Locale.ENGLISH ), col );
 
-				List< Object[] > result = listOfArrays( resultSet, this.flyWeight );
-				return new ResultList( result, names );
+				List<Object[]> result = listOfArrays( resultSet, this.flyWeight );
+				ResultList resultList = new ResultList( result, names );
+				if( prepared.getResultModel() != null )
+					return transform( resultList, prepared.getResultModel() );
+				return resultList;
 			}
 			finally
 			{
@@ -351,33 +359,8 @@ public class Query
 	 */
 	public PreparedStatement getPreparedStatement( Connection connection, Object args )
 	{
-		PreparedQuery prepared = prepare( args );
-		List< Object > pars = prepared.getParameters();
-
-		try
-		{
-			PreparedStatement statement = connection.prepareStatement( prepared.getSQL() );
-			int i = 0;
-			for( Object par : pars )
-			{
-				if( par == null )
-				{
-					// Tested in Oracle with an INSERT
-					statement.setNull( ++i, Types.NULL );
-				}
-				else
-				{
-					Assert.isFalse( par instanceof Collection );
-					Assert.isFalse( par.getClass().isArray() );
-					statement.setObject( ++i, par );
-				}
-			}
-			return statement;
-		}
-		catch( SQLException e )
-		{
-			throw new QuerySQLException( e );
-		}
+		PreparedQuery query = prepare( args );
+		return query.prepareStatement( connection );
 	}
 
 	static private void appendParameter( Object object, String name, StringBuilder buildSql, List< Object > pars )
@@ -485,5 +468,80 @@ public class Query
 			s.append( ",?" );
 			count--;
 		}
+	}
+
+	// TODO Maybe this can be part of the ResultList
+	// TODO result & model relate case insensitive with each other
+	private List<Map<String,Object>> transform( ResultList result, ResultModel model )
+	{
+		// TODO We can introduce cross sections from a ResultList: List<Object[]> with Object[]s from the original ResultSet and a subset of the keys
+		// Well actually that is not that smart, the original ResultList object arrays may consume much more than the resulting object arrays because of duplicates
+
+		List<Entity> entities = model.getEntities();
+		List<Map<Key,Map<String,Object>>> lists = new ArrayList<Map<Key,Map<String,Object>>>();
+		List<List<Map<String,Object>>> results = new ArrayList<List<Map<String,Object>>>();
+		for( Entity entity : entities )
+		{
+			lists.add( new HashMap<Key,Map<String,Object>>() );
+			results.add( new ArrayList<Map<String,Object>>() );
+		}
+		List<Map<String,Object>> finalResult = new ArrayList<Map<String,Object>>();
+
+		// TODO Check that all the entities attributes are in the result list
+
+		for( Map<String,Object> row : result )
+		{
+			int e = 0;
+			for( Entity entity : entities )
+			{
+				Key key = new Key();
+				String[] keys = entity.getKey();
+				for( String k : keys )
+					key.add( row.get( k ) );
+				Map<String,Object> eRow = lists.get( e ).get( key );
+				if( eRow != null )
+				{
+					results.get( e ).add( eRow );
+				}
+				else
+				{
+					eRow = new HashMap<String,Object>();
+					String[] attributes = entity.getAttributes();
+					for( String attribute : attributes )
+						eRow.put( attribute, row.get( attribute ) );
+					results.get( e ).add( eRow );
+					lists.get( e ).put( key, eRow );
+					if( e == 0 )
+						finalResult.add( eRow ); // TODO Maintain more final results
+				}
+
+				e++;
+			}
+		}
+
+		int size = results.get( 0 ).size();
+		for( int i = 0; i < size; i++ )
+		{
+			int e = 0;
+			for( Entity entity : entities )
+			{
+				Map<String,Object> collections = entity.getCollections();
+				if( collections != null )
+					for( Entry<String,Object> entry : collections.entrySet() )
+					{
+						String name = entry.getKey();
+						Entity rel = (Entity)entry.getValue(); // TODO getValue() should return an entity
+						int no = entities.indexOf( rel );
+						List other = (List)results.get( e ).get( i ).get( name );
+						if( other == null )
+							results.get( e ).get( i ).put( name, other = new ArrayList() );
+						other.add( results.get( no ).get( i ) );
+					}
+
+				e++;
+			}
+		}
+
+		return finalResult;
 	}
 }

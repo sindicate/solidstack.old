@@ -48,4 +48,19 @@ public class Entity
 				entry.setValue( other );
 			}
 	}
+
+	public String[] getKey()
+	{
+		return this.key;
+	}
+
+	public String[] getAttributes()
+	{
+		return this.attributes;
+	}
+
+	public Map<String,Object> getCollections()
+	{
+		return this.collections;
+	}
 }

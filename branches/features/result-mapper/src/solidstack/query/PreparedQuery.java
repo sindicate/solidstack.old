@@ -1,6 +1,14 @@
 package solidstack.query;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.Collection;
 import java.util.List;
+
+import solidstack.lang.Assert;
+
 
 /**
  * Prepared SQL combined with a parameter list.
@@ -10,19 +18,19 @@ import java.util.List;
 public class PreparedQuery
 {
 	private String sql;
-	private List< Object > pars;
+	private List< Object > parameters;
 	private ResultModel resultModel;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param sql The prepared SQL string.
-	 * @param pars The parameter list.
+	 * @param parameters The parameter list.
 	 */
-	protected PreparedQuery( String sql, List< Object > pars, ResultModel resultModel )
+	protected PreparedQuery( String sql, List< Object > parameters, ResultModel resultModel )
 	{
 		this.sql = sql;
-		this.pars = pars;
+		this.parameters = parameters;
 		this.resultModel = resultModel;
 	}
 
@@ -43,11 +51,39 @@ public class PreparedQuery
 	 */
 	public List< Object > getParameters()
 	{
-		return this.pars;
+		return this.parameters;
 	}
 
 	public ResultModel getResultModel()
 	{
 		return this.resultModel;
+	}
+
+	public PreparedStatement prepareStatement( Connection connection )
+	{
+		try
+		{
+			PreparedStatement statement = connection.prepareStatement( this.sql );
+			int i = 0;
+			for( Object par : this.parameters )
+			{
+				if( par == null )
+				{
+					// Tested in Oracle with an INSERT
+					statement.setNull( ++i, Types.NULL );
+				}
+				else
+				{
+					Assert.isFalse( par instanceof Collection );
+					Assert.isFalse( par.getClass().isArray() );
+					statement.setObject( ++i, par );
+				}
+			}
+			return statement;
+		}
+		catch( SQLException e )
+		{
+			throw new QuerySQLException( e );
+		}
 	}
 }
