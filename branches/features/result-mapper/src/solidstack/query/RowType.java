@@ -1,7 +1,7 @@
 package solidstack.query;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 
@@ -20,7 +20,7 @@ public class RowType implements Serializable
 	 */
 	public RowType( String[] names )
 	{
-		Map<String,Integer> n = this.names = new HashMap<String,Integer>();
+		Map<String,Integer> n = this.names = new LinkedHashMap<String,Integer>();
 		for( int len = names.length, i = 0; i < len; i++ )
 			n.put( names[ i ], i );
 	}
@@ -46,7 +46,7 @@ public class RowType implements Serializable
 	/**
 	 * @return A map of names to indexes into the tuples.
 	 */
-	public Map<String,Integer> getNameIndex()
+	public Map<String,Integer> getAttributeIndex()
 	{
 		return this.names;
 	}

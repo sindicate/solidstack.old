@@ -18,6 +18,7 @@ package solidstack.query;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,7 +26,9 @@ import solidstack.util.ObjectArrayList;
 
 
 /**
- * Decorates an {@link Object} array to let it look like a {@link Map}.
+ * Represents a row. A row has a type described by {@link RowType}. A row behave like a map, but with case insensitive
+ * keys. Or rather, {@link #containsKey(Object)} and {@link #get(Object)} behave case insensitive. When you retrieve the
+ * keys with {@link #entrySet()} or {@link #keySet()} you get upper case keys.
  *
  * @author René M. de Bloois
  */
@@ -62,16 +65,16 @@ public class Row implements Map<String,Object>, Serializable
 	{
 		if( !( key instanceof String ) )
 			throw new IllegalArgumentException( "Expecting a string" );
-		String k = ( (String)key ).toLowerCase();
-		return this.type.getNameIndex().containsKey( k );
+		String k = ( (String)key ).toUpperCase( Locale.ENGLISH );
+		return this.type.getAttributeIndex().containsKey( k );
 	}
 
 	public Object get( Object key )
 	{
 		if( !( key instanceof String ) )
 			throw new IllegalArgumentException( "Expecting a string" );
-		String k = ( (String)key ).toLowerCase();
-		Integer index = this.type.getNameIndex().get( k );
+		String k = ( (String)key ).toUpperCase( Locale.ENGLISH );
+		Integer index = this.type.getAttributeIndex().get( k );
 		if( index == null )
 			throw new IllegalArgumentException( "Unknown column name: " + key );
 		return this.values[ index ];
@@ -79,7 +82,7 @@ public class Row implements Map<String,Object>, Serializable
 
 	public Set<String> keySet()
 	{
-		return this.type.getNameIndex().keySet();
+		return this.type.getAttributeIndex().keySet();
 	}
 
 	public Collection<Object> values()
@@ -112,7 +115,7 @@ public class Row implements Map<String,Object>, Serializable
 		throw new UnsupportedOperationException();
 	}
 
-	public Set<java.util.Map.Entry<String,Object>> entrySet()
+	public Set<Entry<String,Object>> entrySet()
 	{
 		throw new UnsupportedOperationException();
 	}

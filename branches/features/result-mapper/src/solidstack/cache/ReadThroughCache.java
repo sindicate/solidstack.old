@@ -612,6 +612,7 @@ public class ReadThroughCache
 	 * @param objects The array of objects.
 	 * @return The resulting key.
 	 */
+	// TODO Use the Key class
 	static public String buildKey( Object... objects )
 	{
 		StringBuilder result = new StringBuilder( 32 );

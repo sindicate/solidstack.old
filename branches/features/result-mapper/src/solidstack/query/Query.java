@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -69,7 +70,7 @@ public class Query
 	}
 
 	private Template template;
-	private boolean flyWeight = true;
+	private boolean flyWeight = true; // TODO Modes: GLOBAL, GLOBAL(local dates), GLOBAL(no dates), LOCAL, LOCAL(no dates), NO
 	private Language language;
 
 
@@ -277,13 +278,13 @@ public class Query
 	}
 
 	/**
-	 * Retrieve a {@link List} of {@link Map}s from the given {@link Connection}. The maps contain the column names from the query as keys and the column values as the map's values.
+	 * Retrieve multiple RowLists from the given {@link Connection}. One RowList is returned for each defined entity in the result model of the query.
 	 *
 	 * @param connection The {@link Connection} to use.
 	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
-	 * @return A {@link List} of {@link Map}s.
+	 * @return A RowList.
 	 */
-	public List<Map<String,Object>> listOfMaps( Connection connection, Object args )
+	public RowList[] rowLists( Connection connection, Object args )
 	{
 		try
 		{
@@ -295,18 +296,20 @@ public class Query
 				ResultSetMetaData metaData = resultSet.getMetaData();
 				int columnCount = metaData.getColumnCount();
 
-				// DETERMINE THE LOWERCASE NAMES IN ADVANCE!!! Otherwise the names will not be shared in memory.
+				// Determine the upper case names in advance
 				String[] names = new String[ columnCount ];
 				for( int col = 0; col < columnCount; col++ )
-					names[ col ] = metaData.getColumnLabel( col + 1 ).toLowerCase( Locale.ENGLISH );
+					names[ col ] = metaData.getColumnLabel( col + 1 ).toUpperCase( Locale.ENGLISH );
 
 				RowType type = new RowType( names );
 
-				List<Object[]> result = listOfArrays( resultSet, this.flyWeight );
-				RowList resultList = new RowList( type, result );
+				List<Object[]> tuples = listOfArrays( resultSet, this.flyWeight );
+				RowList rowList = new RowList( type, tuples );
+
 				if( prepared.getResultModel() != null )
-					return transform( resultList, prepared.getResultModel() );
-				return resultList;
+					return transform( rowList, prepared.getResultModel() );
+
+				return new RowList[] { rowList };
 			}
 			finally
 			{
@@ -317,6 +320,30 @@ public class Query
 		{
 			throw new QuerySQLException( e );
 		}
+	}
+
+	/**
+	 * Retrieve a RowList from the given {@link Connection}.
+	 *
+	 * @param connection The {@link Connection} to use.
+	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @return A RowList.
+	 */
+	public RowList rowList( Connection connection, Object args )
+	{
+		return rowLists( connection, args )[ 0 ];
+	}
+
+	/**
+	 * Retrieve a {@link List} of {@link Map}s from the given {@link Connection}. The maps contain the column names from the query as keys and the column values as the map's values.
+	 *
+	 * @param connection The {@link Connection} to use.
+	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @return A {@link List} of {@link Map}s.
+	 */
+	public List<Map<String,Object>> listOfMaps( Connection connection, Object args )
+	{
+		return rowLists( connection, args )[ 0 ];
 	}
 
 	/**
@@ -473,17 +500,16 @@ public class Query
 
 	// TODO Maybe this can be part of the ResultList
 	// TODO result & model relate case insensitive with each other
-	// ResultList -> RowList, List<Object[]> -> TupleList, ValuesMap -> Row
-	static private List<Map<String,Object>> transform( RowList result, ResultModel model )
+	// TODO List<Object[]> -> TupleList
+	static private RowList[] transform( RowList result, ResultModel model )
 	{
-		// TODO We can introduce cross sections from a ResultList: List<Object[]> with Object[]s from the original ResultSet and a subset of the keys
-		// Well actually that is not that smart, the original ResultList object arrays may consume much more than the resulting object arrays because of duplicates
+//		new Dumper().dumpTo( result, new File( "result.out" ) );
 
 		List<Entity> entities = model.getEntities();
 		E[] es = new E[ model.getEntities().size() ];
 		int i = 0;
 		for( Entity entity : entities )
-			es[ i++ ] = new E( entity, result.getType().getNameIndex() );
+			es[ i++ ] = new E( entity, result.getType().getAttributeIndex() );
 		for( E e : es ) e.link( es );
 
 		// TODO Check that all the entities attributes are in the result list
@@ -499,11 +525,7 @@ public class Query
 					k[ i ] = tuple[ keyIndex[ i ] ];
 				Key key = new Key( k );
 				Object[] eRow = e.uniqueMap.get( key );
-				if( eRow != null )
-				{
-					e.list.add( eRow );
-				}
-				else
+				if( eRow == null )
 				{
 					int attLen = e.attLen;
 					int[] attIndex = e.attIndex;
@@ -516,6 +538,10 @@ public class Query
 				e.list.add( eRow );
 			}
 		}
+
+//		i = 1;
+//		for( E e : es )
+//			new Dumper().dumpTo( e.list, new File( "list" + i++ + ".out" ) );
 
 		// TODO What about outer joins?
 		int size = result.size();
@@ -531,9 +557,9 @@ public class Query
 					Object[] row = e.list.get( i );
 					for( int j = 0; j < len; j++ )
 					{
-						RowList x = (RowList)row[ collAtt + j ];
+						GuardedRowList x = (GuardedRowList)row[ collAtt + j ];
 						if( x == null )
-							row[ collAtt + j ] = x = new RowList( collEntity[ j ].type );
+							row[ collAtt + j ] = x = new GuardedRowList( collEntity[ j ].type );
 						x.add( collEntity[ j ].list.get( i ) );
 					}
 				}
@@ -549,28 +575,49 @@ public class Query
 			}
 		}
 
-		return new RowList( es[ 0 ].type, es[ 0 ].result );
+		for( E e : es )
+			if( e.collEntity != null )
+			{
+				int start = e.collAtt;
+				int end = start + e.collEntity.length;
+				for( Object[] row : e.result )
+					for( int j = start; j < end; j++ )
+					{
+						GuardedRowList x = (GuardedRowList)row[ j ];
+						row[ j ] = x.unwrap();
+					}
+			}
+
+//		i = 1;
+//		for( E e : es )
+//			new Dumper().dumpTo( e.result, new File( "result" + i++ + ".out" ) );
+
+		RowList[] r = new RowList[ es.length ];
+		for( int len = es.length, k = 0; k < len; k++ )
+			r[ k ] = new RowList( es[ k ].type, es[ k ].result );
+
+//		new Dumper().dumpTo( r, new File( "rowlist.out" ) );
+		return r;
 	}
 
 	static private class E
 	{
-		public Entity entity;
-		public int keyLen;
-		public int[] keyIndex;
-		public int attLen;
-		public int[] attIndex;
-		public RowType type;
-//		public Map<String,Integer> names = new HashMap<String,Integer>();
-		public Map<Key,Object[]> uniqueMap = new HashMap<Key,Object[]>();
-		public List<Object[]> list = new ArrayList<Object[]>();
-		public List<Object[]> result = new ArrayList<Object[]>();
-		public int collAtt;
-		public E[] collEntity;
-		public int refAtt;
-		public E[] refEntity;
-		public int attCount;
+		Entity entity;
+		int keyLen;
+		int[] keyIndex;
+		int attLen;
+		int[] attIndex;
+		RowType type;
+		Map<Key,Object[]> uniqueMap = new HashMap<Key,Object[]>();
+		List<Object[]> list = new ArrayList<Object[]>();
+		List<Object[]> result = new ArrayList<Object[]>();
+		int collAtt;
+		E[] collEntity;
+		int refAtt;
+		E[] refEntity;
+		int attCount;
 
-		public E( Entity entity, Map<String,Integer> index )
+		E( Entity entity, Map<String,Integer> index )
 		{
 			this.entity = entity;
 
@@ -580,12 +627,12 @@ public class Query
 			int keyLen = this.keyLen = keys.length;
 			int[] keyIndex = this.keyIndex = new int[ keyLen ];
 			for( int i = 0; i < keyLen; i++ )
-				keyIndex[ i ] = index.get( keys[ i ].toLowerCase() ); // TODO Gives NPE when not exist
+				keyIndex[ i ] = index.get( keys[ i ].toUpperCase( Locale.ENGLISH ) ); // TODO Gives NPE when not exist
 
 			int attLen = this.attLen = atts.length;
 			int[] attIndex = this.attIndex = new int[ attLen ];
 			for( int i = 0; i < attLen; i++ )
-				attIndex[ i ] = index.get( atts[ i ].toLowerCase() ); // TODO Gives NPE when not exist
+				attIndex[ i ] = index.get( atts[ i ].toUpperCase( Locale.ENGLISH ) ); // TODO Gives NPE when not exist
 
 			this.type = new RowType( entity.getName(), atts );
 
@@ -598,7 +645,7 @@ public class Query
 				this.attCount += entity.getReferences().size();
 		}
 
-		public void link( E[] entities )
+		void link( E[] entities )
 		{
 			Map<String,Object> collections = this.entity.getCollections();
 			if( collections != null )
@@ -634,6 +681,30 @@ public class Query
 					i++;
 				}
 			}
+		}
+	}
+
+	static private class GuardedRowList
+	{
+		private RowList list;
+		private IdentityHashMap<Object,Object> guard = new IdentityHashMap<Object,Object>();
+
+		GuardedRowList( RowType type )
+		{
+			this.list = new RowList( type );
+		}
+
+		public void add( Object[] tuple )
+		{
+			if( this.guard.containsKey( tuple ) )
+				return;
+			this.guard.put( tuple, tuple );
+			this.list.add( tuple );
+		}
+
+		public RowList unwrap()
+		{
+			return this.list;
 		}
 	}
 }

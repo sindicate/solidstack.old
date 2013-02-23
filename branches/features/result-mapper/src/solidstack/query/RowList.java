@@ -26,7 +26,8 @@ import java.util.Map;
 
 
 /**
- * A wrapper around a list of arrays.
+ * Represents a list of rows. The rows have a type described by {@link RowType}. The rows behave like a map, but with case
+ * insensitive keys.
  *
  * @author René M. de Bloois
  */
@@ -35,7 +36,7 @@ public class RowList implements List<Map<String,Object>>, Serializable
 	private static final long serialVersionUID = 1L;
 
 	private RowType type; // This one is shared by all instances
-	private List<Object[]> list;
+	private List<Object[]> list; // TODO Use array of Object[]
 
 	/**
 	 * Constructor.

@@ -1,12 +1,22 @@
 package solidstack.query.mapper;
 
+import java.util.Arrays;
 
+
+/**
+ * A multi-valued key.
+ */
 public class Key
 {
 	private Object[] values;
 
+	/**
+	 * @param values The key values.
+	 */
 	public Key( Object[] values )
 	{
+		if( values == null )
+			throw new NullPointerException( "values can't be null" );
 		this.values = values;
 	}
 
@@ -52,6 +62,6 @@ public class Key
 	@Override
 	public String toString()
 	{
-		return this.values.toString();
+		return "Key" + Arrays.deepToString( this.values );
 	}
 }
