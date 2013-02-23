@@ -3,7 +3,6 @@ package solidstack.query.hibernate;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Map;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -14,6 +13,8 @@ import org.testng.annotations.Test;
 
 import solidstack.query.Query;
 import solidstack.query.QueryLoader;
+import solidstack.query.Row;
+import solidstack.query.RowList;
 import solidstack.util.Pars;
 
 
@@ -51,8 +52,8 @@ public class Hibernate3Tests
 		QueryLoader queries = new QueryLoader();
 		queries.setTemplatePath( "classpath:/solidstack/query" );
 		Query query = queries.getQuery( "test.sql" );
-		List<Map<String, Object>> tables = query.hibernate().listOfMaps( session, new Pars() );
-		for( Map<String, Object> table : tables )
+		RowList tables = query.hibernate().listOfMaps( session, new Pars() );
+		for( Row table : tables )
 			System.out.println( table.get( "TaBlEnAmE" ) );
 
 		session.close();

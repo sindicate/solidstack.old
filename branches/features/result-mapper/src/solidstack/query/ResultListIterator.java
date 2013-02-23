@@ -17,7 +17,6 @@
 package solidstack.query;
 
 import java.util.ListIterator;
-import java.util.Map;
 
 
 /**
@@ -25,7 +24,7 @@ import java.util.Map;
  *
  * @author René M. de Bloois
  */
-public class ResultListIterator implements ListIterator< Map< String, Object >>
+public class ResultListIterator implements ListIterator<Row>
 {
 	private RowType type;
 	private ListIterator<Object[]> iterator;
@@ -47,7 +46,7 @@ public class ResultListIterator implements ListIterator< Map< String, Object >>
 		return this.iterator.hasNext();
 	}
 
-	public Map< String, Object > next()
+	public Row next()
 	{
 		return new Row( this.type, this.iterator.next() );
 	}
@@ -62,7 +61,7 @@ public class ResultListIterator implements ListIterator< Map< String, Object >>
 		return this.iterator.nextIndex();
 	}
 
-	public Map< String, Object > previous()
+	public Row previous()
 	{
 		return new Row( this.type, this.iterator.previous() );
 	}
@@ -77,12 +76,12 @@ public class ResultListIterator implements ListIterator< Map< String, Object >>
 		throw new UnsupportedOperationException();
 	}
 
-	public void add( Map< String, Object > e )
+	public void add( Row e )
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	public void set( Map< String, Object > e )
+	public void set( Row e )
 	{
 		throw new UnsupportedOperationException();
 	}

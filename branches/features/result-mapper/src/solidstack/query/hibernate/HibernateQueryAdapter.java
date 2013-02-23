@@ -25,6 +25,7 @@ import org.hibernate.JDBCException;
 import org.hibernate.Session;
 
 import solidstack.query.Query;
+import solidstack.query.RowList;
 
 
 /**
@@ -87,7 +88,7 @@ public class HibernateQueryAdapter
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
 	 * @see Query#listOfMaps(Connection, Object)
 	 */
-	public List< Map< String, Object > > listOfMaps( final Session session, Object args )
+	public RowList listOfMaps( final Session session, Object args )
 	{
 		return HibernateSupport.listOfMaps( this.query, session, args );
 	}

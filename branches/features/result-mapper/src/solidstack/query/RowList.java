@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 
 
 /**
@@ -31,7 +30,7 @@ import java.util.Map;
  *
  * @author René M. de Bloois
  */
-public class RowList implements List<Map<String,Object>>, Serializable
+public class RowList implements List<Row>, Serializable
 {
 	private static final long serialVersionUID = 1L;
 
@@ -86,7 +85,7 @@ public class RowList implements List<Map<String,Object>>, Serializable
 		this.list.add( tuple );
 	}
 
-	public Map<String,Object> get( int index )
+	public Row get( int index )
 	{
 		return new Row( this.type, this.list.get( index ) );
 	}
@@ -96,17 +95,17 @@ public class RowList implements List<Map<String,Object>>, Serializable
 		return this.list.isEmpty();
 	}
 
-	public Iterator<Map<String,Object>> iterator()
+	public Iterator<Row> iterator()
 	{
 		return new ResultListIterator( this.type, this.list.listIterator() );
 	}
 
-	public ListIterator<Map<String,Object>> listIterator()
+	public ListIterator<Row> listIterator()
 	{
 		return new ResultListIterator( this.type, this.list.listIterator() );
 	}
 
-	public ListIterator<Map<String,Object>> listIterator( int index )
+	public ListIterator<Row> listIterator( int index )
 	{
 		return new ResultListIterator( this.type, this.list.listIterator( index ) );
 	}
@@ -116,22 +115,22 @@ public class RowList implements List<Map<String,Object>>, Serializable
 		return this.list.size();
 	}
 
-	public boolean add( Map<String,Object> arg0 )
+	public boolean add( Row arg0 )
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	public void add( int arg0, Map<String,Object> arg1 )
+	public void add( int arg0, Row arg1 )
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean addAll( Collection<? extends Map<String,Object>> arg0 )
+	public boolean addAll( Collection<? extends Row> arg0 )
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean addAll( int arg0, Collection<? extends Map<String,Object>> arg1 )
+	public boolean addAll( int arg0, Collection<? extends Row> arg1 )
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -166,7 +165,7 @@ public class RowList implements List<Map<String,Object>>, Serializable
 		throw new UnsupportedOperationException();
 	}
 
-	public Map<String,Object> remove( int arg0 )
+	public Row remove( int arg0 )
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -181,17 +180,17 @@ public class RowList implements List<Map<String,Object>>, Serializable
 		throw new UnsupportedOperationException();
 	}
 
-	public Map<String,Object> set( int arg0, Map<String,Object> arg1 )
+	public Row set( int arg0, Row arg1 )
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	public List<Map<String,Object>> subList( int arg0, int arg1 )
+	public List<Row> subList( int arg0, int arg1 )
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	public Map<String,Object>[] toArray()
+	public Row[] toArray()
 	{
 		throw new UnsupportedOperationException();
 //		@SuppressWarnings( "unchecked" )

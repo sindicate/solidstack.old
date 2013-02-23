@@ -34,6 +34,7 @@ import solidstack.query.Query;
 import solidstack.query.Query.Language;
 import solidstack.query.QuerySQLException;
 import solidstack.query.ResultHolder;
+import solidstack.query.RowList;
 import solidstack.query.jpa.JPASupport;
 
 
@@ -118,9 +119,10 @@ public class HibernateSupport
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
 	 * @see Query#listOfMaps(Connection, Object)
 	 */
-	static public List< Map< String, Object > > listOfMaps( final Query query, final Session session, final Object args )
+	// TODO Rename to rowList()
+	static public RowList listOfMaps( final Query query, final Session session, final Object args )
 	{
-		final ResultHolder< List< Map< String, Object > > > result = new ResultHolder< List< Map< String, Object > > >();
+		final ResultHolder<RowList> result = new ResultHolder<RowList>();
 
 		session.doWork( new Work()
 		{
@@ -128,14 +130,14 @@ public class HibernateSupport
 			{
 				try
 				{
-					result.set( query.listOfMaps( connection, args ) );
+					result.set( query.rowList( connection, args ) );
 				}
 				catch( QuerySQLException e )
 				{
 					throw e.getSQLException();
 				}
 			}
-		});
+		} );
 
 		return result.get();
 	}

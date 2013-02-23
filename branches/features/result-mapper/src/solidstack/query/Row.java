@@ -76,7 +76,7 @@ public class Row implements Map<String,Object>, Serializable
 		String k = ( (String)key ).toUpperCase( Locale.ENGLISH );
 		Integer index = this.type.getAttributeIndex().get( k );
 		if( index == null )
-			throw new IllegalArgumentException( "Unknown column name: " + key );
+			throw new IllegalArgumentException( "Unknown attribute name: " + key );
 		return this.values[ index ];
 	}
 

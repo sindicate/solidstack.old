@@ -335,18 +335,6 @@ public class Query
 	}
 
 	/**
-	 * Retrieve a {@link List} of {@link Map}s from the given {@link Connection}. The maps contain the column names from the query as keys and the column values as the map's values.
-	 *
-	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
-	 * @return A {@link List} of {@link Map}s.
-	 */
-	public List<Map<String,Object>> listOfMaps( Connection connection, Object args )
-	{
-		return rowLists( connection, args )[ 0 ];
-	}
-
-	/**
 	 * Executes an update (DML) or a DDL query.
 	 *
 	 * @param connection The {@link Connection} to use.
@@ -588,15 +576,14 @@ public class Query
 					}
 			}
 
-//		i = 1;
-//		for( E e : es )
-//			new Dumper().dumpTo( e.result, new File( "result" + i++ + ".out" ) );
-
 		RowList[] r = new RowList[ es.length ];
 		for( int len = es.length, k = 0; k < len; k++ )
 			r[ k ] = new RowList( es[ k ].type, es[ k ].result );
 
-//		new Dumper().dumpTo( r, new File( "rowlist.out" ) );
+//		i = 1;
+//		for( RowList e : r )
+//			new Dumper().dumpTo( e, new File( "result" + i++ + ".out" ) );
+
 		return r;
 	}
 
@@ -622,19 +609,16 @@ public class Query
 			this.entity = entity;
 
 			String[] keys = entity.getKey();
-			String[] atts = entity.getAttributes();
-
 			int keyLen = this.keyLen = keys.length;
 			int[] keyIndex = this.keyIndex = new int[ keyLen ];
 			for( int i = 0; i < keyLen; i++ )
 				keyIndex[ i ] = index.get( keys[ i ].toUpperCase( Locale.ENGLISH ) ); // TODO Gives NPE when not exist
 
+			String[] atts = entity.getAttributes();
 			int attLen = this.attLen = atts.length;
 			int[] attIndex = this.attIndex = new int[ attLen ];
 			for( int i = 0; i < attLen; i++ )
 				attIndex[ i ] = index.get( atts[ i ].toUpperCase( Locale.ENGLISH ) ); // TODO Gives NPE when not exist
-
-			this.type = new RowType( entity.getName(), atts );
 
 			this.collAtt = attLen;
 			this.refAtt = attLen;
@@ -643,6 +627,21 @@ public class Query
 			this.attCount = this.refAtt;
 			if( entity.getReferences() != null )
 				this.attCount += entity.getReferences().size();
+
+			String[] oldAtts = atts;
+			atts = new String[ this.attCount ];
+			System.arraycopy( oldAtts, 0, atts, 0, attLen );
+
+			int i = attLen;
+			if( entity.getCollections() != null )
+				for( String name : entity.getCollections().keySet() )
+					atts[ i++ ] = name.toUpperCase( Locale.ENGLISH );
+			if( entity.getReferences() != null )
+				for( String name : entity.getReferences().keySet() )
+					atts[ i++ ] = name.toUpperCase( Locale.ENGLISH );
+
+			this.type = new RowType( entity.getName(), atts );
+
 		}
 
 		void link( E[] entities )

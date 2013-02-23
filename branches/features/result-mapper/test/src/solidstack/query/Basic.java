@@ -51,23 +51,23 @@ public class Basic
 		queries.setTemplatePath( "classpath:/solidstack/query" );
 
 		Query query = queries.getQuery( "test.sql" );
-		List< Map< String, Object > > result = query.listOfMaps( connection, Pars.EMPTY );
+		RowList result = query.rowList( connection, Pars.EMPTY );
 		for( String name : result.get( 0 ).keySet() )
 			System.out.println( "Column: " + name );
 		for( Map< String, Object > row : result )
 			System.out.println( "Table: " + row.get( "TABLEname" ) );
 		assert result.size() == 22;
 
-		result = query.listOfMaps( connection, new Pars( "prefix", "SYST" ) );
+		result = query.rowList( connection, new Pars( "prefix", "SYST" ) );
 		assert result.size() == 3;
 
 		List< Object[] > array = query.listOfArrays( connection, new Pars().set( "name", "SYSTABLES" ) );
 		assert array.size() == 1;
 
-		result = query.listOfMaps( connection, new Pars( "name", "SYSTABLES", "prefix", "SYST" ) );
+		result = query.rowList( connection, new Pars( "name", "SYSTABLES", "prefix", "SYST" ) );
 		assert result.size() == 1;
 
-		result = query.listOfMaps( connection, new Pars().set( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } ) );
+		result = query.rowList( connection, new Pars().set( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } ) );
 		assert result.size() == 2;
 	}
 
@@ -88,7 +88,7 @@ public class Basic
 		queries.setTemplatePath( "classpath:/solidstack/query" );
 
 		Query query = queries.getQuery( "test.sql" );
-		List< Map< String, Object > > result = query.listOfMaps( connection, new ParameterObject() );
+		RowList result = query.rowList( connection, new ParameterObject() );
 		assert result.size() == 1;
 	}
 
@@ -105,23 +105,23 @@ public class Basic
 		Pars pars = new Pars( "prefix", null, "name", null, "names", null );
 
 		Query query = queries.getQuery( "testjs.sql" );
-		List< Map< String, Object > > result = query.listOfMaps( connection, pars );
+		RowList result = query.rowList( connection, pars );
 		for( String name : result.get( 0 ).keySet() )
 			System.out.println( "Column: " + name );
 		for( Map< String, Object > row : result )
 			System.out.println( "Table: " + row.get( "TABLEname" ) );
 		assert result.size() == 22;
 
-		result = query.listOfMaps( connection, pars.set( "prefix", "SYST" ) );
+		result = query.rowList( connection, pars.set( "prefix", "SYST" ) );
 		assert result.size() == 3;
 
 		List< Object[] > array = query.listOfArrays( connection, pars.set( "prefix", null, "name", "SYSTABLES" ) );
 		assert array.size() == 1;
 
-		result = query.listOfMaps( connection, pars.set( "prefix", "SYST" ) );
+		result = query.rowList( connection, pars.set( "prefix", "SYST" ) );
 		assert result.size() == 1;
 
-		result = query.listOfMaps( connection, new Pars().set( "prefix", null, "name", null, "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } ) );
+		result = query.rowList( connection, new Pars().set( "prefix", null, "name", null, "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } ) );
 		assert result.size() == 2;
 	}
 
@@ -136,7 +136,7 @@ public class Basic
 		queries.setDefaultLanguage( "javascript" );
 
 		Query query = queries.getQuery( "testjs.sql" );
-		List< Map< String, Object > > result = query.listOfMaps( connection, new ParameterObject() );
+		RowList result = query.rowList( connection, new ParameterObject() );
 		assert result.size() == 1;
 	}
 
@@ -275,7 +275,7 @@ public class Basic
 				"OR TABLENAME IN ( ?,?,?,?,? )\n" +
 				"OR TABLENAME IN ( ?,?,? )\n" );
 
-		List< Map< String, Object > > result = query.listOfMaps( connection, params );
+		RowList result = query.rowList( connection, params );
 		assert result.size() == 2;
 
 //		Writer out = new OutputStreamWriter( new FileOutputStream( "test.out" ), "UTF-8" );
@@ -294,7 +294,7 @@ public class Basic
 		queries.setDefaultLanguage( "groovy" );
 
 		Query query = queries.getQuery( "test2.sql" );
-		List< Map< String, Object > > result = query.listOfMaps( connection, new Pars( "prefix", null, "name", null, "names", null ) );
+		RowList result = query.rowList( connection, new Pars( "prefix", null, "name", null, "names", null ) );
 		assert result.size() == 22;
 	}
 
