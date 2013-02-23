@@ -44,6 +44,6 @@ public class Mapper
 		Query query = queries.getQuery( "mapper.sql" );
 
 		List<Map<String,Object>> result = query.listOfMaps( connection, Pars.EMPTY );
-		assertThat( result.size() ).isGreaterThanOrEqualTo( 22 );
+		assertThat( result.size() ).isGreaterThanOrEqualTo( 2 );
 	}
 }

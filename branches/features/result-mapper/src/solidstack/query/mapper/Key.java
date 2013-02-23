@@ -1,16 +1,13 @@
 package solidstack.query.mapper;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 public class Key
 {
-	private List<Object> values = new ArrayList<Object>();
+	private Object[] values;
 
-	public void add( Object value )
+	public Key( Object[] values )
 	{
-		this.values.add( value );
+		this.values = values;
 	}
 
 	@Override
@@ -31,14 +28,13 @@ public class Key
 		if( !( other instanceof Key ) )
 			return false;
 		Key key = (Key)other;
-		if( this.values.size() != key.values.size() )
+		int len = this.values.length;
+		if( len != key.values.length )
 			return false;
-		Iterator<Object> i1 = this.values.iterator();
-		Iterator<Object> i2 = key.values.iterator();
-		while( i1.hasNext() )
+		for( int i = 0; i < len; i++ )
 		{
-			Object o1 = i1.next();
-			Object o2 = i2.next();
+			Object o1 = this.values[ i ];
+			Object o2 = key.values[ i ];
 			if( o1 == null )
 			{
 				if( o2 != null )

@@ -26,6 +26,7 @@ public class PreparedQuery
 	 *
 	 * @param sql The prepared SQL string.
 	 * @param parameters The parameter list.
+	 * @param resultModel The model of the result.
 	 */
 	protected PreparedQuery( String sql, List< Object > parameters, ResultModel resultModel )
 	{
@@ -54,11 +55,20 @@ public class PreparedQuery
 		return this.parameters;
 	}
 
+	/**
+	 * @return The result model.
+	 */
 	public ResultModel getResultModel()
 	{
 		return this.resultModel;
 	}
 
+	/**
+	 * Prepares a statement.
+	 *
+	 * @param connection The connection to use.
+	 * @return A prepared statement.
+	 */
 	public PreparedStatement prepareStatement( Connection connection )
 	{
 		try

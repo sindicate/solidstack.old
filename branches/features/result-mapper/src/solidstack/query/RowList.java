@@ -17,6 +17,7 @@
 package solidstack.query;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -26,31 +27,67 @@ import java.util.Map;
 
 /**
  * A wrapper around a list of arrays.
- * 
+ *
  * @author René M. de Bloois
  */
-public class ResultList implements List< Map< String, Object > >, Serializable
+public class RowList implements List<Map<String,Object>>, Serializable
 {
 	private static final long serialVersionUID = 1L;
 
-	private List< Object[] > list;
-	private Map< String, Integer > names;
+	private RowType type; // This one is shared by all instances
+	private List<Object[]> list;
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param list The list of arrays.
-	 * @param names The name to index map.
+	 * @param type The row type.
 	 */
-	public ResultList( List< Object[] > list, Map< String, Integer > names )
+	public RowList( RowType type, List<Object[]> list )
 	{
+		this.type = type;
 		this.list = list;
-		this.names = names;
 	}
 
-	public Map< String, Object > get( int index )
+	/**
+	 * Constructor.
+	 *
+	 * @param type The row type.
+	 */
+	public RowList( RowType type )
 	{
-		return new ValuesMap( this.names, this.list.get( index ) );
+		this( type, new ArrayList<Object[]>() );
+	}
+
+	/**
+	 * @return The row type.
+	 */
+	public RowType getType()
+	{
+		return this.type;
+	}
+
+	/**
+	 * @return The tuples.
+	 */
+	public List<Object[]> tuples()
+	{
+		return this.list;
+	}
+
+	/**
+	 * Adds a tuple.
+	 *
+	 * @param tuple The tuple to add.
+	 */
+	public void add( Object[] tuple )
+	{
+		this.list.add( tuple );
+	}
+
+	public Map<String,Object> get( int index )
+	{
+		return new Row( this.type, this.list.get( index ) );
 	}
 
 	public boolean isEmpty()
@@ -58,19 +95,19 @@ public class ResultList implements List< Map< String, Object > >, Serializable
 		return this.list.isEmpty();
 	}
 
-	public Iterator< Map< String, Object >> iterator()
+	public Iterator<Map<String,Object>> iterator()
 	{
-		return new ResultListIterator( this.list.listIterator(), this.names );
+		return new ResultListIterator( this.type, this.list.listIterator() );
 	}
 
-	public ListIterator< Map< String, Object >> listIterator()
+	public ListIterator<Map<String,Object>> listIterator()
 	{
-		return new ResultListIterator( this.list.listIterator(), this.names );
+		return new ResultListIterator( this.type, this.list.listIterator() );
 	}
 
-	public ListIterator< Map< String, Object >> listIterator( int index )
+	public ListIterator<Map<String,Object>> listIterator( int index )
 	{
-		return new ResultListIterator( this.list.listIterator( index ), this.names );
+		return new ResultListIterator( this.type, this.list.listIterator( index ) );
 	}
 
 	public int size()
@@ -78,22 +115,22 @@ public class ResultList implements List< Map< String, Object > >, Serializable
 		return this.list.size();
 	}
 
-	public boolean add( Map< String, Object > arg0 )
+	public boolean add( Map<String,Object> arg0 )
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	public void add( int arg0, Map< String, Object > arg1 )
+	public void add( int arg0, Map<String,Object> arg1 )
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean addAll( Collection< ? extends Map< String, Object >> arg0 )
+	public boolean addAll( Collection<? extends Map<String,Object>> arg0 )
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean addAll( int arg0, Collection< ? extends Map< String, Object >> arg1 )
+	public boolean addAll( int arg0, Collection<? extends Map<String,Object>> arg1 )
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -108,7 +145,7 @@ public class ResultList implements List< Map< String, Object > >, Serializable
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean containsAll( Collection< ? > arg0 )
+	public boolean containsAll( Collection<?> arg0 )
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -128,27 +165,27 @@ public class ResultList implements List< Map< String, Object > >, Serializable
 		throw new UnsupportedOperationException();
 	}
 
-	public Map< String, Object > remove( int arg0 )
+	public Map<String,Object> remove( int arg0 )
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean removeAll( Collection< ? > arg0 )
+	public boolean removeAll( Collection<?> arg0 )
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean retainAll( Collection< ? > arg0 )
+	public boolean retainAll( Collection<?> arg0 )
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	public Map< String, Object > set( int arg0, Map< String, Object > arg1 )
+	public Map<String,Object> set( int arg0, Map<String,Object> arg1 )
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	public List< Map< String, Object >> subList( int arg0, int arg1 )
+	public List<Map<String,Object>> subList( int arg0, int arg1 )
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -165,7 +202,7 @@ public class ResultList implements List< Map< String, Object > >, Serializable
 //		return result;
 	}
 
-	public < T > T[] toArray( T[] arg0 )
+	public <T> T[] toArray( T[] arg0 )
 	{
 		throw new UnsupportedOperationException();
 	}

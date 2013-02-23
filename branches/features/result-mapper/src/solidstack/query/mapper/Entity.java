@@ -27,7 +27,7 @@ public class Entity
 		return this.name;
 	}
 
-	public void compile( Map<String,Entity> entities )
+	public void link( Map<String,Entity> entities )
 	{
 		if( this.collections != null )
 			for( Entry<String,Object> entry : this.collections.entrySet() )
@@ -62,5 +62,10 @@ public class Entity
 	public Map<String,Object> getCollections()
 	{
 		return this.collections;
+	}
+
+	public Map<String,Object> getReferences()
+	{
+		return this.references;
 	}
 }

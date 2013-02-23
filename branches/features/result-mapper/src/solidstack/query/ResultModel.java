@@ -6,16 +6,26 @@ import java.util.Map;
 
 import solidstack.query.mapper.Entity;
 
+
+/**
+ * The model of the result.
+ */
 public class ResultModel
 {
 	private List<Entity> entities;
 
+	/**
+	 * @param entities The entities.
+	 */
 	public ResultModel( List<Entity> entities )
 	{
 		this.entities = entities;
 	}
 
-	public void compile()
+	/**
+	 * Links the entities together.
+	 */
+	public void link()
 	{
 		Map<String,Entity> entities = new HashMap<String, Entity>();
 		for( Entity entity : this.entities )
@@ -25,9 +35,12 @@ public class ResultModel
 			entities.put( entity.getName(), entity );
 		}
 		for( Entity entity : this.entities )
-			entity.compile( entities );
+			entity.link( entities );
 	}
 
+	/**
+	 * @return The entities.
+	 */
 	public List<Entity> getEntities()
 	{
 		return this.entities;

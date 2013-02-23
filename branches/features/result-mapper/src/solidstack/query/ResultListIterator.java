@@ -22,24 +22,24 @@ import java.util.Map;
 
 /**
  * Wraps a iterator from the list of arrays and returns Map instances instead of arrays.
- * 
+ *
  * @author René M. de Bloois
  */
 public class ResultListIterator implements ListIterator< Map< String, Object >>
 {
+	private RowType type;
 	private ListIterator<Object[]> iterator;
-	private Map< String, Integer > names;
 
 	/**
 	 * Constructor.
-	 * 
+	 *
+	 * @param type The type of the rows.
 	 * @param iterator Iterator over the list of arrays.
-	 * @param names Maps of names to indexes.
 	 */
-	public ResultListIterator( ListIterator<Object[]> iterator, Map< String, Integer > names )
+	public ResultListIterator( RowType type, ListIterator<Object[]> iterator )
 	{
+		this.type = type;
 		this.iterator = iterator;
-		this.names = names;
 	}
 
 	public boolean hasNext()
@@ -49,7 +49,7 @@ public class ResultListIterator implements ListIterator< Map< String, Object >>
 
 	public Map< String, Object > next()
 	{
-		return new ValuesMap( this.names, this.iterator.next() );
+		return new Row( this.type, this.iterator.next() );
 	}
 
 	public boolean hasPrevious()
@@ -64,7 +64,7 @@ public class ResultListIterator implements ListIterator< Map< String, Object >>
 
 	public Map< String, Object > previous()
 	{
-		return new ValuesMap( this.names, this.iterator.previous() );
+		return new Row( this.type, this.iterator.previous() );
 	}
 
 	public int previousIndex()

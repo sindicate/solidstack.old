@@ -23,27 +23,28 @@ import java.util.Set;
 
 import solidstack.util.ObjectArrayList;
 
+
 /**
  * Decorates an {@link Object} array to let it look like a {@link Map}.
- * 
+ *
  * @author René M. de Bloois
  */
-public class ValuesMap implements Map< String, Object >, Serializable
+public class Row implements Map<String,Object>, Serializable
 {
 	private static final long serialVersionUID = 1L;
 
-	private Map< String, Integer > names; // This one is shared by all instances
+	private RowType type; // This one is shared by all instances
 	private Object[] values;
 
 	/**
 	 * Constructor.
-	 * 
-	 * @param names The names and indexes of the elements in the {@link Object} array.
+	 *
+	 * @param type The row type.
 	 * @param values The values.
 	 */
-	public ValuesMap( Map< String, Integer > names, Object[] values )
+	public Row( RowType type, Object[] values )
 	{
-		this.names = names;
+		this.type = type;
 		this.values = values;
 	}
 
@@ -62,7 +63,7 @@ public class ValuesMap implements Map< String, Object >, Serializable
 		if( !( key instanceof String ) )
 			throw new IllegalArgumentException( "Expecting a string" );
 		String k = ( (String)key ).toLowerCase();
-		return this.names.containsKey( k );
+		return this.type.getNameIndex().containsKey( k );
 	}
 
 	public Object get( Object key )
@@ -70,18 +71,18 @@ public class ValuesMap implements Map< String, Object >, Serializable
 		if( !( key instanceof String ) )
 			throw new IllegalArgumentException( "Expecting a string" );
 		String k = ( (String)key ).toLowerCase();
-		Integer index = this.names.get( k );
+		Integer index = this.type.getNameIndex().get( k );
 		if( index == null )
 			throw new IllegalArgumentException( "Unknown column name: " + key );
 		return this.values[ index ];
 	}
 
-	public Set< String > keySet()
+	public Set<String> keySet()
 	{
-		return this.names.keySet();
+		return this.type.getNameIndex().keySet();
 	}
 
-	public Collection< Object > values()
+	public Collection<Object> values()
 	{
 		return new ObjectArrayList( this.values );
 	}
@@ -101,7 +102,7 @@ public class ValuesMap implements Map< String, Object >, Serializable
 		throw new UnsupportedOperationException();
 	}
 
-	public void putAll( Map< ? extends String, ? extends Object > m )
+	public void putAll( Map<? extends String,? extends Object> m )
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -111,7 +112,7 @@ public class ValuesMap implements Map< String, Object >, Serializable
 		throw new UnsupportedOperationException();
 	}
 
-	public Set< java.util.Map.Entry< String, Object >> entrySet()
+	public Set<java.util.Map.Entry<String,Object>> entrySet()
 	{
 		throw new UnsupportedOperationException();
 	}

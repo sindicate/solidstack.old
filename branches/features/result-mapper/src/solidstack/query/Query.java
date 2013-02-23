@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import solidstack.lang.Assert;
 import solidstack.lang.SystemException;
@@ -297,12 +296,14 @@ public class Query
 				int columnCount = metaData.getColumnCount();
 
 				// DETERMINE THE LOWERCASE NAMES IN ADVANCE!!! Otherwise the names will not be shared in memory.
-				Map< String, Integer > names = new HashMap< String, Integer >();
+				String[] names = new String[ columnCount ];
 				for( int col = 0; col < columnCount; col++ )
-					names.put( metaData.getColumnLabel( col + 1 ).toLowerCase( Locale.ENGLISH ), col );
+					names[ col ] = metaData.getColumnLabel( col + 1 ).toLowerCase( Locale.ENGLISH );
+
+				RowType type = new RowType( names );
 
 				List<Object[]> result = listOfArrays( resultSet, this.flyWeight );
-				ResultList resultList = new ResultList( result, names );
+				RowList resultList = new RowList( type, result );
 				if( prepared.getResultModel() != null )
 					return transform( resultList, prepared.getResultModel() );
 				return resultList;
@@ -416,7 +417,7 @@ public class Query
 			log( result, pars );
 
 		if( context.getResultModel() != null )
-			context.getResultModel().compile();
+			context.getResultModel().link();
 
 		return new PreparedQuery( result.toString(), pars, context.getResultModel() );
 	}
@@ -472,76 +473,167 @@ public class Query
 
 	// TODO Maybe this can be part of the ResultList
 	// TODO result & model relate case insensitive with each other
-	private List<Map<String,Object>> transform( ResultList result, ResultModel model )
+	// ResultList -> RowList, List<Object[]> -> TupleList, ValuesMap -> Row
+	static private List<Map<String,Object>> transform( RowList result, ResultModel model )
 	{
 		// TODO We can introduce cross sections from a ResultList: List<Object[]> with Object[]s from the original ResultSet and a subset of the keys
 		// Well actually that is not that smart, the original ResultList object arrays may consume much more than the resulting object arrays because of duplicates
 
 		List<Entity> entities = model.getEntities();
-		List<Map<Key,Map<String,Object>>> lists = new ArrayList<Map<Key,Map<String,Object>>>();
-		List<List<Map<String,Object>>> results = new ArrayList<List<Map<String,Object>>>();
+		E[] es = new E[ model.getEntities().size() ];
+		int i = 0;
 		for( Entity entity : entities )
-		{
-			lists.add( new HashMap<Key,Map<String,Object>>() );
-			results.add( new ArrayList<Map<String,Object>>() );
-		}
-		List<Map<String,Object>> finalResult = new ArrayList<Map<String,Object>>();
+			es[ i++ ] = new E( entity, result.getType().getNameIndex() );
+		for( E e : es ) e.link( es );
 
 		// TODO Check that all the entities attributes are in the result list
 
-		for( Map<String,Object> row : result )
+		for( Object[] tuple : result.tuples() )
 		{
-			int e = 0;
-			for( Entity entity : entities )
+			for( E e : es )
 			{
-				Key key = new Key();
-				String[] keys = entity.getKey();
-				for( String k : keys )
-					key.add( row.get( k ) );
-				Map<String,Object> eRow = lists.get( e ).get( key );
+				int keyLen = e.keyLen;
+				int[] keyIndex = e.keyIndex;
+				Object[] k = new Object[ keyLen ];
+				for( i = 0; i < keyLen; i++ )
+					k[ i ] = tuple[ keyIndex[ i ] ];
+				Key key = new Key( k );
+				Object[] eRow = e.uniqueMap.get( key );
 				if( eRow != null )
 				{
-					results.get( e ).add( eRow );
+					e.list.add( eRow );
 				}
 				else
 				{
-					eRow = new HashMap<String,Object>();
-					String[] attributes = entity.getAttributes();
-					for( String attribute : attributes )
-						eRow.put( attribute, row.get( attribute ) );
-					results.get( e ).add( eRow );
-					lists.get( e ).put( key, eRow );
-					if( e == 0 )
-						finalResult.add( eRow ); // TODO Maintain more final results
+					int attLen = e.attLen;
+					int[] attIndex = e.attIndex;
+					eRow = new Object[ e.attCount ];
+					for( i = 0; i < attLen; i++ )
+						eRow[ i ] = tuple[ attIndex[ i ] ];
+					e.uniqueMap.put( key, eRow );
+					e.result.add( eRow );
 				}
-
-				e++;
+				e.list.add( eRow );
 			}
 		}
 
-		int size = results.get( 0 ).size();
-		for( int i = 0; i < size; i++ )
+		// TODO What about outer joins?
+		int size = result.size();
+		for( i = 0; i < size; i++ )
 		{
-			int e = 0;
-			for( Entity entity : entities )
+			for( E e : es )
 			{
-				Map<String,Object> collections = entity.getCollections();
-				if( collections != null )
-					for( Entry<String,Object> entry : collections.entrySet() )
+				E[] collEntity = e.collEntity;
+				if( collEntity != null )
+				{
+					int len = collEntity.length;
+					int collAtt = e.collAtt;
+					Object[] row = e.list.get( i );
+					for( int j = 0; j < len; j++ )
 					{
-						String name = entry.getKey();
-						Entity rel = (Entity)entry.getValue(); // TODO getValue() should return an entity
-						int no = entities.indexOf( rel );
-						List other = (List)results.get( e ).get( i ).get( name );
-						if( other == null )
-							results.get( e ).get( i ).put( name, other = new ArrayList() );
-						other.add( results.get( no ).get( i ) );
+						RowList x = (RowList)row[ collAtt + j ];
+						if( x == null )
+							row[ collAtt + j ] = x = new RowList( collEntity[ j ].type );
+						x.add( collEntity[ j ].list.get( i ) );
 					}
-
-				e++;
+				}
+				E[] refEntity = e.refEntity;
+				if( refEntity != null )
+				{
+					int len = refEntity.length;
+					int refAtt = e.refAtt;
+					Object[] row = e.list.get( i );
+					for( int j = 0; j < len; j++ )
+						row[ refAtt + j ] = new Row( refEntity[ j ].type, refEntity[ j ].list.get( i ) );
+				}
 			}
 		}
 
-		return finalResult;
+		return new RowList( es[ 0 ].type, es[ 0 ].result );
+	}
+
+	static private class E
+	{
+		public Entity entity;
+		public int keyLen;
+		public int[] keyIndex;
+		public int attLen;
+		public int[] attIndex;
+		public RowType type;
+//		public Map<String,Integer> names = new HashMap<String,Integer>();
+		public Map<Key,Object[]> uniqueMap = new HashMap<Key,Object[]>();
+		public List<Object[]> list = new ArrayList<Object[]>();
+		public List<Object[]> result = new ArrayList<Object[]>();
+		public int collAtt;
+		public E[] collEntity;
+		public int refAtt;
+		public E[] refEntity;
+		public int attCount;
+
+		public E( Entity entity, Map<String,Integer> index )
+		{
+			this.entity = entity;
+
+			String[] keys = entity.getKey();
+			String[] atts = entity.getAttributes();
+
+			int keyLen = this.keyLen = keys.length;
+			int[] keyIndex = this.keyIndex = new int[ keyLen ];
+			for( int i = 0; i < keyLen; i++ )
+				keyIndex[ i ] = index.get( keys[ i ].toLowerCase() ); // TODO Gives NPE when not exist
+
+			int attLen = this.attLen = atts.length;
+			int[] attIndex = this.attIndex = new int[ attLen ];
+			for( int i = 0; i < attLen; i++ )
+				attIndex[ i ] = index.get( atts[ i ].toLowerCase() ); // TODO Gives NPE when not exist
+
+			this.type = new RowType( entity.getName(), atts );
+
+			this.collAtt = attLen;
+			this.refAtt = attLen;
+			if( entity.getCollections() != null )
+				this.refAtt += entity.getCollections().size();
+			this.attCount = this.refAtt;
+			if( entity.getReferences() != null )
+				this.attCount += entity.getReferences().size();
+		}
+
+		public void link( E[] entities )
+		{
+			Map<String,Object> collections = this.entity.getCollections();
+			if( collections != null )
+			{
+				this.collEntity = new E[ collections.size() ];
+				int i = 0;
+				for( Object entity : collections.values() )
+				{
+					for( E e : entities )
+						if( e.entity == entity )
+						{
+							this.collEntity[ i ] = e;
+							break;
+						}
+					Assert.notNull( this.collEntity[ i ] );
+					i++;
+				}
+			}
+			Map<String,Object> references = this.entity.getReferences();
+			if( references != null )
+			{
+				this.refEntity = new E[ references.size() ];
+				int i = 0;
+				for( Object entity : references.values() )
+				{
+					for( E e : entities )
+						if( e.entity == entity )
+						{
+							this.refEntity[ i ] = e;
+							break;
+						}
+					Assert.notNull( this.refEntity[ i ] );
+					i++;
+				}
+			}
+		}
 	}
 }
