@@ -30,6 +30,8 @@ import java.util.ListIterator;
  *
  * @author René M. de Bloois
  */
+// TODO Rename RowList -> Table?
+// TODO Add Index capability?
 public class RowList implements List<Row>, Serializable
 {
 	private static final long serialVersionUID = 1L;
