@@ -16,12 +16,17 @@
 
 package solidstack.query;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+
+import solidstack.template.EncodingWriter;
+import solidstack.template.XMLEncodingWriter;
 
 
 /**
@@ -207,5 +212,53 @@ public class RowList implements List<Row>, Serializable
 	public <T> T[] toArray( T[] arg0 )
 	{
 		throw new UnsupportedOperationException();
+	}
+
+	private void writeAsHTML( EncodingWriter w ) throws IOException
+	{
+		w.write( "<table>" );
+		w.write( "<tr>" );
+		for( String name : this.type.getAttributeIndex().keySet() )
+		{
+			w.write( "<th>" );
+			w.writeEncoded( name );
+			w.write( "</th>" );
+		}
+		w.write( "</tr>" );
+		for( Object[] tuple : this.list )
+		{
+			w.write( "<tr>" );
+			for( Object value : tuple )
+				if( value == null )
+					w.write( "<td class=\"null\" />" );
+				else
+				{
+					w.write( "<td>" );
+					if( value instanceof RowList )
+						( (RowList)value ).writeAsHTML( w );
+					else if( value instanceof Row )
+						w.write( "(row)" );
+					else
+						w.writeEncoded( value.toString() );
+					w.write( "</td>" );
+				}
+			w.write( "</tr>" );
+		}
+		w.write( "</table>" );
+	}
+
+	public void writeAsHTML( Writer out ) throws IOException
+	{
+		EncodingWriter w = new XMLEncodingWriter( out );
+		w.write( "<html>" );
+		w.write( "<head>" );
+		w.write( "<style type=\"text/css\">" );
+		w.write( "td { border: 1px solid black; vertical-align: top; font: small sans-serif; } th { border: 1px solid black; vertical-align: top; font: small sans-serif; background-color: #EEE; } table { border: 1px solid black; border-collapse: collapse; }" );
+		w.write( "</style>" );
+		w.write( "</head>" );
+		w.write( "<body>" );
+		writeAsHTML( w );
+		w.write( "</body>" );
+		w.write( "</html>" );
 	}
 }

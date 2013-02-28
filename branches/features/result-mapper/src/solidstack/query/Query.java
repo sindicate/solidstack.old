@@ -489,6 +489,8 @@ public class Query
 	// TODO Maybe this can be part of the ResultList
 	// TODO result & model relate case insensitive with each other
 	// TODO List<Object[]> -> TupleList
+	// TODO But there can be different types in the same rowlist
+	// TODO Need a root to collect multiple types when the main list contains multiple types
 	static private RowList[] transform( RowList result, ResultModel model )
 	{
 //		new Dumper().dumpTo( result, new File( "result.out" ) );
@@ -537,18 +539,20 @@ public class Query
 		{
 			for( E e : es )
 			{
-				E[] collEntity = e.collEntity;
-				if( collEntity != null )
+				E[][] collEntitys = e.collEntity;
+				if( collEntitys != null )
 				{
-					int len = collEntity.length;
+					int len = collEntitys.length;
 					int collAtt = e.collAtt;
 					Object[] row = e.list.get( i );
 					for( int j = 0; j < len; j++ )
 					{
 						GuardedRowList x = (GuardedRowList)row[ collAtt + j ];
 						if( x == null )
-							row[ collAtt + j ] = x = new GuardedRowList( collEntity[ j ].type );
-						x.add( collEntity[ j ].list.get( i ) );
+							row[ collAtt + j ] = x = new GuardedRowList( collEntitys[ j ][ 0 ].type ); // TODO But we have multiple types
+						for( E o : collEntitys[ j ] )
+							if( o != null )
+								x.add( o.list.get( i ) );
 					}
 				}
 				E[] refEntity = e.refEntity;
@@ -599,7 +603,7 @@ public class Query
 		List<Object[]> list = new ArrayList<Object[]>();
 		List<Object[]> result = new ArrayList<Object[]>();
 		int collAtt;
-		E[] collEntity;
+		E[][] collEntity;
 		int refAtt;
 		E[] refEntity;
 		int attCount;
@@ -649,17 +653,38 @@ public class Query
 			Map<String,Object> collections = this.entity.getCollections();
 			if( collections != null )
 			{
-				this.collEntity = new E[ collections.size() ];
+				this.collEntity = new E[ collections.size() ][];
 				int i = 0;
 				for( Object entity : collections.values() )
 				{
-					for( E e : entities )
-						if( e.entity == entity )
+					if( entity instanceof List )
+					{
+						List list = (List)entity;
+						this.collEntity[ i ] = new E[ list.size() ];
+						int j = 0;
+						for( Object entity2 : list )
 						{
-							this.collEntity[ i ] = e;
-							break;
+							for( E e : entities )
+								if( e.entity == entity2 )
+								{
+									this.collEntity[ i ][ j ] = e;
+									break;
+								}
+							Assert.notNull( this.collEntity[ i ][ j ] );
+							j++;
 						}
-					Assert.notNull( this.collEntity[ i ] );
+					}
+					else
+					{
+						this.collEntity[ i ] = new E[ 1 ];
+						for( E e : entities )
+							if( e.entity == entity )
+							{
+								this.collEntity[ i ][ 0 ] = e;
+								break;
+							}
+						Assert.notNull( this.collEntity[ i ][ 0 ] );
+					}
 					i++;
 				}
 			}

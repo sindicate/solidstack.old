@@ -18,6 +18,9 @@ package solidstack.query;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -26,6 +29,7 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import solidstack.util.Pars;
@@ -34,10 +38,18 @@ import solidstack.util.Pars;
 @SuppressWarnings( "javadoc" )
 public class Mapper
 {
-	@Test
-	public void testBasic() throws ClassNotFoundException, SQLException
+	static boolean init;
+
+	@BeforeTest
+	static public void init() throws ClassNotFoundException
 	{
+		assert !init;
 		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
+	}
+
+	@Test
+	public void testBasic() throws SQLException, IOException
+	{
 		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
 		Statement stat = connection.createStatement(); // TODO Can't we do this with a Query?
@@ -61,6 +73,15 @@ public class Mapper
 		assertThat( results ).hasSize( 3 );
 
 		RowList schemas = results[ 0 ];
+		Writer w = new FileWriter( "schemas.html" );
+		try
+		{
+			schemas.writeAsHTML( w );
+		}
+		finally
+		{
+			w.close();
+		}
 		for( Map<String,Object> schema : schemas )
 		{
 			String name = (String)schema.get( "schemaname" ); // TODO Use generics here
@@ -86,5 +107,51 @@ public class Mapper
 			Row table = (Row)column.get( "table" );
 			assertThat( table ).isNotNull();
 		}
+	}
+
+	@Test
+	public void testRollup() throws SQLException, IOException
+	{
+		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
+
+		QueryLoader queries = new QueryLoader();
+		queries.setTemplatePath( "classpath:/solidstack/query" );
+
+		Query query = queries.getQuery( "mapper-rollup.sql" );
+
+		RowList results = query.rowList( connection, Pars.EMPTY );
+		Writer w = new FileWriter( "rowlist.html" );
+		try
+		{
+			results.writeAsHTML( w );
+		}
+		finally
+		{
+			w.close();
+		}
+		assertThat( results.size() ).isEqualTo( 164 );
+	}
+
+	@Test
+	public void testFilter() throws SQLException, IOException
+	{
+		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
+
+		QueryLoader queries = new QueryLoader();
+		queries.setTemplatePath( "classpath:/solidstack/query" );
+
+		Query query = queries.getQuery( "mapper-filter.sql" );
+
+		RowList results = query.rowList( connection, Pars.EMPTY );
+		Writer w = new FileWriter( "filter.html" );
+		try
+		{
+			results.writeAsHTML( w );
+		}
+		finally
+		{
+			w.close();
+		}
+		assertThat( results.size() ).isEqualTo( 164 );
 	}
 }

@@ -1,5 +1,7 @@
 package solidstack.query.mapper;
 
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -32,11 +34,27 @@ public class Entity
 		if( this.collections != null )
 			for( Entry<String,Object> entry : this.collections.entrySet() )
 			{
-				String name = (String)entry.getValue();
-				Entity other = entities.get( name );
-				if( other == null )
-					throw new QueryException( "Entity '" + name + "' not found" );
-				entry.setValue( other );
+				Object object = entry.getValue();
+				if( object instanceof List )
+				{
+					ListIterator<Object> i = ( (List)object ).listIterator();
+					while( i.hasNext() )
+					{
+						String name = (String)i.next(); // TODO Better error
+						Entity other = entities.get( name );
+						if( other == null )
+							throw new QueryException( "Entity '" + name + "' not found" );
+						i.set( other );
+					}
+				}
+				else
+				{
+					String name = (String)entry.getValue(); // TODO Better error
+					Entity other = entities.get( name );
+					if( other == null )
+						throw new QueryException( "Entity '" + name + "' not found" );
+					entry.setValue( other );
+				}
 			}
 		if( this.references != null )
 			for( Entry<String,Object> entry : this.references.entrySet() )
