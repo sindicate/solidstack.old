@@ -13,8 +13,8 @@ import org.testng.annotations.Test;
 
 import solidstack.query.Query;
 import solidstack.query.QueryLoader;
-import solidstack.query.Row;
-import solidstack.query.RowList;
+import solidstack.query.DataObject;
+import solidstack.query.DataList;
 import solidstack.util.Pars;
 
 
@@ -52,8 +52,8 @@ public class Hibernate3Tests
 		QueryLoader queries = new QueryLoader();
 		queries.setTemplatePath( "classpath:/solidstack/query" );
 		Query query = queries.getQuery( "test.sql" );
-		RowList tables = query.hibernate().listOfMaps( session, new Pars() );
-		for( Row table : tables )
+		DataList tables = query.hibernate().dataList( session, new Pars() );
+		for( DataObject table : tables )
 			System.out.println( table.get( "TaBlEnAmE" ) );
 
 		session.close();

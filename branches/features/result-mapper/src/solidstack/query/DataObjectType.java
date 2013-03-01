@@ -8,17 +8,17 @@ import java.util.Map;
 /**
  * Represents the type of a row. It contains the name of the type and the names of the attributes.
  */
-public class RowType implements Serializable
+public class DataObjectType implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
 	private String name;
-	private Map<String,Integer> names;
+	private Map<String,Integer> names; // Use my ValueMap?
 
 	/**
 	 * @param names The names of the attributes.
 	 */
-	public RowType( String[] names )
+	public DataObjectType( String[] names )
 	{
 		Map<String,Integer> n = this.names = new LinkedHashMap<String,Integer>();
 		for( int len = names.length, i = 0; i < len; i++ )
@@ -29,7 +29,7 @@ public class RowType implements Serializable
 	 * @param name The name of the type.
 	 * @param names The names of the attributes.
 	 */
-	public RowType( String name, String[] names )
+	public DataObjectType( String name, String[] names )
 	{
 		this( names );
 		this.name = name;

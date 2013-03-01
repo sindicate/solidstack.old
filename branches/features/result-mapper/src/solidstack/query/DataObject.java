@@ -26,17 +26,17 @@ import solidstack.util.ObjectArrayList;
 
 
 /**
- * Represents a row. A row has a type described by {@link RowType}. A row behave like a map, but with case insensitive
+ * Represents a row. A row has a type described by {@link DataObjectType}. A row behave like a map, but with case insensitive
  * keys. Or rather, {@link #containsKey(Object)} and {@link #get(Object)} behave case insensitive. When you retrieve the
  * keys with {@link #entrySet()} or {@link #keySet()} you get upper case keys.
  *
  * @author René M. de Bloois
  */
-public class Row implements Map<String,Object>, Serializable
+public class DataObject implements Map<String,Object>, Serializable
 {
 	private static final long serialVersionUID = 1L;
 
-	private RowType type; // This one is shared by all instances
+	private DataObjectType type; // This one is shared by all instances
 	private Object[] values;
 
 	/**
@@ -45,7 +45,7 @@ public class Row implements Map<String,Object>, Serializable
 	 * @param type The row type.
 	 * @param values The values.
 	 */
-	public Row( RowType type, Object[] values )
+	public DataObject( DataObjectType type, Object[] values )
 	{
 		this.type = type;
 		this.values = values;
@@ -88,6 +88,11 @@ public class Row implements Map<String,Object>, Serializable
 	public Collection<Object> values()
 	{
 		return new ObjectArrayList( this.values );
+	}
+
+	public Object[] getTuple()
+	{
+		return this.values;
 	}
 
 	public boolean containsValue( Object value )

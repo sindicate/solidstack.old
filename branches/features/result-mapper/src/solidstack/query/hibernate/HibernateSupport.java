@@ -29,12 +29,12 @@ import org.hibernate.Session;
 import org.hibernate.jdbc.Work;
 
 import solidstack.lang.Assert;
+import solidstack.query.DataList;
 import solidstack.query.PreparedQuery;
 import solidstack.query.Query;
 import solidstack.query.Query.Language;
 import solidstack.query.QuerySQLException;
 import solidstack.query.ResultHolder;
-import solidstack.query.RowList;
 import solidstack.query.jpa.JPASupport;
 
 
@@ -117,12 +117,11 @@ public class HibernateSupport
 	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return A {@link List} of {@link Map}s.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
-	 * @see Query#listOfMaps(Connection, Object)
+	 * @see Query#dataList(Connection, Object)
 	 */
-	// TODO Rename to rowList()
-	static public RowList listOfMaps( final Query query, final Session session, final Object args )
+	static public DataList dataList( final Query query, final Session session, final Object args )
 	{
-		final ResultHolder<RowList> result = new ResultHolder<RowList>();
+		final ResultHolder<DataList> result = new ResultHolder<DataList>();
 
 		session.doWork( new Work()
 		{
@@ -130,7 +129,7 @@ public class HibernateSupport
 			{
 				try
 				{
-					result.set( query.rowList( connection, args ) );
+					result.set( query.dataList( connection, args ) );
 				}
 				catch( QuerySQLException e )
 				{

@@ -18,9 +18,7 @@ package solidstack.query;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -69,42 +67,42 @@ public class Mapper
 
 		Query query = queries.getQuery( "mapper.sql" );
 
-		RowList[] results = query.rowLists( connection, Pars.EMPTY );
+		DataList[] results = query.dataLists( connection, Pars.EMPTY );
 		assertThat( results ).hasSize( 3 );
 
-		RowList schemas = results[ 0 ];
-		Writer w = new FileWriter( "schemas.html" );
-		try
-		{
-			schemas.writeAsHTML( w );
-		}
-		finally
-		{
-			w.close();
-		}
+		DataList schemas = results[ 0 ];
+//		Writer w = new FileWriter( "schemas.html" );
+//		try
+//		{
+//			schemas.writeAsHTML( w );
+//		}
+//		finally
+//		{
+//			w.close();
+//		}
 		for( Map<String,Object> schema : schemas )
 		{
 			String name = (String)schema.get( "schemaname" ); // TODO Use generics here
-			RowList tables = (RowList)schema.get( "tables" );
+			DataList tables = (DataList)schema.get( "tables" );
 			int count = tableCounts.get( name );
 			assertThat( tables.size() ).isEqualTo( count );
 		}
 
-		RowList tables = results[ 1 ];
+		DataList tables = results[ 1 ];
 		for( Map<String,Object> table : tables )
 		{
 			String name = (String)table.get( "tablename" ); // TODO Use generics here
-			RowList columns = (RowList)table.get( "columns" );
+			DataList columns = (DataList)table.get( "columns" );
 			int count = columnCounts.get( name );
 			assertThat( columns.size() ).isEqualTo( count );
-			Row schema = (Row)table.get( "schema" );
+			DataObject schema = (DataObject)table.get( "schema" );
 			assertThat( schema ).isNotNull();
 		}
 
-		RowList columns = results[ 2 ];
+		DataList columns = results[ 2 ];
 		for( Map<String,Object> column : columns )
 		{
-			Row table = (Row)column.get( "table" );
+			DataObject table = (DataObject)column.get( "table" );
 			assertThat( table ).isNotNull();
 		}
 	}
@@ -119,16 +117,16 @@ public class Mapper
 
 		Query query = queries.getQuery( "mapper-rollup.sql" );
 
-		RowList results = query.rowList( connection, Pars.EMPTY );
-		Writer w = new FileWriter( "rowlist.html" );
-		try
-		{
-			results.writeAsHTML( w );
-		}
-		finally
-		{
-			w.close();
-		}
+		DataList results = query.dataList( connection, Pars.EMPTY );
+//		Writer w = new FileWriter( "rowlist.html" );
+//		try
+//		{
+//			results.writeAsHTML( w );
+//		}
+//		finally
+//		{
+//			w.close();
+//		}
 		assertThat( results.size() ).isEqualTo( 164 );
 	}
 
@@ -142,16 +140,16 @@ public class Mapper
 
 		Query query = queries.getQuery( "mapper-filter.sql" );
 
-		RowList results = query.rowList( connection, Pars.EMPTY );
-		Writer w = new FileWriter( "filter.html" );
-		try
-		{
-			results.writeAsHTML( w );
-		}
-		finally
-		{
-			w.close();
-		}
-		assertThat( results.size() ).isEqualTo( 164 );
+		DataList results = query.dataList( connection, Pars.EMPTY );
+//		Writer w = new FileWriter( "filter.html" );
+//		try
+//		{
+//			results.writeAsHTML( w );
+//		}
+//		finally
+//		{
+//			w.close();
+//		}
+		assertThat( results.size() ).isGreaterThanOrEqualTo( 2 );
 	}
 }

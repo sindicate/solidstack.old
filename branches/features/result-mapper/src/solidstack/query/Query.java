@@ -284,7 +284,7 @@ public class Query
 	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return A RowList.
 	 */
-	public RowList[] rowLists( Connection connection, Object args )
+	public DataList[] dataLists( Connection connection, Object args )
 	{
 		try
 		{
@@ -301,15 +301,15 @@ public class Query
 				for( int col = 0; col < columnCount; col++ )
 					names[ col ] = metaData.getColumnLabel( col + 1 ).toUpperCase( Locale.ENGLISH );
 
-				RowType type = new RowType( names );
+				DataObjectType type = new DataObjectType( names );
 
 				List<Object[]> tuples = listOfArrays( resultSet, this.flyWeight );
-				RowList rowList = new RowList( type, tuples );
+				DataList rowList = new DataList( type, tuples );
 
 				if( prepared.getResultModel() != null )
 					return transform( rowList, prepared.getResultModel() );
 
-				return new RowList[] { rowList };
+				return new DataList[] { rowList };
 			}
 			finally
 			{
@@ -329,9 +329,9 @@ public class Query
 	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return A RowList.
 	 */
-	public RowList rowList( Connection connection, Object args )
+	public DataList dataList( Connection connection, Object args )
 	{
-		return rowLists( connection, args )[ 0 ];
+		return dataLists( connection, args )[ 0 ];
 	}
 
 	/**
@@ -491,7 +491,7 @@ public class Query
 	// TODO List<Object[]> -> TupleList
 	// TODO But there can be different types in the same rowlist
 	// TODO Need a root to collect multiple types when the main list contains multiple types
-	static private RowList[] transform( RowList result, ResultModel model )
+	static private DataList[] transform( DataList result, ResultModel model )
 	{
 //		new Dumper().dumpTo( result, new File( "result.out" ) );
 
@@ -504,8 +504,9 @@ public class Query
 
 		// TODO Check that all the entities attributes are in the result list
 
-		for( Object[] tuple : result.tuples() )
+		for( DataObject object : result.getObjects() )
 		{
+			Object[] tuple = object.getTuple();
 			for( E e : es )
 			{
 				int keyLen = e.keyLen;
@@ -514,14 +515,15 @@ public class Query
 				for( i = 0; i < keyLen; i++ )
 					k[ i ] = tuple[ keyIndex[ i ] ];
 				Key key = new Key( k );
-				Object[] eRow = e.uniqueMap.get( key );
+				DataObject eRow = e.uniqueMap.get( key );
 				if( eRow == null )
 				{
 					int attLen = e.attLen;
 					int[] attIndex = e.attIndex;
-					eRow = new Object[ e.attCount ];
+					Object[] tuple2 = new Object[ e.attCount ];
 					for( i = 0; i < attLen; i++ )
-						eRow[ i ] = tuple[ attIndex[ i ] ];
+						tuple2[ i ] = tuple[ attIndex[ i ] ];
+					eRow = new DataObject( e.type, tuple2 );
 					e.uniqueMap.put( key, eRow );
 					e.result.add( eRow );
 				}
@@ -544,12 +546,13 @@ public class Query
 				{
 					int len = collEntitys.length;
 					int collAtt = e.collAtt;
-					Object[] row = e.list.get( i );
+					DataObject row = e.list.get( i );
+					Object[] tuple = row.getTuple();
 					for( int j = 0; j < len; j++ )
 					{
-						GuardedRowList x = (GuardedRowList)row[ collAtt + j ];
+						GuardedDataList x = (GuardedDataList)tuple[ collAtt + j ];
 						if( x == null )
-							row[ collAtt + j ] = x = new GuardedRowList( collEntitys[ j ][ 0 ].type ); // TODO But we have multiple types
+							tuple[ collAtt + j ] = x = new GuardedDataList();
 						for( E o : collEntitys[ j ] )
 							if( o != null )
 								x.add( o.list.get( i ) );
@@ -560,9 +563,10 @@ public class Query
 				{
 					int len = refEntity.length;
 					int refAtt = e.refAtt;
-					Object[] row = e.list.get( i );
+					DataObject row = e.list.get( i );
+					Object[] tuple = row.getTuple();
 					for( int j = 0; j < len; j++ )
-						row[ refAtt + j ] = new Row( refEntity[ j ].type, refEntity[ j ].list.get( i ) );
+						tuple[ refAtt + j ] = refEntity[ j ].list.get( i );
 				}
 			}
 		}
@@ -572,17 +576,20 @@ public class Query
 			{
 				int start = e.collAtt;
 				int end = start + e.collEntity.length;
-				for( Object[] row : e.result )
+				for( DataObject row : e.result )
+				{
+					Object[] tuple = row.getTuple();
 					for( int j = start; j < end; j++ )
 					{
-						GuardedRowList x = (GuardedRowList)row[ j ];
-						row[ j ] = x.unwrap();
+						GuardedDataList x = (GuardedDataList)tuple[ j ];
+						tuple[ j ] = x.unwrap();
 					}
+				}
 			}
 
-		RowList[] r = new RowList[ es.length ];
+		DataList[] r = new DataList[ es.length ];
 		for( int len = es.length, k = 0; k < len; k++ )
-			r[ k ] = new RowList( es[ k ].type, es[ k ].result );
+			r[ k ] = new DataList( es[ k ].result );
 
 //		i = 1;
 //		for( RowList e : r )
@@ -598,10 +605,10 @@ public class Query
 		int[] keyIndex;
 		int attLen;
 		int[] attIndex;
-		RowType type;
-		Map<Key,Object[]> uniqueMap = new HashMap<Key,Object[]>();
-		List<Object[]> list = new ArrayList<Object[]>();
-		List<Object[]> result = new ArrayList<Object[]>();
+		DataObjectType type;
+		Map<Key,DataObject> uniqueMap = new HashMap<Key,DataObject>();
+		List<DataObject> list = new ArrayList<DataObject>();
+		List<DataObject> result = new ArrayList<DataObject>();
 		int collAtt;
 		E[][] collEntity;
 		int refAtt;
@@ -644,7 +651,7 @@ public class Query
 				for( String name : entity.getReferences().keySet() )
 					atts[ i++ ] = name.toUpperCase( Locale.ENGLISH );
 
-			this.type = new RowType( entity.getName(), atts );
+			this.type = new DataObjectType( entity.getName(), atts );
 
 		}
 
@@ -708,25 +715,25 @@ public class Query
 		}
 	}
 
-	static private class GuardedRowList
+	static private class GuardedDataList // TODO Rename to IdentitySet?
 	{
-		private RowList list;
+		private DataList list;
 		private IdentityHashMap<Object,Object> guard = new IdentityHashMap<Object,Object>();
 
-		GuardedRowList( RowType type )
+		GuardedDataList()
 		{
-			this.list = new RowList( type );
+			this.list = new DataList();
 		}
 
-		public void add( Object[] tuple )
+		public void add( DataObject object )
 		{
-			if( this.guard.containsKey( tuple ) )
+			if( this.guard.containsKey( object ) )
 				return;
-			this.guard.put( tuple, tuple );
-			this.list.add( tuple );
+			this.guard.put( object, object );
+			this.list.add( object );
 		}
 
-		public RowList unwrap()
+		public DataList unwrap()
 		{
 			return this.list;
 		}
