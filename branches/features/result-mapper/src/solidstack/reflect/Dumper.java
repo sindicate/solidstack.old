@@ -66,11 +66,18 @@ public class Dumper
 	};
 
 	private Set<String> overriddenCollection = new HashSet<String>();
+	private String[] overriddenDefault = new String[]
+	{
+		"solidstack.query.DataObject",
+		"solidstack.query.DataList",
+	};
 
 	public Dumper()
 	{
 		for( String cls : this.skipDefault )
 			this.skip.add( cls );
+		for( String cls : this.overriddenDefault )
+			this.overriddenCollection.add( cls );
 	}
 
 	public Dumper setLineLength( int lineLength )

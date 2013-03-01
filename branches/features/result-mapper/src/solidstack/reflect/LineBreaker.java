@@ -216,7 +216,7 @@ public class LineBreaker
 			if( s == NEST )
 				this.indent++;
 			else if( s == END_NEST )
-				Assert.fail( "Not supported: " + s );
+				this.indent--;
 			else if( s == OBJECT )
 				this.level++;
 			else if( s == END_OBJECT )

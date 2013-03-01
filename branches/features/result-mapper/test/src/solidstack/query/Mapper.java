@@ -18,6 +18,7 @@ package solidstack.query;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -30,6 +31,7 @@ import java.util.Map;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
+import solidstack.reflect.Dumper;
 import solidstack.util.Pars;
 
 
@@ -71,6 +73,7 @@ public class Mapper
 		assertThat( results ).hasSize( 3 );
 
 		DataList schemas = results[ 0 ];
+		new Dumper().setLineLength( 240 ).dumpTo( schemas, new File( "schemas.out" ) );
 //		Writer w = new FileWriter( "schemas.html" );
 //		try
 //		{
@@ -118,6 +121,7 @@ public class Mapper
 		Query query = queries.getQuery( "mapper-rollup.sql" );
 
 		DataList results = query.dataList( connection, Pars.EMPTY );
+		new Dumper().setLineLength( 240 ).dumpTo( results, new File( "dataList.out" ) );
 //		Writer w = new FileWriter( "rowlist.html" );
 //		try
 //		{
@@ -141,6 +145,7 @@ public class Mapper
 		Query query = queries.getQuery( "mapper-filter.sql" );
 
 		DataList results = query.dataList( connection, Pars.EMPTY );
+		new Dumper().setLineLength( 240 ).dumpTo( results, new File( "filter.out" ) );
 //		Writer w = new FileWriter( "filter.html" );
 //		try
 //		{
