@@ -18,6 +18,8 @@ public class DumperTests
 	@Test
 	public void test1()
 	{
+		this.dumper.setLineLength( 40 );
+
 		test( this.dumper.dump( null ), "<null>" );
 		test( this.dumper.dump( new ByteArrayOutputStream() ), "java.io.ByteArrayOutputStream <id=1>\n{\n\tbuf: byte[32],\n\tcount: (int)0\n}" );
 
@@ -26,9 +28,17 @@ public class DumperTests
 		array[ 2 ] = new BigDecimal( "0" );
 		test( array, "java.lang.Object[] <id=1>\n[\n\t<null>,\n\t(Integer)0,\n\t(BigDecimal)0,\n\t<null>\n]" );
 
+		this.dumper.setLineLength( 80 );
+
+		test( array, "java.lang.Object[] <id=1> [ <null>, (Integer)0, (BigDecimal)0, <null> ]" );
+
+		array[ 3 ] = new Object[] { "test1", "test2" };
+		test( array, "java.lang.Object[] <id=1>\n[\n\t<null>,\n\t(Integer)0,\n\t(BigDecimal)0,\n\tjava.lang.Object[] <id=2> [ \"test1\", \"test2\" ]\n]" );
+
 		this.dumper.setSingleLine( true ).hideIds( true );
+
 		test( this.dumper.dump( new ByteArrayOutputStream() ), "java.io.ByteArrayOutputStream { buf: byte[32], count: (int)0 }" );
-		test( array, "java.lang.Object[] [ <null>, (Integer)0, (BigDecimal)0, <null> ]" );
+		test( array, "java.lang.Object[] [ <null>, (Integer)0, (BigDecimal)0, java.lang.Object[] [ \"test1\", \"test2\" ] ]" );
 
 		test( (Object)"\\ \n \r \t \"", "\"\\\\ \\n \\r \\t \\\"\"" );
 		test( new StringBuilder(), "(java.lang.StringBuilder)\"\"" );

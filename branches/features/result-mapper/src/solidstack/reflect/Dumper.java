@@ -52,6 +52,7 @@ public class Dumper
 	private boolean hideTransients;
 	private boolean singleLine;
 	private boolean hideIds;
+	private int lineLength = 80;
 
 	private Set<String> skip = new HashSet<String>();
 	private String[] skipDefault = new String[]
@@ -70,6 +71,12 @@ public class Dumper
 	{
 		for( String cls : this.skipDefault )
 			this.skip.add( cls );
+	}
+
+	public Dumper setLineLength( int lineLength )
+	{
+		this.lineLength = lineLength;
+		return this;
 	}
 
 	public Dumper hideTransients( boolean hideTransients )
@@ -139,8 +146,16 @@ public class Dumper
 
 	public void dumpTo( Object o, Writer out )
 	{
-		DumpWriter writer = new DumpWriter( out );
-		dumpTo( o, writer );
+		LineBreaker breaker = new LineBreaker( out, this.singleLine ? -1 : this.lineLength );
+		try
+		{
+			dumpTo( o, breaker );
+			breaker.flush();
+		}
+		catch( IOException e )
+		{
+			throw new SystemException( e );
+		}
 	}
 
 	public void dumpTo( Object o, File file )
@@ -163,8 +178,9 @@ public class Dumper
 		}
 	}
 
-	public void dumpTo( Object o, DumpWriter out )
+	private void dumpTo( Object o, LineBreaker out ) throws IOException
 	{
+		out.start();
 		try
 		{
 			if( o == null )
@@ -261,14 +277,14 @@ public class Dumper
 					out.append( " []" );
 				else
 				{
-					out.newlineOrSpace().append( "[" ).newlineOrSpace().indent().setFirst();
+					out.breakingSpace().append( "[" ).breakingSpace().nest();
 					int rowCount = Array.getLength( o );
 					for( int i = 0; i < rowCount; i++ )
 					{
-						out.comma();
+						if( i != 0 ) out.append( "," ).breakingSpace();
 						dumpTo( Array.get( o, i ), out );
 					}
-					out.newlineOrSpace().unIndent().append( "]" );
+					out.endNest().breakingSpace().append( "]" );
 				}
 			}
 			else if( o instanceof Collection && !this.overriddenCollection.contains( className ) )
@@ -278,13 +294,14 @@ public class Dumper
 					out.append( " []" );
 				else
 				{
-					out.newlineOrSpace().append( "[" ).newlineOrSpace().indent().setFirst();
+					out.breakingSpace().append( "[" ).breakingSpace().nest();
+					int i = 0;
 					for( Object value : list )
 					{
-						out.comma();
+						if( i++ != 0 ) out.append( "," ).breakingSpace();
 						dumpTo( value, out );
 					}
-					out.newlineOrSpace().unIndent().append( "]" );
+					out.endNest().breakingSpace().append( "]" );
 				}
 			}
 			else if( o instanceof Properties && !this.overriddenCollection.contains( className ) ) // Properties is a Map, so it must come before the Map
@@ -294,20 +311,22 @@ public class Dumper
 					def.setAccessible( true );
 				Properties defaults = (Properties)def.get( o );
 				Hashtable<?, ?> map = (Hashtable<?, ?>)o;
-				out.newlineOrSpace().append( "[" ).newlineOrSpace().indent().setFirst();
+				out.breakingSpace().append( "[" ).breakingSpace().nest();
+				int i = 0;
 				for( Map.Entry<?, ?> entry : map.entrySet() )
 				{
-					out.comma();
+					if( i++ != 0 ) out.append( "," ).breakingSpace();
 					dumpTo( entry.getKey(), out );
 					out.append( ": " );
 					dumpTo( entry.getValue(), out );
 				}
 				if( defaults != null && !defaults.isEmpty() )
 				{
-					out.comma().append( "defaults: " );
+					if( i != 0 ) out.append( "," ).breakingSpace();
+					out.append( "defaults: " );
 					dumpTo( defaults, out );
 				}
-				out.newlineOrSpace().unIndent().append( "]" );
+				out.endNest().breakingSpace().append( "]" );
 			}
 			else if( o instanceof Map && !this.overriddenCollection.contains( className ) )
 			{
@@ -316,46 +335,47 @@ public class Dumper
 					out.append( " []" );
 				else
 				{
-					out.newlineOrSpace().append( "[" ).newlineOrSpace().indent().setFirst();
+					out.breakingSpace().append( "[" ).breakingSpace().nest();
+					int i = 0;
 					for( Map.Entry<?, ?> entry : map.entrySet() )
 					{
-						out.comma();
+						if( i++ != 0 ) out.append( "," ).breakingSpace();
 						dumpTo( entry.getKey(), out );
 						out.append( ": " );
 						dumpTo( entry.getValue(), out );
 					}
-					out.newlineOrSpace().unIndent().append( "]" );
+					out.endNest().breakingSpace().append( "]" );
 				}
 			}
 			else if( o instanceof Method )
 			{
-				out.newlineOrSpace().append( "{" ).newlineOrSpace().indent().setFirst();
+				out.breakingSpace().append( "{" ).breakingSpace().nest();
 
 				Field field = cls.getDeclaredField( "clazz" );
 				if( !field.isAccessible() )
 					field.setAccessible( true );
-				out.comma().append( "clazz" ).append( ": " );
+				out.append( "clazz" ).append( ": " );
 				dumpTo( field.get( o ), out );
 
 				field = cls.getDeclaredField( "name" );
 				if( !field.isAccessible() )
 					field.setAccessible( true );
-				out.comma().append( "name" ).append( ": " );
+				out.append( "," ).breakingSpace().append( "name" ).append( ": " );
 				dumpTo( field.get( o ), out );
 
 				field = cls.getDeclaredField( "parameterTypes" );
 				if( !field.isAccessible() )
 					field.setAccessible( true );
-				out.comma().append( "parameterTypes" ).append( ": " );
+				out.append( "," ).breakingSpace().append( "parameterTypes" ).append( ": " );
 				dumpTo( field.get( o ), out );
 
 				field = cls.getDeclaredField( "returnType" );
 				if( !field.isAccessible() )
 					field.setAccessible( true );
-				out.comma().append( "returnType" ).append( ": " );
+				out.append( "," ).breakingSpace().append( "returnType" ).append( ": " );
 				dumpTo( field.get( o ), out );
 
-				out.newlineOrSpace().unIndent().append( "}" );
+				out.endNest().breakingSpace().append( "}" );
 			}
 			else
 			{
@@ -380,12 +400,14 @@ public class Dumper
 					out.append( " {}" );
 				else
 				{
-					out.newlineOrSpace().append( "{" ).newlineOrSpace().indent().setFirst();
+					out.breakingSpace().append( "{" ).breakingSpace().nest();
+					int i = 0;
 					for( Field field : fields )
 						if( ( field.getModifiers() & Modifier.STATIC ) == 0 )
 							if( !this.hideTransients || ( field.getModifiers() & Modifier.TRANSIENT ) == 0 )
 							{
-								out.comma().append( field.getName() ).append( ": " );
+								if( i++ != 0 ) out.append( "," ).breakingSpace();
+								out.append( field.getName() ).append( ": " );
 
 								if( !field.isAccessible() )
 									field.setAccessible( true );
@@ -398,17 +420,21 @@ public class Dumper
 								else
 									dumpTo( field.get( o ), out );
 							}
-					out.newlineOrSpace().unIndent().append( "}" );
+					out.endNest().breakingSpace().append( "}" );
 				}
 			}
 		}
-		catch( IOException e )
-		{
-			throw new SystemException( e );
-		}
-		catch( Exception e )
+		catch( IllegalAccessException e )
 		{
 			dumpTo( e.toString(), out );
+		}
+		catch( NoSuchFieldException e ) // TODO Back to exception
+		{
+			dumpTo( e.toString(), out );
+		}
+		finally
+		{
+			out.end();
 		}
 	}
 
