@@ -13,32 +13,41 @@ import org.testng.annotations.Test;
 
 public class DumperTests
 {
-	private Dumper dumper = new Dumper();
+	private Dumper dumper; // TODO Is this safe?
 
 	@Test
-	public void test1()
+	public void breaking()
 	{
+		this.dumper = new Dumper();
+
 		this.dumper.setLineLength( 40 );
 
 		test( this.dumper.dump( null ), "<null>" );
 		test( this.dumper.dump( new ByteArrayOutputStream() ), "java.io.ByteArrayOutputStream <id=1>\n{\n\tbuf: byte[32],\n\tcount: (int)0\n}" );
 
-		Object[] array = new Object[ 4 ];
-		array[ 1 ] = new Integer( 0 );
-		array[ 2 ] = new BigDecimal( "0" );
+		Object[] array = new Object[] { null, new Integer( 0 ), new BigDecimal( "0" ), null };
 		test( array, "java.lang.Object[] <id=1>\n[\n\t<null>,\n\t(Integer)0,\n\t(BigDecimal)0,\n\t<null>\n]" );
 
 		this.dumper.setLineLength( 80 );
-
 		test( array, "java.lang.Object[] <id=1> [ <null>, (Integer)0, (BigDecimal)0, <null> ]" );
 
 		array[ 3 ] = new Object[] { "test1", "test2" };
-		test( array, "java.lang.Object[] <id=1>\n[\n\t<null>,\n\t(Integer)0,\n\t(BigDecimal)0,\n\tjava.lang.Object[] <id=2> [ \"test1\", \"test2\" ]\n]" );
 
+		test( array, "java.lang.Object[] <id=1> [ <null>, (Integer)0, (BigDecimal)0, java.lang.Object[] <id=2> [ \"test1\", \"test2\" ] ]", 112, 111 );
+		test( array, "java.lang.Object[] <id=1>\n[\n\t<null>,\n\t(Integer)0,\n\t(BigDecimal)0,\n\tjava.lang.Object[] <id=2> [ \"test1\", \"test2\" ]\n]", 110, 46 );
+		test( array, "java.lang.Object[] <id=1>\n[\n\t<null>,\n\t(Integer)0,\n\t(BigDecimal)0,\n\tjava.lang.Object[] <id=2>\n\t[\n\t\t\"test1\",\n\t\t\"test2\"\n\t]\n]", 45, 0 );
+	}
+
+	@Test
+	public void test2()
+	{
+		this.dumper = new Dumper();
 		this.dumper.setSingleLine( true ).hideIds( true );
 
 		test( this.dumper.dump( new ByteArrayOutputStream() ), "java.io.ByteArrayOutputStream { buf: byte[32], count: (int)0 }" );
-		test( array, "java.lang.Object[] [ <null>, (Integer)0, (BigDecimal)0, java.lang.Object[] [ \"test1\", \"test2\" ] ]" );
+
+		Object[] array = new Object[] { null, new Integer( 0 ), new BigDecimal( "0" ), null };
+		test( array, "java.lang.Object[] [ <null>, (Integer)0, (BigDecimal)0, <null> ]" );
 
 		test( (Object)"\\ \n \r \t \"", "\"\\\\ \\n \\r \\t \\\"\"" );
 		test( new StringBuilder(), "(java.lang.StringBuilder)\"\"" );
@@ -71,7 +80,7 @@ public class DumperTests
 		test( new Object(), "java.lang.Object {}" );
 	}
 
-	private void test( String actual, String expected )
+	static private void test( String actual, String expected )
 	{
 		Assert.assertEquals( actual, expected );
 	}
@@ -80,6 +89,23 @@ public class DumperTests
 	{
 		this.dumper.resetIds();
 		Assert.assertEquals( this.dumper.dump( object ), expected );
+	}
+
+	private void test( Object object, String expected, int max, int min )
+	{
+		while( max >= min )
+		{
+			this.dumper.setLineLength( max );
+			try
+			{
+				test( object, expected );
+			}
+			catch( AssertionError e )
+			{
+				throw new RuntimeException( "Failed with line length " + max, e );
+			}
+			max--;
+		}
 	}
 
 	static public class SerializableObject implements Serializable

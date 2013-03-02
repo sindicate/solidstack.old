@@ -123,6 +123,8 @@ public class LineBreaker
 			{
 				int size = this.queue.size();
 				breakQueue();
+				if( size == 0 )
+					break;
 				Assert.isFalse( size == this.queue.size() );
 			}
 		}
@@ -201,6 +203,8 @@ public class LineBreaker
 		int level = this.nested;
 		this.breaking.set( 0, level + 1 );
 		int len = this.queue.size();
+		if( len == 0 )
+			return;
 		int last = len - 1;
 		for( int i = 0; i < len; i++ )
 		{
