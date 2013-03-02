@@ -666,7 +666,7 @@ public class Query
 				{
 					if( entity instanceof List )
 					{
-						List list = (List)entity;
+						List<Object> list = (List<Object>)entity;
 						this.collEntity[ i ] = new E[ list.size() ];
 						int j = 0;
 						for( Object entity2 : list )

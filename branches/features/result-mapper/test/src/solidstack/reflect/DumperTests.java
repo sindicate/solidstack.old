@@ -11,6 +11,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+
+@SuppressWarnings( "javadoc" )
 public class DumperTests
 {
 	private Dumper dumper; // TODO Is this safe?
@@ -39,7 +41,7 @@ public class DumperTests
 	}
 
 	@Test
-	public void test2()
+	public void basic()
 	{
 		this.dumper = new Dumper();
 		this.dumper.setSingleLine( true ).hideIds( true );
@@ -110,6 +112,7 @@ public class DumperTests
 
 	static public class SerializableObject implements Serializable
 	{
+		private static final long serialVersionUID = 1;
 		public int field;
 		transient public int field2;
 	}

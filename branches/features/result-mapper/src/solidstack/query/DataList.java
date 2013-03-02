@@ -41,9 +41,6 @@ public class DataList implements List<DataObject>, Serializable
 
 	/**
 	 * Constructor.
-	 *
-	 * @param list The list of arrays.
-	 * @param type The row type.
 	 */
 	public DataList()
 	{
@@ -51,10 +48,7 @@ public class DataList implements List<DataObject>, Serializable
 	}
 
 	/**
-	 * Constructor.
-	 *
 	 * @param list The list of arrays.
-	 * @param type The row type.
 	 */
 	public DataList( List<DataObject> list )
 	{
@@ -62,10 +56,8 @@ public class DataList implements List<DataObject>, Serializable
 	}
 
 	/**
-	 * Constructor.
-	 *
-	 * @param list The list of arrays.
 	 * @param type The row type.
+	 * @param tuples The list of arrays.
 	 */
 	public DataList( DataObjectType type, List<Object[]> tuples )
 	{
@@ -94,7 +86,7 @@ public class DataList implements List<DataObject>, Serializable
 	/**
 	 * Adds a tuple.
 	 *
-	 * @param tuple The tuple to add.
+	 * @param object The data object to add.
 	 */
 	public boolean add( DataObject object )
 	{

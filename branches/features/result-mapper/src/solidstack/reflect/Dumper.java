@@ -40,7 +40,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import solidstack.lang.Assert;
+import solidstack.io.SourceWriter;
 import solidstack.lang.SystemException;
 
 
@@ -153,7 +153,7 @@ public class Dumper
 
 	public void dumpTo( Object o, Writer out )
 	{
-		LineBreaker breaker = new LineBreaker( out, this.singleLine ? -1 : this.lineLength );
+		SourceWriter breaker = new SourceWriter( out, this.singleLine ? -1 : this.lineLength );
 		try
 		{
 			dumpTo( o, breaker );
@@ -185,7 +185,7 @@ public class Dumper
 		}
 	}
 
-	private void dumpTo( Object o, LineBreaker out ) throws IOException
+	private void dumpTo( Object o, SourceWriter out ) throws IOException
 	{
 		out.start();
 		try
@@ -431,84 +431,13 @@ public class Dumper
 				}
 			}
 		}
-		catch( IllegalAccessException e )
-		{
-			dumpTo( e.toString(), out );
-		}
-		catch( NoSuchFieldException e ) // TODO Back to exception
+		catch( Exception e )
 		{
 			dumpTo( e.toString(), out );
 		}
 		finally
 		{
 			out.end();
-		}
-	}
-
-	public class DumpWriter
-	{
-		private Writer out;
-		private String tabs = "\t\t\t\t\t\t\t\t";
-		private int indent;
-		private boolean needIndent;
-		private boolean first;
-
-		public DumpWriter( Writer out )
-		{
-			this.out = out;
-		}
-
-		public DumpWriter append( String s ) throws IOException
-		{
-			if( this.needIndent )
-			{
-				while( this.indent > this.tabs.length() )
-					this.tabs += this.tabs;
-				this.out.write( this.tabs.substring( 0, this.indent ) );
-				this.needIndent = false;
-			}
-			this.out.write( s );
-			return this;
-		}
-
-		public DumpWriter newlineOrSpace() throws IOException
-		{
-			if( !Dumper.this.singleLine )
-			{
-				this.out.write( "\n" );
-				this.needIndent = true;
-			}
-			else
-				this.out.write( " " );
-			return this;
-		}
-
-		public DumpWriter indent()
-		{
-			this.indent ++;
-			return this;
-		}
-
-		public DumpWriter unIndent()
-		{
-			this.indent --;
-			Assert.isTrue( this.indent >= 0 );
-			return this;
-		}
-
-		public DumpWriter setFirst()
-		{
-			this.first = true;
-			return this;
-		}
-
-		public DumpWriter comma() throws IOException
-		{
-			if( this.first )
-				this.first = false;
-			else
-				append( "," ).newlineOrSpace();
-			return this;
 		}
 	}
 }

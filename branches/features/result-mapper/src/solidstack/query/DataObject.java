@@ -90,6 +90,9 @@ public class DataObject implements Map<String,Object>, Serializable
 		return new ObjectArrayList( this.values );
 	}
 
+	/**
+	 * @return The tuple that contains the attribute values of this object.
+	 */
 	public Object[] getTuple()
 	{
 		return this.values;
