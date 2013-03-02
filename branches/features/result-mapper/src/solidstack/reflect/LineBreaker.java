@@ -11,44 +11,46 @@ import solidstack.lang.Assert;
 public class LineBreaker
 {
 	static final private String BREAKING_SPACE = " ";
-	static final private String NEST = "<nest>";
-	static final private String END_NEST = "</nest>";
-	static final private String OBJECT = "<object>";
-	static final private String END_OBJECT = "</object>";
+	static final private String INDENT = "INDENT";
+	static final private String UNINDENT = "UNINDENT";
+	static final private String NEST = "NEST";
+	static final private String UNNEST = "UNNEST";
 
 	private Writer out;
 	private int maxLineLength;
 
-	private String tabs = "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t"; // 32 tabs max
+	private String tabs = "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t";
 
-	private List<String> queue = new ArrayList<String>();
 	private int lineLength;
-	private int queueLength;
-	private int notUsedIndent;
-	private int indent;
-	private int queuedLevel;
-	private int level;
-	private BitSet breaking = new BitSet();
 	private boolean emptyLine = true;
+	private int indent;
+	private int nested;
+	private BitSet breaking = new BitSet();
+
+	private List<String> queue = new ArrayList<String>(); // TODO Maybe the implementation gets simpler if we use a structured queue: NEST & UNNEST builds a tree.
+	private int queuedLength;
+	private int queuedIndent;
+	private int queuedNested;
+
 
 	/**
 	 * @param out Where to write the output to.
-	 * @param lineLength The maximum line length.
+	 * @param maxLineLength The maximum line length.
 	 */
-	public LineBreaker( Writer out, int lineLength )
+	public LineBreaker( Writer out, int maxLineLength )
 	{
 		this.out = out;
-		this.maxLineLength = lineLength;
+		this.maxLineLength = maxLineLength;
 	}
 
 	/**
-	 * Start a nesting.
+	 * Start object nesting.
 	 */
 	public LineBreaker start()
 	{
-		this.queue.add( OBJECT );
-		this.queuedLevel++;
-		this.breaking.clear( this.queuedLevel ); // A new level, breaking = false
+		this.queue.add( NEST );
+		this.queuedNested++;
+		this.breaking.clear( this.queuedNested ); // A new level, breaking = false TODO Not sure if this is correct
 		return this;
 	}
 
@@ -59,20 +61,20 @@ public class LineBreaker
 	 */
 	public LineBreaker end() throws IOException
 	{
-		if( this.queuedLevel == 0 )
-			throw new IllegalStateException( "breakNesting is already 0" );
-		this.queue.add( END_OBJECT );
-		this.queuedLevel--;
+		if( this.queuedNested == 0 )
+			throw new IllegalStateException( "queuedNested is already 0" );
+		this.queue.add( UNNEST );
+		this.queuedNested--;
 		return this;
 	}
 
 	/**
 	 * Start a nesting.
 	 */
-	public LineBreaker nest()
+	public LineBreaker indent()
 	{
-		this.queue.add( NEST );
-		this.notUsedIndent++; // TODO THis one is not used
+		this.queue.add( INDENT );
+		this.queuedIndent++;
 		return this;
 	}
 
@@ -81,12 +83,12 @@ public class LineBreaker
 	 *
 	 * @throws IOException Whenever an {@link IOException} is thrown.
 	 */
-	public LineBreaker endNest() throws IOException
+	public LineBreaker unIndent() throws IOException
 	{
-		if( this.notUsedIndent == 0 )
-			throw new IllegalStateException( "nesting is already 0" );
-		this.queue.add( END_NEST );
-		this.notUsedIndent--;
+		if( this.queuedIndent == 0 )
+			throw new IllegalStateException( "queuedIndent is already 0" );
+		this.queue.add( UNINDENT );
+		this.queuedIndent--;
 		return this;
 	}
 
@@ -99,7 +101,7 @@ public class LineBreaker
 	 */
 	public LineBreaker append( String s ) throws IOException
 	{
-		if( this.breaking.get( this.queuedLevel ) )
+		if( this.breaking.get( this.queuedNested ) )
 		{
 			dumpQueue(); // Maybe from a deeper level that did not break
 			if( this.emptyLine )
@@ -114,16 +116,22 @@ public class LineBreaker
 			return this;
 		}
 		this.queue.add( s );
-		this.queueLength += s.length();
+		this.queuedLength += s.length();
 		if( this.maxLineLength != -1 )
-			while( this.lineLength + this.queueLength > this.maxLineLength )
+		{
+			while( this.lineLength + this.queuedLength > this.maxLineLength )
+			{
+				int size = this.queue.size();
 				breakQueue();
+				Assert.isFalse( size == this.queue.size() );
+			}
+		}
 		return this;
 	}
 
 	public LineBreaker breakingSpace() throws IOException
 	{
-		if( this.breaking.get( this.queuedLevel ) )
+		if( this.breaking.get( this.queuedNested ) )
 		{
 			dumpQueue(); // Maybe from a deeper level that did not break
 			this.out.write( '\n' );
@@ -132,7 +140,7 @@ public class LineBreaker
 			return this;
 		}
 		this.queue.add( BREAKING_SPACE );
-		this.queueLength ++;
+		this.queuedLength ++;
 		return this;
 	}
 
@@ -157,15 +165,15 @@ public class LineBreaker
 	{
 		for( String s : this.queue )
 		{
-			if( s == NEST )
+			if( s == INDENT )
 				this.indent++;
-			else if( s == END_NEST )
+			else if( s == UNINDENT )
 				this.indent--;
-			else if( s == OBJECT )
-				this.level++;
-			else if( s == END_OBJECT )
-				this.level--;
-			else if( this.breaking.get( this.level ) && s == BREAKING_SPACE )
+			else if( s == NEST )
+				this.nested++;
+			else if( s == UNNEST )
+				this.nested--;
+			else if( this.breaking.get( this.nested ) && s == BREAKING_SPACE )
 			{
 				this.out.write( '\n' );
 				this.emptyLine = true;
@@ -185,48 +193,48 @@ public class LineBreaker
 			}
 		}
 		this.queue.clear();
-		this.queueLength = 0;
+		this.queuedLength = 0;
 	}
 
 	private void breakQueue() throws IOException
 	{
-		int level = this.level;
+		int level = this.nested;
 		this.breaking.set( 0, level + 1 );
 		int len = this.queue.size();
 		int last = len - 1;
 		for( int i = 0; i < len; i++ )
 		{
 			String s = this.queue.get( i );
-			if( s == OBJECT )
+			if( s == NEST )
 			{
-				if( level == this.level )
+				if( level == this.nested )
 					last = i;
 				level++;
 			}
-			else if( s == END_OBJECT )
+			else if( s == UNNEST )
 			{
 				level--;
-				Assert.isTrue( level >= this.level );
+				Assert.isTrue( level >= this.nested );
 			}
 		}
 		Assert.isTrue( last >= 0 );
 		for( int i = 0; i <= last; i++ )
 		{
 			String s = this.queue.remove( 0 );
-			if( s == NEST )
+			if( s == INDENT )
 				this.indent++;
-			else if( s == END_NEST )
+			else if( s == UNINDENT )
 				this.indent--;
-			else if( s == OBJECT )
-				this.level++;
-			else if( s == END_OBJECT )
-				this.level--;
-			else if( this.breaking.get( this.level ) && s == BREAKING_SPACE )
+			else if( s == NEST )
+				this.nested++;
+			else if( s == UNNEST )
+				this.nested--;
+			else if( this.breaking.get( this.nested ) && s == BREAKING_SPACE )
 			{
 				this.out.write( '\n' );
 				this.emptyLine = true;
 				this.lineLength = 0;
-				this.queueLength --;
+				this.queuedLength --;
 			}
 			else
 			{
@@ -239,7 +247,7 @@ public class LineBreaker
 				}
 				this.out.write( s );
 				this.lineLength += s.length();
-				this.queueLength -= s.length();
+				this.queuedLength -= s.length();
 			}
 		}
 	}

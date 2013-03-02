@@ -284,14 +284,14 @@ public class Dumper
 					out.append( " []" );
 				else
 				{
-					out.breakingSpace().append( "[" ).breakingSpace().nest();
+					out.breakingSpace().append( "[" ).breakingSpace().indent();
 					int rowCount = Array.getLength( o );
 					for( int i = 0; i < rowCount; i++ )
 					{
 						if( i != 0 ) out.append( "," ).breakingSpace();
 						dumpTo( Array.get( o, i ), out );
 					}
-					out.endNest().breakingSpace().append( "]" );
+					out.unIndent().breakingSpace().append( "]" );
 				}
 			}
 			else if( o instanceof Collection && !this.overriddenCollection.contains( className ) )
@@ -301,14 +301,14 @@ public class Dumper
 					out.append( " []" );
 				else
 				{
-					out.breakingSpace().append( "[" ).breakingSpace().nest();
+					out.breakingSpace().append( "[" ).breakingSpace().indent();
 					int i = 0;
 					for( Object value : list )
 					{
 						if( i++ != 0 ) out.append( "," ).breakingSpace();
 						dumpTo( value, out );
 					}
-					out.endNest().breakingSpace().append( "]" );
+					out.unIndent().breakingSpace().append( "]" );
 				}
 			}
 			else if( o instanceof Properties && !this.overriddenCollection.contains( className ) ) // Properties is a Map, so it must come before the Map
@@ -318,7 +318,7 @@ public class Dumper
 					def.setAccessible( true );
 				Properties defaults = (Properties)def.get( o );
 				Hashtable<?, ?> map = (Hashtable<?, ?>)o;
-				out.breakingSpace().append( "[" ).breakingSpace().nest();
+				out.breakingSpace().append( "[" ).breakingSpace().indent();
 				int i = 0;
 				for( Map.Entry<?, ?> entry : map.entrySet() )
 				{
@@ -333,7 +333,7 @@ public class Dumper
 					out.append( "defaults: " );
 					dumpTo( defaults, out );
 				}
-				out.endNest().breakingSpace().append( "]" );
+				out.unIndent().breakingSpace().append( "]" );
 			}
 			else if( o instanceof Map && !this.overriddenCollection.contains( className ) )
 			{
@@ -342,7 +342,7 @@ public class Dumper
 					out.append( " []" );
 				else
 				{
-					out.breakingSpace().append( "[" ).breakingSpace().nest();
+					out.breakingSpace().append( "[" ).breakingSpace().indent();
 					int i = 0;
 					for( Map.Entry<?, ?> entry : map.entrySet() )
 					{
@@ -351,12 +351,12 @@ public class Dumper
 						out.append( ": " );
 						dumpTo( entry.getValue(), out );
 					}
-					out.endNest().breakingSpace().append( "]" );
+					out.unIndent().breakingSpace().append( "]" );
 				}
 			}
 			else if( o instanceof Method )
 			{
-				out.breakingSpace().append( "{" ).breakingSpace().nest();
+				out.breakingSpace().append( "{" ).breakingSpace().indent();
 
 				Field field = cls.getDeclaredField( "clazz" );
 				if( !field.isAccessible() )
@@ -382,7 +382,7 @@ public class Dumper
 				out.append( "," ).breakingSpace().append( "returnType" ).append( ": " );
 				dumpTo( field.get( o ), out );
 
-				out.endNest().breakingSpace().append( "}" );
+				out.unIndent().breakingSpace().append( "}" );
 			}
 			else
 			{
@@ -407,7 +407,7 @@ public class Dumper
 					out.append( " {}" );
 				else
 				{
-					out.breakingSpace().append( "{" ).breakingSpace().nest();
+					out.breakingSpace().append( "{" ).breakingSpace().indent();
 					int i = 0;
 					for( Field field : fields )
 						if( ( field.getModifiers() & Modifier.STATIC ) == 0 )
@@ -427,7 +427,7 @@ public class Dumper
 								else
 									dumpTo( field.get( o ), out );
 							}
-					out.endNest().breakingSpace().append( "}" );
+					out.unIndent().breakingSpace().append( "}" );
 				}
 			}
 		}
