@@ -22,7 +22,7 @@ public class DumperTests
 	{
 		this.dumper = new Dumper();
 
-		this.dumper.setLineLength( 40 );
+		this.dumper.setLineLength( 40 ).disableImports( true );
 
 		test( this.dumper.dump( null ), "<null>" );
 		test( this.dumper.dump( new ByteArrayOutputStream() ), "java.io.ByteArrayOutputStream <id=1>\n{\n\tbuf: byte[32],\n\tcount: (int)0\n}" );
@@ -44,7 +44,7 @@ public class DumperTests
 	public void basic()
 	{
 		this.dumper = new Dumper();
-		this.dumper.setSingleLine( true ).hideIds( true );
+		this.dumper.setSingleLine( true ).hideIds( true ).disableImports( true );
 
 		test( this.dumper.dump( new ByteArrayOutputStream() ), "java.io.ByteArrayOutputStream { buf: byte[32], count: (int)0 }" );
 

@@ -112,7 +112,7 @@ public class SourceWriter
 			if( this.parent != null )
 				Assert.isTrue( this.parent.broken );
 			while( this.queue.size() > 1 )
-				flush( this.queue.remove( 0 ) );
+				flush( this.queue.remove( 0 ) ); // FIXME Should this.length not be changed now?
 			if( !( this.queue.get( 0 ) instanceof Fragment ) )
 				flush( this.queue.remove( 0 ) );
 		}
@@ -236,7 +236,10 @@ public class SourceWriter
 	 */
 	public SourceWriter append( String s ) throws IOException
 	{
-		this.current.append( s );
+		if( this.current == null )
+			this.out.write( s );
+		else
+			this.current.append( s );
 		return this;
 	}
 
@@ -250,6 +253,13 @@ public class SourceWriter
 	{
 		this.current.breakingSpace();
 		return this;
+	}
+
+	public void newline() throws IOException
+	{
+		if( this.current != null )
+			throw new UnsupportedOperationException();
+		this.out.write( '\n' );
 	}
 
 	/**

@@ -34,25 +34,35 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import solidstack.io.SourceWriter;
 import solidstack.lang.SystemException;
+import solidstack.util.Strings;
 
 
 public class Dumper
 {
-	private IdentityHashMap<Object, Integer> visited = new IdentityHashMap<Object, Integer>();
+	static final private Integer ZERO = Integer.valueOf( 0 );
+
 	private int id;
+	private IdentityHashMap<Object, Integer> visited;
+
+	private IdentityHashMap<Class<?>, String> simpleNames;
+	private Set<String> simpleNamesInUse;
 
 	private boolean hideTransients;
 	private boolean singleLine;
 	private boolean hideIds;
 	private int lineLength = 80;
+	private boolean disableImports;
 
 	private Set<String> skip = new HashSet<String>();
 	private String[] skipDefault = new String[]
@@ -101,6 +111,12 @@ public class Dumper
 	public Dumper hideIds( boolean hideIds )
 	{
 		this.hideIds = hideIds;
+		return this;
+	}
+
+	public Dumper disableImports( boolean disable )
+	{
+		this.disableImports = disable;
 		return this;
 	}
 
@@ -153,11 +169,53 @@ public class Dumper
 
 	public void dumpTo( Object o, Writer out )
 	{
-		SourceWriter breaker = new SourceWriter( out, this.singleLine ? -1 : this.lineLength );
+		this.simpleNames = new IdentityHashMap<Class<?>,String>();
+
+		if( !this.disableImports )
+		{
+			this.visited = new IdentityHashMap<Object, Integer>();
+			Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
+			scanForClasses( o, classes );
+
+			this.simpleNamesInUse = new HashSet<String>();
+			for( Class<?> cls : classes )
+			{
+				String simple = cls.getSimpleName();
+				if( !this.simpleNamesInUse.contains( simple ) )
+				{
+					this.simpleNamesInUse.add( simple );
+					this.simpleNames.put( cls, simple );
+				}
+			}
+		}
+
+		SourceWriter writer = new SourceWriter( out, this.singleLine ? -1 : this.lineLength );
+		this.visited = new IdentityHashMap<Object, Integer>();
 		try
 		{
-			dumpTo( o, breaker );
-			breaker.flush();
+			if( !this.disableImports )
+			{
+				writer.append( "// Simplified class names:" ).newline();
+				Map<String,String> imports = new TreeMap<String,String>();
+				int len = 0;
+				for( Entry<Class<?>,String> entry : this.simpleNames.entrySet() )
+				{
+					String className = entry.getKey().getCanonicalName();
+					if( className == null )
+						className = entry.getKey().getName();
+					String simpleName = entry.getValue();
+					len = Math.max( simpleName.length(), len );
+					imports.put( className, simpleName );
+				}
+				len ++;
+				for( Entry<String,String> entry : imports.entrySet() )
+					writer.append( "// " ).append( Strings.padRight( entry.getValue(), len ) ).append( ": " ).append( entry.getKey() ).newline();
+				writer.newline();
+			}
+
+			dumpTo( o, writer );
+			writer.flush();
+			writer.newline();
 		}
 		catch( IOException e )
 		{
@@ -256,7 +314,12 @@ public class Dumper
 			String className = cls.getCanonicalName();
 			if( className == null )
 				className = cls.getName();
-			out.append( className );
+
+			String simpleName = this.simpleNames.get( cls );
+			if( simpleName != null )
+				out.append( simpleName );
+			else
+				out.append( className );
 
 			if( this.skip.contains( className ) || o instanceof java.lang.Thread )
 			{
@@ -270,11 +333,11 @@ public class Dumper
 				id = ++this.id;
 				this.visited.put( o, id );
 				if( !this.hideIds )
-					out.append( " <id=" + id + ">" );
+					out.append( " <" + id + ">" );
 			}
 			else
 			{
-				out.append( " <refid=" + id + ">" );
+				out.append( " <<<" + id + ">>>" );
 				return;
 			}
 
@@ -434,10 +497,143 @@ public class Dumper
 		catch( Exception e )
 		{
 			dumpTo( e.toString(), out );
+//			throw new RuntimeException( e );
 		}
 		finally
 		{
 			out.end();
+		}
+	}
+
+	private void scanForClasses( Object o, Set<Class<?>> classes )
+	{
+		try
+		{
+			if( o == null )
+				return;
+			Class<?> cls = o.getClass();
+			if( cls == String.class )
+				return;
+			if( o instanceof CharSequence )
+			{
+				classes.add( cls );
+				return;
+			}
+			if( cls == char[].class )
+				return;
+			if( cls == byte[].class )
+				return;
+			if( cls == Class.class )
+			{
+				classes.add( cls );
+				return;
+			}
+			if( cls == File.class )
+				return;
+			if( cls == AtomicInteger.class )
+				return;
+			if( cls == AtomicLong.class )
+				return;
+			if( o instanceof ClassLoader )
+				return;
+
+			// TODO Pre-add this simple names
+			if( cls == java.lang.Short.class || cls == java.lang.Long.class || cls == java.lang.Integer.class
+					|| cls == java.lang.Float.class || cls == java.lang.Byte.class || cls == java.lang.Character.class
+					|| cls == java.lang.Double.class || cls == java.lang.Boolean.class || cls == BigInteger.class
+					|| cls == BigDecimal.class )
+				return;
+
+			classes.add( cls );
+
+			String className = cls.getCanonicalName();
+			if( className == null )
+				className = cls.getName();
+
+			if( this.skip.contains( className ) || o instanceof java.lang.Thread )
+				return;
+
+			Object object = this.visited.get( o );
+			if( object != null )
+				return;
+
+			this.visited.put( o, ZERO );
+
+			if( cls.isArray() )
+			{
+				for( int i = 0, l = Array.getLength( o ); i < l; i++ )
+					scanForClasses( Array.get( o, i ), classes );
+			}
+			else if( o instanceof Collection && !this.overriddenCollection.contains( className ) )
+			{
+				for( Object value : (Collection<?>)o )
+					scanForClasses( value, classes );
+			}
+			else if( o instanceof Properties && !this.overriddenCollection.contains( className ) ) // Properties is a Map, so it must come before the Map
+			{
+				Field field = cls.getDeclaredField( "defaults" );
+				if( !field.isAccessible() )
+					field.setAccessible( true );
+				Properties defaults = (Properties)field.get( o );
+				Hashtable<?, ?> map = (Hashtable<?, ?>)o;
+				for( Map.Entry<?, ?> entry : map.entrySet() )
+				{
+					scanForClasses( entry.getKey(), classes );
+					scanForClasses( entry.getValue(), classes );
+				}
+				if( defaults != null )
+					scanForClasses( defaults, classes );
+			}
+			else if( o instanceof Map && !this.overriddenCollection.contains( className ) )
+			{
+				for( Map.Entry<?, ?> entry : ( (Map<?, ?>)o ).entrySet() )
+				{
+					scanForClasses( entry.getKey(), classes );
+					scanForClasses( entry.getValue(), classes );
+				}
+			}
+			else if( o instanceof Method )
+			{
+				Field field = cls.getDeclaredField( "clazz" );
+				if( !field.isAccessible() )
+					field.setAccessible( true );
+				classes.add( (Class<?>)field.get( o ) );
+
+				field = cls.getDeclaredField( "parameterTypes" );
+				if( !field.isAccessible() )
+					field.setAccessible( true );
+				scanForClasses( field.get( o ), classes );
+
+				field = cls.getDeclaredField( "returnType" );
+				if( !field.isAccessible() )
+					field.setAccessible( true );
+				classes.add( (Class<?>)field.get( o ) );
+			}
+			else
+			{
+				ArrayList<Field> fields = new ArrayList<Field>();
+				while( cls != Object.class )
+				{
+					Field[] fs = cls.getDeclaredFields();
+					for( Field field : fs )
+						fields.add( field );
+					cls = cls.getSuperclass();
+				}
+
+				for( Field field : fields )
+					if( ( field.getModifiers() & Modifier.STATIC ) == 0 )
+						if( !this.hideTransients || ( field.getModifiers() & Modifier.TRANSIENT ) == 0 )
+						{
+							if( !field.isAccessible() )
+								field.setAccessible( true );
+							if( !field.getType().isPrimitive() )
+								scanForClasses( field.get( o ), classes );
+						}
+			}
+		}
+		catch( Exception e )
+		{
+			// ignore
 		}
 	}
 }
