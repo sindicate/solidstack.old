@@ -21,3 +21,5 @@ println( loaded.test );
 // run(string): loads, parses and evaluates the given file as a script in its own scope, returns the result
 // call(string): loads, parses and evaluates the given file as a script in the current scope, returns the result
 // exec(string): == run? or an OS command?
+
+// What about executing a character stream, byte stream or char sequence?

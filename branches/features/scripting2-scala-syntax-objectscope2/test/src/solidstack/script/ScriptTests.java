@@ -936,6 +936,18 @@ public class ScriptTests extends Util
 	// TODO Values with extra attributes. For example: val is a String, but val.kind is something else. Like a value scope.
 	// TODO Ant integration
 	// TODO Optional semicolons
+	// TODO Able to treat strings as collection of characters
+	// TODO Distinguish between standard modules and modules relative to the current script
+	// TODO Support shebang #!/.../java -jar /.../solidstack.jar
+	// TODO Support shebang #!/user/bin/env java -jar /.../solidstack.jar
+	// TODO Isolated sandboxes, like classloaders in java
+
+	// From Python:
+
+	// TODO 'x' * 8 -> 'xxxxxxxx'
+	// error message: line 1, in <module> if no file name
+	// TODO input( 'prompt' )
+	// TODO "%s, %s" % ( "spam", "Spam!" ), but why not: "xx %s xx"( "Spam!" )
 
 	@SuppressWarnings( "unused" )
 	static public class TestObject1
