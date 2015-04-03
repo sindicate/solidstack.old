@@ -37,7 +37,7 @@
 	<property name="dist.home" location="${build.home}/dist" />
 
 
-	<!-- Tool classpaths -->
+	<!-- Classpaths -->
 
 	<path id="groovy.classpath">
 		<fileset dir="lib" includes="groovy*.jar" />
@@ -49,7 +49,7 @@
 	</path>
 
 	<path id="testng.classpath">
-		<fileset dir="test/lib" includes="testng*.jar" />
+		<fileset dir="tools/testng" includes="*.jar" />
 	</path>
 
 	<path id="cobertura.classpath">
@@ -60,20 +60,14 @@
 		<fileset dir="tools/sonar" includes="*.jar" />
 	</path>
 
-	<path id="classycle.classpath">
-		<fileset dir="tools/classycle" includes="*.jar" />
-	</path>
-
-	<!-- Build classpaths -->
-
 	<path id="compile.classpath">
 		<fileset dir="lib" includes="**/*.jar" />
 	</path>
 
 	<path id="compiletest.classpath">
 		<pathelement location="${build.home}/classes" />
-		<fileset dir="test/lib" includes="*.jar" />
 		<path refid="compile.classpath" />
+		<path refid="testng.classpath" />
 	</path>
 
 	<path id="test_.classpath">
@@ -83,6 +77,7 @@
 		<fileset dir="lib" includes="*.jar" />
 		<fileset dir="test/lib" includes="*.jar" />
 		<fileset dir="test/lib/hibernate" includes="*.jar" />
+		<path refid="testng.classpath" />
 		<path refid="cobertura.classpath" />
 	</path>
 
@@ -112,22 +107,8 @@
 	<taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpathref="jarjar.classpath" />
 	<taskdef resource="tasks.properties" classpathref="cobertura.classpath" />
 	<taskdef uri="antlib:org.sonar.ant" resource="org/sonar/ant/antlib.xml" classpathref="sonar.classpath" />
-	<taskdef name="dependencyCheck" classname="classycle.ant.DependencyCheckingTask" classpathref="classycle.classpath" />
 
 
-	<!-- Check Java version  -->
-
-	<echo message="Java Version: ${java.version}"/>
-	<echo message="Java home: ${java.home}"/>
-	<fail message="Unsupported Java version: ${java.version}. Let the JAVA_HOME environment variable point to a JDK 1.6.">
-		<condition>
-			<not>
-				<contains string="${java.version}" substring="1.6" casesensitive="false" />
-			</not>
-		</condition>
-	</fail>
-
-	
 	<!-- Targets -->
 
 	<target name="clean" description="Clean out the output directories ">
@@ -148,7 +129,7 @@
 	</target>
 
 
-	<target name="jar" depends="compile">
+	<target name="jar" depends="buildtest">
 		<fail message="A *.txt file is missing">
 			<condition>
 				<resourcecount when="ne" count="2">
@@ -158,6 +139,7 @@
 		</fail>
 		<jarjar compress="yes" destfile="${dist.home}/solidstack.jar">
 			<zipfileset dir="${build.home}/classes" />
+			<zipfileset dir="${build.home}/testclasses" /> <!-- TODO This is only for test -->
 			<zipfileset dir="." includes="LICENSE.txt,NOTICE.txt,CHANGELOG.TXT" prefix="META-INF" />
 			<keep pattern="solidstack.**" />
 			<manifest>
@@ -199,23 +181,6 @@
 
 
 	<target name="test" depends="buildtest,instrument" description="Run the tests">
-		<dependencyCheck failOnUnwantedDependencies="true">
-			<fileset dir="${build.home}/classes"><include name="**/*.class" /></fileset>
-			[query] = solidstack.query.* excluding solidstack.query.jpa.* solidstack.query.hibernate.*
-			[template] = solidstack.template.* excluding solidstack.template.groovy.* solidstack.template.javascript.* solidstack.template.funny.*
-			check solidstack.cache.*               dependentOnlyOn java.* javax.* solidstack.* org.slf4j.*
-			check solidstack.io.*                  dependentOnlyOn java.* javax.* solidstack.*
-			check solidstack.lang.*                dependentOnlyOn java.* javax.* solidstack.*
-			check [query]                          dependentOnlyOn java.* javax.* solidstack.* org.slf4j.*
-			check solidstack.query.jpa.*           dependentOnlyOn java.* javax.* solidstack.*
-			check solidstack.query.hibernate.*     dependentOnlyOn java.* javax.* solidstack.* org.hibernate.*
-			check [template]                       dependentOnlyOn java.* javax.* solidstack.* org.slf4j.*
-			check solidstack.script.*              dependentOnlyOn java.* javax.* solidstack.* funny.*
-			check solidstack.template.groovy.*     dependentOnlyOn java.* javax.* solidstack.* groovy.* org.codehaus.groovy.*
-			check solidstack.template.javascript.* dependentOnlyOn java.* javax.* solidstack.* org.mozilla.javascript.*
-			check solidstack.util.*                dependentOnlyOn java.* javax.* solidstack.*
-			check solidstack.xml.*                 dependentOnlyOn java.* javax.* solidstack.*
-	    </dependencyCheck>
 		<delete file="cobertura.ser" />
 		<testng classpathref="test.classpath" outputDir="${build.home}/testreports" haltOnFailure="true" verbose="3"
 			usedefaultlisteners="false" listeners="org.testng.reporters.JUnitReportReporter">
@@ -265,11 +230,16 @@
 		<property name="sonar.tests" value="list of test source directories separated by a comma" />
 		<property name="sonar.libraries" value="list of paths to libraries separated by a comma (These libraries are for example used by the Sonar Findbugs plugin)" />
  		-->
-		<sonar:sonar key="solidstack:solidstack" version="1.9.3-beta" xmlns:sonar="antlib:org.sonar.ant" />
+		<sonar:sonar key="solidstack:solidstack" version="1.9.1-beta" xmlns:sonar="antlib:org.sonar.ant" />
 	</target>
 
 
 	<target name="build" depends="jar" description="Do an (incremental) build">
+		<copy todir="${dist.home}">
+			<fileset dir="" includes="*.cmd" />
+			<fileset dir="lib" includes="*.jar" />
+			<fileset dir="test/lib" includes="*.jar" />
+		</copy>
 	</target>
 
 
@@ -289,12 +259,12 @@
 	</target>
 
 
-	<target name="dist" depends="checksvnstatus,getsvninfo,clean,test,build,javadocjar,sources" description="Complete build process to create the distribution files">
+	<target name="dist" depends="checksvnstatus,getsvninfo,clean,test,build,javadoc,sources" description="Complete build process to create the distribution files">
 		<echo message="Distribution files created in ${dist.home}" />
 	</target>
 
 
-	<target name="javadocjar" depends="compile" description="Generate Javadoc">
+	<target name="javadoc" depends="compile" description="Generate Javadoc">
 		<delete dir="${dist.home}/javadoc" />
 		<mkdir dir="${dist.home}/javadoc" />
 		<javadoc sourcepath="src" destdir="${dist.home}/javadoc" packagenames="*" linkoffline="http://java.sun.com/j2se/1.5.0/docs/api doc/jdk1.5.0">
@@ -303,21 +273,6 @@
 		<jar compress="yes" destfile="${dist.home}/solidstack-javadoc.jar">
 			<zipfileset dir="${dist.home}/javadoc" />
 		</jar>
-	</target>
-
-
-	<target name="javadoc" depends="compile" description="Generate Javadoc">
-		<mkdir dir="doc/api" />
-		<delete dir="doc/api" includes="**/*" />
-		<javadoc sourcepath="src" destdir="doc/api" packagenames="*" linkoffline="http://java.sun.com/j2se/1.5.0/docs/api doc/jdk1.5.0">
-			<classpath refid="compile.classpath" />
-		</javadoc>
-		<replaceregexp match="- Generated by javadoc [^\-]+-" replace="- Generated by javadoc -" flags="g" byline="true">
-			<fileset dir="doc/api" includes="**/*.html" />
-		</replaceregexp>
-		<replaceregexp match="&lt;META NAME=&quot;date&quot; CONTENT=&quot;[\d\-]+&quot;&gt;" replace="" flags="g" byline="true">
-			<fileset dir="doc/api" includes="**/*.html" />
-		</replaceregexp>
 	</target>
 
 

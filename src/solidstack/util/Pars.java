@@ -53,9 +53,6 @@ public class Pars extends HashMap< String, Object >
 		set( nameValue );
 	}
 
-	/**
-	 * @param pars A map of names and values.
-	 */
 	public Pars( Map< String, Object > pars )
 	{
 		putAll( pars );
