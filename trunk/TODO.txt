@@ -1,0 +1,7 @@
+The following branches are not merged into the trunk yet:
+	remove-query-compiler
+	beanshell
+	include
+	http-pipelining
+	eclipselink
+	result-mapper
