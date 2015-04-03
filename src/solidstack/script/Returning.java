@@ -10,7 +10,7 @@ public class Returning extends RuntimeException
 	}
 
 	@Override
-	public Throwable fillInStackTrace()
+	public synchronized Throwable fillInStackTrace()
 	{
 		return null;
 	}

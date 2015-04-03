@@ -17,10 +17,8 @@
 package solidstack.script.operators;
 
 import solidstack.script.ThreadContext;
-import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
 import solidstack.script.objects.Assoc;
-import solidstack.script.scopes.ScopeException;
 
 
 public class Associate extends Operator
@@ -32,15 +30,8 @@ public class Associate extends Operator
 
 	public Object evaluate( ThreadContext thread )
 	{
-		try // TODO And the other derefs?
-		{
-			Object left = this.left.evaluate( thread );
-			Object right = this.right.evaluate( thread );
-			return new Assoc( left, right );
-		}
-		catch( ScopeException e )
-		{
-			throw new ThrowException( e.getMessage(), thread.cloneStack( getLocation() ) );
-		}
+		Object left = this.left.evaluate( thread );
+		Object right = this.right.evaluate( thread );
+		return new Assoc( left, right );
 	}
 }

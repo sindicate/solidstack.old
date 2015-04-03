@@ -43,48 +43,31 @@ public class CallResolutionContext
 	private Set< Class > interfacesDone = new HashSet();
 
 
-	static CallResolutionContext forPropertyRead( Object object, String name )
-	{
-		return new CallResolutionContext( object, object.getClass(), name, true, null );
-	}
-
-	static CallResolutionContext forPropertyWrite( Object object, String name, Object value )
-	{
-		return new CallResolutionContext( object, object.getClass(), name, true, new Object[] { value } );
-	}
-
-	static CallResolutionContext forPropertyRead( Class type, String name )
-	{
-		return new CallResolutionContext( null, type, name, true, null );
-	}
-
-	static CallResolutionContext forPropertyWrite( Class type, String name, Object value )
-	{
-		return new CallResolutionContext( null, type, name, true, new Object[] { value } );
-	}
-
-	static CallResolutionContext forMethodCall( Object object, String name, Object... args )
-	{
-		return new CallResolutionContext( object, object.getClass(), name, false, args );
-	}
-
-	static CallResolutionContext forMethodCall( Class type, String name, Object... args )
-	{
-		return new CallResolutionContext( null, type, name, false, args );
-	}
-
-	public CallResolutionContext( Object object, Class type, String name, boolean property, Object[] args )
+	public CallResolutionContext( Object object, String name, Object[] args )
 	{
 		this.object = object;
-		this.type = type;
+		this.type = object.getClass();
 		this.name = name;
-		if( args != null )
+		if( args != null ) // null for property read
 		{
 			this.args = args;
 			this.argTypes = Types.getTypes( this.args );
 		}
 
-		this.call = new CallSignature( this.type, name, property, this.object == null, this.argTypes );
+		this.call = new CallSignature( this.type, name, false, this.argTypes );
+	}
+
+	public CallResolutionContext( Class type, String name, Object[] args )
+	{
+		this.type = type;
+		this.name = name;
+		if( args != null ) // null for property read
+		{
+			this.args = args;
+			this.argTypes = Types.getTypes( this.args );
+		}
+
+		this.call = new CallSignature( type, name, true, this.argTypes );
 	}
 
 	public Object getObject()

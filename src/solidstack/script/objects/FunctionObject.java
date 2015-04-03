@@ -19,6 +19,9 @@ package solidstack.script.objects;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import funny.Symbol;
 
 import solidstack.lang.Assert;
 import solidstack.script.Returning;
@@ -26,25 +29,23 @@ import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
-import solidstack.script.operators.Assign;
 import solidstack.script.operators.Function;
 import solidstack.script.operators.Spread;
-import solidstack.script.scopes.DefaultScope;
+import solidstack.script.scopes.AbstractScope;
 import solidstack.script.scopes.ParameterScope;
 import solidstack.script.scopes.Scope;
-import funny.Symbol;
 
 public class FunctionObject implements solidstack.script.java.Function
 {
 	private Function function;
-	private Scope scope;
+	private AbstractScope scope;
 	private boolean assigned; // FIXME Remove this, it does not work correctly. For example, with functions returning functions.
 
 	public FunctionObject()
 	{
 	}
 
-	public FunctionObject( Function function, Scope scope )
+	public FunctionObject( Function function, AbstractScope scope )
 	{
 		this.function = function;
 		this.scope = scope; // FIXME Possibly need to clone the whole scope hierarchy (flattened).
@@ -97,29 +98,6 @@ public class FunctionObject implements solidstack.script.java.Function
 				if( o < oCount )
 					throw new ThrowException( "Collecting parameter must be the last parameter", thread.cloneStack() ); // TODO Also in the middle
 			}
-			else if( parameter instanceof Assign )
-			{
-				Assign assign = (Assign)parameter;
-				Assert.isInstanceOf( assign.getLeft(), Identifier.class );
-				Object par;
-				if( pw.hasNext() )
-					par = pw.get();
-				else
-				{
-					Scope old = thread.swapScope( this.scope );
-					try
-					{
-						par = assign.getRight().evaluate( thread );
-					}
-					finally
-					{
-						thread.swapScope( old );
-					}
-				}
-				symbols[ o ] = ( (Identifier)assign.getLeft() ).getSymbol();
-				values[ o ] = par;
-				o++;
-			}
 			else
 			{
 				if( !pw.hasNext() )
@@ -143,46 +121,22 @@ public class FunctionObject implements solidstack.script.java.Function
 		Symbol[] symbols = new Symbol[ oCount ];
 		Object[] values = new Object[ oCount ];
 
-		for( int i = 0; i < oCount; i++ )
+		for( Entry<Symbol, Object> entry : args.entrySet() )
 		{
-			Expression parameter = parameters[ i ];
-			if( parameter instanceof Assign )
-			{
-				Assign assign = (Assign)parameter;
-				Assert.isInstanceOf( assign.getLeft(), Identifier.class );
-				Symbol symbol = ( (Identifier)assign.getLeft() ).getSymbol();
-				symbols[ i ] = symbol;
-				if( args.containsKey( symbol ) )
-					values[ i ] = args.remove( symbol );
-				else
+			boolean found = false;
+			Symbol label = entry.getKey();
+			for( int i = 0; i < oCount; i++ )
+				if( ( (Identifier)parameters[ i ] ).getSymbol().equals( label ) )
 				{
-					Scope old = thread.swapScope( this.scope );
-					try
-					{
-						values[ i ] = assign.getRight().evaluate( thread );
-					}
-					finally
-					{
-						thread.swapScope( old );
-					}
+					values[ i ] = entry.getValue();
+					found = true;
+					break;
 				}
-			}
-			else
-			{
-				Symbol symbol = ( (Identifier)parameters[ i ] ).getSymbol();
-				symbols[ i ] = symbol;
-				if( args.containsKey( symbol ) )
-					values[ i ] = args.remove( symbol );
-				else
-					throw new ThrowException( "No value specified for parameter '" + symbol + "'", thread.cloneStack() );
-			}
+			if( !found )
+				throw new ThrowException( "Parameter '" + label + "' undefined", thread.cloneStack() );
 		}
-
-		if( !args.isEmpty() )
-		{
-			Symbol symbol = args.keySet().iterator().next();
-			throw new ThrowException( "Parameter '" + symbol + "' undefined", thread.cloneStack() );
-		}
+		for( int i = 0; i < oCount; i++ )
+			symbols[ i ] = ( (Identifier)parameters[ i ] ).getSymbol();
 
 		return call( thread, symbols, values );
 	}
@@ -191,29 +145,27 @@ public class FunctionObject implements solidstack.script.java.Function
 	{
 		int count = values.length;
 
-		Scope newScope;
+		AbstractScope newScope;
 		if( this.function.subScope() )
 		{
-			DefaultScope scope = new DefaultScope( this.scope );
+			Scope scope = new Scope( this.scope );
 			for( int i = 0; i < count; i++ )
-				scope.var( symbols[ i ], values[ i ] ); // TODO If we keep the Link we get output parameters!
+				scope.def( symbols[ i ], Util.deref( values[ i ] ) ); // TODO If we keep the Link we get output parameters!
 			newScope = scope;
 		}
 		else if( count > 0 )
 		{
 			ParameterScope parScope = new ParameterScope( this.scope );
 			for( int i = 0; i < count; i++ )
-				parScope.defParameter( symbols[ i ], values[ i ] ); // TODO If we keep the Link we get output parameters!
+				parScope.defParameter( symbols[ i ], Util.deref( values[ i ] ) ); // TODO If we keep the Link we get output parameters!
 			newScope = parScope;
 		}
 		else
 			newScope = this.scope;
 
-		Scope old = thread.swapScope( newScope );
+		AbstractScope old = thread.swapScope( newScope );
 		try
 		{
-			if( this.function.getExpression() == null )
-				return null;
 			return this.function.getExpression().evaluate( thread );
 		}
 		catch( Returning e )
@@ -257,7 +209,7 @@ public class FunctionObject implements solidstack.script.java.Function
 			Assert.isTrue( this.current < this.pars.length );
 			while( true )
 			{
-				Object result = this.pars[ this.current++ ];
+				Object result = Util.deref( this.pars[ this.current++ ] );
 				if( !( result instanceof Tuple ) )
 					return result;
 				Tuple t = (Tuple)result;

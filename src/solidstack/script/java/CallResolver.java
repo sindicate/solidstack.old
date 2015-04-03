@@ -72,7 +72,6 @@ public class CallResolver
 	}
 
 
-	// TODO prefer non-static access?
 	static private MethodCall resolveMethodCall0( CallResolutionContext context )
 	{
 		boolean needStatic = context.staticCall();
@@ -384,67 +383,9 @@ public class CallResolver
 		String name = "get" + capitalize( context.getName() );
 		CallResolutionContext context2;
 		if( needStatic )
-			context2 = CallResolutionContext.forMethodCall( context.getType(), name );
+			context2 = new CallResolutionContext( context.getType(), name, EMPTY_OBJECT_ARRAY );
 		else
-			context2 = CallResolutionContext.forMethodCall( context.getObject(), name );
-
-		MethodCall caller = resolveMethodCall( context2 );
-		if( caller != null )
-			return caller;
-
-		for( Field field : context.getType().getFields() )
-			if( !needStatic || ( field.getModifiers() & Modifier.STATIC ) != 0 )
-				if( field.getName().equals( context.getName() ) )
-				{
-					caller = new MethodCall( false );
-					caller.object = context.getObject();
-					caller.field = field;
-					break;
-				}
-
-		return caller;
-	}
-
-
-	static public MethodCall resolvePropertyWrite( CallResolutionContext context )
-	{
-		Assert.isTrue( context.getArgs().length == 1 );
-		// TODO Switch to enable caching
-		MethodHandle handle = cache.get( context.getCallSignature() );
-		if( handle != null )
-		{
-//			System.out.println( context.getName() + " hit" );
-			MethodCall caller = new MethodCall( false );
-			caller.constructor = handle.constructor;
-			caller.method = handle.method;
-			caller.field = handle.field;
-			caller.extMethod = handle.extMethod;
-			caller.object = context.getObject();
-			caller.args = context.getArgs();
-			return caller;
-		}
-
-//		System.out.println( context.getName() + " misss" );
-
-		MethodCall result = resolvePropertyWrite0( context );
-
-		if( result != null )
-			cache.put( context.getCallSignature(), new MethodHandle( result.method, result.extMethod, result.constructor, result.isVarargCall, result.field ) );
-
-		return result;
-	}
-
-
-	static private MethodCall resolvePropertyWrite0( CallResolutionContext context )
-	{
-		boolean needStatic = context.staticCall();
-
-		String name = "set" + capitalize( context.getName() );
-		CallResolutionContext context2;
-		if( needStatic )
-			context2 = CallResolutionContext.forMethodCall( context.getType(), name, context.getArgs() );
-		else
-			context2 = CallResolutionContext.forMethodCall( context.getObject(), name, context.getArgs() );
+			context2 = new CallResolutionContext( context.getObject(), name, EMPTY_OBJECT_ARRAY );
 
 		MethodCall caller = resolveMethodCall( context2 );
 		if( caller != null )

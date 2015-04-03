@@ -22,33 +22,71 @@ import solidstack.script.scopes.ValueMap.Entry;
 import funny.Symbol;
 
 
-abstract public class AbstractScope implements Scope
+abstract public class AbstractScope
 {
-	abstract public Object get( Symbol symbol );
-	abstract protected void set0( Symbol symbol, Object value );
+	abstract public Ref findRef( Symbol symbol );
 
-	abstract public void var( Symbol symbol, Object value );
-	abstract public void val( Symbol symbol, Object value );
+	public Ref getRef( Symbol symbol )
+	{
+		Ref v = findRef( symbol );
+		if( v == null )
+			return new Undefined( symbol );
+		return v;
+	}
+
+	public Object get( Symbol symbol )
+	{
+		Ref v = findRef( symbol );
+		if( v == null )
+			return null;
+		return v.get();
+	}
+
+	public Object get( String name )
+	{
+		return get( Symbol.apply( name ) );
+	}
+
+	abstract public Variable def( Symbol symbol, Object value );
+
+	abstract public Value val( Symbol symbol, Object value );
+
+	public void set( String name, Object value )
+	{
+		set( Symbol.apply( name ), value );
+	}
 
 	public void set( Symbol symbol, Object value )
 	{
-		try
-		{
-			set0( symbol, value );
-		}
-		catch( UndefinedException e )
-		{
-			var( symbol, value );
-		}
+		if( setIfExists( symbol, value ) )
+			return;
+		def( symbol, value );
+	}
+
+	public boolean setIfExists( Symbol symbol, Object value )
+	{
+		Ref v = findRef( symbol );
+		if( v == null )
+			return false;
+		v.set( value );
+		return true;
 	}
 
 	public void setAll( Map<String, ? extends Object> parameters )
 	{
 		for( java.util.Map.Entry<String, ? extends Object> entry : parameters.entrySet() )
-			set( Symbol.apply( entry.getKey() ), entry.getValue() );
+			set( entry.getKey(), entry.getValue() );
 	}
 
-	static public class Value extends Entry
+	static public interface Ref
+	{
+		Symbol getKey();
+		boolean isUndefined();
+		Object get();
+		void set( Object value );
+	}
+
+	static public class Value extends Entry implements Ref
 	{
 		Object value;
 
@@ -87,6 +125,29 @@ abstract public class AbstractScope implements Scope
 		public void set( Object value )
 		{
 			this.value = value;
+		}
+	}
+
+	public class Undefined extends Entry implements Ref
+	{
+		Undefined( Symbol symbol )
+		{
+			super( symbol );
+		}
+
+		public Object get()
+		{
+			throw new ScopeException( "'" + getKey() + "' undefined" );
+		}
+
+		public void set( Object value )
+		{
+			def( getKey(), value );
+		}
+
+		public boolean isUndefined()
+		{
+			return true;
 		}
 	}
 }

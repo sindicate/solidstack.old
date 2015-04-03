@@ -204,6 +204,8 @@ public class ReaderSourceReader implements SourceReader
 	// This is only used to push back the first character (for byte order mark detection)
 	void push( int ch )
 	{
+		if( ch == '\n' || ch == '\r' )
+			throw new IllegalArgumentException( "Can't push back CR or LF" );
 		if( this.buffer != -1 )
 			throw new IllegalStateException( "Buffer is not empty" );
 		this.buffer = ch;

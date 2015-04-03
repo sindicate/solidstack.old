@@ -16,18 +16,8 @@
 
 package solidstack.script.scopes;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
-
-import solidstack.script.JavaException;
-import solidstack.script.Returning;
-import solidstack.script.ThreadContext;
-import solidstack.script.ThrowException;
-import solidstack.script.java.Java;
-import solidstack.script.objects.FunctionObject;
-import solidstack.script.objects.Type;
-import solidstack.script.objects.Util;
 import funny.Symbol;
+import solidstack.script.scopes.AbstractScope.Ref;
 
 
 
@@ -35,48 +25,27 @@ import funny.Symbol;
 
 public class ParameterScope extends AbstractScope
 {
-	private Scope parent;
+	private AbstractScope parent;
 
 	private ValueMap<Value> values = new ValueMap<Value>();
 
-	public ParameterScope( Scope parent )
+	public ParameterScope( AbstractScope parent )
 	{
 		this.parent = parent;
 	}
 
-	@Override
-	public void var( Symbol symbol, Object value )
+	Value findLocalValue( Symbol symbol )
 	{
-		this.parent.var( symbol, value );
+		return this.values.get( symbol );
 	}
 
 	@Override
-	public void val( Symbol symbol, Object value )
+	public Ref findRef( Symbol symbol )
 	{
-		this.parent.val( symbol, value );
-	}
-
-	@Override
-	public Object get( Symbol symbol )
-	{
-		Value ref = this.values.get( symbol );
-		if( ref != null )
-			return ref.get();
-		if( this.parent != null )
-			return this.parent.get( symbol );
-		throw new UndefinedException();
-	}
-
-	@Override
-	protected void set0( Symbol symbol, Object value )
-	{
-		Value ref = this.values.get( symbol );
-		if( ref == null )
-			throw new UndefinedException();
-		if( ref instanceof Variable )
-			( (Variable)ref ).set( value );
-		else
-			throw new ReadOnlyException();
+		Value v = findLocalValue( symbol );
+		if( v != null )
+			return v;
+		return this.parent.findRef( symbol );
 	}
 
 	public void defParameter( Symbol symbol, Object value )
@@ -84,46 +53,15 @@ public class ParameterScope extends AbstractScope
 		this.values.put( new Variable( symbol, value ) );
 	}
 
-	public Object apply( Symbol symbol, Object... args )
+	@Override
+	public Variable def( Symbol symbol, Object value )
 	{
-		Value ref = this.values.get( symbol );
-		if( ref != null )
-		{
-			Object function = ref.get();
-			if( function instanceof FunctionObject )
-				return ( (FunctionObject)function ).call( ThreadContext.get(), args );
-
-			Object[] pars = Util.toJavaParameters( args );
-			try
-			{
-				if( function instanceof Type )
-					return Java.invokeStatic( ( (Type)function ).theClass(), "apply", pars );
-				return Java.invoke( function, "apply", pars );
-			}
-			catch( InvocationTargetException e )
-			{
-				Throwable t = e.getCause();
-				if( t instanceof Returning )
-					throw (Returning)t;
-				throw new JavaException( t, ThreadContext.get().cloneStack() );
-			}
-			catch( Returning e )
-			{
-				throw e;
-			}
-			catch( Exception e )
-			{
-				throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), ThreadContext.get().cloneStack() );
-//				throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
-			}
-		}
-		if( this.parent != null )
-			return this.parent.apply( symbol, args );
-		throw new UndefinedException();
+		return this.parent.def( symbol, value );
 	}
 
-	public Object apply( Symbol symbol, Map args )
+	@Override
+	public Value val( Symbol symbol, Object value )
 	{
-		throw new UnsupportedOperationException();
+		return this.parent.val( symbol, value );
 	}
 }

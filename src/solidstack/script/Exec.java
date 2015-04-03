@@ -10,7 +10,7 @@ import solidstack.io.SourceException;
 import solidstack.io.SourceReader;
 import solidstack.io.SourceReaders;
 import solidstack.io.UTFEncodingDetector;
-import solidstack.script.scopes.DefaultScope;
+import solidstack.script.scopes.Scope;
 
 
 public class Exec
@@ -49,8 +49,8 @@ public class Exec
 			return;
 		}
 
-		DefaultScope scope = new DefaultScope();
-		scope.var( Symbol.apply( "args" ), args );
+		Scope scope = new Scope();
+		scope.def( Symbol.apply( "args" ), args );
 
 		try
 		{

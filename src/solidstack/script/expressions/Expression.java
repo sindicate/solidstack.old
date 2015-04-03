@@ -31,14 +31,6 @@ public interface Expression
 	 * @param thread The thread context.
 	 * @return The result of evaluating this expression.
 	 */
-	Expression compile();
-
-	/**
-	 * Evaluate the expression.
-	 *
-	 * @param thread The thread context.
-	 * @return The result of evaluating this expression.
-	 */
 	Object evaluate( ThreadContext thread );
 
 	/**
@@ -46,10 +38,5 @@ public interface Expression
 	 */
 	SourceLocation getLocation();
 
-	/**
-	 * Output this expression to a string.
-	 *
-	 * @param out To write the expression to.
-	 */
 	void writeTo( StringBuilder out );
 }

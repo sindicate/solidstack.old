@@ -46,8 +46,6 @@ public class ScriptTokenizer
 		PAREN_OPEN( "(", false ), PAREN_CLOSE( ")", false ), BRACKET_OPEN( "[", false ), BRACKET_CLOSE( "]", false ), BRACE_OPEN( "{", false ), BRACE_CLOSE( "}", false ),
 		BACKQUOTE( "`", false ), /* QUOTE( "'", false ), */ DOT( ".", false ), SEMICOLON( ";", false ), COMMA( ",", false ),
 		EOF,
-		// My reserved words
-		MODULE( "module" ), DEFINED( "defined" ),
 		// Reserved words
 		ABSTRACT( "abstract" ), CASE( "case" ), CATCH( "catch" ), /* CLASS( "class" ), */
 		DEF( "def" ), DO( "do" ), ELSE( "else" ), EXTENDS( "extends" ),
@@ -67,7 +65,6 @@ public class ScriptTokenizer
 		private TokenType( String word ) { this( word, true ); }
 		private TokenType( String word, boolean reserved ) { this.word = word; this.reserved = reserved; }
 		@Override public String toString() { if( this.word != null ) return this.word; return super.toString(); }
-		public boolean isReserved() { return this.reserved; }
 	}
 
 	/**

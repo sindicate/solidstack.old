@@ -20,50 +20,48 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import solidstack.io.SourceLocation;
-import solidstack.lang.Assert;
-import solidstack.script.objects.Tuple;
-import solidstack.script.scopes.Scope;
+import solidstack.script.scopes.AbstractScope;
 
 public class ThreadContext
 {
-	static private ThreadLocal<ThreadContext> context = new ThreadLocal<ThreadContext>()
+	static private ThreadLocal<ThreadContext> contexts = new ThreadLocal<ThreadContext>();
+
+	static public ThreadContext init( AbstractScope scope )
 	{
-		@Override
-		protected ThreadContext initialValue()
-		{
-			return new ThreadContext();
-		}
-	};
+//		Assert.isNull( contexts.get() );
+		ThreadContext result = new ThreadContext( scope );
+		contexts.set( result );
+		return result;
+	}
 
 	static public ThreadContext get()
 	{
-		return context.get();
+		return contexts.get();
 	}
 
-	private Scope scope;
+	private AbstractScope scope;
 	private Deque<SourceLocation> stack = new ArrayDeque<SourceLocation>();
-	private Tuple saved;
 
-	private ThreadContext()
+	private ThreadContext( AbstractScope scope )
 	{
+		this.scope = scope;
 	}
 
-	public Scope getScope()
+	public AbstractScope getScope()
 	{
 		return this.scope;
 	}
 
-	public Scope swapScope( Scope scope )
+	public AbstractScope swapScope( AbstractScope scope )
 	{
-		Scope old = this.scope;
+		AbstractScope old = this.scope;
 		this.scope = scope;
 		return old;
 	}
 
-	public void pushStack( SourceLocation location )
+	public void pushStack( SourceLocation sourceLocation )
 	{
-		Assert.notNull( location );
-		this.stack.push( location );
+		this.stack.push( sourceLocation );
 	}
 
 	public void popStack()
@@ -87,20 +85,5 @@ public class ThreadContext
 		SourceLocation[] result = cloneStack();
 		popStack();
 		return result;
-	}
-
-	public void save( Object tuple )
-	{
-//		Assert.isNull( this.saved );
-		if( tuple instanceof Tuple )
-			this.saved = (Tuple)tuple;
-		else
-			this.saved = new Tuple( tuple );
-	}
-
-	public Object load( int index )
-	{
-		Assert.notNull( this.saved );
-		return this.saved.get( index );
 	}
 }

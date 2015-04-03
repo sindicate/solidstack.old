@@ -19,6 +19,7 @@ package solidstack.template.groovy;
 import groovy.lang.Closure;
 
 import java.io.IOException;
+import java.util.Map;
 
 import solidstack.io.FatalIOException;
 import solidstack.template.ConvertingWriter;
@@ -44,7 +45,7 @@ public class GroovyTemplate extends Template
 	}
 
 	@Override
-	public void apply( Object params, EncodingWriter writer )
+	public void apply( Map< String, Object > params, EncodingWriter writer )
 	{
 		Closure template = (Closure)this.closure.clone();
 		template.setDelegate( new GroovyTemplateDelegate( this, params, writer ) );

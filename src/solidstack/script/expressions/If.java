@@ -38,17 +38,9 @@ public class If extends LocalizedExpression
 		this.right = right;
 	}
 
-	public Expression compile()
-	{
-		this.condition = this.condition.compile();
-		if( this.left != null ) this.left = this.left.compile();
-		if( this.right != null ) this.right = this.right.compile();
-		return this;
-	}
-
 	public Object evaluate( ThreadContext thread )
 	{
-		if( Script.isTrue( thread, this.condition ) )
+		if( Script.isTrue( this.condition.evaluate( thread ) ) )
 		{
 			if( this.left != null )
 				return this.left.evaluate( thread );

@@ -38,11 +38,6 @@ public class StringLiteral extends LocalizedExpression
 		return this.value;
 	}
 
-	public Expression compile()
-	{
-		return this;
-	}
-
 	public String evaluate( ThreadContext thread )
 	{
 		return this.value;

@@ -16,41 +16,27 @@
 
 package solidstack.script.java;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import solidstack.script.Script;
-import solidstack.script.ThreadContext;
-import solidstack.script.ThrowException;
 import solidstack.script.objects.Assoc;
-import solidstack.script.objects.PString;
-import solidstack.script.scopes.DefaultScope;
-import solidstack.script.scopes.Scope;
+import solidstack.script.objects.FunnyString;
 import solidstack.util.ObjectArrayListIterator;
-import funny.Symbol;
 
 
 /**
  * Default Java extensions.
  */
-// TODO Move this out of the java package. May need plugin mechanism.
 public class DefaultClassExtensions
 {
 	// TODO: count(), distinct(), filter(), filterNot(), find(), findIndexOf(), fold(), forall(), foreach(), groupBy(), intersect(), map(), partition(), reduce(), reverse(), reverseMap()
@@ -132,33 +118,6 @@ public class DefaultClassExtensions
 		return buf;
 	}
 
-	static public StringBuilder addString( Map map, StringBuilder buf )
-	{
-		return addString( map, buf, "", "", "" );
-	}
-
-	static public StringBuilder addString( Map map, StringBuilder buf, String separator )
-	{
-		return addString( map, buf, "", separator, "" );
-	}
-
-	static public StringBuilder addString( Map map, StringBuilder buf, String start, String separator, String end )
-	{
-		buf.append( start );
-		Iterator<Entry> iterator = map.entrySet().iterator();
-		boolean first = true;
-		while( iterator.hasNext() )
-		{
-			if( first ) first = false; else buf.append( separator );
-			Entry entry = iterator.next();
-			buf.append( entry.getKey() );
-			buf.append( " -> " );
-			buf.append( entry.getValue() );
-		}
-		buf.append( end );
-		return buf;
-	}
-
 	static public StringBuilder addString( Object[] array, StringBuilder buf )
 	{
 		return addString( array, buf, "", "", "" );
@@ -184,19 +143,6 @@ public class DefaultClassExtensions
 		return buf;
 	}
 
-	static public LinkedHashMap static_apply( LinkedHashMap map, Assoc... entries )
-	{
-		LinkedHashMap result = new LinkedHashMap();
-		for( Assoc labeled : entries )
-			result.put( labeled.getLabel(), labeled.getValue() );
-		return result;
-	}
-
-	static public LinkedHashSet static_apply( LinkedHashSet set, Object... objects )
-	{
-		return new LinkedHashSet( Arrays.asList( objects ) );
-	}
-
 	static public List static_apply( LinkedList list, Object... objects )
 	{
 		return new LinkedList( Arrays.asList( objects ) );
@@ -212,33 +158,6 @@ public class DefaultClassExtensions
 		HashMap result = new HashMap();
 		for( Assoc labeled : entries )
 			result.put( labeled.getLabel(), labeled.getValue() );
-		return result;
-	}
-
-	static public Scope static_apply( Scope scope, Assoc... entries )
-	{
-		Scope result = new DefaultScope();
-		for( Assoc labeled : entries )
-		{
-			Object label = labeled.getLabel();
-			Symbol symbol;
-			if( label instanceof String )
-				symbol = Symbol.apply( (String)label );
-			else if( label instanceof Symbol )
-				symbol = (Symbol)label;
-			else
-				throw new ThrowException( "A Scope() constructor needs keys of type String or Symbol", ThreadContext.get().cloneStack() );
-			result.var( symbol, labeled.getValue() );
-		}
-		return result;
-	}
-
-	// TODO One with parent?
-	static public Properties static_apply( Properties props, Assoc... entries )
-	{
-		Properties result = new Properties();
-		for( Assoc labeled : entries )
-			result.setProperty( (String)labeled.getLabel(), (String)labeled.getValue() );
 		return result;
 	}
 
@@ -262,11 +181,6 @@ public class DefaultClassExtensions
 		return array[ index ];
 	}
 
-	static public boolean apply( Set set, Object o )
-	{
-		return set.contains( o );
-	}
-
 	static public List filter( Iterable iterable, Function function )
 	{
 		return filter( iterable.iterator(), function );
@@ -282,22 +196,6 @@ public class DefaultClassExtensions
 				result.add( object );
 		}
 		return result;
-	}
-
-	static public Object find( Iterable iterable, Function function )
-	{
-		return find( iterable.iterator(), function );
-	}
-
-	static public Object find( Iterator iterator, Function function )
-	{
-		while( iterator.hasNext() )
-		{
-			Object object = iterator.next();
-			if( Script.isTrue( function.call( object ) ) )
-				return object;
-		}
-		return null;
 	}
 
 	static public Object fold( Iterable iterable, Object start, Function function )
@@ -368,25 +266,6 @@ public class DefaultClassExtensions
 		return foreach( map.values(), function );
 	}
 
-	// TODO Use CharBuffer?
-	static public String getText( File file, String encoding ) throws IOException
-	{
-		Reader in = new InputStreamReader( new FileInputStream( file ), encoding );
-		try
-		{
-			StringBuilder builder = new StringBuilder();
-			char[] buffer = new char[ 4096 ];
-			int len;
-			while( ( len = in.read( buffer ) ) != -1 )
-				builder.append( buffer, 0, len );
-			return builder.toString();
-		}
-		finally
-		{
-			in.close();
-		}
-	}
-
 	static public List map( Iterable iterable, Function function )
 	{
 		return map( iterable.iterator(), function, new ArrayList() );
@@ -446,21 +325,6 @@ public class DefaultClassExtensions
 	static public String mkString( Iterator iterator, String start, String separator, String end )
 	{
 		return addString( iterator, new StringBuilder(), start, separator, end ).toString();
-	}
-
-	static public String mkString( Map map )
-	{
-		return mkString( map, "", "", "" );
-	}
-
-	static public String mkString( Map map, String separator )
-	{
-		return mkString( map, "", separator, "" );
-	}
-
-	static public String mkString( Map map, String start, String separator, String end )
-	{
-		return addString( map, new StringBuilder(), start, separator, end ).toString();
 	}
 
 	static public String mkString( Object[] array )
@@ -537,12 +401,12 @@ public class DefaultClassExtensions
 		return STRIPMARGIN_PATTERN.matcher( string ).replaceAll( "" );
 	}
 
-	static public String stripMargin( PString string ) // TODO This method should not be needed
+	static public String stripMargin( FunnyString string )
 	{
 		return stripMargin( string.toString() );
 	}
 
-	static public Object update( List list, Object value, int index )
+	static public Object update( List list, int index, Object value )
 	{
 		if( index >= list.size() )
 		{
@@ -556,13 +420,13 @@ public class DefaultClassExtensions
 		return value;
 	}
 
-	static public Object update( Map map, Object value, Object key )
+	static public Object update( Map map, Object key, Object value )
 	{
 		map.put( key, value );
 		return value;
 	}
 
-	static public Object update( Object[] array, Object value, int index )
+	static public Object update( Object[] array, int index, Object value )
 	{
 		array[ index ] = value;
 		return value;

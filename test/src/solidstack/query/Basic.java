@@ -72,27 +72,6 @@ public class Basic
 		assert result.size() == 2;
 	}
 
-	static public class ParameterObject
-	{
-		public String prefix = "SYST";
-		public String getName() { return "SYSTABLES"; }
-		public String getNames() { return null; }
-	}
-
-	@Test
-	public void testObjectScope() throws SQLException, ClassNotFoundException
-	{
-		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
-		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
-
-		QueryLoader queries = new QueryLoader();
-		queries.setTemplatePath( "classpath:/solidstack/query" );
-
-		Query query = queries.getQuery( "test.sql" );
-		List< Map< String, Object > > result = query.listOfMaps( connection, new ParameterObject() );
-		assert result.size() == 1;
-	}
-
 	@Test
 	public void testBasicJS() throws SQLException, ClassNotFoundException
 	{
@@ -124,21 +103,6 @@ public class Basic
 
 		result = query.listOfMaps( connection, new Pars().set( "prefix", null, "name", null, "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } ) );
 		assert result.size() == 2;
-	}
-
-	@Test
-	public void testObjectScopeJS() throws SQLException, ClassNotFoundException
-	{
-		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
-		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
-
-		QueryLoader queries = new QueryLoader();
-		queries.setTemplatePath( "classpath:/solidstack/query" );
-		queries.setDefaultLanguage( "javascript" );
-
-		Query query = queries.getQuery( "testjs.sql" );
-		List< Map< String, Object > > result = query.listOfMaps( connection, new ParameterObject() );
-		assert result.size() == 1;
 	}
 
 	@Test

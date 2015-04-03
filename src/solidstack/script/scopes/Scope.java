@@ -16,21 +16,60 @@
 
 package solidstack.script.scopes;
 
-import java.util.Map;
-
 import funny.Symbol;
+import solidstack.script.scopes.AbstractScope.Ref;
 
 
 
 
-public interface Scope
+public class Scope extends AbstractScope
 {
-	void var( Symbol symbol, Object value ); // TODO Rename to var
-	void val( Symbol symbol, Object value );
+	static public final Symbol THIS = Symbol.apply( "this" );
 
-	Object get( Symbol symbol );
-	void set( Symbol symbol, Object value );
+	private AbstractScope parent;
 
-	Object apply( Symbol symbol, Object... args );
-	Object apply( Symbol symbol, Map args );
+	private ValueMap<Value> values = new ValueMap<Value>();
+
+	public Scope()
+	{
+		def( THIS, this );
+	}
+
+	public Scope( AbstractScope parent )
+	{
+		this();
+		this.parent = parent;
+	}
+
+	Value findLocalValue( Symbol symbol )
+	{
+		return this.values.get( symbol );
+	}
+
+	@Override
+	public Ref findRef( Symbol symbol )
+	{
+		Value v = findLocalValue( symbol );
+		if( v != null )
+			return v;
+		if( this.parent != null )
+			return this.parent.findRef( symbol );
+		return GlobalScope.INSTANCE.findLocalValue( symbol );
+	}
+
+	@Override
+	public Variable def( Symbol symbol, Object value )
+	{
+		Variable result = new Variable( symbol, value );
+		this.values.put( result );
+		return result;
+	}
+
+	@Override
+	public Value val( Symbol symbol, Object value )
+	{
+		Value result = new Value( symbol, value );
+		this.values.put( result );
+		return result;
+	}
 }

@@ -33,11 +33,6 @@ public class DecimalLiteral extends LocalizedExpression
 		this.value = value;
 	}
 
-	public Expression compile()
-	{
-		return this;
-	}
-
 	public BigDecimal evaluate( ThreadContext thread )
 	{
 		return this.value;

@@ -17,7 +17,6 @@
 package solidstack.script;
 
 import java.io.StringReader;
-import java.util.Map;
 
 import solidstack.io.ReaderSourceReader;
 import solidstack.io.SourceReader;
@@ -25,8 +24,8 @@ import solidstack.script.expressions.Expression;
 import solidstack.script.java.Types;
 import solidstack.script.objects.Tuple;
 import solidstack.script.objects.Util;
-import solidstack.script.scopes.DefaultScope;
-import solidstack.script.scopes.MapScope;
+import solidstack.script.scopes.AbstractScope;
+import solidstack.script.scopes.AbstractScope.Ref;
 import solidstack.script.scopes.ObjectScope;
 import solidstack.script.scopes.Scope;
 
@@ -39,9 +38,7 @@ public class Script
 
 	static public Script compile( SourceReader reader )
 	{
-		Expression expression = new ScriptParser( new ScriptTokenizer( reader ) ).parse();
-		if( expression != null ) expression = expression.compile();
-		return new Script( expression );
+		return new Script( new ScriptParser( new ScriptTokenizer( reader ) ).parse() );
 	}
 
 	static private Object eval0( Expression expression, Object scope )
@@ -50,18 +47,15 @@ public class Script
 			return null;
 
 		if( scope == null )
-			scope = new DefaultScope();
+			scope = new Scope();
 
-		Scope s;
-		if( scope instanceof Scope )
-			s = (Scope)scope;
-		else if( scope instanceof Map )
-			s = new MapScope( (Map)scope );
+		AbstractScope s;
+		if( scope instanceof AbstractScope )
+			s = (AbstractScope)scope;
 		else
-			s = new ObjectScope( scope );
+			s = new ObjectScope( scope ); // TODO And MapScope?
 
-		ThreadContext thread = ThreadContext.get();
-		s = thread.swapScope( s );
+		ThreadContext thread = ThreadContext.init( s );
 		try
 		{
 			return expression.evaluate( thread );
@@ -74,14 +68,10 @@ public class Script
 		{
 			throw new ScriptException( e );
 		}
-		catch( JavaException e )
-		{
-			throw new ScriptException( e );
-		}
-		finally
-		{
-			thread.swapScope( s );
-		}
+//		catch( JavaException e )
+//		{
+//			throw new ScriptException( e );
+//		}
 	}
 
 	static public Object eval( Expression expression, Object scope )
@@ -89,13 +79,19 @@ public class Script
 		return Util.toJava( eval0( expression, scope ) );
 	}
 
-	static public boolean evalBoolean( Expression expression, Object scope )
+	static public boolean evalBoolean( Expression expression, AbstractScope scope )
 	{
 		return isTrue( eval0( expression, scope ) );
 	}
 
 	static public boolean isTrue( Object object )
 	{
+		if( object instanceof Ref )
+		{
+			if( ( (Ref)object ).isUndefined() )
+				return false;
+			object = ( (Ref)object ).get();
+		}
 		if( object instanceof Tuple )
 		{
 			// TODO Maybe we shouldn't even do this
@@ -105,22 +101,6 @@ public class Script
 			object = results.getLast();
 		}
 		return Types.castToBoolean( Util.toJava( object ) );
-	}
-
-	static public boolean isTrue( ThreadContext thread, Object object )
-	{
-		if( object instanceof Expression )
-		{
-			try
-			{
-				object = ((Expression)object).evaluate( thread );
-			}
-			catch( UndefinedPropertyException e ) // TODO But what if deeper into the expression this exception is thrown?
-			{
-				return false;
-			}
-		}
-		return isTrue( object );
 	}
 
 	// --- Non static members
@@ -137,19 +117,9 @@ public class Script
 		return eval( this.expression, scope );
 	}
 
-	public Object eval()
-	{
-		return eval( this.expression, null );
-	}
-
-	public boolean evalBoolean( Object scope )
+	public boolean evalBoolean( AbstractScope scope )
 	{
 		return evalBoolean( this.expression, scope );
-	}
-
-	public boolean evalBoolean()
-	{
-		return evalBoolean( this.expression, null );
 	}
 
 	// TODO WriteTo should actually be used to write the output of the script execution.

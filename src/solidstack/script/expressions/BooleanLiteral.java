@@ -31,11 +31,6 @@ public class BooleanLiteral extends LocalizedExpression
 		this.value = value;
 	}
 
-	public Expression compile()
-	{
-		return this;
-	}
-
 	public Boolean evaluate( ThreadContext thread )
 	{
 		return this.value;

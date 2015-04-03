@@ -16,7 +16,6 @@
 
 package solidstack.script.scopes;
 
-import java.io.File;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -24,40 +23,46 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
-import solidstack.script.GlobalFunctions;
+import solidstack.script.functions.Call;
+import solidstack.script.functions.ClassOf;
+import solidstack.script.functions.Def;
+import solidstack.script.functions.Defined;
+import solidstack.script.functions.Load;
+import solidstack.script.functions.LoadClass;
+import solidstack.script.functions.Print;
+import solidstack.script.functions.Println;
 import solidstack.script.functions.Return;
-import solidstack.script.objects.Tuple;
+import solidstack.script.functions.Throw;
+import solidstack.script.functions.Val;
 import solidstack.script.objects.Type;
 import funny.Symbol;
-import funny.sql.JDBC;
 
 
 
 
-public class GlobalScope extends DefaultScope
+public class GlobalScope extends Scope
 {
-	static public final GlobalScope instance = new GlobalScope();
+	static public final GlobalScope INSTANCE = new GlobalScope();
 
 	public GlobalScope()
 	{
-		super( new ObjectScope( new GlobalFunctions() ) );
-		reset();
-	}
-
-	// For testing
-	public void reset()
-	{
-		clear();
-
-		val( Symbol.apply( "return" ), new Return() ); // TODO Remove, should be keyword
+		val( Symbol.apply( "call" ), new Call() );
+		val( Symbol.apply( "classOf" ), new ClassOf() );
+		val( Symbol.apply( "def" ), new Def() ); // TODO Remove
+		val( Symbol.apply( "defined" ), new Defined() );
+		val( Symbol.apply( "load" ), new Load() );
+		val( Symbol.apply( "loadClass" ), new LoadClass() ); // TODO Or loadType?
+		val( Symbol.apply( "print" ), new Print() );
+		val( Symbol.apply( "println" ), new Println() );
+		val( Symbol.apply( "return" ), new Return() ); // TODO Remove
+		val( Symbol.apply( "scope" ), new solidstack.script.functions.Scope() ); // TODO Remove
+		val( Symbol.apply( "throw" ), new Throw() ); // TODO Remove
+		val( Symbol.apply( "val" ), new Val() ); // TODO Remove
 
 		// Primitives
 
@@ -84,11 +89,6 @@ public class GlobalScope extends DefaultScope
 		val( Symbol.apply( "Float" ), new Type( Float.class ) );
 		val( Symbol.apply( "Double" ), new Type( Double.class ) );
 		val( Symbol.apply( "String" ), new Type( String.class ) );
-		val( Symbol.apply( "System" ), new Type( System.class ) );
-
-		// java.io
-
-		val( Symbol.apply( "File" ), new Type( File.class ) );
 
 		// java.math
 
@@ -101,12 +101,9 @@ public class GlobalScope extends DefaultScope
 		val( Symbol.apply( "Arrays" ), new Type( Arrays.class ) );
 		val( Symbol.apply( "Calendar" ), new Type( Calendar.class ) );
 		val( Symbol.apply( "Date" ), new Type( Date.class ) );
-		val( Symbol.apply( "LinkedHashMap" ), new Type( LinkedHashMap.class ) );
-		val( Symbol.apply( "LinkedHashSet" ), new Type( LinkedHashSet.class ) );
 		val( Symbol.apply( "LinkedList" ), new Type( LinkedList.class ) );
 		val( Symbol.apply( "List" ), new Type( List.class ) );
 		val( Symbol.apply( "Map" ), new Type( Map.class ) );
-		val( Symbol.apply( "Properties" ), new Type( Properties.class ) );
 		val( Symbol.apply( "Set" ), new Type( Set.class ) );
 
 		// java.reflect
@@ -115,9 +112,6 @@ public class GlobalScope extends DefaultScope
 
 		// funny
 
-		val( Symbol.apply( "JDBC" ), new Type( JDBC.class ) );
-		val( Symbol.apply( "Scope" ), new Type( Scope.class ) );
 		val( Symbol.apply( "Symbol" ), new Type( Symbol.class ) );
-		val( Symbol.apply( "Tuple" ), new Type( Tuple.class ) );
 	}
 }
