@@ -117,7 +117,7 @@ public class Assert
 	 * @param pop
 	 *            How many items must be popped off the stack trace.
 	 */
-	static protected AssertionError throwAssertionFailure( String errorMessage, int pop )
+	static protected void throwAssertionFailure( String errorMessage, int pop )
 	{
 		AssertionFailedException e = new AssertionFailedException( errorMessage );
 		StackTraceElement[] oldElements = e.getStackTrace();
@@ -133,17 +133,17 @@ public class Assert
 	 * @param errorMessage
 	 *            The error message.
 	 */
-	static public AssertionError fail( String errorMessage )
+	static public void fail( String errorMessage )
 	{
-		return throwAssertionFailure( errorMessage, 2 );
+		throwAssertionFailure( errorMessage, 2 );
 	}
 
 	/**
 	 * Throws an {@link AssertionFailedException}.
 	 */
-	static public AssertionError fail()
+	static public void fail()
 	{
-		return throwAssertionFailure( null, 2 );
+		throwAssertionFailure( null, 2 );
 	}
 
 	/**

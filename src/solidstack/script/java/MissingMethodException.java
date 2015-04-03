@@ -16,13 +16,14 @@
 
 package solidstack.script.java;
 
+import solidstack.script.ScriptException;
 
 
-public class MissingMethodException extends Exception
+public class MissingMethodException extends ScriptException
 {
-	public CallResolutionContext context;
+	public CallContext context;
 
-	public MissingMethodException( CallResolutionContext context )
+	public MissingMethodException( CallContext context )
 	{
 		this.context = context;
 	}
@@ -31,23 +32,15 @@ public class MissingMethodException extends Exception
 	public String getMessage()
 	{
 		Object object = this.context.getObject();
+		String name = this.context.getName();
 		Object[] args = this.context.getArgs();
-		boolean method = this.context.getName() != null;
-
+		Class type = object instanceof Class ? (Class)object : object.getClass();
 		StringBuilder result = new StringBuilder();
-		if( method )
-		{
-			result.append( "No such method: " );
-			result.append( object == null ? "static " : "" );
-		}
-		else
-			result.append( "No such constructor: " );
-		result.append( this.context.getType().getName() );
-		if( method )
-		{
-			result.append( '.' );
-			result.append( this.context.getName() );
-		}
+		result.append( "No signature of method: " );
+		result.append( object instanceof Class ? "static " : "" );
+		result.append( type.getName() );
+		result.append( '.' );
+		result.append( name );
 		result.append( "() is applicable for argument types: (" );
 		for( int i = 0; i < args.length; i++ )
 		{

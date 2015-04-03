@@ -17,416 +17,261 @@
 package solidstack.script;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
-import solidstack.io.PushbackReader;
 import solidstack.io.SourceException;
-import solidstack.io.SourceLocation;
-import solidstack.io.SourceReader;
-import solidstack.io.SourceReaders;
 import solidstack.lang.Assert;
 import solidstack.script.ScriptTokenizer.Token;
-import solidstack.script.ScriptTokenizer.TokenType;
-import solidstack.script.StringTokenizer.Fragment;
-import solidstack.script.expressions.Block;
-import solidstack.script.expressions.BooleanLiteral;
-import solidstack.script.expressions.CharLiteral;
-import solidstack.script.expressions.DecimalLiteral;
-import solidstack.script.expressions.Defined;
-import solidstack.script.expressions.Expression;
-import solidstack.script.expressions.Expressions;
-import solidstack.script.expressions.Identifier;
-import solidstack.script.expressions.If;
-import solidstack.script.expressions.IntegerLiteral;
-import solidstack.script.expressions.Module;
-import solidstack.script.expressions.NullLiteral;
-import solidstack.script.expressions.Parenthesis;
-import solidstack.script.expressions.StringExpression;
-import solidstack.script.expressions.StringLiteral;
-import solidstack.script.expressions.SymbolExpression;
-import solidstack.script.expressions.Throw;
-import solidstack.script.expressions.Var;
-import solidstack.script.expressions.While;
-import solidstack.script.expressions.With;
-import solidstack.script.operators.Operator;
-import solidstack.script.operators.Spread;
-import funny.Symbol;
+import solidstack.script.ScriptTokenizer.Token.TYPE;
 
-
-/**
- * Parses a funny script.
- *
- * @author René de Bloois
- *
- */
 public class ScriptParser
 {
 	private ScriptTokenizer tokenizer;
-	private TokenType stop;
-	private boolean expectElse;
 
-
-	/**
-	 * @param tokenizer The script tokenizer.
-	 */
-	public ScriptParser( ScriptTokenizer tokenizer )
+	public ScriptParser( ScriptTokenizer t )
 	{
-		this.tokenizer = tokenizer;
+		this.tokenizer = t;
 	}
 
-	/**
-	 * Parses everything.
-	 *
-	 * @return An expression.
-	 */
-	public Expression parse()
+	public Expression parse( String stop, String stop2 )
 	{
-		Expressions results = parseExpressions();
-		if( results.size() == 0 )
-			return null;
-		if( results.size() == 1 )
-			return results.get( 0 );
-		return results;
-	}
-
-	/**
-	 * Parses everything.
-	 *
-	 * @return An expression.
-	 */
-	private Expressions parseExpressions()
-	{
-		Expressions results = new Expressions();
-		while( true )
-		{
-			Expression expression = parseExpression();
-			Token last = this.tokenizer.last();
-			if( last.getType() == TokenType.EOF || last.getType() == this.stop )
-			{
-				if( expression != null )
-					results.append( expression );
-				if( this.stop != null && last.getType() == TokenType.EOF )
-					throw new SourceException( "Unexpected " + last + ", missing " + this.stop, last.getLocation() );
-//				if( results.size() == 0 )
-//					return null;
-				return results;
-			}
-			results.append( expression );
-		}
-	}
-
-	// Parses an expression (ends with ; or EOF)
-	private Expression parseExpression()
-	{
-		Expression result = parseAtom();
+		Expressions results = null;
+		Expression result = parseOne( true, stop2 );
 		if( result == null )
 			return null;
 
 		while( true )
 		{
-			Token token = this.tokenizer.next();
-			TokenType type = token.getType();
-			if( type == this.stop )
-				return result;
-
-			switch( type )
+			Token token = this.tokenizer.get();
+			if( stop == null && stop2 == null )
 			{
-				case EOF:
-					if( this.stop != null )
-						throw new SourceException( "Unexpected " + token + ", missing " + this.stop, token.getLocation() );
-					//$FALL-THROUGH$
-				case SEMICOLON:
-					return result;
-
-				case OPERATOR:
-				case COMMA:
-				case DOT:
-				case EQUALS:
-				case HASH:
-				case FUNCTION:
-					Expression right = parseAtom();
-					Assert.notNull( right );
-					result = appendOperator( result, token.getValue(), right );
-					break;
-
-//				case BRACKET_OPEN:
-				case PAREN_OPEN:
-					TokenType oldStop = swapStops( inverse( type ) );
-					Expression parameters = parse();
-					swapStops( oldStop );
-					result = appendOperator( result, token.getValue(), parameters );
-					break;
-
-				case ELSE:
-					if( !this.expectElse )
-						throw new SourceException( "Unexpected token '" + token + "'", token.getLocation() );
-					this.tokenizer.push();
-					return result;
-
-				case IDENTIFIER:
-					// TODO asInstanceOf and isInstanceOf? Or replace 'as' with toInt() etc.?
-					if( token.getValue().equals( "as" ) || token.getValue().equals( "instanceof" ) )
-					{
-						right = parseAtom();
-						Assert.notNull( right );
-						result = appendOperator( result, token.getValue(), right );
-						break;
-					}
-					//$FALL-THROUGH$
-
-				default:
-					throw new SourceException( "Unexpected token '" + token + "'", token.getLocation() );
+				if( token.getType() == TYPE.EOF )
+				{
+					if( results == null )
+						return result;
+					if( result != null )
+						results.append( result );
+					return results;
+				}
 			}
-		}
-	}
-
-	private Expression appendOperator( Expression result, String operator, Expression operand )
-	{
-		if( result instanceof Operator )
-			return ( (Operator)result ).append( operator, operand );
-		return Operator.operator( operator, result, operand );
-	}
-
-	private TokenType inverse( TokenType type )
-	{
-		switch( type )
-		{
-			case BRACE_OPEN:
-				return TokenType.BRACE_CLOSE;
-			case BRACKET_OPEN:
-				return TokenType.BRACKET_CLOSE;
-			case PAREN_OPEN:
-				return TokenType.PAREN_CLOSE;
-			default:
-				throw new AssertionError();
-		}
-	}
-
-	/**
-	 * @return The smallest expression possible.
-	 */
-	private Expression parseAtom()
-	{
-		Token token = this.tokenizer.next();
-		TokenType type = token.getType();
-		if( type == this.stop )
-			return null;
-
-		switch( type )
-		{
-			case EOF:
-				if( this.stop != null )
-					throw new SourceException( "Unexpected " + token + ", missing " + this.stop, token.getLocation() );
-				//$FALL-THROUGH$
-			case SEMICOLON:
-				return null;
-
-			case CHAR:
-				return new CharLiteral( token.getLocation(), token.getValue().charAt( 0 ) );
-
-			case DECIMAL:
-				return new DecimalLiteral( token.getLocation(), new BigDecimal( token.getValue() ) );
-
-			case INTEGER:
-				return new IntegerLiteral( token.getLocation(), Integer.valueOf( token.getValue() ) );
-
-			case STRING:
-				return new StringLiteral( token.getLocation(), token.getValue() );
-
-			case PSTRING:
-				return parsePString( token, this.tokenizer.getIn() );
-
-			case PAREN_OPEN:
-				TokenType oldStop = swapStops( TokenType.PAREN_CLOSE );
-				Expression result = parse();
-				swapStops( oldStop );
-				return new Parenthesis( token.getLocation(), result );
-
-			case BRACE_OPEN:
-				oldStop = swapStops( TokenType.BRACE_CLOSE );
-				result = parse();
-				swapStops( oldStop );
-				return new Block( token.getLocation(), result );
-
-			case OPERATOR:
-				// No need to consider precedences here. Only one atom is parsed.
-				if( token.getValue().equals( "-" ) )
-					return Operator.preOp( token.getLocation(), "-@", parseAtom() ); // TODO Pre-apply
-				if( token.getValue().equals( "!" ) )
-					return Operator.preOp( token.getLocation(), "!@", parseAtom() ); // TODO Pre-apply
-				if( token.getValue().equals( "+" ) )
-					return parseAtom(); // TODO Is this correct, just ignore the operator?
-				if( token.getValue().equals( "*" ) )
-					return new Spread( token.getLocation(), token.getValue(), parseAtom() );
-				throw new SourceException( "Unexpected token " + token, token.getLocation() );
-
-			case NULL:
-				return new NullLiteral( token.getLocation() );
-
-			case WHILE:
-				Token token2 = this.tokenizer.next();
-				if( token2.getType() != TokenType.PAREN_OPEN )
-					throw new SourceException( "Expected an opening parenthesis after 'while', not " + token2, token2.getLocation() );
-				oldStop = swapStops( TokenType.PAREN_CLOSE );
-				Expressions expressions = parseExpressions();
-				swapStops( oldStop );
-				Expression left = parseExpression();
-				token2 = this.tokenizer.last();
-				Assert.isTrue( token2.getType() == this.stop || token2.getType() == TokenType.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
-				this.tokenizer.push();
-				return new While( token.getLocation(), expressions, left );
-
-			case WITH:
-				token2 = this.tokenizer.next();
-				if( token2.getType() != TokenType.PAREN_OPEN )
-					throw new SourceException( "Expected an opening parenthesis after 'with', not " + token2, token2.getLocation() );
-				oldStop = swapStops( TokenType.PAREN_CLOSE );
-				expressions = parseExpressions();
-				swapStops( oldStop );
-				left = parseExpression();
-				token2 = this.tokenizer.last();
-				Assert.isTrue( token2.getType() == this.stop || token2.getType() == TokenType.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
-				this.tokenizer.push();
-				return new With( token.getLocation(), expressions, left );
-
-			case MODULE:
-				token2 = this.tokenizer.next();
-				if( token2.getType() != TokenType.PAREN_OPEN )
-					throw new SourceException( "Expected an opening parenthesis after 'module', not " + token2, token2.getLocation() );
-				oldStop = swapStops( TokenType.PAREN_CLOSE );
-				expressions = parseExpressions();
-				swapStops( oldStop );
-				left = parseExpression();
-				token2 = this.tokenizer.last();
-				Assert.isTrue( token2.getType() == this.stop || token2.getType() == TokenType.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
-				this.tokenizer.push();
-				return new Module( token.getLocation(), expressions, left );
-
-			case DEFINED:
-				token2 = this.tokenizer.next();
-				if( token2.getType() != TokenType.PAREN_OPEN )
-					throw new SourceException( "Expected an opening parenthesis after 'defined', not " + token2, token2.getLocation() );
-				oldStop = swapStops( TokenType.PAREN_CLOSE );
-				expressions = parseExpressions();
-				swapStops( oldStop );
-				return new Defined( token.getLocation(), expressions );
-
-			case IF:
-				token2 = this.tokenizer.next();
-				if( token2.getType() != TokenType.PAREN_OPEN )
-					throw new SourceException( "Expected an opening parenthesis after 'if', not " + token2, token2.getLocation() );
-				oldStop = swapStops( TokenType.PAREN_CLOSE );
-				expressions = parseExpressions();
-				swapStops( oldStop );
-				this.expectElse = true;
-				left = parseExpression();
-				this.expectElse = false;
-				Expression right = null;
-				token2 = this.tokenizer.next();
-				if( token2.getType() == TokenType.ELSE )
-					right = parseExpression();
+			else if( token.eq( stop ) || token.eq( stop2 ) )
+			{
+				if( results == null )
+					return result;
+				if( result != null )
+					results.append( result );
+				return results;
+			}
+			if( token.getType() == TYPE.SEMICOLON )
+			{
+				if( results == null )
+					results = new Expressions();
+				results.append( result );
+				result = parseOne( true, stop2 );
+				if( result == null )
+					return results;
+				continue;
+			}
+			if( token.getType() == TYPE.PAREN_OPEN )
+			{
+				Assert.isTrue( result != null );
+				Tuple parameters = new Tuple();
+				do
+				{
+					Expression parameter = parse( ",", ")" );
+					if( parameter != null )
+						parameters.append( parameter );
+				}
+				while( this.tokenizer.lastToken().getType() == TYPE.COMMA );
+				Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.PAREN_CLOSE ); // TODO Not really needed
+				if( result instanceof Operation )
+					result = ( (Operation)result ).append( token.getValue(), parameters );
 				else
-					this.tokenizer.push();
-				token2 = this.tokenizer.last();
-				Assert.isTrue( token2.getType() == this.stop || token2.getType() == TokenType.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
-				this.tokenizer.push();
-				return new If( token.getLocation(), expressions, left, right );
-
-			case NEW:
-				return Operator.preOp( token.getLocation(), "new", parseAtom() );
-
-			case TRUE:
-				return new BooleanLiteral( token.getLocation(), true );
-
-			case FALSE:
-				return new BooleanLiteral( token.getLocation(), false );
-
-			case VAR:
-				token2 = this.tokenizer.next();
-				if( token2.getType() == TokenType.IDENTIFIER )
-					return new Var( token.getLocation(), new Identifier( token2.getLocation(), token2.getValue() ) );
-				throw new SourceException( "identifier expected after 'var', not " + token2, token2.getLocation() );
-
-			case THROW:
-				Expression exception = parseExpression();
-				if( exception == null )
-					throw new SourceException( "expression expected after 'throw'", token.getLocation() );
-				token2 = this.tokenizer.last();
-				Assert.isTrue( token2.getType() == this.stop || token2.getType() == TokenType.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
-				this.tokenizer.push();
-				return new Throw( token.getLocation(), exception );
-
-			case IDENTIFIER:
-			case RETURN: // TODO Make a statement instead of a function
-			case VAL: // TODO Make a statement instead of a function
-			case THIS:
-				return new Identifier( token.getLocation(), token.getValue() );
-
-			case SYMBOL:
-				return new SymbolExpression( token.getLocation(), Symbol.apply( token.getValue() ) );
-
-			default:
-				if( token.getType().isReserved() )
-					throw new SourceException( "Unexpected reserved word " + token, token.getLocation() );
-				throw new SourceException( "Unexpected token " + token, token.getLocation() );
+					result = Operation.operation( token.getValue(), result, parameters );
+			}
+			else if( token.getType() == TYPE.BINOP )
+			{
+				Assert.isTrue( result != null );
+				if( token.getValue().equals( "?" ) )
+				{
+					Expression first = parse( ":", null );
+					Expression second = parseOne( false, null );
+					if( second == null )
+						throw new SourceException( "Unexpected token '" + this.tokenizer.lastToken() + "'", this.tokenizer.getLocation() );
+					if( result instanceof Operation )
+						result = ( (Operation)result ).append( first, second );
+					else
+						result = Operation.operation( result, first, second );
+				}
+				else
+				{
+					Assert.isFalse( token.getValue().equals( ":" ) );
+					Expression right = parseOne( false, null );
+					if( right == null )
+						throw new SourceException( "Unexpected token '" + this.tokenizer.lastToken() + "'", this.tokenizer.getLocation() );
+					if( result instanceof Operation )
+						result = ( (Operation)result ).append( token.getValue(), right );
+					else
+						result = Operation.operation( token.getValue(), result, right );
+				}
+			}
+			else if( token.getType() == TYPE.UNAOP )
+			{
+				Assert.isTrue( result != null );
+				if( result instanceof Operation )
+					result = ( (Operation)result ).append( "@" + token.getValue(), null );
+				else
+					result = Operation.operation( "@" + token.getValue(), result, null );
+			}
+			else if( token.getType() == TYPE.DOT )
+			{
+				// TODO This is equal to the binary operation
+				Expression right = parseOne( false, null );
+				if( right == null )
+					throw new SourceException( "Unexpected token '" + this.tokenizer.lastToken() + "'", this.tokenizer.getLocation() );
+				if( result instanceof Operation )
+					result = ( (Operation)result ).append( token.getValue(), right );
+				else
+					result = Operation.operation( token.getValue(), result, right );
+			}
+			else if( token.getType() == TYPE.LAMBDA )
+			{
+				Assert.isTrue( result != null );
+				Expression right = parseOne( false, null );
+				if( right == null )
+					throw new SourceException( "Unexpected token '" + this.tokenizer.lastToken() + "'", this.tokenizer.getLocation() );
+				if( result instanceof Operation )
+					result = ( (Operation)result ).append( token.getValue(), right );
+				else
+					result = Operation.operation( token.getValue(), result, right );
+			}
+			else
+				throw new SourceException( "Unexpected token '" + token + "'", this.tokenizer.getLocation() );
 		}
 	}
 
-	/**
-	 * Parses a string as a processed string.
-	 *
-	 * @param s The processed string to parse.
-	 * @param location The start location of the processed string.
-	 * @return An expression.
-	 */
-	static public Expression parseString( String s, SourceLocation location )
+	public Expression parseOne( boolean start, String or )
 	{
-		SourceReader in = SourceReaders.forString( s, location );
-		StringTokenizer t = new StringTokenizer( in, false );
-		return parsePString( t, location );
-	}
+		Token token = this.tokenizer.get();
 
-	/**
-	 * Parses a processed string.
-	 *
-	 * @param token The identifier in front of the processed string.
-	 * @param in The source reader to read the processed string from.
-	 * @return An expression.
-	 */
-	static public Expression parsePString( Token token, PushbackReader in )
-	{
-		if( !token.eq( "s" ) )
-			throw new SourceException( "Only 's' is currently allowed", token.getLocation() );
-		StringTokenizer t = new StringTokenizer( in, true );
-		return parsePString( t, token.getLocation() );
-	}
-
-	static private Expression parsePString( StringTokenizer t, SourceLocation location )
-	{
-		ScriptParser parser = new ScriptParser( t );
-		parser.swapStops( TokenType.BRACE_CLOSE );
-
-		StringExpression result = new StringExpression( location );
-
-		Fragment fragment = t.getFragment(); // TODO Fragment object not needed anymore
-		if( fragment.length() != 0 )
-			result.appendFragment( fragment.getValue() );
-		while( t.foundExpression() )
+		if( start )
 		{
-			Expression expression = parser.parse();
-			if( expression != null ) // TODO Unit test
-				result.append( expression );
-			fragment = t.getFragment();
-			if( fragment.length() != 0 )
-				result.appendFragment( fragment.getValue() );
+			while( token.getType() == TYPE.SEMICOLON )
+				token = this.tokenizer.get();
+			if( token == Token.EOF || token.eq( or ) )
+				return null;
 		}
 
-		return result;
+		if( token.getType() == TYPE.IDENTIFIER )
+		{
+			String name = token.getValue();
+			if( name.equals( "false" ) )
+				return new BooleanConstant( false );
+			if( name.equals( "true" ) )
+				return new BooleanConstant( true );
+			if( name.equals( "null" ) )
+				return new NullConstant();
+			if( token.getValue().equals( "if" ) )
+			{
+				Expression result = parseOne( true, null );
+				if( !( result instanceof Tuple ) )
+					throw new SourceException( "Expected a parenthesis (", this.tokenizer.getLocation() );
+				Expression left = parseOne( true, null );
+				token = this.tokenizer.get();
+				if( token.getType() != TYPE.IDENTIFIER || !token.getValue().equals( "else" ) )
+				{
+					this.tokenizer.push();
+					return new If( result, left, null );
+				}
+				Expression right = parseOne( true, null );
+				return new If( result, left, right );
+			}
+			if( token.getValue().equals( "while" ) )
+			{
+				Expression result = parseOne( true, null );
+				if( !( result instanceof Tuple ) )
+					throw new SourceException( "Expected a parenthesis (", this.tokenizer.getLocation() );
+				Expression left = parseOne( true, null );
+				return new While( result, left );
+			}
+			if( token.getValue().equals( "function" ) )
+			{
+				token = this.tokenizer.get();
+				if( token.getType() != TYPE.PAREN_OPEN )
+					throw new SourceException( "Expected a parenthesis (", this.tokenizer.getLocation() );
+				List<String> parameters = new ArrayList<String>();
+				do
+				{
+					Expression parameter = parse( ",", ")" );
+					if( parameter != null )
+					{
+						if( !( parameter instanceof Identifier ) )
+							throw new SourceException( "Expected an identifier", this.tokenizer.getLocation() );
+						parameters.add( ( (Identifier)parameter ).getName() );
+					}
+				}
+				while( this.tokenizer.lastToken().getType() == TYPE.COMMA );
+				Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.PAREN_CLOSE ); // TODO Not really needed
+				Expression block = parseOne( true, null );
+				return new Function( parameters, block );
+			}
+			return new Identifier( token.getValue() );
+		}
+		if( token.getType() == TYPE.NUMBER )
+			return new NumberConstant( new BigDecimal( token.getValue() ) );
+		if( token.getType() == TYPE.STRING )
+			return new StringConstant( token.getValue() );
+		if( token == Token.PAREN_OPEN )
+		{
+			Tuple tuple = new Tuple();
+			do
+			{
+				Expression element = parse( ",", ")" );
+				if( element != null )
+					tuple.append( element );
+			}
+			while( this.tokenizer.lastToken().getType() == TYPE.COMMA );
+			Assert.isTrue( this.tokenizer.lastToken().getType() == TYPE.PAREN_CLOSE ); // TODO Not really needed
+			return tuple;
+		}
+		if( token.getType() == TYPE.BINOP )
+			if( token.getValue().equals( "-" ) )
+			{
+				Expression result = parseOne( false, null );
+				if( result instanceof NumberConstant )
+					return ( (NumberConstant)result ).negate();
+				return Operation.operation( "-@", result, null );
+			}
+			else if( token.getValue().equals( "+" ) )
+			{
+				return parseOne( false, null );
+			}
+		if( token.getType() == TYPE.UNAOP )
+		{
+			if( token.getValue().equals( "!" ) )
+			{
+				Expression result = parseOne( false, null );
+				if( result instanceof BooleanConstant )
+					return ( (BooleanConstant)result ).not();
+				return Operation.operation( "!@", null, result );
+			}
+			Expression result = parseOne( false, null );
+			return Operation.operation( token.getValue() + "@", null, result );
+		}
+//		if( token.getType() == TYPE.EOF )
+//			return null;
+		if( token.getType() == TYPE.BRACE_OPEN )
+			return parseBlock();
+		throw new SourceException( "Unexpected token '" + token + "'", this.tokenizer.getLocation() );
 	}
 
-	private TokenType swapStops( TokenType stop )
+	public Expression parseBlock()
 	{
-		TokenType result = this.stop;
-		this.stop = stop;
+		Expression result = parse( null, "}" );
+		if( !( result instanceof Expressions ) )
+			return new Expressions( result );
 		return result;
+
 	}
 }

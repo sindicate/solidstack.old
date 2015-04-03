@@ -157,19 +157,11 @@ public class Resource
 		return new SourceLocation( this, 1 );
 	}
 
-	/**
-	 * Indicate that this resource is gzipped or not.
-	 *
-	 * @param gzip True indicates that this resource is gzipped.
-	 */
 	public void setGZip( boolean gzip )
 	{
 		this.gzip = gzip;
 	}
 
-	/**
-	 * @return True indicates that this resource is gzipped.
-	 */
 	public boolean isGZip()
 	{
 		return this.gzip;

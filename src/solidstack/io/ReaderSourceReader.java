@@ -33,14 +33,9 @@ public class ReaderSourceReader implements SourceReader
 	private Reader reader;
 
 	/**
-	 * The current location.
+	 * The current line the reader is positioned on.
 	 */
-	private SourceLocation location;
-
-	/**
-	 * The last location.
-	 */
-	private SourceLocation lastLocation;
+	private int currentLineNumber;
 
 	/**
 	 * Buffer to contain a character that has been read by mistake.
@@ -53,6 +48,11 @@ public class ReaderSourceReader implements SourceReader
 	private StringBuilder line;
 
 	/**
+	 * The underlying resource.
+	 */
+	private Resource resource;
+
+	/**
 	 * The character encoding of the resource.
 	 */
 	private String encoding;
@@ -63,7 +63,8 @@ public class ReaderSourceReader implements SourceReader
 	 */
 	public ReaderSourceReader( Reader reader )
 	{
-		this( reader, new SourceLocation( null, 1 ), null );
+		this.reader = reader;
+		this.currentLineNumber = 1;
 	}
 
 	/**
@@ -72,7 +73,9 @@ public class ReaderSourceReader implements SourceReader
 	 */
 	public ReaderSourceReader( Reader reader, SourceLocation location )
 	{
-		this( reader, location, null );
+		this.reader = reader;
+		this.resource = location.getResource();
+		this.currentLineNumber = location.getLineNumber();
 	}
 
 	/**
@@ -83,7 +86,8 @@ public class ReaderSourceReader implements SourceReader
 	public ReaderSourceReader( Reader reader, SourceLocation location, String encoding )
 	{
 		this.reader = reader;
-		this.location = location;
+		this.resource = location.getResource();
+		this.currentLineNumber = location.getLineNumber();
 		this.encoding = encoding;
 	}
 
@@ -111,7 +115,6 @@ public class ReaderSourceReader implements SourceReader
 	{
 		if( this.line == null )
 			this.line = new StringBuilder();
-		this.line.setLength( 0 );
 
 		int ch;
 		while( true )
@@ -120,10 +123,11 @@ public class ReaderSourceReader implements SourceReader
 				case -1:
 					if( this.line.length() == 0 )
 						return null;
-					this.location = this.location.nextLine(); // Not incremented by read(), so do it here
 					//$FALL-THROUGH$
 				case '\n':
-					return this.line.toString();
+					String result = this.line.toString();
+					this.line.setLength( 0 );
+					return result;
 				default:
 					this.line.append( (char)ch );
 			}
@@ -133,15 +137,11 @@ public class ReaderSourceReader implements SourceReader
 	{
 		if( this.reader == null )
 			throw new IllegalStateException( "Closed" );
-		return this.location.getLineNumber();
+		return this.currentLineNumber;
 	}
 
 	public int read()
 	{
-		if( this.reader == null )
-			throw new IllegalStateException( "Closed" );
-
-		this.lastLocation = this.location;
 		try
 		{
 			int result;
@@ -161,7 +161,7 @@ public class ReaderSourceReader implements SourceReader
 						this.buffer = result;
 					//$FALL-THROUGH$
 				case '\n':
-					this.location = this.location.nextLine();
+					this.currentLineNumber++;
 					return '\n';
 				default:
 					return result;
@@ -175,7 +175,7 @@ public class ReaderSourceReader implements SourceReader
 
 	public Resource getResource()
 	{
-		return this.location.getResource();
+		return this.resource;
 	}
 
 	public String getEncoding()
@@ -185,27 +185,13 @@ public class ReaderSourceReader implements SourceReader
 
 	public SourceLocation getLocation()
 	{
-		if( this.reader == null )
-			throw new IllegalStateException( "Closed" );
-		return this.location;
+		return new SourceLocation( this.resource, getLineNumber() );
 	}
 
-	public SourceLocation getLastLocation()
-	{
-		if( this.reader == null )
-			throw new IllegalStateException( "Closed" );
-		if( this.lastLocation == null )
-			throw new IllegalStateException( "No character read yet" );
-		if( this.buffer >= 0 )
-			throw new IllegalStateException( "Last location is not valid, pushed back a character" );
-		return this.lastLocation;
-	}
-
-	// This is only used to push back the first character (for byte order mark detection)
 	void push( int ch )
 	{
 		if( this.buffer != -1 )
-			throw new IllegalStateException( "Buffer is not empty" );
+			throw new IllegalStateException( "buffer is not empty" );
 		this.buffer = ch;
 	}
 }
