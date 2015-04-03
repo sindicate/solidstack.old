@@ -16,103 +16,80 @@
 
 package solidstack.script.operators;
 
-import java.util.List;
-import java.util.ListIterator;
-
 import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
-import solidstack.script.expressions.Expressions;
 import solidstack.script.expressions.Identifier;
-import solidstack.script.expressions.Load;
-import solidstack.script.expressions.Save;
-import solidstack.script.expressions.Var;
+import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Tuple;
+import solidstack.script.objects.Util;
+import solidstack.script.scopes.AbstractScope.Ref;
 
 
 public class Assign extends Operator
 {
-	public Assign( String name, Expression left, Expression right )
+	public Assign( String name, Expression left, Expression right)
 	{
 		super( name, left, right );
 	}
 
-	@Override
-	public Expression compile()
-	{
-		super.compile();
-
-		// exp(args)=value ---> exp.update(value,args)
-		if( this.left instanceof Apply )
-		{
-			// Extract the parts
-			Apply apply = (Apply)this.left;
-			Expression exp = apply.left;
-			Expression value = this.right;
-			Expression args = apply.right;
-
-			if( !( args instanceof BuildTuple ) ) // TODO And what if it is?
-			{
-				// Build new expression from those parts
-				Member update = new Member( ".", exp, new Identifier( getLocation(), "update" ) );
-				return new Apply( "(", update, new BuildTuple( ",", value, args ) );
-			}
-		}
-		else if( this.left instanceof BuildTuple )
-		{
-			Save save = new Save( this.right.compile() );
-
-			ListIterator<Expression> i = ( (BuildTuple)this.left ).getExpressions().listIterator();
-			int j = 0;
-			while( i.hasNext() )
-			{
-				Expression expression = i.next();
-				expression = new Assign( "=", expression, new Load( j++ ) );
-				i.set( expression.compile() );
-			}
-
-			return new Expressions( save, this.left );
-		}
-
-		return this;
-	}
-
 	public Object evaluate( ThreadContext thread )
 	{
-		Object right = this.right.evaluate( thread );
-
-		if( this.left instanceof BuildTuple ) // TODO Move to BuildTuple itself
+		if( this.left instanceof Apply )
 		{
-			if( !( right instanceof Tuple ) )
-				throw new UnsupportedOperationException();
-
-			List<Expression> leftTuple = ((BuildTuple)this.left).getExpressions();
-			Tuple rightTuple = (Tuple)right;
-			int len = leftTuple.size();
-			Assert.isTrue( rightTuple.size() == len );
-			for( int i = 0; i < len; i++ )
+			// TODO This is ugly
+			Apply apply = (Apply)this.left;
+			Expression object = apply.left;
+			if( !( object instanceof Identifier && ( (Identifier)object ).getSymbol().toString().equals( "var" ) ) )
 			{
-				Expression l = leftTuple.get( i );
-				Assert.isTrue( l instanceof Identifier ); // TODO And vars
-				Object r = rightTuple.get( i );
-				( (Identifier)l ).assign( thread, r );
+				Expression pars = apply.right;
+				if( !( pars instanceof BuildTuple ) ) // TODO And what if it is?
+				{
+					Member update = new Member( ".", object, new Identifier( getLocation(), "update" ) );
+					BuildTuple par = new BuildTuple( ",", pars, this.right );
+					return new Apply( "(", update, par ).evaluate( thread );
+				}
 			}
-			return right;
 		}
 
-//		if( right instanceof Tuple )
-//			throw new ThrowException( "Can't assign tuples to variables", thread.cloneStack( getLocation() ) );
+		Object left = this.left.evaluateRef( thread );
+		Object right = Util.deref( this.right.evaluate( thread ) );
 
-		if( this.left instanceof Identifier )
-			return ( (Identifier)this.left ).assign( thread, right );
+		if( left instanceof Tuple )
+		{
+			if( right instanceof Tuple )
+			{
+				Tuple leftTuple = (Tuple)left;
+				Tuple rightTuple = (Tuple)right;
+				int len = leftTuple.size();
+				Assert.isTrue( rightTuple.size() == len );
+				for( int i = 0; i < len; i++ )
+				{
+					Object l = leftTuple.get( i );
+					Object r = rightTuple.get( i );
+					assign( l, r, thread );
+				}
+			}
+			else
+				throw new UnsupportedOperationException();
+		}
+		else
+			assign( left, right, thread );
 
-		if( this.left instanceof Var )
-			return ( (Var)this.left ).assign( thread, right );
+		return right; // TODO Or should it be left? Or should we do assignment like this 1 => a?
+	}
 
-		if( this.left instanceof Member )
-			return ( (Member)this.left ).assign( thread, right );
-
-		throw new ThrowException( "Can't assign to a " + right.getClass().getName(), thread.cloneStack( getLocation() ) );
+	private void assign( Object var, Object value, ThreadContext thread )
+	{
+		Assert.notNull( var );
+		value = Util.finalize( value );
+		if( value instanceof Tuple )
+			throw new ThrowException( "Can't assign tuples to variables", thread.cloneStack( getLocation() ) );
+		if( value instanceof FunctionObject )
+			( (FunctionObject)value ).setAssigned();
+		if( !( var instanceof Ref ) )
+			throw new ThrowException( "Can't assign to a " + var.getClass().getName(), thread.cloneStack( getLocation() ) );
+		( (Ref)var ).set( value );
 	}
 }

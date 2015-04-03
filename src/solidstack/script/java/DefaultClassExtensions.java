@@ -228,7 +228,7 @@ public class DefaultClassExtensions
 				symbol = (Symbol)label;
 			else
 				throw new ThrowException( "A Scope() constructor needs keys of type String or Symbol", ThreadContext.get().cloneStack() );
-			result.var( symbol, labeled.getValue() );
+			result.def( symbol, labeled.getValue() );
 		}
 		return result;
 	}
@@ -282,22 +282,6 @@ public class DefaultClassExtensions
 				result.add( object );
 		}
 		return result;
-	}
-
-	static public Object find( Iterable iterable, Function function )
-	{
-		return find( iterable.iterator(), function );
-	}
-
-	static public Object find( Iterator iterator, Function function )
-	{
-		while( iterator.hasNext() )
-		{
-			Object object = iterator.next();
-			if( Script.isTrue( function.call( object ) ) )
-				return object;
-		}
-		return null;
 	}
 
 	static public Object fold( Iterable iterable, Object start, Function function )
@@ -542,7 +526,7 @@ public class DefaultClassExtensions
 		return stripMargin( string.toString() );
 	}
 
-	static public Object update( List list, Object value, int index )
+	static public Object update( List list, int index, Object value )
 	{
 		if( index >= list.size() )
 		{
@@ -556,13 +540,13 @@ public class DefaultClassExtensions
 		return value;
 	}
 
-	static public Object update( Map map, Object value, Object key )
+	static public Object update( Map map, Object key, Object value )
 	{
 		map.put( key, value );
 		return value;
 	}
 
-	static public Object update( Object[] array, Object value, int index )
+	static public Object update( Object[] array, int index, Object value )
 	{
 		array[ index ] = value;
 		return value;

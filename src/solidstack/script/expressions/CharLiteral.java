@@ -31,11 +31,6 @@ public class CharLiteral extends LocalizedExpression
 		this.value = value;
 	}
 
-	public Expression compile()
-	{
-		return this;
-	}
-
 	public Character evaluate( ThreadContext thread )
 	{
 		return this.value;

@@ -16,8 +16,6 @@
 
 package solidstack.script.scopes;
 
-import java.util.Map;
-
 import funny.Symbol;
 
 
@@ -33,57 +31,26 @@ public class CombinedScope extends AbstractScope
 	}
 
 	@Override
-	public void var( Symbol symbol, Object value )
+	public Ref findRef( Symbol symbol )
 	{
-		this.scope1.var( symbol, value );
+		Ref v = this.scope1.findRef( symbol );
+		if( v != null )
+			return v;
+		v = this.scope2.findRef( symbol );
+		if( v != null )
+			return v;
+		return null;
 	}
 
 	@Override
-	public void val( Symbol symbol, Object value )
+	public Variable def( Symbol symbol, Object value )
 	{
-		this.scope1.val( symbol, value );
+		return this.scope1.def( symbol, value );
 	}
 
 	@Override
-	public Object get( Symbol symbol )
+	public Value val( Symbol symbol, Object value )
 	{
-		try
-		{
-			return this.scope1.get( symbol );
-		}
-		catch( UndefinedException e )
-		{
-			return this.scope2.get( symbol );
-		}
-	}
-
-	@Override
-	public void set0( Symbol symbol, Object value )
-	{
-		try
-		{
-			this.scope1.set( symbol, value );
-		}
-		catch( UndefinedException e )
-		{
-			this.scope2.set( symbol, value );
-		}
-	}
-
-	public Object apply( Symbol symbol, Object... pars )
-	{
-		try
-		{
-			return this.scope1.apply( symbol, pars );
-		}
-		catch( UndefinedException e )
-		{
-			return this.scope2.apply( symbol, pars );
-		}
-	}
-
-	public Object apply( Symbol symbol, Map args )
-	{
-		throw new UnsupportedOperationException();
+		return this.scope1.val( symbol, value );
 	}
 }

@@ -18,18 +18,17 @@ package solidstack.script.expressions;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
 
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
 import solidstack.script.objects.PString;
+import solidstack.script.objects.Util;
 
 
 
 public class StringExpression extends LocalizedExpression
 {
 	private List<Expression> expressions = new ArrayList<Expression>();
-	private List<String> fragments = new ArrayList<String>();
 
 
 	public StringExpression( SourceLocation location )
@@ -37,48 +36,37 @@ public class StringExpression extends LocalizedExpression
 		super( location );
 	}
 
-	public Expression compile()
-	{
-		if( this.fragments.size() == 0 )
-			return new StringLiteral( getLocation(), "" );
-		if( this.fragments.size() == 1 && this.fragments.get( 0 ) != null )
-			return new StringLiteral( getLocation(), this.fragments.get( 0 ) );
-
-		ListIterator<Expression> i = this.expressions.listIterator();
-		while( i.hasNext() )
-			i.set( i.next().compile() );
-
-		return this;
-	}
-
 	public PString evaluate( ThreadContext thread )
 	{
 		List<String> fragments = new ArrayList<String>(); // TODO Or LinkedList?
 		List<Object> values = new ArrayList<Object>();
-		int i = 0;
-		for( String fragment : this.fragments )
+		for( Expression expression : this.expressions )
 		{
-			if( fragment != null )
-				fragments.add( fragment );
+			Object object = Util.deref( expression.evaluate( thread ) ); // TODO deref() needed here?
+			if( expression instanceof StringLiteral )
+				fragments.add( (String)object );
 			else
 			{
-				Object object = this.expressions.get( i++ ).evaluate( thread );
-				values.add( object );
 				fragments.add( null ); // This is the value indicator
+				values.add( object );
 			}
 		}
 		return new PString( fragments.toArray( new String[ fragments.size() ] ), values.toArray() );
 	}
 
-	public void appendFragment( String fragment )
-	{
-		this.fragments.add( fragment );
-	}
-
 	public void append( Expression expression )
 	{
 		this.expressions.add( expression );
-		this.fragments.add( null );
+	}
+
+	public int size()
+	{
+		return this.expressions.size();
+	}
+
+	public Expression get( int index )
+	{
+		return this.expressions.get( index );
 	}
 
 	public void writeTo( StringBuilder out )

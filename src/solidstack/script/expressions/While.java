@@ -34,13 +34,6 @@ public class While extends LocalizedExpression
 		this.left = left;
 	}
 
-	public Expression compile()
-	{
-		this.condition = this.condition.compile();
-		this.left = this.left.compile();
-		return this;
-	}
-
 	public Object evaluate( ThreadContext thread )
 	{
 		Object result = null;

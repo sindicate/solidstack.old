@@ -39,7 +39,6 @@ import org.testng.annotations.Test;
 
 import solidstack.io.Resource;
 import solidstack.io.Resources;
-import solidstack.template.Basic.ParameterObject;
 
 
 @SuppressWarnings( { "javadoc", "restriction" } )
@@ -158,20 +157,5 @@ public class JavascriptTest
 				"FROM SYS.SYSTABLES\n" +
 				"WHERE 1 = 1\n" +
 				"AND TABLENAME LIKE 'SYST%'\n" );
-	}
-
-	@Test
-	public void testObjectScope()
-	{
-		TemplateLoader templates = new TemplateLoader();
-		templates.setTemplatePath( "classpath:/solidstack/template" );
-
-		Template template = templates.getTemplate( "testjs.txt" );
-		String result = template.apply( new ParameterObject() );
-		Assert.assertEquals( result, "SELECT *\n" +
-				"FROM SYS.SYSTABLES\n" +
-				"WHERE 1 = 1\n" +
-				"AND TABLENAME LIKE 'prefix%'\n" +
-				"AND TABLENAME = name\n" );
 	}
 }

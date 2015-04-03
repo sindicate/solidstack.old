@@ -16,9 +16,9 @@
 
 package solidstack.script.expressions;
 
+import funny.Symbol;
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
-import funny.Symbol;
 
 
 public class SymbolExpression extends LocalizedExpression
@@ -31,11 +31,6 @@ public class SymbolExpression extends LocalizedExpression
 		super( location );
 
 		this.symbol = symbol;
-	}
-
-	public Expression compile()
-	{
-		return this;
 	}
 
 	public Object evaluate( ThreadContext thread )

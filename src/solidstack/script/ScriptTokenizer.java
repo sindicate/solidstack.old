@@ -47,7 +47,7 @@ public class ScriptTokenizer
 		BACKQUOTE( "`", false ), /* QUOTE( "'", false ), */ DOT( ".", false ), SEMICOLON( ";", false ), COMMA( ",", false ),
 		EOF,
 		// My reserved words
-		MODULE( "module" ), DEFINED( "defined" ),
+		MODULE( "module" ),
 		// Reserved words
 		ABSTRACT( "abstract" ), CASE( "case" ), CATCH( "catch" ), /* CLASS( "class" ), */
 		DEF( "def" ), DO( "do" ), ELSE( "else" ), EXTENDS( "extends" ),

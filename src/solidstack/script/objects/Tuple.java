@@ -23,12 +23,7 @@ import java.util.List;
 
 public class Tuple
 {
-	static public Tuple apply( Object... values )
-	{
-		return new Tuple( values );
-	}
-
-	private List<Object> values = new ArrayList<Object>(); // TODO Should be array
+	private List<Object> values = new ArrayList<Object>();
 
 	public Tuple()
 	{
@@ -63,12 +58,6 @@ public class Tuple
 	public Object get( int index )
 	{
 		return this.values.get( index );
-	}
-
-	// TODO update()?
-	public Object apply( int index )
-	{
-		return get( index );
 	}
 
 	public Object getLast()

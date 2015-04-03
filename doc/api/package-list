@@ -1,11 +1,5 @@
-solidstack.cache
+solidstack
 solidstack.io
-solidstack.lang
 solidstack.query
-solidstack.query.hibernate
-solidstack.query.jpa
 solidstack.template
-solidstack.template.groovy
-solidstack.template.javascript
 solidstack.util
-solidstack.xml.elements

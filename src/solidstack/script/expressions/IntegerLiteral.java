@@ -31,11 +31,6 @@ public class IntegerLiteral extends LocalizedExpression
 		this.value = value;
 	}
 
-	public Expression compile()
-	{
-		return this;
-	}
-
 	public Integer evaluate( ThreadContext thread )
 	{
 		return this.value;

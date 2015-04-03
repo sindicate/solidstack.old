@@ -54,8 +54,8 @@ function windowTitle()
 
 <TR>
 <TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
-&nbsp;<A HREF="../../solidstack/query/Loggers.html" title="class in solidstack.query"><B>PREV CLASS</B></A>&nbsp;
-&nbsp;<A HREF="../../solidstack/query/Query.Language.html" title="enum in solidstack.query"><B>NEXT CLASS</B></A></FONT></TD>
+&nbsp;<A HREF="../../solidstack/query/GStringBuilder.html" title="class in solidstack.query"><B>PREV CLASS</B></A>&nbsp;
+&nbsp;<A HREF="../../solidstack/query/QueryManager.html" title="class in solidstack.query"><B>NEXT CLASS</B></A></FONT></TD>
 <TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
   <A HREF="../../index.html?solidstack/query/Query.html" target="_top"><B>FRAMES</B></A>  &nbsp;
 &nbsp;<A HREF="Query.html" target="_top"><B>NO FRAMES</B></A>  &nbsp;
@@ -75,7 +75,7 @@ function windowTitle()
 </TR>
 <TR>
 <TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
-  SUMMARY:&nbsp;<A HREF="#nested_class_summary">NESTED</A>&nbsp;|&nbsp;FIELD&nbsp;|&nbsp;<A HREF="#constructor_summary">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_summary">METHOD</A></FONT></TD>
+  SUMMARY:&nbsp;NESTED&nbsp;|&nbsp;FIELD&nbsp;|&nbsp;<A HREF="#constructor_summary">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_summary">METHOD</A></FONT></TD>
 <TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
 DETAIL:&nbsp;FIELD&nbsp;|&nbsp;<A HREF="#constructor_detail">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_detail">METHOD</A></FONT></TD>
 </TR>
@@ -100,7 +100,8 @@ Class Query</H2>
 </PRE>
 
 <P>
-A query object.
+A query object will normally be constructed by a call to <A HREF="../../solidstack/query/QueryManager.html#bind(java.lang.String, java.util.Map)"><CODE>QueryManager.bind(String, Map)</CODE></A>.
+ The query object can be used to retrieve data from the database or to execute DML or DDL statements.
 <P>
 
 <P>
@@ -111,32 +112,7 @@ A query object.
 <HR>
 
 <P>
-<!-- ======== NESTED CLASS SUMMARY ======== -->
 
-<A NAME="nested_class_summary"><!-- --></A>
-<TABLE BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" SUMMARY="">
-<TR BGCOLOR="#CCCCFF" CLASS="TableHeadingColor">
-<TH ALIGN="left" COLSPAN="2"><FONT SIZE="+2">
-<B>Nested Class Summary</B></FONT></TH>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>static&nbsp;class</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/query/Query.Language.html" title="enum in solidstack.query">Query.Language</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The query language.</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>static&nbsp;class</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/query/Query.PreparedSQL.html" title="class in solidstack.query">Query.PreparedSQL</A></B></CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Prepared SQL combined with a parameter list.</TD>
-</TR>
-</TABLE>
-&nbsp;
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
 
 <A NAME="constructor_summary"><!-- --></A>
@@ -146,10 +122,16 @@ A query object.
 <B>Constructor Summary</B></FONT></TH>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
-<TD><CODE><B><A HREF="../../solidstack/query/Query.html#Query(solidstack.template.Template)">Query</A></B>(<A HREF="../../solidstack/template/Template.html" title="class in solidstack.template">Template</A>&nbsp;template)</CODE>
+<TD><CODE><B><A HREF="../../solidstack/query/Query.html#Query(groovy.lang.Closure)">Query</A></B>(groovy.lang.Closure&nbsp;closure)</CODE>
 
 <BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Constructor.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD><CODE><B><A HREF="../../solidstack/query/Query.html#Query(groovy.lang.GString)">Query</A></B>(groovy.lang.GString&nbsp;sql)</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Constructor.</TD>
 </TR>
 </TABLE>
 &nbsp;
@@ -163,74 +145,32 @@ A query object.
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>&nbsp;<A HREF="../../solidstack/query/Query.Language.html" title="enum in solidstack.query">Query.Language</A></CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/query/Query.html#getLanguage()">getLanguage</A></B>()</CODE>
+<CODE>&nbsp;void</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../solidstack/query/Query.html#bind(java.util.Map)">bind</A></B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Map.html?is-external=true" title="class or interface in java.util">Map</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</A>,?&gt;&nbsp;params)</CODE>
 
 <BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>&nbsp;<A HREF="../../solidstack/query/Query.PreparedSQL.html" title="class in solidstack.query">Query.PreparedSQL</A></CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/query/Query.html#getPreparedSQL(java.lang.Object)">getPreparedSQL</A></B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&nbsp;args)</CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns a prepared SQL string together with a parameters array.</TD>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sets the parameters to use.</TD>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
 <CODE>&nbsp;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/PreparedStatement.html?is-external=true" title="class or interface in java.sql">PreparedStatement</A></CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/query/Query.html#getPreparedStatement(java.sql.Connection, java.lang.Object)">getPreparedStatement</A></B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection,
-                     <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&nbsp;args)</CODE>
+<TD><CODE><B><A HREF="../../solidstack/query/Query.html#getPreparedStatement(java.sql.Connection)">getPreparedStatement</A></B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection)</CODE>
 
 <BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/PreparedStatement.html?is-external=true" title="class or interface in java.sql"><CODE>PreparedStatement</CODE></A> for the query.</TD>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>&nbsp;<A HREF="../../solidstack/query/hibernate/HibernateQueryAdapter.html" title="class in solidstack.query.hibernate">HibernateQueryAdapter</A></CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/query/Query.html#hibernate()">hibernate</A></B>()</CODE>
+<CODE>&nbsp;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>[]&gt;</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../solidstack/query/Query.html#listOfArrays()">listOfArrays</A></B>()</CODE>
 
 <BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>&nbsp;<A HREF="../../solidstack/query/hibernate/HibernateConnectedQueryAdapter.html" title="class in solidstack.query.hibernate">HibernateConnectedQueryAdapter</A></CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/query/Query.html#hibernate(java.lang.Object)">hibernate</A></B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&nbsp;session)</CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>&nbsp;boolean</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/query/Query.html#isFlyWeight()">isFlyWeight</A></B>()</CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>&nbsp;<A HREF="../../solidstack/query/jpa/JPAQueryAdapter.html" title="class in solidstack.query.jpa">JPAQueryAdapter</A></CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/query/Query.html#jpa()">jpa</A></B>()</CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
-</TR>
-<TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
-<CODE>&nbsp;<A HREF="../../solidstack/query/jpa/JPAConnectedQueryAdapter.html" title="class in solidstack.query.jpa">JPAConnectedQueryAdapter</A></CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/query/Query.html#jpa(java.lang.Object)">jpa</A></B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&nbsp;entityManager)</CODE>
-
-<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retrieves a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang"><CODE>Object</CODE></A> arrays from the configured <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A>.</TD>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
 <CODE>&nbsp;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>[]&gt;</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/query/Query.html#listOfArrays(java.sql.Connection, java.lang.Object)">listOfArrays</A></B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection,
-             <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&nbsp;args)</CODE>
+<TD><CODE><B><A HREF="../../solidstack/query/Query.html#listOfArrays(java.sql.Connection)">listOfArrays</A></B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection)</CODE>
 
 <BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retrieves a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang"><CODE>Object</CODE></A> arrays from the given <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A>.</TD>
@@ -239,25 +179,64 @@ A query object.
 <TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
 <CODE>static&nbsp;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>[]&gt;</CODE></FONT></TD>
 <TD><CODE><B><A HREF="../../solidstack/query/Query.html#listOfArrays(java.sql.ResultSet, boolean)">listOfArrays</A></B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/ResultSet.html?is-external=true" title="class or interface in java.sql">ResultSet</A>&nbsp;resultSet,
-             boolean&nbsp;flyWeight)</CODE>
+             boolean&nbsp;compress)</CODE>
 
 <BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Converts a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/ResultSet.html?is-external=true" title="class or interface in java.sql"><CODE>ResultSet</CODE></A> into a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang"><CODE>Object</CODE></A> arrays.</TD>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>&nbsp;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>[]&gt;</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../solidstack/query/Query.html#listOfArrays(org.hibernate.Session)">listOfArrays</A></B>(org.hibernate.Session&nbsp;session)</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retrieves a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang"><CODE>Object</CODE></A> arrays from the given Hibernate <CODE>Session</CODE>.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>&nbsp;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</A>&lt;?&gt;</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../solidstack/query/Query.html#listOfEntities(javax.persistence.EntityManager, java.lang.Class)">listOfEntities</A></B>(javax.persistence.EntityManager&nbsp;entityManager,
+               <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Class.html?is-external=true" title="class or interface in java.lang">Class</A>&lt;?&gt;&nbsp;entityClass)</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retrieves a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of JPA Entities from the given <CODE>EntityManager</CODE>.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
 <CODE>&nbsp;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Map.html?is-external=true" title="class or interface in java.util">Map</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</A>,<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&gt;&gt;</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/query/Query.html#listOfMaps(java.sql.Connection, java.lang.Object)">listOfMaps</A></B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection,
-           <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&nbsp;args)</CODE>
+<TD><CODE><B><A HREF="../../solidstack/query/Query.html#listOfMaps()">listOfMaps</A></B>()</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retrieve a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Map.html?is-external=true" title="class or interface in java.util"><CODE>Map</CODE></A>s from the configured <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A>.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>&nbsp;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Map.html?is-external=true" title="class or interface in java.util">Map</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</A>,<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&gt;&gt;</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../solidstack/query/Query.html#listOfMaps(java.sql.Connection)">listOfMaps</A></B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection)</CODE>
 
 <BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retrieve a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Map.html?is-external=true" title="class or interface in java.util"><CODE>Map</CODE></A>s from the given <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A>.</TD>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>&nbsp;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Map.html?is-external=true" title="class or interface in java.util">Map</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</A>,<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&gt;&gt;</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../solidstack/query/Query.html#listOfMaps(org.hibernate.Session)">listOfMaps</A></B>(org.hibernate.Session&nbsp;session)</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retrieves a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Map.html?is-external=true" title="class or interface in java.util"><CODE>Map</CODE></A>s from the given Hibernate <CODE>Session</CODE>.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
 <CODE>&nbsp;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/ResultSet.html?is-external=true" title="class or interface in java.sql">ResultSet</A></CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/query/Query.html#resultSet(java.sql.Connection, java.lang.Object)">resultSet</A></B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection,
-          <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&nbsp;args)</CODE>
+<TD><CODE><B><A HREF="../../solidstack/query/Query.html#resultSet()">resultSet</A></B>()</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retrieves a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/ResultSet.html?is-external=true" title="class or interface in java.sql"><CODE>ResultSet</CODE></A> from the configured <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A>.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>&nbsp;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/ResultSet.html?is-external=true" title="class or interface in java.sql">ResultSet</A></CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../solidstack/query/Query.html#resultSet(java.sql.Connection)">resultSet</A></B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection)</CODE>
 
 <BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retrieves a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/ResultSet.html?is-external=true" title="class or interface in java.sql"><CODE>ResultSet</CODE></A> from the given <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A>.</TD>
@@ -265,16 +244,23 @@ A query object.
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
 <CODE>&nbsp;void</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/query/Query.html#setFlyWeight(boolean)">setFlyWeight</A></B>(boolean&nbsp;flyWeight)</CODE>
+<TD><CODE><B><A HREF="../../solidstack/query/Query.html#setCompress(boolean)">setCompress</A></B>(boolean&nbsp;compress)</CODE>
 
 <BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</TD>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If set to true, duplicate values from a query will only be stored once in memory.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>&nbsp;void</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../solidstack/query/Query.html#setConnection(java.sql.Connection)">setConnection</A></B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection)</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sets the <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A> to use.</TD>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
 <CODE>&nbsp;int</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/query/Query.html#update(java.sql.Connection, java.lang.Object)">update</A></B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection,
-       <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&nbsp;args)</CODE>
+<TD><CODE><B><A HREF="../../solidstack/query/Query.html#update()">update</A></B>()</CODE>
 
 <BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Executes an update (DML) or a DDL query.</TD>
@@ -282,11 +268,26 @@ A query object.
 <TR BGCOLOR="white" CLASS="TableRowColor">
 <TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
 <CODE>&nbsp;int</CODE></FONT></TD>
-<TD><CODE><B><A HREF="../../solidstack/query/Query.html#updateChecked(java.sql.Connection, java.lang.Object)">updateChecked</A></B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection,
-              <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&nbsp;args)</CODE>
+<TD><CODE><B><A HREF="../../solidstack/query/Query.html#update(java.sql.Connection)">update</A></B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection)</CODE>
 
 <BR>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Executes an update (DML) or a DDL query.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>&nbsp;int</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../solidstack/query/Query.html#updateChecked()">updateChecked</A></B>()</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Executes an update (DML) or a DDL query, passing through the <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/SQLException.html?is-external=true" title="class or interface in java.sql"><CODE>SQLException</CODE></A> when the JDBC driver throws one.</TD>
+</TR>
+<TR BGCOLOR="white" CLASS="TableRowColor">
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1">
+<CODE>&nbsp;int</CODE></FONT></TD>
+<TD><CODE><B><A HREF="../../solidstack/query/Query.html#updateChecked(java.sql.Connection)">updateChecked</A></B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection)</CODE>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Executes an update (DML) or a DDL query, passing through the <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/SQLException.html?is-external=true" title="class or interface in java.sql"><CODE>SQLException</CODE></A> when the JDBC driver throws one.</TD>
 </TR>
 </TABLE>
 &nbsp;<A NAME="methods_inherited_from_class_java.lang.Object"><!-- --></A>
@@ -311,13 +312,27 @@ A query object.
 </TR>
 </TABLE>
 
-<A NAME="Query(solidstack.template.Template)"><!-- --></A><H3>
+<A NAME="Query(groovy.lang.GString)"><!-- --></A><H3>
 Query</H3>
 <PRE>
-public <B>Query</B>(<A HREF="../../solidstack/template/Template.html" title="class in solidstack.template">Template</A>&nbsp;template)</PRE>
+public <B>Query</B>(groovy.lang.GString&nbsp;sql)</PRE>
 <DL>
+<DD>Constructor.
+<P>
 <DL>
-<DT><B>Parameters:</B><DD><CODE>template</CODE> - The template for the query.</DL>
+<DT><B>Parameters:</B><DD><CODE>sql</CODE> - A <CODE>GString</CODE> query.</DL>
+</DL>
+<HR>
+
+<A NAME="Query(groovy.lang.Closure)"><!-- --></A><H3>
+Query</H3>
+<PRE>
+public <B>Query</B>(groovy.lang.Closure&nbsp;closure)</PRE>
+<DL>
+<DD>Constructor.
+<P>
+<DL>
+<DT><B>Parameters:</B><DD><CODE>closure</CODE> - A closure that returns a <CODE>GString</CODE> when called.</DL>
 </DL>
 
 <!-- ============ METHOD DETAIL ========== -->
@@ -330,115 +345,111 @@ public <B>Query</B>(<A HREF="../../solidstack/template/Template.html" title="cla
 </TR>
 </TABLE>
 
-<A NAME="getLanguage()"><!-- --></A><H3>
-getLanguage</H3>
+<A NAME="setConnection(java.sql.Connection)"><!-- --></A><H3>
+setConnection</H3>
 <PRE>
-public <A HREF="../../solidstack/query/Query.Language.html" title="enum in solidstack.query">Query.Language</A> <B>getLanguage</B>()</PRE>
+public void <B>setConnection</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection)</PRE>
 <DL>
+<DD>Sets the <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A> to use.
+<P>
 <DD><DL>
-
-<DT><B>Returns:</B><DD>The language of the query.</DL>
+<DT><B>Parameters:</B><DD><CODE>connection</CODE> - The <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A> to use.</DL>
 </DD>
 </DL>
 <HR>
 
-<A NAME="hibernate()"><!-- --></A><H3>
-hibernate</H3>
+<A NAME="bind(java.util.Map)"><!-- --></A><H3>
+bind</H3>
 <PRE>
-public <A HREF="../../solidstack/query/hibernate/HibernateQueryAdapter.html" title="class in solidstack.query.hibernate">HibernateQueryAdapter</A> <B>hibernate</B>()</PRE>
+public void <B>bind</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Map.html?is-external=true" title="class or interface in java.util">Map</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</A>,?&gt;&nbsp;params)</PRE>
 <DL>
+<DD>Sets the parameters to use.
+<P>
 <DD><DL>
-
-<DT><B>Returns:</B><DD>An adapter which enables you to use the query with Hibernate.</DL>
+<DT><B>Parameters:</B><DD><CODE>params</CODE> - The parameters to use.</DL>
 </DD>
 </DL>
 <HR>
 
-<A NAME="hibernate(java.lang.Object)"><!-- --></A><H3>
-hibernate</H3>
+<A NAME="setCompress(boolean)"><!-- --></A><H3>
+setCompress</H3>
 <PRE>
-public <A HREF="../../solidstack/query/hibernate/HibernateConnectedQueryAdapter.html" title="class in solidstack.query.hibernate">HibernateConnectedQueryAdapter</A> <B>hibernate</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&nbsp;session)</PRE>
+public void <B>setCompress</B>(boolean&nbsp;compress)</PRE>
 <DL>
+<DD>If set to true, duplicate values from a query will only be stored once in memory.
+<P>
 <DD><DL>
-<DT><B>Parameters:</B><DD><CODE>session</CODE> - A Hibernate session.
-<DT><B>Returns:</B><DD>An adapter which enables you to use the query with Hibernate.</DL>
+<DT><B>Parameters:</B><DD><CODE>compress</CODE> - If set to true, duplicate values from a query will only be stored once in memory.</DL>
 </DD>
 </DL>
 <HR>
 
-<A NAME="jpa()"><!-- --></A><H3>
-jpa</H3>
-<PRE>
-public <A HREF="../../solidstack/query/jpa/JPAQueryAdapter.html" title="class in solidstack.query.jpa">JPAQueryAdapter</A> <B>jpa</B>()</PRE>
-<DL>
-<DD><DL>
-
-<DT><B>Returns:</B><DD>An adapter which enables you to use the query with JPA.</DL>
-</DD>
-</DL>
-<HR>
-
-<A NAME="jpa(java.lang.Object)"><!-- --></A><H3>
-jpa</H3>
-<PRE>
-public <A HREF="../../solidstack/query/jpa/JPAConnectedQueryAdapter.html" title="class in solidstack.query.jpa">JPAConnectedQueryAdapter</A> <B>jpa</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&nbsp;entityManager)</PRE>
-<DL>
-<DD><DL>
-<DT><B>Parameters:</B><DD><CODE>entityManager</CODE> - A <CODE>EntityManager</CODE>.
-<DT><B>Returns:</B><DD>An adapter which enables you to use the query with JPA.</DL>
-</DD>
-</DL>
-<HR>
-
-<A NAME="isFlyWeight()"><!-- --></A><H3>
-isFlyWeight</H3>
-<PRE>
-public boolean <B>isFlyWeight</B>()</PRE>
-<DL>
-<DD><DL>
-
-<DT><B>Returns:</B><DD>True if fly weight is enabled, false otherwise.</DL>
-</DD>
-</DL>
-<HR>
-
-<A NAME="setFlyWeight(boolean)"><!-- --></A><H3>
-setFlyWeight</H3>
-<PRE>
-public void <B>setFlyWeight</B>(boolean&nbsp;flyWeight)</PRE>
-<DL>
-<DD><DL>
-<DT><B>Parameters:</B><DD><CODE>flyWeight</CODE> - If set to true (the default), duplicate values from a query result will only be stored once in memory.</DL>
-</DD>
-</DL>
-<HR>
-
-<A NAME="resultSet(java.sql.Connection, java.lang.Object)"><!-- --></A><H3>
+<A NAME="resultSet()"><!-- --></A><H3>
 resultSet</H3>
 <PRE>
-public <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/ResultSet.html?is-external=true" title="class or interface in java.sql">ResultSet</A> <B>resultSet</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection,
-                           <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&nbsp;args)</PRE>
+public <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/ResultSet.html?is-external=true" title="class or interface in java.sql">ResultSet</A> <B>resultSet</B>()</PRE>
+<DL>
+<DD>Retrieves a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/ResultSet.html?is-external=true" title="class or interface in java.sql"><CODE>ResultSet</CODE></A> from the configured <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A>.
+<P>
+<DD><DL>
+
+<DT><B>Returns:</B><DD>A <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/ResultSet.html?is-external=true" title="class or interface in java.sql"><CODE>ResultSet</CODE></A>.<DT><B>See Also:</B><DD><A HREF="../../solidstack/query/Query.html#resultSet(java.sql.Connection)"><CODE>resultSet(Connection)</CODE></A></DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="resultSet(java.sql.Connection)"><!-- --></A><H3>
+resultSet</H3>
+<PRE>
+public <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/ResultSet.html?is-external=true" title="class or interface in java.sql">ResultSet</A> <B>resultSet</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection)</PRE>
 <DL>
 <DD>Retrieves a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/ResultSet.html?is-external=true" title="class or interface in java.sql"><CODE>ResultSet</CODE></A> from the given <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A>.
 <P>
 <DD><DL>
-<DT><B>Parameters:</B><DD><CODE>connection</CODE> - The <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A> to use.<DD><CODE>args</CODE> - The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
-<DT><B>Returns:</B><DD>a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/ResultSet.html?is-external=true" title="class or interface in java.sql"><CODE>ResultSet</CODE></A>.<DT><B>See Also:</B><DD><A HREF="../../solidstack/query/Query.html#resultSet(java.sql.Connection, java.lang.Object)"><CODE>resultSet(Connection, Object)</CODE></A></DL>
+<DT><B>Parameters:</B><DD><CODE>connection</CODE> - The <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A> to use.
+<DT><B>Returns:</B><DD>a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/ResultSet.html?is-external=true" title="class or interface in java.sql"><CODE>ResultSet</CODE></A>.<DT><B>See Also:</B><DD><A HREF="../../solidstack/query/Query.html#resultSet()"><CODE>resultSet()</CODE></A></DL>
 </DD>
 </DL>
 <HR>
 
-<A NAME="listOfArrays(java.sql.Connection, java.lang.Object)"><!-- --></A><H3>
+<A NAME="listOfArrays()"><!-- --></A><H3>
 listOfArrays</H3>
 <PRE>
-public <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>[]&gt; <B>listOfArrays</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection,
-                                   <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&nbsp;args)</PRE>
+public <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>[]&gt; <B>listOfArrays</B>()</PRE>
+<DL>
+<DD>Retrieves a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang"><CODE>Object</CODE></A> arrays from the configured <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A>.
+<P>
+<DD><DL>
+
+<DT><B>Returns:</B><DD>A <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang"><CODE>Object</CODE></A> arrays from the given <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A>.</DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="listOfArrays(java.sql.Connection)"><!-- --></A><H3>
+listOfArrays</H3>
+<PRE>
+public <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>[]&gt; <B>listOfArrays</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection)</PRE>
 <DL>
 <DD>Retrieves a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang"><CODE>Object</CODE></A> arrays from the given <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A>.
 <P>
 <DD><DL>
-<DT><B>Parameters:</B><DD><CODE>connection</CODE> - The <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A> to use.<DD><CODE>args</CODE> - The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+<DT><B>Parameters:</B><DD><CODE>connection</CODE> - The <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A> to use.
 <DT><B>Returns:</B><DD>A <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang"><CODE>Object</CODE></A> arrays from the given <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A>.</DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="listOfArrays(org.hibernate.Session)"><!-- --></A><H3>
+listOfArrays</H3>
+<PRE>
+public <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>[]&gt; <B>listOfArrays</B>(org.hibernate.Session&nbsp;session)</PRE>
+<DL>
+<DD>Retrieves a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang"><CODE>Object</CODE></A> arrays from the given Hibernate <CODE>Session</CODE>.
+<P>
+<DD><DL>
+<DT><B>Parameters:</B><DD><CODE>session</CODE> - The Hibernate <CODE>Session</CODE> to use.
+<DT><B>Returns:</B><DD>a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang"><CODE>Object</CODE></A> arrays.</DL>
 </DD>
 </DL>
 <HR>
@@ -447,43 +458,84 @@ public <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-e
 listOfArrays</H3>
 <PRE>
 public static <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>[]&gt; <B>listOfArrays</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/ResultSet.html?is-external=true" title="class or interface in java.sql">ResultSet</A>&nbsp;resultSet,
-                                          boolean&nbsp;flyWeight)</PRE>
+                                          boolean&nbsp;compress)</PRE>
 <DL>
 <DD>Converts a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/ResultSet.html?is-external=true" title="class or interface in java.sql"><CODE>ResultSet</CODE></A> into a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang"><CODE>Object</CODE></A> arrays.
 <P>
 <DD><DL>
-<DT><B>Parameters:</B><DD><CODE>resultSet</CODE> - The <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/ResultSet.html?is-external=true" title="class or interface in java.sql"><CODE>ResultSet</CODE></A> to convert.<DD><CODE>flyWeight</CODE> - If true, duplicate values are stored in memory only once.
+<DT><B>Parameters:</B><DD><CODE>resultSet</CODE> - The <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/ResultSet.html?is-external=true" title="class or interface in java.sql"><CODE>ResultSet</CODE></A> to convert.<DD><CODE>compress</CODE> - If true, duplicate values are stored in memory only once.
 <DT><B>Returns:</B><DD>A <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang"><CODE>Object</CODE></A> arrays containing the data from the result set.</DL>
 </DD>
 </DL>
 <HR>
 
-<A NAME="listOfMaps(java.sql.Connection, java.lang.Object)"><!-- --></A><H3>
+<A NAME="listOfMaps()"><!-- --></A><H3>
 listOfMaps</H3>
 <PRE>
-public <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Map.html?is-external=true" title="class or interface in java.util">Map</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</A>,<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&gt;&gt; <B>listOfMaps</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection,
-                                           <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&nbsp;args)</PRE>
+public <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Map.html?is-external=true" title="class or interface in java.util">Map</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</A>,<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&gt;&gt; <B>listOfMaps</B>()</PRE>
 <DL>
-<DD>Retrieve a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Map.html?is-external=true" title="class or interface in java.util"><CODE>Map</CODE></A>s from the given <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A>. The maps contain the column names from the query as keys and the column values as the map's values.
+<DD>Retrieve a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Map.html?is-external=true" title="class or interface in java.util"><CODE>Map</CODE></A>s from the configured <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A>. The maps contain the column names from the query as keys and the column values as the map's values.
 <P>
 <DD><DL>
-<DT><B>Parameters:</B><DD><CODE>connection</CODE> - The <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A> to use.<DD><CODE>args</CODE> - The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+
 <DT><B>Returns:</B><DD>A <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Map.html?is-external=true" title="class or interface in java.util"><CODE>Map</CODE></A>s.</DL>
 </DD>
 </DL>
 <HR>
 
-<A NAME="updateChecked(java.sql.Connection, java.lang.Object)"><!-- --></A><H3>
-updateChecked</H3>
+<A NAME="listOfMaps(java.sql.Connection)"><!-- --></A><H3>
+listOfMaps</H3>
 <PRE>
-public int <B>updateChecked</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection,
-                         <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&nbsp;args)
-                  throws <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/SQLException.html?is-external=true" title="class or interface in java.sql">SQLException</A></PRE>
+public <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Map.html?is-external=true" title="class or interface in java.util">Map</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</A>,<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&gt;&gt; <B>listOfMaps</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection)</PRE>
 <DL>
-<DD>Executes an update (DML) or a DDL query.
+<DD>Retrieve a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Map.html?is-external=true" title="class or interface in java.util"><CODE>Map</CODE></A>s from the given <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A>. The maps contain the column names from the query as keys and the column values as the map's values.
 <P>
 <DD><DL>
-<DT><B>Parameters:</B><DD><CODE>connection</CODE> - The <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A> to use.<DD><CODE>args</CODE> - The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+<DT><B>Parameters:</B><DD><CODE>connection</CODE> - The <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A> to use.
+<DT><B>Returns:</B><DD>A <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Map.html?is-external=true" title="class or interface in java.util"><CODE>Map</CODE></A>s.</DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="listOfMaps(org.hibernate.Session)"><!-- --></A><H3>
+listOfMaps</H3>
+<PRE>
+public <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Map.html?is-external=true" title="class or interface in java.util">Map</A>&lt;<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/String.html?is-external=true" title="class or interface in java.lang">String</A>,<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&gt;&gt; <B>listOfMaps</B>(org.hibernate.Session&nbsp;session)</PRE>
+<DL>
+<DD>Retrieves a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Map.html?is-external=true" title="class or interface in java.util"><CODE>Map</CODE></A>s from the given Hibernate <CODE>Session</CODE>.
+<P>
+<DD><DL>
+<DT><B>Parameters:</B><DD><CODE>session</CODE> - The Hibernate <CODE>Session</CODE> to use.
+<DT><B>Returns:</B><DD>A <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Map.html?is-external=true" title="class or interface in java.util"><CODE>Map</CODE></A>s.</DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="listOfEntities(javax.persistence.EntityManager, java.lang.Class)"><!-- --></A><H3>
+listOfEntities</H3>
+<PRE>
+public <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util">List</A>&lt;?&gt; <B>listOfEntities</B>(javax.persistence.EntityManager&nbsp;entityManager,
+                              <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Class.html?is-external=true" title="class or interface in java.lang">Class</A>&lt;?&gt;&nbsp;entityClass)</PRE>
+<DL>
+<DD>Retrieves a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of JPA Entities from the given <CODE>EntityManager</CODE>.
+<P>
+<DD><DL>
+<DT><B>Parameters:</B><DD><CODE>entityManager</CODE> - The <CODE>EntityManager</CODE> to use.<DD><CODE>entityClass</CODE> - The class to map the results to.
+<DT><B>Returns:</B><DD>A <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/util/List.html?is-external=true" title="class or interface in java.util"><CODE>List</CODE></A> of entities.</DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="updateChecked()"><!-- --></A><H3>
+updateChecked</H3>
+<PRE>
+public int <B>updateChecked</B>()
+                  throws <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/SQLException.html?is-external=true" title="class or interface in java.sql">SQLException</A></PRE>
+<DL>
+<DD>Executes an update (DML) or a DDL query, passing through the <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/SQLException.html?is-external=true" title="class or interface in java.sql"><CODE>SQLException</CODE></A> when the JDBC driver throws one.
+<P>
+<DD><DL>
+
 <DT><B>Returns:</B><DD>The row count from a DML statement or 0 for SQL that does not return anything.
 <DT><B>Throws:</B>
 <DD><CODE><A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/SQLException.html?is-external=true" title="class or interface in java.sql">SQLException</A></CODE> - Whenever the query caused an <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/SQLException.html?is-external=true" title="class or interface in java.sql"><CODE>SQLException</CODE></A>.</DL>
@@ -491,46 +543,61 @@ public int <B>updateChecked</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api
 </DL>
 <HR>
 
-<A NAME="update(java.sql.Connection, java.lang.Object)"><!-- --></A><H3>
-update</H3>
+<A NAME="updateChecked(java.sql.Connection)"><!-- --></A><H3>
+updateChecked</H3>
 <PRE>
-public int <B>update</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection,
-                  <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&nbsp;args)</PRE>
+public int <B>updateChecked</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection)
+                  throws <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/SQLException.html?is-external=true" title="class or interface in java.sql">SQLException</A></PRE>
 <DL>
-<DD>Executes an update (DML) or a DDL query. <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/SQLException.html?is-external=true" title="class or interface in java.sql"><CODE>SQLException</CODE></A>s are wrapped in a <A HREF="../../solidstack/query/QueryException.html" title="class in solidstack.query"><CODE>QueryException</CODE></A>.
+<DD>Executes an update (DML) or a DDL query, passing through the <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/SQLException.html?is-external=true" title="class or interface in java.sql"><CODE>SQLException</CODE></A> when the JDBC driver throws one.
 <P>
 <DD><DL>
-<DT><B>Parameters:</B><DD><CODE>connection</CODE> - The <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A> to use.<DD><CODE>args</CODE> - The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+<DT><B>Parameters:</B><DD><CODE>connection</CODE> - The <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A> to use.
+<DT><B>Returns:</B><DD>The row count from a DML statement or 0 for SQL that does not return anything.
+<DT><B>Throws:</B>
+<DD><CODE><A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/SQLException.html?is-external=true" title="class or interface in java.sql">SQLException</A></CODE> - Whenever the query caused an <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/SQLException.html?is-external=true" title="class or interface in java.sql"><CODE>SQLException</CODE></A>.</DL>
+</DD>
+</DL>
+<HR>
+
+<A NAME="update(java.sql.Connection)"><!-- --></A><H3>
+update</H3>
+<PRE>
+public int <B>update</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection)</PRE>
+<DL>
+<DD>Executes an update (DML) or a DDL query. <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/SQLException.html?is-external=true" title="class or interface in java.sql"><CODE>SQLException</CODE></A>s are wrapped in a <A HREF="../../solidstack/SystemException.html" title="class in solidstack"><CODE>SystemException</CODE></A>.
+<P>
+<DD><DL>
+<DT><B>Parameters:</B><DD><CODE>connection</CODE> - The <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A> to use.
 <DT><B>Returns:</B><DD>The row count from a DML statement or 0 for SQL that does not return anything.</DL>
 </DD>
 </DL>
 <HR>
 
-<A NAME="getPreparedStatement(java.sql.Connection, java.lang.Object)"><!-- --></A><H3>
-getPreparedStatement</H3>
+<A NAME="update()"><!-- --></A><H3>
+update</H3>
 <PRE>
-public <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/PreparedStatement.html?is-external=true" title="class or interface in java.sql">PreparedStatement</A> <B>getPreparedStatement</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection,
-                                              <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&nbsp;args)</PRE>
+public int <B>update</B>()</PRE>
 <DL>
-<DD>Returns a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/PreparedStatement.html?is-external=true" title="class or interface in java.sql"><CODE>PreparedStatement</CODE></A> for the query.
+<DD>Executes an update (DML) or a DDL query. <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/SQLException.html?is-external=true" title="class or interface in java.sql"><CODE>SQLException</CODE></A>s are wrapped in a <A HREF="../../solidstack/SystemException.html" title="class in solidstack"><CODE>SystemException</CODE></A>.
 <P>
 <DD><DL>
-<DT><B>Parameters:</B><DD><CODE>connection</CODE> - The <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A> to use.<DD><CODE>args</CODE> - The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
-<DT><B>Returns:</B><DD>a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/PreparedStatement.html?is-external=true" title="class or interface in java.sql"><CODE>PreparedStatement</CODE></A> for the query.</DL>
+
+<DT><B>Returns:</B><DD>The row count from a DML statement or 0 for SQL that does not return anything.</DL>
 </DD>
 </DL>
 <HR>
 
-<A NAME="getPreparedSQL(java.lang.Object)"><!-- --></A><H3>
-getPreparedSQL</H3>
+<A NAME="getPreparedStatement(java.sql.Connection)"><!-- --></A><H3>
+getPreparedStatement</H3>
 <PRE>
-public <A HREF="../../solidstack/query/Query.PreparedSQL.html" title="class in solidstack.query">Query.PreparedSQL</A> <B>getPreparedSQL</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Object.html?is-external=true" title="class or interface in java.lang">Object</A>&nbsp;args)</PRE>
+public <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/PreparedStatement.html?is-external=true" title="class or interface in java.sql">PreparedStatement</A> <B>getPreparedStatement</B>(<A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql">Connection</A>&nbsp;connection)</PRE>
 <DL>
-<DD>Returns a prepared SQL string together with a parameters array.
+<DD>Returns a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/PreparedStatement.html?is-external=true" title="class or interface in java.sql"><CODE>PreparedStatement</CODE></A> for the query.
 <P>
 <DD><DL>
-<DT><B>Parameters:</B><DD><CODE>args</CODE> - The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
-<DT><B>Returns:</B><DD>A prepared SQL string together with a parameters array.</DL>
+<DT><B>Parameters:</B><DD><CODE>connection</CODE> - The <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/Connection.html?is-external=true" title="class or interface in java.sql"><CODE>Connection</CODE></A> to use.
+<DT><B>Returns:</B><DD>a <A HREF="http://java.sun.com/j2se/1.5.0/docs/api/java/sql/PreparedStatement.html?is-external=true" title="class or interface in java.sql"><CODE>PreparedStatement</CODE></A> for the query.</DL>
 </DD>
 </DL>
 <!-- ========= END OF CLASS DATA ========= -->
@@ -563,8 +630,8 @@ public <A HREF="../../solidstack/query/Query.PreparedSQL.html" title="class in s
 
 <TR>
 <TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
-&nbsp;<A HREF="../../solidstack/query/Loggers.html" title="class in solidstack.query"><B>PREV CLASS</B></A>&nbsp;
-&nbsp;<A HREF="../../solidstack/query/Query.Language.html" title="enum in solidstack.query"><B>NEXT CLASS</B></A></FONT></TD>
+&nbsp;<A HREF="../../solidstack/query/GStringBuilder.html" title="class in solidstack.query"><B>PREV CLASS</B></A>&nbsp;
+&nbsp;<A HREF="../../solidstack/query/QueryManager.html" title="class in solidstack.query"><B>NEXT CLASS</B></A></FONT></TD>
 <TD BGCOLOR="white" CLASS="NavBarCell2"><FONT SIZE="-2">
   <A HREF="../../index.html?solidstack/query/Query.html" target="_top"><B>FRAMES</B></A>  &nbsp;
 &nbsp;<A HREF="Query.html" target="_top"><B>NO FRAMES</B></A>  &nbsp;
@@ -584,7 +651,7 @@ public <A HREF="../../solidstack/query/Query.PreparedSQL.html" title="class in s
 </TR>
 <TR>
 <TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
-  SUMMARY:&nbsp;<A HREF="#nested_class_summary">NESTED</A>&nbsp;|&nbsp;FIELD&nbsp;|&nbsp;<A HREF="#constructor_summary">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_summary">METHOD</A></FONT></TD>
+  SUMMARY:&nbsp;NESTED&nbsp;|&nbsp;FIELD&nbsp;|&nbsp;<A HREF="#constructor_summary">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_summary">METHOD</A></FONT></TD>
 <TD VALIGN="top" CLASS="NavBarCell3"><FONT SIZE="-2">
 DETAIL:&nbsp;FIELD&nbsp;|&nbsp;<A HREF="#constructor_detail">CONSTR</A>&nbsp;|&nbsp;<A HREF="#method_detail">METHOD</A></FONT></TD>
 </TR>

@@ -32,16 +32,8 @@ public class Throw extends LocalizedExpression
 		this.expression = expression;
 	}
 
-	public Expression compile()
-	{
-		this.expression = this.expression.compile();
-		return this;
-	}
-
 	public Object evaluate( ThreadContext thread )
 	{
-		if( this.expression == null ) // TODO This could be moved to compile()
-			throw new ThrowException( "'throw' expects an expression", thread.cloneStack( getLocation() ) );
 		throw new ThrowException( this.expression.evaluate( thread ), thread.cloneStack() );
 	}
 

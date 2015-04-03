@@ -38,15 +38,10 @@ public class Block extends LocalizedExpression // TODO Is this localized needed?
 		return this.expression;
 	}
 
-	public Expression compile()
-	{
-		this.expression = this.expression.compile();
-		return this;
-	}
-
 	public Object evaluate( ThreadContext thread )
 	{
-		Scope old = thread.swapScope( new DefaultScope( thread.getScope() ) );
+		DefaultScope scope = new DefaultScope( thread.getScope() );
+		Scope old = thread.swapScope( scope );
 		try
 		{
 			return this.expression.evaluate( thread );
