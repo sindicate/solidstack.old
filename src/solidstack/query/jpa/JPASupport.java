@@ -23,11 +23,12 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 
+import org.hibernate.QueryException;
+
 import solidstack.lang.Assert;
 import solidstack.query.Query;
 import solidstack.query.Query.Language;
 import solidstack.query.Query.PreparedSQL;
-import solidstack.query.QueryException;
 
 
 /**
@@ -44,11 +45,11 @@ public class JPASupport
 	 *
 	 * @param query The query.
 	 * @param entityManager The {@link EntityManager} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return The number of entities updated or deleted.
 	 * @see javax.persistence.Query#executeUpdate()
 	 */
-	static public int executeUpdate( Query query, EntityManager entityManager, Object args )
+	static public int executeUpdate( Query query, EntityManager entityManager, Map< String, Object > args )
 	{
 		return createQuery( query, entityManager, args ).executeUpdate();
 	}
@@ -58,12 +59,12 @@ public class JPASupport
 	 *
 	 * @param query The query.
 	 * @param entityManager The {@link EntityManager} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return A {@link List} of entities.
 	 * @see javax.persistence.Query#getResultList()
 	 */
 	@SuppressWarnings( "unchecked" )
-	static public <T> List< T > getResultList( Query query, EntityManager entityManager, Object args )
+	static public <T> List< T > getResultList( Query query, EntityManager entityManager, Map< String, Object > args )
 	{
 		List<T> result = createQuery( query, entityManager, args ).getResultList();
 		if( query.getLanguage() == Language.SQL && query.isFlyWeight() )
@@ -78,12 +79,12 @@ public class JPASupport
 	 * @param query The query.
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param resultClass The class to map the results to.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return A {@link List} of entities.
 	 * @see javax.persistence.Query#getResultList()
 	 */
 	@SuppressWarnings( "unchecked" )
-	static public <T> List< T > getResultList( Query query, EntityManager entityManager, Class< T > resultClass, Object args )
+	static public <T> List< T > getResultList( Query query, EntityManager entityManager, Class< T > resultClass, Map< String, Object > args )
 	{
 		return createQuery( query, entityManager, resultClass, args ).getResultList();
 	}
@@ -93,12 +94,12 @@ public class JPASupport
 	 *
 	 * @param query The query.
 	 * @param entityManager The {@link EntityManager} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return An entity.
 	 * @see javax.persistence.Query#getSingleResult()
 	 */
 	@SuppressWarnings( "unchecked" )
-	static public <T> T getSingleResult( Query query, EntityManager entityManager, Object args )
+	static public <T> T getSingleResult( Query query, EntityManager entityManager, Map< String, Object > args )
 	{
 		return (T)createQuery( query, entityManager, args ).getSingleResult();
 	}
@@ -109,12 +110,12 @@ public class JPASupport
 	 * @param query The query.
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param resultClass The class to map the results to.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return An entity.
 	 * @see javax.persistence.Query#getSingleResult()
 	 */
 	@SuppressWarnings( "unchecked" )
-	static public <T> T getSingleResult( Query query, EntityManager entityManager, Class< T > resultClass, Object args )
+	static public <T> T getSingleResult( Query query, EntityManager entityManager, Class< T > resultClass, Map< String, Object > args )
 	{
 		return (T)createQuery( query, entityManager, resultClass, args ).getSingleResult();
 	}
@@ -125,12 +126,12 @@ public class JPASupport
 	 * @param query The query.
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param resultClass The class to map the results to.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return The JPA query.
 	 * @see EntityManager#createNativeQuery(String, Class)
 	 */
 	// TODO And what about the one with the resultmapping?
-	static public javax.persistence.Query createQuery( Query query, EntityManager entityManager, Class< ? > resultClass, Object args )
+	static public javax.persistence.Query createQuery( Query query, EntityManager entityManager, Class< ? > resultClass, Map< String, Object > args )
 	{
 		return createQuery0( query, entityManager, resultClass, args );
 	}
@@ -140,11 +141,11 @@ public class JPASupport
 	 *
 	 * @param query The query.
 	 * @param entityManager The {@link EntityManager} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return The JPA query.
 	 * @see EntityManager#createNativeQuery(String, Class)
 	 */
-	static public javax.persistence.Query createQuery( Query query, EntityManager entityManager, Object args )
+	static public javax.persistence.Query createQuery( Query query, EntityManager entityManager, Map< String, Object > args )
 	{
 		return createQuery0( query, entityManager, null, args );
 	}
@@ -155,11 +156,11 @@ public class JPASupport
 	 * @param query The query.
 	 * @param entityManager The {@link EntityManager} to use.
 	 * @param resultClass The class to map the results to.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return The JPA query.
 	 * @see EntityManager#createNativeQuery(String, Class)
 	 */
-	static private javax.persistence.Query createQuery0( Query query, EntityManager entityManager, Class< ? > resultClass, Object args )
+	static private javax.persistence.Query createQuery0( Query query, EntityManager entityManager, Class< ? > resultClass, Map< String, Object > args )
 	{
 		PreparedSQL preparedSql = query.getPreparedSQL( args );
 
@@ -168,8 +169,8 @@ public class JPASupport
 		if( query.getLanguage() == Language.SQL )
 			if( resultClass != null )
 				result = entityManager.createNativeQuery( preparedSql.getSQL(), resultClass );
-			else
-				result = entityManager.createNativeQuery( preparedSql.getSQL() );
+		else
+			result = entityManager.createNativeQuery( preparedSql.getSQL() );
 		else if( query.getLanguage() == Language.JPQL )
 			if( resultClass != null )
 				result = entityManager.createQuery( preparedSql.getSQL(), resultClass );

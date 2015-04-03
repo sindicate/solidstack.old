@@ -1,5 +1,4 @@
-<%@ template version="1.0" language="funny" %>
-<% args = scope( args ) %>
+<%@ template version="1.0" language="groovy" %>
 <!DOCTYPE html><%-- An HTML 5 page --%>
 <html>
 	<head>

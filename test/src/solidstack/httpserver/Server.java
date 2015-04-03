@@ -1,19 +1,3 @@
-/*--
- * Copyright 2012 René M. de Bloois
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package solidstack.httpserver;
 
 import java.io.IOException;
@@ -21,19 +5,15 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import solidstack.lang.SystemException;
 import solidstack.lang.ThreadInterrupted;
 
 
 public class Server extends Thread
 {
-	static final private Logger log = LoggerFactory.getLogger( Server.class );
-
 	private int port;
 	private ApplicationContext application; // TODO Make this a Map
+	private Thread thread;
 
 	public Server( int port )
 	{
@@ -52,14 +32,11 @@ public class Server extends Thread
 		{
 			ServerSocket server = new ServerSocket( this.port );
 			server.setSoTimeout( 2000 );
-			log.info( "HTTP server listening on port {}", this.port );
-
 			while( !Thread.interrupted() )
 			{
 				try
 				{
 					Socket socket = server.accept();
-					log.debug( "Incoming socket, starting handler" );
 					// TODO Threadpool
 					Handler handler = new Handler( socket, this.application );
 					handler.start();

@@ -1,26 +1,15 @@
-/*--
- * Copyright 2012 René M. de Bloois
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package solidstack.httpserver;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+
+import solidstack.io.PushbackReader;
+import solidstack.io.ReaderSourceReader;
 
 
 /**
@@ -61,18 +50,18 @@ public class Handler extends Thread
 				while( true )
 				{
 					InputStream in = this.socket.getInputStream();
+					// TODO Use a PushbackInputStream
+					PushbackReader reader = new PushbackReader( new ReaderSourceReader( new BufferedReader( new InputStreamReader( in, "ISO-8859-1" ) ) ) );
 
 					Request request = new Request();
 
-					HttpHeaderTokenizer tokenizer = new HttpHeaderTokenizer( in );
+					RequestTokenizer requestTokenizer = new RequestTokenizer( reader );
+					Token token = requestTokenizer.get();
+					request.setMethod( token.getValue() );
 
-					String line = tokenizer.getLine();
-					String[] parts = line.split( "[ \t]+" );
-
-					request.setMethod( parts[ 0 ] );
-
-					String url = parts[ 1 ];
-					if( !parts[ 2 ].equals( "HTTP/1.1" ) )
+					String url = requestTokenizer.get().getValue();
+					token = requestTokenizer.get();
+					if( !token.equals( "HTTP/1.1" ) )
 						throw new HttpException( "Only HTTP/1.1 requests are supported" );
 
 					System.out.println( "GET " + url + " HTTP/1.1" );
@@ -102,10 +91,13 @@ public class Handler extends Thread
 					request.setUrl( url );
 					request.setQuery( parameters );
 
-					Token field = tokenizer.getField();
+					requestTokenizer.getNewline();
+
+					HttpHeaderTokenizer headerTokenizer = new HttpHeaderTokenizer( reader );
+					Token field = headerTokenizer.getField();
 					while( !field.isEndOfInput() )
 					{
-						Token value = tokenizer.getValue();
+						Token value = headerTokenizer.getValue();
 						//			System.out.println( "    "+ field.getValue() + " = " + value.getValue() );
 						if( field.equals( "Cookie" ) ) // TODO Case insensitive?
 						{
@@ -120,7 +112,7 @@ public class Handler extends Thread
 						{
 							request.addHeader( field.getValue(), value.getValue() );
 						}
-						field = tokenizer.getField();
+						field = headerTokenizer.getField();
 					}
 
 					String contentType = request.getHeader( "Content-Type" );
@@ -130,7 +122,7 @@ public class Handler extends Thread
 						if( contentLength != null )
 						{
 							int len = Integer.parseInt( contentLength );
-							UrlEncodedParser parser = new UrlEncodedParser( in, len );
+							UrlEncodedParser parser = new UrlEncodedParser( reader, len );
 							String parameter = parser.getParameter();
 							while( parameter != null )
 							{

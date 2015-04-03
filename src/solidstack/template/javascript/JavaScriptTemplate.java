@@ -21,9 +21,7 @@ import java.util.Map;
 
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ImporterTopLevel;
-import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.Script;
-import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.TopLevel;
 
 import solidstack.io.FatalIOException;
@@ -51,26 +49,16 @@ public class JavaScriptTemplate extends Template
 	}
 
 	@Override
-	public void apply( Object params, EncodingWriter writer )
+	public void apply( Map< String, Object > params, EncodingWriter writer )
 	{
 		Context cx = Context.enter();
 		try
 		{
-			TopLevel topLevel = new ImporterTopLevel( cx );
-
+			TopLevel scope = new ImporterTopLevel(cx);
+			for( Map.Entry< String, Object > param : params.entrySet() )
+				scope.put( param.getKey(), scope, Context.javaToJS( param.getValue(), scope ) );
 			ConvertingWriter out = new JavaScriptConvertingWriter( writer );
-			topLevel.put( "out", topLevel, out );
-
-			Scriptable scope;
-			if( params instanceof Map )
-			{
-				scope = topLevel;
-				for( Map.Entry<String, Object> param : ( (Map<String, Object>)params ).entrySet() )
-					scope.put( param.getKey(), scope, Context.javaToJS( param.getValue(), scope ) );
-			}
-			else
-				scope = new NativeJavaObject( topLevel, params, null );
-
+			scope.put( "out", scope, out );
 			cx.executeScriptWithContinuations( this.script, scope );
 			try
 			{

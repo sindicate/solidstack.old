@@ -31,8 +31,6 @@ import java.net.URL;
  */
 public class Resource
 {
-	private boolean gzip;
-
 	/**
 	 * @return True if this resource has a URL and URI, false otherwise.
 	 */
@@ -155,23 +153,5 @@ public class Resource
 	public SourceLocation getLocation()
 	{
 		return new SourceLocation( this, 1 );
-	}
-
-	/**
-	 * Indicate that this resource is gzipped or not.
-	 *
-	 * @param gzip True indicates that this resource is gzipped.
-	 */
-	public void setGZip( boolean gzip )
-	{
-		this.gzip = gzip;
-	}
-
-	/**
-	 * @return True indicates that this resource is gzipped.
-	 */
-	public boolean isGZip()
-	{
-		return this.gzip;
 	}
 }
