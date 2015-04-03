@@ -7,7 +7,7 @@
 	
 	<groupId>solidstack</groupId>
 	<artifactId>solidstack</artifactId>
-	<version>1.9.3-beta</version>
+	<version>1.0.0-RC2</version>
 	<packaging>jar</packaging>
 
 	<name>SolidStack</name>
@@ -52,7 +52,7 @@
 		<snapshotRepository>
 			<id>solidstack-maven-snapshot-repository</id>
 			<name>SolidStack Maven Snapshot Repository</name>
-			<url>file:../solidstack-snapshot-repository</url>
+			<url>file:../solidbase-snapshot-repository</url>
 		</snapshotRepository>
 	</distributionManagement>
 

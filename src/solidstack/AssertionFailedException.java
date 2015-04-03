@@ -1,5 +1,5 @@
 /*--
- * Copyright 2006 René M. de Bloois
+ * Copyright 2005 René M. de Bloois
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-package solidstack.query
+package solidstack;
 
-class GroovyQueryManager extends QueryManager
+/**
+ * Thrown when an assertion failed.
+ *
+ * @since Mar 13, 2005
+ */
+public class AssertionFailedException extends RuntimeException
 {
-	def methodMissing( String name, Object args )
+	/**
+	 * Constructs a <code>AssertionFailedException</code> object with a detail message.
+	 * 
+	 * @param message the detail message.
+	 */
+	public AssertionFailedException( String message )
 	{
-		if( args != null && args.length == 2 )
-			if( args[ 0 ] instanceof Map && args[ 1 ] instanceof java.sql.Connection )
-			{
-				Query query = getQuery( "/" + name ).params( args[ 0 ] )
-				query.setConnection( args[ 1 ] )
-				return query
-			}
-
-		throw new MissingMethodException( name, QueryManager, args )
+		super( message );
 	}
 }

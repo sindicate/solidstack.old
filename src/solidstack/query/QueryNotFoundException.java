@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-package solidstack.query
+package solidstack.query;
 
-class GroovyQueryManager extends QueryManager
+/**
+ * The requested query is not found.
+ * 
+ * @author René M. de Bloois
+ */
+public class QueryNotFoundException extends RuntimeException
 {
-	def methodMissing( String name, Object args )
+	/**
+	 * Constructor.
+	 * 
+	 * @param message The message.
+	 */
+	public QueryNotFoundException( String message )
 	{
-		if( args != null && args.length == 2 )
-			if( args[ 0 ] instanceof Map && args[ 1 ] instanceof java.sql.Connection )
-			{
-				Query query = getQuery( "/" + name ).params( args[ 0 ] )
-				query.setConnection( args[ 1 ] )
-				return query
-			}
-
-		throw new MissingMethodException( name, QueryManager, args )
+		super( message );
 	}
 }
