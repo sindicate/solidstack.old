@@ -22,15 +22,14 @@ import java.io.IOException;
 /**
  * Accepts writes from the template. Has the responsibility to convert script language specific data types to java types
  * and pass them on to the {@link EncodingWriter}.
- *
+ * 
  * @author René de Bloois
  */
-// Can't implement Writer. DefaultGroovyMethods.write(Writer self, Writable writable) will be called when value is null, which results in NPE.
 public interface ConvertingWriter
 {
 	/**
 	 * Write the object to the writer.
-	 *
+	 * 
 	 * @param o The object to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
@@ -38,16 +37,9 @@ public interface ConvertingWriter
 
 	/**
 	 * Writes an object from a ${ expression to the writer.
-	 *
+	 * 
 	 * @param o The object to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
 	void writeEncoded( Object o ) throws IOException;
-
-	/**
-     * Flushes the stream.
-     *
-	 * @throws IOException If an I/O error occurs.
-	 */
-	void flush() throws IOException;
 }

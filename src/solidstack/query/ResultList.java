@@ -31,8 +31,6 @@ import java.util.Map;
  */
 public class ResultList implements List< Map< String, Object > >, Serializable
 {
-	private static final long serialVersionUID = 1L;
-
 	private List< Object[] > list;
 	private Map< String, Integer > names;
 

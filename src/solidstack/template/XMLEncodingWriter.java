@@ -22,7 +22,7 @@ import java.io.Writer;
 
 /**
  * An encoding writer for XML.
- *
+ * 
  * @author René M. de Bloois
  */
 public class XMLEncodingWriter extends NoEncodingWriter
@@ -41,7 +41,7 @@ public class XMLEncodingWriter extends NoEncodingWriter
 
 	/**
 	 * Constructor.
-	 *
+	 * 
 	 * @param writer The writer to write to.
 	 */
 	public XMLEncodingWriter( Writer writer )
@@ -50,8 +50,8 @@ public class XMLEncodingWriter extends NoEncodingWriter
 	}
 
 	/**
-	 * Write the specified value to the writer XML encoded. &, <, >, " and ' are encoded to &amp;, &lt;, &gt;, &#034; and &#039; respectively.
-	 *
+	 * Write the specified value to the writer XML encoded.
+	 * 
 	 * @param value The value to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
@@ -78,14 +78,14 @@ public class XMLEncodingWriter extends NoEncodingWriter
 			}
 			if( replace != null )
 			{
-				write( chars, start, i - start );
-				write( replace );
+				this.out.write( chars, start, i - start ); // TODO Should call the write() in the super
+				this.out.write( replace );
 				replace = null;
 				start = ++i;
 			}
 			else
 				i++;
 		}
-		write( chars, start, len - start );
+		this.out.write( chars, start, len - start );
 	}
 }

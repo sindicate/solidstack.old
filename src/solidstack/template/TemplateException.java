@@ -24,8 +24,6 @@ package solidstack.template;
  */
 public class TemplateException extends RuntimeException
 {
-	private static final long serialVersionUID = 1L;
-
 	/**
 	 * Constructor.
 	 * 

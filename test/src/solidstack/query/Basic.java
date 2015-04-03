@@ -27,19 +27,19 @@ import java.util.Map;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import solidstack.io.Resource;
-import solidstack.io.Resources;
-import solidstack.io.SourceReaders;
+import solidbase.io.BOMDetectingLineReader;
+import solidbase.io.LineReader;
+import solidbase.io.Resource;
+import solidbase.io.ResourceFactory;
+import solidbase.io.StringLineReader;
 import solidstack.query.Query.PreparedSQL;
 import solidstack.template.ParseException;
 import solidstack.template.Template;
 import solidstack.template.TemplateCompiler;
-import solidstack.template.TemplateCompilerContext;
-import solidstack.template.TemplateLoader;
+import solidstack.template.TemplateManager;
 import solidstack.util.Pars;
 
 
-@SuppressWarnings( "javadoc" )
 public class Basic
 {
 	@Test
@@ -48,10 +48,10 @@ public class Basic
 		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
 		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
-		QueryLoader queries = new QueryLoader();
-		queries.setTemplatePath( "classpath:/solidstack/query" );
+		QueryManager queries = new QueryManager();
+		queries.setPackage( "solidstack.query" );
 
-		Query query = queries.getQuery( "test.sql" );
+		Query query = queries.getQuery( "test" );
 		List< Map< String, Object > > result = query.listOfMaps( connection, Pars.EMPTY );
 		for( String name : result.get( 0 ).keySet() )
 			System.out.println( "Column: " + name );
@@ -72,40 +72,19 @@ public class Basic
 		assert result.size() == 2;
 	}
 
-	static public class ParameterObject
-	{
-		public String prefix = "SYST";
-		public String getName() { return "SYSTABLES"; }
-		public String getNames() { return null; }
-	}
-
-	@Test
-	public void testObjectScope() throws SQLException, ClassNotFoundException
-	{
-		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
-		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
-
-		QueryLoader queries = new QueryLoader();
-		queries.setTemplatePath( "classpath:/solidstack/query" );
-
-		Query query = queries.getQuery( "test.sql" );
-		List< Map< String, Object > > result = query.listOfMaps( connection, new ParameterObject() );
-		assert result.size() == 1;
-	}
-
-	@Test
+	@Test//(groups="new")
 	public void testBasicJS() throws SQLException, ClassNotFoundException
 	{
 		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
 		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
-		QueryLoader queries = new QueryLoader();
-		queries.setTemplatePath( "classpath:/solidstack/query" );
+		QueryManager queries = new QueryManager();
+		queries.setPackage( "solidstack.query" );
 		queries.setDefaultLanguage( "javascript" );
 
 		Pars pars = new Pars( "prefix", null, "name", null, "names", null );
 
-		Query query = queries.getQuery( "testjs.sql" );
+		Query query = queries.getQuery( "testjs" );
 		List< Map< String, Object > > result = query.listOfMaps( connection, pars );
 		for( String name : result.get( 0 ).keySet() )
 			System.out.println( "Column: " + name );
@@ -127,31 +106,13 @@ public class Basic
 	}
 
 	@Test
-	public void testObjectScopeJS() throws SQLException, ClassNotFoundException
-	{
-		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
-		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
-
-		QueryLoader queries = new QueryLoader();
-		queries.setTemplatePath( "classpath:/solidstack/query" );
-		queries.setDefaultLanguage( "javascript" );
-
-		Query query = queries.getQuery( "testjs.sql" );
-		List< Map< String, Object > > result = query.listOfMaps( connection, new ParameterObject() );
-		assert result.size() == 1;
-	}
-
-	@Test
 	public void testTransform() throws Exception
 	{
-		Resource resource = Resources.getResource( "test/src/solidstack/query/test.sql.slt" );
-		TemplateCompilerContext context = new TemplateCompilerContext();
-		context.setResource( resource );
-		context.setPath( "p/c" );
-		new TemplateCompiler( null ).compile( context );
+		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/test.gsql" );
+		Template template = new TemplateCompiler( null ).translate( "p", "c", new BOMDetectingLineReader( resource ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 //		System.out.println( groovy );
-		Assert.assertEquals( context.getScript().toString(), "package solidstack.template.tmp.p;import java.sql.Timestamp;class c{Closure getClosure(){return{out->\n" +
+		Assert.assertEquals( template.getSource(), "package p;import java.sql.Timestamp;class c{Closure getClosure(){return{out->\n" +
 				" // Test if the import at the bottom works, and this comment too of course\n" +
 				"new Timestamp( new Date().time ) \n" +
 				";out.write(\"\"\"SELECT *\n" +
@@ -176,13 +137,13 @@ public class Basic
 				"}}}"
 				);
 
-		QueryLoader queries = new QueryLoader();
-		queries.setTemplatePath( "classpath:/solidstack/query" );
+		QueryManager queries = new QueryManager();
+		queries.setPackage( "solidstack.query" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
 		params.put( "prefix", "SYST" );
 		params.put( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } );
-		Query query = queries.getQuery( "test.sql" );
+		Query query = queries.getQuery( "test" );
 		PreparedSQL sql = query.getPreparedSQL( params );
 
 		// TODO SQL or Sql?
@@ -197,23 +158,18 @@ public class Basic
 //		out.close();
 	}
 
-	@Test
+	@Test//(groups="new")
 	public void testTransformJS() throws Exception
 	{
-		TemplateLoader loader = new TemplateLoader();
-		loader.setTemplatePath( "classpath:/solidstack/query" );
-		loader.setDefaultLanguage( "javascript" );
+		TemplateManager manager = new TemplateManager();
+		manager.setPackage( "solidstack.query" );
+		manager.setDefaultLanguage( "javascript" );
 
-		Resource resource = Resources.getResource( "test/src/solidstack/query/testjs.sql.slt" );
-		TemplateCompilerContext context = new TemplateCompilerContext();
-		context.setResource( resource );
-		context.setPath( "p/c" );
-		new TemplateCompiler( loader ).compile( context );
-
+		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/testjs.gsql" );
+		Template template = new TemplateCompiler( manager ).translate( "p", "c", new BOMDetectingLineReader( resource ) );
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 
-		Assert.assertEquals( context.getScript().toString(), "importClass(Packages.java.sql.Timestamp);\n" +
-				" // Test if the import at the bottom works, and this comment too of course\n" +
+		Assert.assertEquals( template.getSource(), "importClass(Packages.java.sql.Timestamp); // Test if the import at the bottom works, and this comment too of course\n" +
 				"new Timestamp( new java.util.Date().time ) \n" +
 				";out.write(\"SELECT *\\n\\\n" +
 				"FROM SYS.SYSTABLES\\n\\\n" +
@@ -233,13 +189,13 @@ public class Basic
 				"\"); } \n" +
 				";\n" );
 
-		QueryLoader queries = new QueryLoader( loader );
+		QueryManager queries = new QueryManager( manager );
 
 		Map< String, Object > params = new HashMap< String, Object >();
 		params.put( "prefix", "SYST" );
 		params.put( "name", null );
 		params.put( "names", new String[] { "SYSTABLES", "SYSCOLUMNS" } );
-		Query query = queries.getQuery( "testjs.sql" );
+		Query query = queries.getQuery( "testjs" );
 		PreparedSQL sql = query.getPreparedSQL( params );
 
 		assert sql.getSQL().equals( "SELECT *\n" +
@@ -258,15 +214,15 @@ public class Basic
 	{
 		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
-		QueryLoader queries = new QueryLoader();
-		queries.setTemplatePath( "classpath:/solidstack/query" );
+		QueryManager queries = new QueryManager();
+		queries.setPackage( "solidstack.query" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
 		params.put( "names", Arrays.asList( new String[] { "SYSTABLES", "SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS", "SYSTABLES",
 				"SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS",
 				"SYSTABLES", "SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS", "SYSTABLES",
 				"SYSCOLUMNS", "SYSTABLES", "SYSCOLUMNS" } ) );
-		Query query = queries.getQuery( "bigin.sql" );
+		Query query = queries.getQuery( "bigin" );
 		PreparedSQL sql = query.getPreparedSQL( params );
 
 		assert sql.getSQL().equals( "SELECT *\n" +
@@ -285,25 +241,47 @@ public class Basic
 	}
 
 	@Test
+	public void testNewlinesWithinDirective() throws Exception
+	{
+		LineReader reader = new StringLineReader( "<%@ template\n" +
+				"import=\"common.utils.QueryUtils\"\n" +
+				"import=\"common.enums.*\"\n" +
+				"language=\"groovy\"\n" +
+				"%>\n" +
+				"TEST" );
+
+		Template template = new TemplateCompiler( null ).translate( "p", "c", reader );
+//		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
+//		System.out.println( groovy );
+		Assert.assertEquals( template.getSource(), "package p;import common.utils.QueryUtils;import common.enums.*;class c{Closure getClosure(){return{out->\n" +
+				"\n" +
+				"\n" +
+				"\n" +
+				"\n" +
+				"out.write(\"\"\"TEST\"\"\");}}}"
+				);
+	}
+
+	@Test
 	public void testInJar() throws SQLException, ClassNotFoundException
 	{
 		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
 		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
-		QueryLoader queries = new QueryLoader();
-		queries.setTemplatePath( "classpath:/solidstack/query" );
+		QueryManager queries = new QueryManager();
+		queries.setPackage( "solidstack.query" );
 		queries.setDefaultLanguage( "groovy" );
 
-		Query query = queries.getQuery( "test2.sql" );
+		Query query = queries.getQuery( "test2" );
 		List< Map< String, Object > > result = query.listOfMaps( connection, new Pars( "prefix", null, "name", null, "names", null ) );
 		assert result.size() == 22;
 	}
 
-	private String start = "package solidstack.template.tmp.p;class c{Closure getClosure(){return{out->";
+	private String start = "package p;class c{Closure getClosure(){return{out->";
 	private String end = "}}}";
-	private Map<String, Object> parameters;
+	private Map parameters;
 	{
-		this.parameters = new HashMap<String, Object>();
+		this.parameters = new HashMap();
 		this.parameters.put( "var", "value" );
 	}
 
@@ -313,47 +291,40 @@ public class Basic
 	}
 
 	// For testing purposes
-	static TemplateCompilerContext translate( String text )
+	static Template translate( String text )
 	{
-		text = "<%@template version=\"1.0\"%>" + text;
-
-		TemplateCompilerContext context = new TemplateCompilerContext();
-		context.setReader( SourceReaders.forString( text ) );
-		context.setPath( "p/c" );
-		new TemplateCompiler( null ).compile( context );
-		return context;
+		return new TemplateCompiler( null ).translate( "p", "c", new StringLineReader( text ) );
 	}
 
 	private void translateTest( String input, String groovy, String output )
 	{
-		input = "<%@template version=\"1.0\" language=\"groovy\"%>" + input;
-
-		TemplateCompilerContext context = translate( input );
-		String g = context.getScript().toString();
+		Template template = translate( "<%@template language=\"groovy\"%>" + input );
+		String g = template.getSource();
 //		System.out.println( g );
 		Assert.assertEquals( g, this.start + groovy + this.end );
 
-		String result = execute( context.getTemplate(), this.parameters );
+		template.compile();
+		String result = execute( template, this.parameters );
 //		System.out.println( result );
 		Assert.assertEquals( result, output );
 	}
 
-	static private void translateError( String input )
+	private void translateError( String input )
 	{
 		try
 		{
-			translate( input );
-//			System.out.println( template.getSource() );
+			Template template = translate( "X${\"te\"xt\"}X" );
+			System.out.println( template.getSource() );
 			assert false;
 		}
 		catch( ParseException e )
 		{
-			Assert.assertTrue( e.getMessage().contains( "Unexpected end of " ), e.toString() );
+			assert e.getMessage().contains( "Unexpected end of " );
 		}
 	}
 
 	@Test
-	public void testGroovy()
+	public void testGroovy() throws SQLException, ClassNotFoundException
 	{
 		// Escaping in the text
 
@@ -407,10 +378,6 @@ public class Basic
 		translateTest( "X${'te\"xt'}X", "out.write(\"\"\"X${'te\"xt'}X\"\"\");", "Xte\"xtX" );
 		translateError( "X${'text\ntext'}X" );
 		translateTest( "X${'''te\"xt\ntext\\''''}X", "out.write(\"\"\"X${'''te\"xt\ntext\\''''}X\"\"\");", "Xte\"xt\ntext'X" );
-
-		// Miscellaneous
-		translateTest( "X${1}${new Integer(2)}X", "out.write(\"\"\"X${1}${new Integer(2)}X\"\"\");", "X12X" ); // ${} connected with integers
-		translateTest( "X<%=1%><%=new Integer(2)%>X", "out.write(\"\"\"X\"\"\");out.write(1);out.write(new Integer(2));out.write(\"\"\"X\"\"\");", "X12X" ); // <%=%> connected with integers
 
 		// Groovy BUG
 
