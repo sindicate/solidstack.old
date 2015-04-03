@@ -49,12 +49,12 @@ public class HibernateSupport
 	 *
 	 * @param query The query.
 	 * @param session The Hibernate {@link Session} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return a {@link ResultSet}.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
-	 * @see Query#resultSet(Connection, Object)
+	 * @see Query#resultSet(Connection, Map)
 	 */
-	static public ResultSet resultSet( final Query query, Session session, final Object args )
+	static public ResultSet resultSet( final Query query, Session session, final Map< String, Object > args )
 	{
 		final ResultHolder< ResultSet > result = new ResultHolder< ResultSet >();
 
@@ -81,12 +81,12 @@ public class HibernateSupport
 	 *
 	 * @param query The query.
 	 * @param session The Hibernate {@link Session} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return a {@link List} of {@link Object} arrays.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
-	 * @see Query#listOfArrays(Connection, Object)
+	 * @see Query#listOfArrays(Connection, Map)
 	 */
-	static public List< Object[] > listOfArrays( final Query query, final Session session, final Object args )
+	static public List< Object[] > listOfArrays( final Query query, final Session session, final Map< String, Object > args )
 	{
 		final ResultHolder< List< Object[] > > result = new ResultHolder< List< Object[] > >();
 
@@ -113,12 +113,12 @@ public class HibernateSupport
 	 *
 	 * @param query The query.
 	 * @param session The Hibernate {@link Session} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return A {@link List} of {@link Map}s.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
-	 * @see Query#listOfMaps(Connection, Object)
+	 * @see Query#listOfMaps(Connection, Map)
 	 */
-	static public List< Map< String, Object > > listOfMaps( final Query query, final Session session, final Object args )
+	static public List< Map< String, Object > > listOfMaps( final Query query, final Session session, final Map< String, Object > args )
 	{
 		final ResultHolder< List< Map< String, Object > > > result = new ResultHolder< List< Map< String, Object > > >();
 
@@ -145,12 +145,12 @@ public class HibernateSupport
 	 *
 	 * @param query The query.
 	 * @param session The Hibernate {@link Session} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
-	 * @see Query#updateChecked(Connection, Object)
+	 * @see Query#updateChecked(Connection, Map)
 	 */
-	static public int update( final Query query, Session session, final Object args )
+	static public int update( final Query query, Session session, final Map< String, Object > args )
 	{
 		final ResultHolder< Integer > result = new ResultHolder< Integer >();
 
@@ -170,11 +170,11 @@ public class HibernateSupport
 	 *
 	 * @param query The query.
 	 * @param session The Hibernate {@link Session} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return A list of Hibernate entities.
 	 */
 	@SuppressWarnings( "unchecked" )
-	static public <T> List<T> list( Query query, Session session, Object args )
+	static public <T> List<T> list( Query query, Session session, Map<String, Object> args )
 	{
 		List<T> result = createQuery( query, session, args ).list();
 		if( query.getLanguage() == Language.SQL && query.isFlyWeight() )
@@ -188,10 +188,10 @@ public class HibernateSupport
 	 *
 	 * @param query The query.
 	 * @param session The Hibernate {@link Session} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return The number of entities updated or deleted.
 	 */
-	static public int executeUpdate( Query query, Session session, Object args )
+	static public int executeUpdate( Query query, Session session, Map<String, Object> args )
 	{
 		return createQuery( query, session, args ).executeUpdate();
 	}
@@ -201,11 +201,11 @@ public class HibernateSupport
 	 *
 	 * @param query The query.
 	 * @param session The Hibernate {@link Session} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return A single Hibernate entity or null.
 	 */
 	@SuppressWarnings( "unchecked" )
-	static public <T> T uniqueResult( Query query, Session session, Object args )
+	static public <T> T uniqueResult( Query query, Session session, Map<String, Object> args )
 	{
 		return (T)createQuery( query, session, args ).uniqueResult();
 	}
@@ -216,10 +216,10 @@ public class HibernateSupport
 	 *
 	 * @param query The query.
 	 * @param session A Hibernate session.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return The Hibernate query.
 	 */
-	static public org.hibernate.Query createQuery( Query query, Session session, Object args )
+	static public org.hibernate.Query createQuery( Query query, Session session, Map< String, Object > args )
 	{
 		PreparedSQL preparedSql = query.getPreparedSQL( args );
 

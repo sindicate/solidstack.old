@@ -73,11 +73,6 @@ public class RandomAccessSourceReader implements SourceReader
 		return this.reader.getLocation();
 	}
 
-	public SourceLocation getLastLocation()
-	{
-		return this.reader.getLastLocation();
-	}
-
 	public int getLineNumber()
 	{
 		return this.reader.getLineNumber();
@@ -101,7 +96,6 @@ public class RandomAccessSourceReader implements SourceReader
 	 *
 	 * @param lineNumber The line number to jump to.
 	 */
-	// FIXME Create a unit test for this
 	public void gotoLine( int lineNumber )
 	{
 		if( this.reader == null )

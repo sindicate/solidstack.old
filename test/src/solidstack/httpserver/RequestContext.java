@@ -1,19 +1,3 @@
-/*--
- * Copyright 2012 René M. de Bloois
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package solidstack.httpserver;
 
 import java.util.Map;
@@ -25,7 +9,6 @@ public class RequestContext
 	protected Session session;
 	protected ApplicationContext applicationContext;
 	protected Map< String, Object > args;
-	protected boolean async;
 
 	// TODO Parameter order
 	public RequestContext( Request request, Response response, ApplicationContext applicationContext )
@@ -100,15 +83,5 @@ public class RequestContext
 //		response.reset(); Do not reset, we need the Set-Cookies
 		response.setStatusCode( 303, "Redirect" );
 		response.setHeader( "Location", path );
-	}
-
-	public void setAsync( boolean async )
-	{
-		this.async = async;
-	}
-
-	public boolean isAsync()
-	{
-		return this.async;
 	}
 }

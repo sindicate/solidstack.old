@@ -1,19 +1,3 @@
-/*--
- * Copyright 2012 René M. de Bloois
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package solidstack.httpserver;
 
 import java.io.IOException;
@@ -28,7 +12,6 @@ public class ResponseOutputStream extends OutputStream
 	protected Response response;
 	protected byte[] buffer = new byte[ 8192 ];
 	protected int pos;
-	protected boolean committed;
 
 	public ResponseOutputStream()
 	{
@@ -46,7 +29,7 @@ public class ResponseOutputStream extends OutputStream
 	{
 		try
 		{
-			if( this.committed )
+			if( this.response.isCommitted() )
 			{
 //				System.out.write( b, off, len );
 				this.out.write( b, off, len );
@@ -58,7 +41,6 @@ public class ResponseOutputStream extends OutputStream
 				this.out.write( this.buffer, 0, this.pos );
 //				System.out.write( b, off, len );
 				this.out.write( b, off, len );
-				this.committed = true;
 			}
 			else
 			{
@@ -77,7 +59,7 @@ public class ResponseOutputStream extends OutputStream
 	{
 		try
 		{
-			if( this.committed )
+			if( this.response.isCommitted() )
 			{
 //				System.out.write( b );
 				this.out.write( b );
@@ -89,7 +71,6 @@ public class ResponseOutputStream extends OutputStream
 				this.out.write( this.buffer, 0, this.pos );
 //				System.out.write( b );
 				this.out.write( b );
-				this.committed = true;
 			}
 			else
 			{
@@ -108,7 +89,7 @@ public class ResponseOutputStream extends OutputStream
 	{
 		try
 		{
-			if( this.committed )
+			if( this.response.isCommitted() )
 			{
 //				System.out.write( b );
 				this.out.write( b );
@@ -120,7 +101,6 @@ public class ResponseOutputStream extends OutputStream
 				this.out.write( this.buffer, 0, this.pos );
 //				System.out.write( b );
 				this.out.write( b );
-				this.committed = true;
 			}
 			else
 			{
@@ -137,7 +117,7 @@ public class ResponseOutputStream extends OutputStream
 	@Override
 	public void close()
 	{
-		commit();
+		flush();
 		try
 		{
 			this.out.close();
@@ -148,32 +128,21 @@ public class ResponseOutputStream extends OutputStream
 		}
 	}
 
-	private void commit()
-	{
-		try
-		{
-			if( !this.committed )
-			{
-				this.response.writeHeader( this.out );
-				// The outputstream may be changed at this point
-				this.out.write( this.buffer, 0, this.pos );
-				this.committed = true;
-			}
-		}
-		catch( IOException e )
-		{
-			throw new HttpException( e );
-		}
-	}
-
 	@Override
 	public void flush()
 	{
-		if( !this.committed )
-			commit();
 		try
 		{
-			this.out.flush();
+			if( this.response.isCommitted() )
+				this.out.flush();
+			else
+			{
+				this.response.writeHeader( this.out );
+//				System.out.write( this.buffer, 0, this.pos );
+				// The outputstream may be changed at this point
+				this.out.write( this.buffer, 0, this.pos );
+				this.out.flush();
+			}
 		}
 		catch( IOException e )
 		{
@@ -183,7 +152,7 @@ public class ResponseOutputStream extends OutputStream
 
 	public void clear()
 	{
-		Assert.isFalse( this.committed );
+		Assert.isFalse( this.response.isCommitted() );
 		this.pos = 0;
 	}
 }

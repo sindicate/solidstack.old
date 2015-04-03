@@ -1,19 +1,3 @@
-/*--
- * Copyright 2012 René M. de Bloois
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package solidstack.hyperdb;
 
 import java.sql.Connection;
@@ -37,11 +21,9 @@ public class TableServlet implements Servlet
 		String table = context.getRequest().getParameter( "table" );
 
 		Connections connections = (Connections)context.getSession().getAttribute( "connections" );
-		ConnectionHolder holder = connections.getConnection( database, user );
-		Connection connection = holder.getConnection();
-		char identifierQuote = holder.getDatabase().getIdentifierQuote();
+		Connection connection = connections.getConnection( database, user );
 
-		table = identifierQuote + schema + identifierQuote + "." + identifierQuote + table + identifierQuote; // TODO SQL Escaping
+		table = '\"' + schema + "\".\"" + table + '\"'; // TODO SQL Escaping
 
 		try
 		{
