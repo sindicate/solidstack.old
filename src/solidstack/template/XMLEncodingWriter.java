@@ -22,7 +22,7 @@ import java.io.Writer;
 
 /**
  * An encoding writer for XML.
- *
+ * 
  * @author René M. de Bloois
  */
 public class XMLEncodingWriter extends NoEncodingWriter
@@ -41,7 +41,7 @@ public class XMLEncodingWriter extends NoEncodingWriter
 
 	/**
 	 * Constructor.
-	 *
+	 * 
 	 * @param writer The writer to write to.
 	 */
 	public XMLEncodingWriter( Writer writer )
@@ -50,18 +50,18 @@ public class XMLEncodingWriter extends NoEncodingWriter
 	}
 
 	/**
-	 * Write the specified value to the writer XML encoded. &, <, >, " and ' are encoded to &amp;, &lt;, &gt;, &#034; and &#039; respectively.
-	 *
-	 * @param value The value to write.
+	 * Write the specified string to the writer XML encoded.
+	 * 
+	 * @param s The string to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
 	@Override
-	public void writeEncoded( Object value ) throws IOException
+	public void writeEncoded( String s ) throws IOException
 	{
-		if( value == null )
+		if( s == null )
 			return;
 
-		char[] chars = ( (String)value ).toCharArray();
+		char[] chars = s.toCharArray();
 		int len = chars.length;
 		int start = 0;
 		String replace = null;
@@ -78,14 +78,14 @@ public class XMLEncodingWriter extends NoEncodingWriter
 			}
 			if( replace != null )
 			{
-				write( chars, start, i - start );
-				write( replace );
+				this.out.write( chars, start, i - start );
+				this.out.write( replace );
 				replace = null;
 				start = ++i;
 			}
 			else
 				i++;
 		}
-		write( chars, start, len - start );
+		this.out.write( chars, start, len - start );
 	}
 }

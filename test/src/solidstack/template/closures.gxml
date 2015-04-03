@@ -1,0 +1,41 @@
+<%@ template contentType="text/xml" %>
+${{->"te<st"}}
+${{->out.write("te<st")}}
+${out.write("te<st")}
+<%={->"te<st"}%>
+<%={->out.write("te<st")}%>
+<%=out.write("te<st")%>
+how deep is deep? ${{-> "deeper and ${{-> "deepest"}}"}}
+how deep is deep? ${"deeper and ${{-> "deepest"}}"}
+how deep is deep? ${{-> "deeper and ${"deepest"}"}}
+how deep is deep? ${"deeper and ${"deepest"}"}
+<%
+def aaa = '"bread","apple","egg"'
+def items = aaa.split(',')
+assert items[1] == '"apple"'
+items.each
+{
+%>
+item: <%=it%>
+<% 
+}
+%>
+<% 
+for( char i = 'A'; i <= 'Z'; i++ )
+	out.write( i )
+%>
+
+<% 
+for( int i = 0; i < 10; i++ )
+	out.write( i )
+%>
+
+<% 
+for( char i = 'A'; i <= 'Z'; i++ ) {
+	%><%=i%><%
+} %>
+
+<% 
+for( int i = 0; i < 10; i++ ) {
+	%>${i}<%
+} %>

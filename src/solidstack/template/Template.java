@@ -16,72 +16,78 @@
 
 package solidstack.template;
 
+import groovy.lang.Closure;
+
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 
-import solidstack.io.Resource;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 
 /**
  * A compiled template.
- *
+ * 
  * @author René M. de Bloois
  */
-abstract public class Template
+public class Template
 {
-	private Resource resource;
-	private String path;
+	private String source;
 	private Directive[] directives;
 
+	private Closure template;
 	private String contentType;
-	private String charSet; // FIXME Rename to characterencoding, including the contenttype directive?
+	private String charSet;
 	private long lastModified;
-	private TemplateLoader loader;
+	private TemplateManager manager;
 
 
 	/**
-	 * Sets the loader that loaded this template. The template needs this to access the MIME type registry.
-	 *
-	 * @param loader The template loader.
+	 * Constructor.
+	 * 
+	 * @param source The source code of the template. This is the template translated to the source code of the desired language.
+	 * @param directives The directives found in the template text.
 	 */
-	protected void setLoader( TemplateLoader loader )
+	public Template( String source, Directive[] directives )
 	{
-		this.loader = loader;
+		this.source = source;
+		this.directives = directives;
 	}
 
 	/**
-	 * @return The loader that loaded this template.
+	 * Sets the manager of the template. The template needs this to access the MIME type registry.
+	 * 
+	 * @param manager A template manager.
 	 */
-	public TemplateLoader getLoader()
+	protected void setManager( TemplateManager manager )
 	{
-		return this.loader;
+		this.manager = manager;
 	}
 
 	/**
-	 * Apply the given parameters to the template and writes the result to the given writer.
-	 *
+	 * Apply this template.
+	 * 
 	 * @param params The parameters to be applied.
 	 * @param writer The result of applying this template is written to this writer.
 	 */
-	public void apply( Object params, Writer writer )
+	public void apply( Map< String, ? > params, Writer writer )
 	{
-		apply( params, createEncodingWriter( writer ) );
+		Closure template = (Closure)this.template.clone();
+		template.setDelegate( params );
+		template.call( createEncodingWriter( writer ) );
 	}
 
 	/**
-	 * Apply the given parameters to the template and writes the output to the given output stream. The character set used is the one configured in
+	 * Applies this template and writes the result to an OutputStream. The character set used is the one configured in
 	 * the template. If none is configured the default character encoding of the operating system is used.
-	 *
+	 * 
 	 * @param params The parameters to be applied.
 	 * @param out The result of applying this template is written to this OutputStream.
 	 */
 	// TODO Test this one
 	// TODO Use default per MIME type too, then use the encoding of the source file, then the operating system
-	public void apply( Object params, OutputStream out )
+	public void apply( Map< String, ? > params, OutputStream out )
 	{
 		Writer writer;
 		if( this.charSet != null )
@@ -97,16 +103,18 @@ abstract public class Template
 		}
 		else
 			writer = new OutputStreamWriter( out );
-		apply( params, writer );
+		Closure template = (Closure)this.template.clone();
+		template.setDelegate( params );
+		template.call( createEncodingWriter( writer ) );
 	}
 
 	/**
-	 * Apply the given parameters to the template and returns the result as a string.
-	 *
+	 * Apply this template.
+	 * 
 	 * @param params The parameters to be applied.
 	 * @return The result of applying this template.
 	 */
-	public String apply( Object params )
+	public String apply( Map< String, ? > params )
 	{
 		StringWriter writer = new StringWriter();
 		apply( params, writer );
@@ -114,16 +122,8 @@ abstract public class Template
 	}
 
 	/**
-	 * Applies the given parameters to the template and writes the output to the given encoding writer.
-	 *
-	 * @param params The parameters to apply to the template.
-	 * @param writer The writer to write the result to.
-	 */
-	abstract public void apply( Object params, EncodingWriter writer );
-
-	/**
 	 * Returns the EncodingWriter for the configured MIME type.
-	 *
+	 * 
 	 * @param writer The writer to write to.
 	 * @return The EncodingWriter.
 	 */
@@ -131,7 +131,7 @@ abstract public class Template
 	{
 		if( this.contentType != null )
 		{
-			EncodingWriterFactory factory = this.loader.getWriterFactory( this.contentType );
+			EncodingWriterFactory factory = this.manager.getWriterFactory( this.contentType );
 			if( factory != null )
 				return factory.createWriter( writer );
 		}
@@ -140,7 +140,7 @@ abstract public class Template
 
 	/**
 	 * Returns the content type of this template.
-	 *
+	 * 
 	 * @return The content type of this template.
 	 */
 	public String getContentType()
@@ -150,7 +150,7 @@ abstract public class Template
 
 	/**
 	 * Returns the output character set of this template.
-	 *
+	 * 
 	 * @return The output character set of this template.
 	 */
 	public String getCharSet()
@@ -160,7 +160,7 @@ abstract public class Template
 
 	/**
 	 * Returns the last modification time stamp for the file that contains the template.
-	 *
+	 * 
 	 * @return The last modification time stamp for the file that contains the template.
 	 */
 	public long getLastModified()
@@ -169,18 +169,28 @@ abstract public class Template
 	}
 
 	/**
-	 * Returns the path of the template.
-	 *
-	 * @return The path of the template.
+	 * Returns the source code for the template.
+	 * 
+	 * @return The source code for the template.
 	 */
-	public String getPath()
+	protected String getSource()
 	{
-		return this.path;
+		return this.source;
+	}
+
+	/**
+	 * Returns the Groovy closure.
+	 * 
+	 * @return The Groovy closure.
+	 */
+	protected Closure getClosure()
+	{
+		return this.template;
 	}
 
 	/**
 	 * Returns the directive attribute with the given directive name and attribute name.
-	 *
+	 * 
 	 * @param name The name of the directive.
 	 * @param attribute The name of the attribute.
 	 * @return The directive.
@@ -189,38 +199,15 @@ abstract public class Template
 	{
 		if( this.directives == null )
 			return null;
-		return getDirective( Arrays.asList( this.directives ), name, attribute );
-	}
-
-	/**
-	 * Returns the directive attribute value with the given directive name and attribute name.
-	 *
-	 * @param directives A list of directives.
-	 * @param name The name of the directive.
-	 * @param attribute The name of the attribute.
-	 * @return The directive attribute value.
-	 */
-	static public Directive getDirective( List<Directive> directives, String name, String attribute )
-	{
-		for( Directive directive : directives )
+		for( Directive directive : this.directives )
 			if( directive.getName().equals( name ) && directive.getAttribute().equals( attribute ) )
 				return directive;
 		return null;
 	}
 
 	/**
-	 * Sets the name of this template.
-	 *
-	 * @param path The path of this template.
-	 */
-	protected void setPath( String path )
-	{
-		this.path = path;
-	}
-
-	/**
 	 * Sets the content type of the template.
-	 *
+	 * 
 	 * @param contentType The content type.
 	 */
 	public void setContentType( String contentType )
@@ -230,7 +217,7 @@ abstract public class Template
 
 	/**
 	 * Sets the character set of the output of the template.
-	 *
+	 * 
 	 * @param charSet The character set.
 	 */
 	public void setCharSet( String charSet )
@@ -240,7 +227,7 @@ abstract public class Template
 
 	/**
 	 * Sets the last modified timestamp of the template.
-	 *
+	 * 
 	 * @param lastModified The last modified timestamp.
 	 */
 	protected void setLastModified( long lastModified )
@@ -249,30 +236,20 @@ abstract public class Template
 	}
 
 	/**
-	 * Sets the directives found in this template.
-	 *
-	 * @param directives The directives found in this template.
+	 * Sets the Groovy closure.
+	 * 
+	 * @param closure The Groovy closure.
 	 */
-	protected void setDirectives( Directive[] directives )
+	protected void setClosure( Closure closure )
 	{
-		this.directives = directives;
+		this.template = closure;
 	}
 
 	/**
-	 * Sets the resource that contained this template.
-	 *
-	 * @param resource The resource that contained this template.
+	 * Removes the templates source from memory.
 	 */
-	protected void setResource( Resource resource )
+	protected void clearSource()
 	{
-		this.resource = resource;
-	}
-
-	/**
-	 * @return The resource that contained this template.
-	 */
-	public Resource getResource()
-	{
-		return this.resource;
+		this.source = null;
 	}
 }

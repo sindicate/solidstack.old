@@ -16,14 +16,20 @@
 
 package solidstack.template;
 
+import groovy.lang.Closure;
+
 import java.io.IOException;
 import java.io.Writer;
 
+import org.codehaus.groovy.runtime.InvokerHelper;
+
 /**
- * An encoding writer that passes through everything unmodified.
- *
+ * An encoding writer. Adds a {@link #writeEncoded(String)} method. This implementation does not encode.
+ * 
  * @author René M. de Bloois
+ *
  */
+// Can't implement Writer. DefaultGroovyMethods.write(Writer self, Writable writable) will be called when value is null, which results in NPE.
 public class NoEncodingWriter implements EncodingWriter
 {
 	/**
@@ -33,7 +39,7 @@ public class NoEncodingWriter implements EncodingWriter
 
 	/**
 	 * Constructor.
-	 *
+	 * 
 	 * @param out The writer to write to.
 	 */
 	public NoEncodingWriter( Writer out )
@@ -41,37 +47,53 @@ public class NoEncodingWriter implements EncodingWriter
 		this.out = out;
 	}
 
-	/**
-	 * Writes the given characters.
-	 *
-	 * @param chars The characters.
-	 * @param off The start index.
-	 * @param len The length.
-	 * @throws IOException Whenever an IOException is thrown.
-	 */
-	public void write( char[] chars, int off, int len ) throws IOException
-	{
-		this.out.write( chars, off, len );
-	}
-
 	public void write( String s ) throws IOException
 	{
 		if( s != null )
-			write( s.toCharArray(), 0, s.length() );
+			this.out.write( s );
+	}
+
+	public void write( Object o ) throws IOException
+	{
+		if( o != null )
+			write( (String)InvokerHelper.invokeMethod( o, "asType", String.class ) );
+	}
+
+	public void write( Closure c ) throws IOException
+	{
+		if( c != null )
+		{
+			int pars = c.getMaximumNumberOfParameters();
+			if( pars > 0 )
+				throw new TemplateException( "Closures with parameters are not supported in expressions." );
+			Object result = c.call();
+			if( result != null )
+				write( result.toString() ); // TODO Use groovy type conversion
+		}
+	}
+
+	public void writeEncoded( String s ) throws IOException
+	{
+		if( s != null )
+			write( s );
 	}
 
 	public void writeEncoded( Object o ) throws IOException
 	{
-		write( (String)o );
+		if( o != null )
+			writeEncoded( (String)InvokerHelper.invokeMethod( o, "asType", String.class ) );
 	}
 
-	public boolean stringsOnly()
+	public void writeEncoded( Closure c ) throws IOException
 	{
-		return true;
-	}
-
-	public void flush() throws IOException
-	{
-		this.out.flush();
+		if( c != null )
+		{
+			int pars = c.getMaximumNumberOfParameters();
+			if( pars > 0 )
+				throw new TemplateException( "Closures with parameters are not supported in expressions." );
+			Object result = c.call();
+			if( result != null )
+				writeEncoded( result.toString() ); // TODO Use groovy type conversion
+		}
 	}
 }

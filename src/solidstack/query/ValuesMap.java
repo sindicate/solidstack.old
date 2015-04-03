@@ -16,7 +16,6 @@
 
 package solidstack.query;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -28,10 +27,8 @@ import solidstack.util.ObjectArrayList;
  * 
  * @author René M. de Bloois
  */
-public class ValuesMap implements Map< String, Object >, Serializable
+public class ValuesMap implements Map< String, Object >
 {
-	private static final long serialVersionUID = 1L;
-
 	private Map< String, Integer > names; // This one is shared by all instances
 	private Object[] values;
 

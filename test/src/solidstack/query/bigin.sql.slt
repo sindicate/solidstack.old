@@ -1,7 +1,0 @@
-<%@ template version="1.0" language="groovy" %>
-SELECT *
-FROM SYS.SYSTABLES
-WHERE TABLENAME IN ( ${ names.subList( 0, Math.min( names.size(), 5 ) ) } )
-<% for( def i = 5; i < names.size(); i += 5 ) { %>
-OR TABLENAME IN ( ${ names.subList( i, Math.min( names.size(), i + 5 ) ) } )
-<% } %>
