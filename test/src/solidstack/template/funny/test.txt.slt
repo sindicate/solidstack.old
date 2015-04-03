@@ -1,7 +1,6 @@
 <%@ template version="1.0" encoding="UTF-8" language="funny" %>
-<% // Comment
-Timestamp = loadClass( "java.sql.Timestamp" );
-new Timestamp( new Date().time ) %>
+<% // Test if the import at the bottom works, and this comment too of course
+class( "java.sql.Timestamp" )( class( "java.util.Date" )().getTime() ) %>
 SELECT *
 <%@ template contentType="text/html; charset=ISO-8859-1" %>
 FROM SYS.SYSTABLES
@@ -10,12 +9,12 @@ FROM SYS.SYSTABLES
 	interfere with the linenumbers
 	--%>
 WHERE 1 = 1
-		<% if( prefix ) ( %>
+		<% if( prefix; ( %>
 AND TABLENAME LIKE '<%= prefix %>%'
-		<% ) %>
-		<% if( name ) ( %>
+		<% )) %>
+		<% if( name; ( %>
 AND TABLENAME = ${name}
-		<% ) %>
-		<% if( names ) ( %>
+		<% )) %>
+		<% if( names; ( %>
 AND TABLENAME IN (${names})
-		<% ) %>
+		<% )) %>

@@ -24,8 +24,8 @@ import solidstack.io.SourceLocation;
 import solidstack.lang.Assert;
 import solidstack.script.expressions.Expression;
 import solidstack.script.java.Types;
+import solidstack.script.scopes.AbstractScope;
 import solidstack.script.scopes.CombinedScope;
-import solidstack.script.scopes.Scope;
 
 
 abstract public class Operator implements Expression
@@ -35,20 +35,8 @@ abstract public class Operator implements Expression
 	// TODO Make private
 	protected String operator;
 	protected Expression left;
+	protected Expression middle;
 	protected Expression right;
-
-	/* Scala precedences: lowest to highest
-		(all letters)
-		|
-		^
-		&
-		< >
-		= !
-		:
-		+ -
-		* / %
-		(all other special characters)
-	*/
 
 	static
 	{
@@ -57,20 +45,20 @@ abstract public class Operator implements Expression
 		precedences.put( "[", 1 ); // array index
 		precedences.put( "(", 1 ); // method call
 		precedences.put( ".", 1 ); // object member
-//		precedences.put( "#", 1 ); // static member
-		precedences.put( "new", 1 ); // object creation
+		precedences.put( "#", 1 ); // static member
 
-//		precedences.put( "@++", 2 ); // postfix increment
-//		precedences.put( "@--", 2 ); // postfix decrement
-//
-//		precedences.put( "++@", 3 ); // prefix increment
-//		precedences.put( "--@", 3 ); // prefix decrement
+		precedences.put( "@++", 2 ); // postfix increment
+		precedences.put( "@--", 2 ); // postfix decrement
+
+		precedences.put( "++@", 3 ); // prefix increment
+		precedences.put( "--@", 3 ); // prefix decrement
 		precedences.put( "+@", 3 ); // unary plus
 		precedences.put( "-@", 3 ); // unary minus
 //		precedences.put( "~", 3 ); // bitwise NOT
 		precedences.put( "!@", 3 ); // boolean NOT
 //		precedences.put( "(type)", 3 ); // type cast
 		precedences.put( "as", 3 ); // type cast TODO Same precedence as instanceof?
+//		precedences.put( "new", 3 ); // object creation
 
 		precedences.put( "*", 4 ); // multiplication
 		precedences.put( "/", 4 ); // division
@@ -102,8 +90,8 @@ abstract public class Operator implements Expression
 
 //		precedences.put( "?", 14 ); // conditional
 
+		precedences.put( ":", 15 ); // label TODO 15 ok?
 		precedences.put( "->", 15 ); // lambda TODO Equal to assignment precedence? Do we want that?
-		precedences.put( "=>", 15 ); // lambda TODO Equal to assignment precedence? Do we want that?
 		precedences.put( "=", 15 ); // assignment
 //		precedences.put( "*=", 15 ); // assignment
 //		precedences.put( "/=", 15 ); // assignment
@@ -149,7 +137,7 @@ abstract public class Operator implements Expression
 				if( name.equals( "-" ) )
 					return new Minus( name, left, right );
 				if( name.equals( "->" ) )
-					return new Associate( name, left, right );
+					return new Function( name, left, right );
 				break;
 
 			case '=':
@@ -157,8 +145,6 @@ abstract public class Operator implements Expression
 					return new Assign( name, left, right );
 				if( name.equals( "==" ) )
 					return new Equals( name, left, right );
-				if( name.equals( "=>" ) )
-					return new Function( name, left, right );
 				break;
 
 			case '!':
@@ -202,14 +188,24 @@ abstract public class Operator implements Expression
 					return new Apply( name, left, right );
 				break;
 
+			case '[':
+				if( name.equals( "[" ) )
+					return new Index( name, left, right );
+				break;
+
 			case '.':
 				if( name.equals( "." ) )
 					return new Member( name, left, right );
 				break;
 
+			case '#':
+				if( name.equals( "#" ) )
+					return new StaticMember( name, left, right );
+				break;
+
 			case ':':
 				if( name.equals( ":" ) )
-					return new Associate( name, left, right );
+					return new Label( name, left, right );
 				break;
 
 			case ',':
@@ -252,31 +248,9 @@ abstract public class Operator implements Expression
 				if( name.equals( "!@" ) )
 					return new Not( location, name, right );
 				break;
-
-			case 'n':
-				if( name.equals( "new" ) )
-					return new New( location, name, right );
-				break;
 		}
 		Assert.fail( "Unknown operator " + name );
 		return null;
-	}
-
-	public Expression compile()
-	{
-		if( this.left != null ) this.left = this.left.compile();
-		if( this.right != null ) this.right = this.right.compile();
-		return this;
-	}
-
-	public Expression getLeft()
-	{
-		return this.left;
-	}
-
-	public Expression getRight()
-	{
-		return this.right;
 	}
 
 	static protected Object add( Object left, Object right )
@@ -284,10 +258,10 @@ abstract public class Operator implements Expression
 		if( left instanceof String )
 			return (String)left + right.toString(); // TODO In Java: whenever there is a string anywhere in the addition, everything becomes a string.
 
-		if( left instanceof Scope )
+		if( left instanceof AbstractScope )
 		{
-			Assert.isInstanceOf( right, Scope.class );
-			return new CombinedScope( (Scope)left, (Scope)right );
+			Assert.isInstanceOf( right, AbstractScope.class );
+			return new CombinedScope( (AbstractScope)left, (AbstractScope)right );
 		}
 
 		Assert.isTrue( left instanceof Number || left instanceof Character );
@@ -575,17 +549,6 @@ abstract public class Operator implements Expression
 
 	public SourceLocation getLocation()
 	{
-		if( this.left == null )
-			throw new NullPointerException( getClass().getName() );
 		return this.left.getLocation();
-	}
-
-	public void writeTo( StringBuilder out )
-	{
-		if( this.left != null )
-			this.left.writeTo( out );
-		out.append( this.operator );
-		if( this.right != null )
-			this.right.writeTo( out );
 	}
 }

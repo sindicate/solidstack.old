@@ -18,9 +18,7 @@ package solidstack.script.operators;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
 
-import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.objects.Tuple;
@@ -30,7 +28,7 @@ public class BuildTuple extends Operator
 {
 	private List<Expression> expressions = new ArrayList<Expression>();
 
-	public BuildTuple( String name, Expression left, Expression right )
+	public BuildTuple( String name, Expression left, Expression right)
 	{
 		super( name, null, null );
 		append( left ).append( right );
@@ -42,23 +40,9 @@ public class BuildTuple extends Operator
 		return this;
 	}
 
-	public int size()
-	{
-		return this.expressions.size();
-	}
-
 	public List<Expression> getExpressions()
 	{
 		return this.expressions;
-	}
-
-	@Override
-	public Expression compile()
-	{
-		ListIterator<Expression> i = this.expressions.listIterator();
-		while( i.hasNext() )
-			i.set( i.next().compile() );
-		return this;
 	}
 
 	public Object evaluate( ThreadContext thread )
@@ -79,22 +63,5 @@ public class BuildTuple extends Operator
 	protected void setLast( Expression expression )
 	{
 		this.expressions.set( this.expressions.size() - 1, expression );
-	}
-
-	@Override
-	public void writeTo( StringBuilder out )
-	{
-		boolean first = true;
-		for( Expression expression : this.expressions )
-		{
-			if( first ) first = false; else out.append( ',' );
-			expression.writeTo( out );
-		}
-	}
-
-	@Override
-	public SourceLocation getLocation()
-	{
-		return this.expressions.get( 0 ).getLocation();
 	}
 }

@@ -34,27 +34,11 @@ public class While extends LocalizedExpression
 		this.left = left;
 	}
 
-	public Expression compile()
-	{
-		this.condition = this.condition.compile();
-		this.left = this.left.compile();
-		return this;
-	}
-
 	public Object evaluate( ThreadContext thread )
 	{
 		Object result = null;
 		while( Script.isTrue( this.condition.evaluate( thread ) ) )
-			if( this.left != null )
-				result = this.left.evaluate( thread );
+			result = this.left.evaluate( thread );
 		return result;
-	}
-
-	public void writeTo( StringBuilder out )
-	{
-		out.append( "while(" );
-		this.condition.writeTo( out );
-		out.append( ')' );
-		this.left.writeTo( out );
 	}
 }

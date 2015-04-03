@@ -23,6 +23,7 @@ import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.objects.Tuple;
+import solidstack.script.objects.Util;
 
 
 public class Spread extends Operator
@@ -38,7 +39,7 @@ public class Spread extends Operator
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object object = this.right.evaluate( thread );
+		Object object = Util.deref( this.right.evaluate( thread ) );
 		Assert.isInstanceOf( object, List.class );
 		return new Tuple( (List<Object>)object );
 	}

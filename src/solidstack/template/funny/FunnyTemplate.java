@@ -18,18 +18,17 @@ package solidstack.template.funny;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import solidstack.io.FatalIOException;
 import solidstack.script.Script;
-import solidstack.script.scopes.CombinedScope;
-import solidstack.script.scopes.DefaultScope;
-import solidstack.script.scopes.MapScope;
-import solidstack.script.scopes.ObjectScope;
+import solidstack.script.objects.ObjectMember;
 import solidstack.script.scopes.Scope;
+import solidstack.script.scopes.Symbol;
+import solidstack.script.scopes.TempSymbol;
 import solidstack.template.ConvertingWriter;
 import solidstack.template.EncodingWriter;
 import solidstack.template.Template;
-import funny.Symbol;
 
 
 /**
@@ -39,7 +38,7 @@ import funny.Symbol;
  */
 public class FunnyTemplate extends Template
 {
-	static public final Symbol OUT = Symbol.apply( "out" );
+	static public final Symbol OUT = Symbol.forString( "out" );
 
 	private Script script;
 
@@ -49,29 +48,18 @@ public class FunnyTemplate extends Template
 	}
 
 	@Override
-	public void apply( Object params, EncodingWriter writer )
+	public void apply( Map< String, Object > params, EncodingWriter writer )
 	{
-		FunnyTemplateHelper helper = new FunnyTemplateHelper( this, params, writer );
-
-		// TODO Is this what we want?
-		Scope scope;
-		if( params instanceof Map<?, ?> )
-			scope = new MapScope( (Map<Object, Object>)params );
-		else
-			scope = new ObjectScope( params ); // TODO Test
-
-		scope = new CombinedScope( scope, new ObjectScope( helper ) );
-
-		scope = new DefaultScope( scope );
-
-		/* TODO Do we need the default scope?
-		for( Entry<String, Object> entry : params.entrySet() )
-			scope.var( Symbol.apply( entry.getKey() ), entry.getValue() );
-		*/
-
-		// TODO What about 'this'?
 		ConvertingWriter out = new FunnyConvertingWriter( writer );
-		scope.var( OUT, out );
+
+		Scope scope = new Scope();
+		for( Entry<String, Object> entry : params.entrySet() )
+			scope.def( new TempSymbol( entry.getKey() ), entry.getValue() );
+		// TODO What about 'this'?
+		scope.def( OUT, out );
+
+		FunnyTemplateHelper helper = new FunnyTemplateHelper( this, params, writer );
+		scope.def( Symbol.forString( "include" ), new ObjectMember( helper, "include" ) );
 
 		this.script.eval( scope );
 

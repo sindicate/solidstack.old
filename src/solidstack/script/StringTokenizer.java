@@ -17,8 +17,6 @@
 package solidstack.script;
 
 import solidstack.io.PushbackReader;
-import solidstack.io.SourceException;
-import solidstack.io.SourceLocation;
 import solidstack.io.SourceReader;
 
 
@@ -30,22 +28,14 @@ import solidstack.io.SourceReader;
 public class StringTokenizer extends ScriptTokenizer
 {
 	private boolean found;
-	private boolean doubleQuoted;
 
 
 	/**
 	 * @param in The source reader.
 	 */
-	public StringTokenizer( SourceReader in, boolean doubleQuoted )
+	public StringTokenizer( SourceReader in )
 	{
 		super( in );
-		this.doubleQuoted = doubleQuoted;
-	}
-
-	public StringTokenizer( PushbackReader in, boolean doubleQuoted )
-	{
-		super( in );
-		this.doubleQuoted = doubleQuoted;
 	}
 
 	/**
@@ -54,12 +44,11 @@ public class StringTokenizer extends ScriptTokenizer
 	 *
 	 * @return The fragment. Maybe empty but never null.
 	 */
-	public Fragment getFragment()
+	public String getFragment()
 	{
 		this.found = false;
 		StringBuilder result = clearBuffer();
 		PushbackReader in = getIn();
-		SourceLocation location = in.getLocation();
 
 		while( true )
 		{
@@ -67,35 +56,25 @@ public class StringTokenizer extends ScriptTokenizer
 			switch( ch )
 			{
 				case -1:
-					if( this.doubleQuoted )
-						throw new SourceException( "Missing '\"'", in.getLastLocation() );
-					return new Fragment( location, result.toString() ); // end-of-input: we're done
-
-				case '"':
-					if( this.doubleQuoted )
-						return new Fragment( location, result.toString() ); // end-of-string: we're done
-					break;
+					return result.toString();
 
 				case '$':
 					int ch2 = in.read();
 					if( ch2 == '{' )
 					{
 						this.found = true;
-						return new Fragment( location, result.toString() );
+						return result.toString();
 					}
 					in.push( ch2 );
 					break;
 
 				case '\\':
 					ch2 = in.read();
-					if( this.doubleQuoted && ch2 == '"' )
-						ch = '"';
-					else if( ch2 == '$' )
-						ch = '$';
-					else
+					if( ch2 != '$' )
 						in.push( ch2 );
+					else
+						ch = '$';
 					break;
-
 			}
 			result.append( (char)ch );
 		}
@@ -107,41 +86,5 @@ public class StringTokenizer extends ScriptTokenizer
 	public boolean foundExpression()
 	{
 		return this.found;
-	}
-
-	/**
-	 * A fragment.
-	 */
-	static public class Fragment
-	{
-		private SourceLocation location;
-		private String value;
-
-		Fragment( SourceLocation location, String value )
-		{
-			this.location = location;
-			this.value = value;
-		}
-
-		/**
-		 * @return The location of the token in the source.
-		 */
-		public SourceLocation getLocation()
-		{
-			return this.location;
-		}
-
-		/**
-		 * @return The value of the token.
-		 */
-		public String getValue()
-		{
-			return this.value;
-		}
-
-		public int length()
-		{
-			return this.value.length();
-		}
 	}
 }

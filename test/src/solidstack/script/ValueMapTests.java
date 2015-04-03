@@ -3,9 +3,9 @@ package solidstack.script;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import solidstack.script.scopes.TempSymbol;
 import solidstack.script.scopes.ValueMap;
 import solidstack.script.scopes.ValueMap.Entry;
-import funny.Symbol;
 
 @SuppressWarnings( "javadoc" )
 public class ValueMapTests
@@ -32,9 +32,9 @@ public class ValueMapTests
 
 		for( int i = 0; i < COUNT; i++ )
 		{
-			Symbol key = Symbol.apply( Integer.toString( i ) );
+			String key = Integer.toString( i );
 			TestEntry entry = values.remove( key );
-			Assert.assertEquals( entry.getKey(), key );
+			Assert.assertEquals( entry.getKey().toString(), key );
 		}
 		Assert.assertEquals( values.size(), 0 );
 
@@ -47,9 +47,9 @@ public class ValueMapTests
 		Assert.assertEquals( values.size(), COUNT );
 		for( int i = COUNT - 1; i >= 0; i-- )
 		{
-			Symbol key = Symbol.apply( Integer.toString( i ) );
+			String key = Integer.toString( i );
 			TestEntry entry = values.remove( key );
-			Assert.assertEquals( entry.getKey(), key );
+			Assert.assertEquals( entry.getKey().toString(), key );
 		}
 		Assert.assertEquals( values.size(), 0 );
 	}
@@ -58,7 +58,7 @@ public class ValueMapTests
 	{
 		public TestEntry( String key )
 		{
-			super( Symbol.apply( key ) );
+			super( new TempSymbol( key ) );
 		}
 	}
 }

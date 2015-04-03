@@ -16,7 +16,8 @@
 
 package solidstack.script.operators;
 
-import solidstack.lang.Assert;
+import org.springframework.util.Assert;
+
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;

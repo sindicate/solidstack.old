@@ -16,14 +16,9 @@
 
 package solidstack.script.expressions;
 
-import java.util.Map;
-
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
-import solidstack.script.UndefinedPropertyException;
-import solidstack.script.scopes.GlobalScope;
-import solidstack.script.scopes.UndefinedException;
-import funny.Symbol;
+import solidstack.script.scopes.Symbol;
 
 
 public class Identifier extends LocalizedExpression
@@ -35,7 +30,7 @@ public class Identifier extends LocalizedExpression
 	{
 		super( location );
 
-		this.symbol = Symbol.apply( name );
+		this.symbol = Symbol.forString( name );
 	}
 
 	public Symbol getSymbol()
@@ -43,82 +38,8 @@ public class Identifier extends LocalizedExpression
 		return this.symbol;
 	}
 
-	public Expression compile()
-	{
-		return this;
-	}
-
 	public Object evaluate( ThreadContext thread )
 	{
-		try
-		{
-			return thread.getScope().get( this.symbol );
-		}
-		catch( UndefinedException e )
-		{
-			try
-			{
-				return GlobalScope.instance.get( this.symbol );
-			}
-			catch( UndefinedException f )
-			{
-				throw new UndefinedPropertyException( this.symbol.toString(), thread.cloneStack( getLocation() ) );
-			}
-		}
-	}
-
-	public Object assign( ThreadContext thread, Object value )
-	{
-		thread.getScope().set( this.symbol, value );
-		return value;
-	}
-
-	public Object apply( ThreadContext thread, Object[] args )
-	{
-		try
-		{
-			return thread.getScope().apply( this.symbol, args );
-		}
-		catch( UndefinedException e )
-		{
-			try
-			{
-				return GlobalScope.instance.apply( this.symbol, args );
-			}
-			catch( UndefinedException f )
-			{
-				throw new UndefinedPropertyException( this.symbol.toString(), thread.cloneStack( getLocation() ) );
-			}
-		}
-	}
-
-	public Object apply( ThreadContext thread, Map args )
-	{
-		try
-		{
-			return thread.getScope().apply( this.symbol, args );
-		}
-		catch( UndefinedException e )
-		{
-			try
-			{
-				return GlobalScope.instance.apply( this.symbol, args );
-			}
-			catch( UndefinedException f )
-			{
-				throw new UndefinedPropertyException( this.symbol.toString(), thread.cloneStack( getLocation() ) );
-			}
-		}
-	}
-
-	public void writeTo( StringBuilder out )
-	{
-		out.append( this.symbol );
-	}
-
-	@Override
-	public String toString()
-	{
-		return this.symbol.toString();
+		return thread.getScope().getRef( this.symbol );
 	}
 }

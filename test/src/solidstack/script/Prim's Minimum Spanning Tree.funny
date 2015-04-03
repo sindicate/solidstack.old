@@ -12,48 +12,49 @@
 10.          The priority of (v) is the weight of (u, v)
 */
 
-INFINITY = Integer.MAX_VALUE;
- 
+TreeMap = class( "java.util.TreeMap" );
 
-graph = Map
-(
-	0 -> List( 0,  4,  0,  0,  0,  0,  0,  0,  8 ),
-	1 -> List( 4,  0,  8,  0,  0,  0,  0,  0, 11 ),
-	2 -> List( 0,  8,  0,  7,  0,  4,  2,  0,  0 ),
-	3 -> List( 0,  0,  7,  0,  9, 14,  0,  0,  0 ),
-	4 -> List( 0,  0,  0,  9,  0, 10,  0,  0,  0 ),
-	5 -> List( 0,  0,  4, 14, 10,  0,  0,  2,  0 ),
-	6 -> List( 0,  0,  2,  0,  0,  0,  0,  6,  7 ),
-	7 -> List( 0,  0,  0,  0,  0,  2,  6,  0,  1 ),
-	8 -> List( 8, 11,  0,  0,  0,  0,  7,  1,  0 )
-);
+INFINITY = 100000000;
+ 
+// the graph
 
-prim = ( graph, start ) =>
-{
-	queue = Map();
-    parent = List();
+graph = [
+	0: [ 0,  4,  0,  0,  0,  0,  0,  0,  8 ],
+	1: [ 4,  0,  8,  0,  0,  0,  0,  0, 11 ],
+	2: [ 0,  8,  0,  7,  0,  4,  2,  0,  0 ],
+	3: [ 0,  0,  7,  0,  9, 14,  0,  0,  0 ],
+	4: [ 0,  0,  0,  9,  0, 10,  0,  0,  0 ],
+	5: [ 0,  0,  4, 14, 10,  0,  0,  2,  0 ],
+	6: [ 0,  0,  2,  0,  0,  0,  0,  6,  7 ],
+	7: [ 0,  0,  0,  0,  0,  2,  6,  0,  1 ],
+	8: [ 8, 11,  0,  0,  0,  0,  7,  1,  0 ]
+];
+
+prim = ( graph, start ) -> {
+	
+	queue = [:];
+    parent = [];
  
- 	graph.foreachKey( k => queue( k ) = INFINITY );
+ 	graph.eachKey( k -> queue[ k ] = INFINITY );
  
- 	queue( start ) = 0;
- 	parent( start ) = null;
+ 	queue[ start ] = 0;
+ 	parent[ start ] = null;
  
- 	while( queue )
- 	{
+ 	while( queue; {
+ 	
         // get the minimum value
         min = INFINITY; minKey = -1;
-        queue.foreach( ( key, value ) => if( value < min ) minKey = key, min = value );
+        queue.each( ( key, value ) -> if( value < min; minKey = key, min = value ) );
 
-		graph( minKey ).foreach( ( v, weight ) =>
-            if( weight > 0 && queue.containsKey( v ) && weight < queue( v ) )
-            (
-                parent( v ) = minKey;
-                queue( v ) = weight;
-            )
+		graph[ minKey ].each( ( v, weight ) ->
+            if( weight > 0 && queue.containsKey( v ) && weight < queue[ v ]; (
+                parent[ v ] = minKey;
+                queue[ v ] = weight;
+            ) )
 		);
  
  		queue.remove( minKey );
-    };
+    } );
  
     parent
 };

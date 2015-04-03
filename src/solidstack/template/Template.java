@@ -22,6 +22,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import solidstack.io.Resource;
 import solidstack.template.JSPLikeTemplateParser.Directive;
@@ -44,18 +45,15 @@ abstract public class Template
 
 
 	/**
-	 * Sets the loader that loaded this template. The template needs this to access the MIME type registry.
+	 * Sets the loader of the template. The template needs this to access the MIME type registry.
 	 *
-	 * @param loader The template loader.
+	 * @param loader A template loader.
 	 */
 	protected void setLoader( TemplateLoader loader )
 	{
 		this.loader = loader;
 	}
 
-	/**
-	 * @return The loader that loaded this template.
-	 */
 	public TemplateLoader getLoader()
 	{
 		return this.loader;
@@ -67,7 +65,7 @@ abstract public class Template
 	 * @param params The parameters to be applied.
 	 * @param writer The result of applying this template is written to this writer.
 	 */
-	public void apply( Object params, Writer writer )
+	public void apply( Map< String, Object > params, Writer writer )
 	{
 		apply( params, createEncodingWriter( writer ) );
 	}
@@ -81,7 +79,7 @@ abstract public class Template
 	 */
 	// TODO Test this one
 	// TODO Use default per MIME type too, then use the encoding of the source file, then the operating system
-	public void apply( Object params, OutputStream out )
+	public void apply( Map< String, Object > params, OutputStream out )
 	{
 		Writer writer;
 		if( this.charSet != null )
@@ -106,7 +104,7 @@ abstract public class Template
 	 * @param params The parameters to be applied.
 	 * @return The result of applying this template.
 	 */
-	public String apply( Object params )
+	public String apply( Map< String, Object > params )
 	{
 		StringWriter writer = new StringWriter();
 		apply( params, writer );
@@ -119,7 +117,7 @@ abstract public class Template
 	 * @param params The parameters to apply to the template.
 	 * @param writer The writer to write the result to.
 	 */
-	abstract public void apply( Object params, EncodingWriter writer );
+	abstract public void apply( Map< String, Object > params, EncodingWriter writer );
 
 	/**
 	 * Returns the EncodingWriter for the configured MIME type.
@@ -258,19 +256,11 @@ abstract public class Template
 		this.directives = directives;
 	}
 
-	/**
-	 * Sets the resource that contained this template.
-	 *
-	 * @param resource The resource that contained this template.
-	 */
 	protected void setResource( Resource resource )
 	{
 		this.resource = resource;
 	}
 
-	/**
-	 * @return The resource that contained this template.
-	 */
 	public Resource getResource()
 	{
 		return this.resource;

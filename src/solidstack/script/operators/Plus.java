@@ -18,6 +18,7 @@ package solidstack.script.operators;
 
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
+import solidstack.script.objects.Util;
 
 
 public class Plus extends Operator
@@ -29,8 +30,8 @@ public class Plus extends Operator
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = this.left.evaluate( thread );
-		Object right = this.right.evaluate( thread );
+		Object left = Util.deref( this.left.evaluate( thread ) );
+		Object right = Util.deref( this.right.evaluate( thread ) );
 		return Operator.add( left, right );
 	}
 }

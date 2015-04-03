@@ -16,10 +16,12 @@
 
 package solidstack.script.operators;
 
+import org.springframework.util.Assert;
+
 import solidstack.io.SourceLocation;
-import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
+import solidstack.script.objects.Util;
 
 
 public class Negate extends Operator
@@ -36,7 +38,7 @@ public class Negate extends Operator
 	public Object evaluate( ThreadContext thread )
 	{
 		Assert.isNull( this.left );
-		Object right = this.right.evaluate( thread ); // TODO What about tuples?
+		Object right = Util.deref( this.right.evaluate( thread ) ); // TODO What about tuples?
 		return Operator.negate( right );
 	}
 

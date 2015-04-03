@@ -17,23 +17,17 @@
 package solidstack.script.operators;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import solidstack.script.JavaException;
 import solidstack.script.Returning;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
-import solidstack.script.expressions.Identifier;
 import solidstack.script.java.Java;
+import solidstack.script.objects.ClassMember;
 import solidstack.script.objects.FunctionObject;
-import solidstack.script.objects.Type;
+import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Util;
-import funny.Symbol;
 
 
 public class Apply extends Operator
@@ -45,79 +39,27 @@ public class Apply extends Operator
 
 	public Object evaluate( ThreadContext thread )
 	{
-		if( this.left instanceof New )
-		{
-			Object left = ( (New)this.left ).evaluateForApply( thread );
-			if( !( left instanceof Type ) )
-				throw new ThrowException( "The new operator needs a type argument, not a " + left.getClass().getName(), thread.cloneStack( getLocation() ) );
-
-			Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY;
-
-			Class<?> cls = ( (Type)left ).theClass();
-			try
-			{
-				thread.pushStack( getLocation() );
-				try
-				{
-					return Java.construct( cls, Util.toJavaParameters( pars ) );
-				}
-				finally
-				{
-					thread.popStack();
-				}
-			}
-			catch( InvocationTargetException e )
-			{
-				Throwable t = e.getCause();
-				if( t instanceof Returning )
-					throw (Returning)t;
-				throw new JavaException( t, thread.cloneStack( getLocation() ) );
-			}
-			catch( Exception e )
-			{
-				throw new ThrowException( e.getMessage(), thread.cloneStack( getLocation() ) );
-			}
-		}
-
-		Expression left = this.left;
-
-		// Build parameters
-
-		List<Expression> vals;
-		if( this.right instanceof BuildTuple )
-			vals = ( (BuildTuple)this.right ).getExpressions();
-		else if( this.right != null )
-			vals = Arrays.asList( this.right );
+		Object left;
+		if( this.left instanceof Member )
+			left = ( (Member)this.left ).evaluateForApply( thread );
+		else if( this.left instanceof StaticMember )
+			left = ( (StaticMember)this.left ).evaluateForApply( thread );
 		else
-			vals = Collections.emptyList();
+			left = this.left.evaluate( thread );
+		left = Util.deref( left );
 
-		if( !vals.isEmpty() && vals.get( 0 ) instanceof Assign )
+		if( left == null )
+			throw new ThrowException( "Function is null", thread.cloneStack( getLocation() ) );
+
+		Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY;
+
+		if( left instanceof FunctionObject )
 		{
-			Map<Symbol, Object> args = new HashMap<Symbol, Object>();
-			for( Expression expression : vals )
-			{
-				if( !( expression instanceof Assign ) )
-					throw new ThrowException( "All parameters must be named", thread.cloneStack( expression.getLocation() ) );
-				Assign assign = (Assign)expression;
-				if( !( assign.left instanceof Identifier ) )
-					throw new ThrowException( "Parameter must be named with a variable identifier", thread.cloneStack( assign.left.getLocation() ) );
-				args.put( ( (Identifier)assign.left ).getSymbol(), assign.right.evaluate( thread ) ); // TODO Error message
-			}
-
+			FunctionObject f = (FunctionObject)left;
 			thread.pushStack( getLocation() );
 			try
 			{
-				if( left instanceof Member )
-					return ( (Member)left ).apply( thread, args );
-
-				if( left instanceof Identifier )
-					return ( (Identifier)left ).apply( thread, args );
-
-				Object l = left.evaluate( thread );
-				if( l instanceof FunctionObject )
-					return ( (FunctionObject)l ).call( thread, args );
-
-				throw new ThrowException( "Can't apply named parameters to a Java object", thread.cloneStack() );
+				return f.call( thread, pars );
 			}
 			finally
 			{
@@ -125,59 +67,63 @@ public class Apply extends Operator
 			}
 		}
 
-		for( Expression expression : vals )
-			if( expression instanceof Assign )
-				throw new ThrowException( "All parameters must be named", thread.cloneStack( expression.getLocation() ) );
-		Object[] args = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY;
-
-		thread.pushStack( getLocation() );
 		try
 		{
-			if( left instanceof Member )
-				return ( (Member)left ).apply( thread, args );
-
-			if( left instanceof Identifier )
-				return ( (Identifier)left ).apply( thread, args );
-
-			Object l = left.evaluate( thread );
-			if( l instanceof FunctionObject )
-				return ( (FunctionObject)l ).call( thread, args );
-
-			args = Util.toJavaParameters( args );
-			try
+			if( left instanceof ObjectMember )
 			{
-				return Java.invoke( l, "apply", args );
+				ObjectMember f = (ObjectMember)left;
+				thread.pushStack( getLocation() );
+				try
+				{
+					return Java.invoke( f.getObject(), f.getName(), Util.toJavaParameters( pars, thread ) );
+				}
+				finally
+				{
+					thread.popStack();
+				}
 			}
-			catch( InvocationTargetException e )
+
+			if( left instanceof ClassMember )
 			{
-				Throwable t = e.getCause();
-				if( t instanceof Returning )
-					throw (Returning)t;
-				throw new JavaException( t, thread.cloneStack( getLocation() ) );
+				ClassMember f = (ClassMember)left;
+				thread.pushStack( getLocation() );
+				try
+				{
+					return Java.invokeStatic( f.getType(), f.getName(), Util.toJavaParameters( pars, thread ) );
+				}
+				finally
+				{
+					thread.popStack();
+				}
 			}
-			catch( Returning e )
+
+			if( left instanceof Class )
 			{
-				throw e;
-			}
-			catch( Exception e )
-			{
-				throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), thread.cloneStack( getLocation() ) );
-	//			throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
+				Class<?> cls = (Class<?>)left;
+				thread.pushStack( getLocation() );
+				try
+				{
+					return Java.construct( cls, Util.toJavaParameters( pars, thread ) );
+				}
+				finally
+				{
+					thread.popStack();
+				}
 			}
 		}
-		finally
+		catch( InvocationTargetException e )
 		{
-			thread.popStack();
+			Throwable t = e.getCause();
+			if( t instanceof Returning )
+				throw (Returning)t;
+			throw new JavaException( t, thread.cloneStack( getLocation() ) );
 		}
-	}
+		catch( Exception e )
+		{
+			throw new ThrowException( e.getMessage(), thread.cloneStack( getLocation() ) );
+//			throw new JavaException( e, thread.cloneStack( getLocation() ) );
+		}
 
-	@Override
-	public void writeTo( StringBuilder out )
-	{
-		this.left.writeTo( out );
-		out.append( '(' );
-		if( this.right != null )
-			this.right.writeTo( out );
-		out.append( ')' );
+		throw new ThrowException( "Can't apply parameters to a " + left.getClass().getName(), thread.cloneStack( getLocation() ) );
 	}
 }

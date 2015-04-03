@@ -160,12 +160,12 @@ public class Query
 	 * Retrieves a {@link ResultSet} from the given {@link Connection}.
 	 *
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return a {@link ResultSet}.
-	 * @see #resultSet(Connection, Object)
+	 * @see #resultSet(Connection, Map)
 	 */
 	// TODO Test the args map with groovy script.
-	public ResultSet resultSet( Connection connection, Object args )
+	public ResultSet resultSet( Connection connection, Map< String, Object > args )
 	{
 		try
 		{
@@ -182,10 +182,10 @@ public class Query
 	 * Retrieves a {@link List} of {@link Object} arrays from the given {@link Connection}.
 	 *
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return A {@link List} of {@link Object} arrays from the given {@link Connection}.
 	 */
-	public List< Object[] > listOfArrays( Connection connection, Object args )
+	public List< Object[] > listOfArrays( Connection connection, Map< String, Object > args )
 	{
 		ResultSet resultSet = resultSet( connection, args );
 		try
@@ -278,38 +278,25 @@ public class Query
 	 * Retrieve a {@link List} of {@link Map}s from the given {@link Connection}. The maps contain the column names from the query as keys and the column values as the map's values.
 	 *
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return A {@link List} of {@link Map}s.
 	 */
-	public List< Map< String, Object > > listOfMaps( Connection connection, Object args )
-	{
-		ResultSet resultSet = resultSet( connection, args );
-		try
-		{
-			return listOfMaps( resultSet, this.flyWeight );
-		}
-		finally
-		{
-			close( resultSet );
-		}
-	}
-
-	/**
-	 * Converts a {@link ResultSet} into a {@link List} of {@link Map}s.
-	 * The maps contain the column names from the query as keys and the column values as the map's values.
-	 *
-	 * @param resultSet The {@link ResultSet} to convert.
-	 * @param flyWeight If true, duplicate values are stored in memory only once.
-	 * @return A {@link List} of {@link Map}s.
-	 */
-	static public List< Map< String, Object > > listOfMaps( ResultSet resultSet, boolean flyWeight )
+	public List< Map< String, Object > > listOfMaps( Connection connection, Map< String, Object > args )
 	{
 		try
 		{
-			// DETERMINE THE LOWERCASE NAMES IN ADVANCE!!! Otherwise the names will not be shared in memory.
-			Map< String, Integer > names = getColumnLabelMap( resultSet.getMetaData() );
-			List< Object[] > result = listOfArrays( resultSet, flyWeight );
-			return new ResultList( result, names );
+			ResultSet resultSet = resultSet( connection, args );
+			try
+			{
+				// DETERMINE THE LOWERCASE NAMES IN ADVANCE!!! Otherwise the names will not be shared in memory.
+				Map< String, Integer > names = getColumnLabelMap( resultSet.getMetaData() );
+				List< Object[] > result = listOfArrays( resultSet, this.flyWeight );
+				return new ResultList( result, names );
+			}
+			finally
+			{
+				close( resultSet );
+			}
 		}
 		catch( SQLException e )
 		{
@@ -339,11 +326,11 @@ public class Query
 	 * Executes an update (DML) or a DDL query.
 	 *
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 * @throws SQLException Whenever the query caused an {@link SQLException}.
 	 */
-	public int updateChecked( Connection connection, Object args ) throws SQLException
+	public int updateChecked( Connection connection, Map< String, Object > args ) throws SQLException
 	{
 		return getPreparedStatement( connection, args ).executeUpdate();
 	}
@@ -352,10 +339,10 @@ public class Query
 	 * Executes an update (DML) or a DDL query. {@link SQLException}s are wrapped in a {@link QueryException}.
 	 *
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 */
-	public int update( Connection connection, Object args )
+	public int update( Connection connection, Map< String, Object > args )
 	{
 		try
 		{
@@ -371,10 +358,10 @@ public class Query
 	 * Returns a {@link PreparedStatement} for the query.
 	 *
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return a {@link PreparedStatement} for the query.
 	 */
-	public PreparedStatement getPreparedStatement( Connection connection, Object args )
+	public PreparedStatement getPreparedStatement( Connection connection, Map< String, Object > args )
 	{
 		PreparedSQL preparedSql = getPreparedSQL( args );
 		List< Object > pars = preparedSql.getParameters();
@@ -432,10 +419,10 @@ public class Query
 	/**
 	 * Returns a prepared SQL string together with a parameters array.
 	 *
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return A prepared SQL string together with a parameters array.
 	 */
-	public PreparedSQL getPreparedSQL( Object args )
+	public PreparedSQL getPreparedSQL( Map< String, Object > args )
 	{
 		QueryEncodingWriter gsql = new QueryEncodingWriter();
 		this.template.apply( args, gsql );

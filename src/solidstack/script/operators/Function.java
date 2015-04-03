@@ -19,8 +19,8 @@ package solidstack.script.operators;
 import java.util.ArrayList;
 import java.util.List;
 
-import solidstack.io.SourceLocation;
-import solidstack.lang.Assert;
+import org.springframework.util.Assert;
+
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Block;
 import solidstack.script.expressions.Expression;
@@ -33,15 +33,12 @@ public class Function extends Operator
 {
 	private Expression[] parameters;
 	private boolean subScope;
-	private SourceLocation location;
 
 	public Function( String name, Expression args, Expression block )
 	{
-		super( name, null, block );
+		super( name, args, block );
 
-		this.location = args.getLocation();
-
-		if( args instanceof Parenthesis )
+		while( args instanceof Parenthesis )
 			args = ( (Parenthesis)args ).getExpression();
 
 		List<Expression> parameters = new ArrayList<Expression>();
@@ -49,13 +46,13 @@ public class Function extends Operator
 		{
 			for( Expression par : ( (BuildTuple)args ).getExpressions() )
 			{
-				Assert.isTrue( par instanceof Spread || par instanceof Identifier || par instanceof Assign );
+				Assert.isTrue( par instanceof Spread || par instanceof Identifier );
 				parameters.add( par );
 			}
 		}
 		else if( args != null )
 		{
-			Assert.isTrue( args instanceof Spread || args instanceof Identifier || args instanceof Assign, "not: " + args.getClass().getName() );
+			Assert.isTrue( args instanceof Spread || args instanceof Identifier );
 			parameters.add( args );
 		}
 		this.parameters = parameters.toArray( new Expression[ parameters.size() ] );
@@ -85,27 +82,5 @@ public class Function extends Operator
 	public boolean subScope()
 	{
 		return this.subScope;
-	}
-
-	@Override
-	public void writeTo( StringBuilder out )
-	{
-		this.left.writeTo( out );
-		out.append( this.operator );
-		if( this.subScope )
-			out.append( '{' );
-		else
-			out.append( '(' );
-		this.right.writeTo( out );
-		if( this.subScope )
-			out.append( '}' );
-		else
-			out.append( ')' );
-	}
-
-	@Override
-	public SourceLocation getLocation()
-	{
-		return this.location;
 	}
 }

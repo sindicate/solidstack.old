@@ -16,30 +16,23 @@
 
 package solidstack.script.operators;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
-
 import solidstack.lang.Assert;
-import solidstack.script.JavaException;
-import solidstack.script.Returning;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
-import solidstack.script.UndefinedPropertyException;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.java.Java;
 import solidstack.script.java.MissingFieldException;
-import solidstack.script.objects.Type;
+import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Util;
-import solidstack.script.scopes.Scope;
+import solidstack.script.scopes.AbstractScope;
 import solidstack.script.scopes.ScopeException;
-import solidstack.script.scopes.UndefinedException;
-import funny.Symbol;
+import solidstack.script.scopes.Symbol;
 
 
 public class Member extends Operator
 {
-	public Member( String name, Expression left, Expression right )
+	public Member( String name, Expression left, Expression right)
 	{
 		super( name, left, right );
 	}
@@ -48,38 +41,15 @@ public class Member extends Operator
 	{
 		try
 		{
-			Object left = this.left.evaluate( thread );
+			Object left = Util.deref( this.left.evaluate( thread ) );
 			Assert.isInstanceOf( this.right, Identifier.class );
 			Symbol right = ( (Identifier)this.right ).getSymbol();
-			if( left == null )
-				// TODO Use the Java exception hierarchy
-				throw new ThrowException( "null reference: member: " + right.toString(), thread.cloneStack( getLocation() ) );
-			if( left instanceof Scope ) // TODO This is part of the OO we want
-			{
-				Scope scope = (Scope)left;
-				try
-				{
-					return scope.get( right );
-				}
-				catch( UndefinedException e )
-				{
-					throw new UndefinedPropertyException( right.toString(), thread.cloneStack( getLocation() ) );
-				}
-			}
-			if( left instanceof Map )
-				return ( (Map)left ).get( right.toString() );
+			Assert.isFalse( left == null, "member: " + right.toString() );
+			if( left instanceof AbstractScope ) // TODO This is part of the OO we want
+				return ( (AbstractScope)left ).getRef( right );
 			try
 			{
-				if( left instanceof Type )
-					return Java.getStatic( ( (Type)left ).theClass(), right.toString() );
 				return Java.get( left, right.toString() );
-			}
-			catch( InvocationTargetException e )
-			{
-				Throwable t = e.getCause();
-				if( t instanceof Returning )
-					throw (Returning)t;
-				throw new JavaException( t, thread.cloneStack( getLocation() ) );
 			}
 			catch( MissingFieldException e )
 			{
@@ -92,93 +62,22 @@ public class Member extends Operator
 		}
 	}
 
-	public Object assign( ThreadContext thread, Object value )
+	public Object evaluateForApply( ThreadContext thread )
 	{
-		Object object = this.left.evaluate( thread );
-		Symbol symbol = ( (Identifier)this.right ).getSymbol();
-
-		if( object instanceof Map )
-		{
-			( (Map)object ).put( symbol.toString(), value );
-			return value;
-		}
-
-		if( object instanceof Scope )
-		{
-			( (Scope)object ).set( symbol, value );
-			return value;
-		}
-
 		try
 		{
-			if( object instanceof Type )
-				Java.setStatic( ( (Type)object ).theClass(), symbol.toString(), value );
-			else
-				Java.set( object, symbol.toString(), value );
-			return value;
+			Object left = Util.deref( this.left.evaluate( thread ) );
+			Assert.isInstanceOf( this.right, Identifier.class );
+			Symbol right = ( (Identifier)this.right ).getSymbol();
+			Assert.isFalse( left == null, "member: " + right.toString() );
+			if( left instanceof AbstractScope ) // TODO This is part of the OO we want
+				return ( (AbstractScope)left ).getRef( right );
+			// TODO Also read properties to look for Functions
+			return new ObjectMember( left, right.toString() );
 		}
-		catch( InvocationTargetException e )
+		catch( ScopeException e )
 		{
-			Throwable t = e.getCause();
-			if( t instanceof Returning )
-				throw (Returning)t;
-			throw new JavaException( t, thread.cloneStack( getLocation() ) );
+			throw new ThrowException( e.getMessage(), thread.cloneStack( getLocation() ) );
 		}
-		catch( Returning e )
-		{
-			throw e;
-		}
-		catch( Exception e )
-		{
-			throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), thread.cloneStack( getLocation() ) );
-//			throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
-		}
-	}
-
-	public Object apply( ThreadContext thread, Object[] pars )
-	{
-		Object object = this.left.evaluate( thread );
-		Symbol symbol = ( (Identifier)this.right ).getSymbol();
-
-		if( object instanceof Scope ) // TODO And Map?
-		{
-			try
-			{
-				return ( (Scope)object ).apply( symbol, pars );
-			}
-			catch( UndefinedException e )
-			{
-				throw new UndefinedPropertyException( symbol.toString(), thread.cloneStack() );
-			}
-		}
-
-		pars = Util.toJavaParameters( pars );
-		try
-		{
-			if( object instanceof Type )
-				return Java.invokeStatic( ( (Type)object ).theClass(), symbol.toString(), pars );
-			return Java.invoke( object, symbol.toString(), pars );
-		}
-		catch( InvocationTargetException e )
-		{
-			Throwable t = e.getCause();
-			if( t instanceof Returning )
-				throw (Returning)t;
-			throw new JavaException( t, thread.cloneStack( getLocation() ) );
-		}
-		catch( Returning e )
-		{
-			throw e;
-		}
-		catch( Exception e )
-		{
-			throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), thread.cloneStack( getLocation() ) );
-//			throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
-		}
-	}
-
-	public Object apply( ThreadContext thread, Map args )
-	{
-		throw new UnsupportedOperationException();
 	}
 }

@@ -18,7 +18,6 @@ package solidstack.script.operators;
 
 import solidstack.script.Script;
 import solidstack.script.ThreadContext;
-import solidstack.script.UndefinedPropertyException;
 import solidstack.script.expressions.Expression;
 
 
@@ -31,16 +30,9 @@ public class And extends Operator
 
 	public Object evaluate( ThreadContext thread )
 	{
-		try
-		{
-			Object left = this.left.evaluate( thread );
-			if( !Script.isTrue( left ) )
-				return left;
-		}
-		catch( UndefinedPropertyException e ) // TODO But what if deeper into the expression this exception is thrown?
-		{
-			return null;
-		}
+		Object left = this.left.evaluate( thread );
+		if( !Script.isTrue( left ) )
+			return left;
 		return this.right.evaluate( thread );
 	}
 }

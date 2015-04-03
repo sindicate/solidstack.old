@@ -38,17 +38,9 @@ public class If extends LocalizedExpression
 		this.right = right;
 	}
 
-	public Expression compile()
-	{
-		this.condition = this.condition.compile();
-		if( this.left != null ) this.left = this.left.compile();
-		if( this.right != null ) this.right = this.right.compile();
-		return this;
-	}
-
 	public Object evaluate( ThreadContext thread )
 	{
-		if( Script.isTrue( thread, this.condition ) )
+		if( Script.isTrue( this.condition.evaluate( thread ) ) )
 		{
 			if( this.left != null )
 				return this.left.evaluate( thread );
@@ -59,18 +51,5 @@ public class If extends LocalizedExpression
 				return this.right.evaluate( thread );
 		}
 		return null;
-	}
-
-	public void writeTo( StringBuilder out )
-	{
-		out.append( "if(" );
-		this.condition.writeTo( out );
-		out.append( ')' );
-		this.left.writeTo( out );
-		if( this.right != null )
-		{
-			out.append( " else " );
-			this.right.writeTo( out );
-		}
 	}
 }

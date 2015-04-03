@@ -16,12 +16,9 @@
 
 package solidstack.script.scopes;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-
-import funny.Symbol;
 
 
 
@@ -39,6 +36,7 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<Symbol, T>
 	private int threshold = (int)( this.entries.length * LOAD_FACTOR );
 
 
+	// TODO Work with Identifier instead of String. That way we can pre-compute the hash.
 	public T get( Object key )
 	{
 		if( key == null )
@@ -113,18 +111,15 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<Symbol, T>
 	{
 		if( key == null )
 			throw new NullPointerException( "key" );
-		if( !( key instanceof Symbol ) )
-			throw new IllegalArgumentException( "Only symbols can be keys" );
 
-		Symbol symbol = (Symbol)key;
-		int hash = symbol.hashCode();
+		int hash = key.hashCode();
 		int index = hash & this.entries.length - 1;
 
 		Entry entry = this.entries[ index ];
 		Entry last = null;
 		while( entry != null ) // Loop till we find it
 		{
-			if( entry.isKeyEqual( symbol ) )
+			if( entry.key.equals( key ) )
 			{
 				this.size--;
 				if( last == null )
@@ -238,12 +233,6 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<Symbol, T>
 		}
 	}
 
-	public void clear()
-	{
-		Arrays.fill( this.entries, null );
-		this.size = 0;
-	}
-
 	public boolean isEmpty()
 	{
 		throw new UnsupportedOperationException();
@@ -260,6 +249,11 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<Symbol, T>
 	}
 
 	public void putAll( Map<? extends Symbol, ? extends T> m )
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	public void clear()
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -287,35 +281,54 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<Symbol, T>
 		// Can't make this private, else it won't compile on Java 7. Added ___ to prevent name shadowing by subclasses.
 		Entry ___next;
 		private Symbol symbol;
+		private String key;
+		private int hashCode;
+		// TODO Replace key/hashCode with symbol when it is available during the isKeyEqual execution
 
 		protected Entry( Symbol symbol )
 		{
-			this.symbol = symbol;
+			if( symbol instanceof TempSymbol )
+			{
+				this.key = symbol.toString();
+				this.hashCode = symbol.hashCode();
+			}
+			else
+				this.symbol = symbol;
 		}
 
 		public Symbol getKey()
 		{
-			return this.symbol;
+			if( this.symbol != null )
+				return this.symbol;
+			return new TempSymbol( this.key, this.hashCode );
 		}
 
 		public String getName()
 		{
-			return this.symbol.toString();
+			if( this.symbol != null )
+				return this.symbol.toString();
+			return this.key;
 		}
 
 		int getKeyHashCode()
 		{
-			return this.symbol.hashCode();
+			if( this.symbol != null )
+				return this.symbol.hashCode();
+			return this.hashCode;
 		}
 
 		boolean isKeyEqual( Entry other )
 		{
-			return this.symbol == other.symbol;
+			if( other.symbol != null || this.symbol != null )
+				return this.symbol == other.symbol;
+			return getName().equals( other.getName() );
 		}
 
 		boolean isKeyEqual( Symbol symbol )
 		{
-			return this.symbol == symbol;
+			if( this.symbol != null )
+				return this.symbol.equals( symbol );
+			return getName().equals( symbol.toString() );
 		}
 	}
 }
