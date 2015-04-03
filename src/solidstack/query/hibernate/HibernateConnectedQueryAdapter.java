@@ -26,6 +26,7 @@ import org.hibernate.Session;
 import org.hibernate.StatelessSession;
 
 import solidstack.query.Query;
+import solidstack.query.DataList;
 
 
 /**
@@ -90,11 +91,11 @@ public class HibernateConnectedQueryAdapter
 	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return A {@link List} of {@link Map}s.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
-	 * @see Query#listOfMaps(Connection, Object)
+	 * @see Query#dataList(Connection, Object)
 	 */
-	public List< Map< String, Object > > listOfMaps( Object args )
+	public DataList dataList( Object args )
 	{
-		return HibernateSupport.listOfMaps( this.query, this.session, args );
+		return HibernateSupport.dataList( this.query, this.session, args );
 	}
 
 	/**

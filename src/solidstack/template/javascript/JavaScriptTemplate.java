@@ -30,6 +30,7 @@ import solidstack.io.FatalIOException;
 import solidstack.template.ConvertingWriter;
 import solidstack.template.EncodingWriter;
 import solidstack.template.Template;
+import solidstack.template.TemplateContext;
 
 
 /**
@@ -85,5 +86,11 @@ public class JavaScriptTemplate extends Template
 		{
 			Context.exit();
 		}
+	}
+
+	@Override
+	public void apply( TemplateContext context )
+	{
+		apply( context.getParameters(), context.getWriter() );
 	}
 }

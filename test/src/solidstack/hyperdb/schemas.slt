@@ -1,22 +1,22 @@
-<%@ template version="1.0" language="funny" contentType="text/html; charset=UTF-8" %>
+<%@ template version="1.0" language="groovy" contentType="text/html; charset=UTF-8" %>
 <%@ template import="solidstack.hyperdb.*" %>
 <%
-include( template: "/template", title: "Schemas", body: () -> (
-	databaseName = request.getParameter( "database" );
-	user = request.getParameter( "user" );
-	connections = session.getAttribute( "connections" );
-	connectionHolder = connections.getConnection( databaseName, user );
-	connection = connectionHolder.getConnection();
-	database = connectionHolder.getDatabase();
-	schemas = database.getSchemas( connection ).values();
+include( template: "/template", title: "Schemas", body: {
+	def databaseName = request.getParameter( "database" )
+	def user = request.getParameter( "user" )
+	def connections = session.getAttribute( "connections" )
+	def connectionHolder = connections.getConnection( databaseName, user )
+	def connection = connectionHolder.connection
+	def database = connectionHolder.database
+	def schemas = database.getSchemas( connection ).values();
 %>
 		<table id="tables">
 			<tr><th>Schema</th><th># tables</th><th># views</th></tr>
-<%	schemas.each( schema -> ( %>
+<%		for( def schema : schemas ) { %>
 			<tr><td>${schema.name}</td><td>${schema.tableCount}</td><td>${schema.viewCount}</td></tr>
-<%	) ) %>
+<%		} %>
 		</table>
-<% ) ) %>
+<% } ) %>
 		<script>
 			function dataRowClick()
 			{

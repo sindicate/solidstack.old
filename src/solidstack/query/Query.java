@@ -22,11 +22,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -37,6 +37,8 @@ import solidstack.query.hibernate.HibernateConnectedQueryAdapter;
 import solidstack.query.hibernate.HibernateQueryAdapter;
 import solidstack.query.jpa.JPAConnectedQueryAdapter;
 import solidstack.query.jpa.JPAQueryAdapter;
+import solidstack.query.mapper.Entity;
+import solidstack.query.mapper.Key;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.Template;
 
@@ -68,7 +70,7 @@ public class Query
 	}
 
 	private Template template;
-	private boolean flyWeight = true;
+	private boolean flyWeight = true; // TODO Modes: GLOBAL, GLOBAL(local dates), GLOBAL(no dates), LOCAL, LOCAL(no dates), NO
 	private Language language;
 
 
@@ -169,7 +171,8 @@ public class Query
 	{
 		try
 		{
-			PreparedStatement statement = getPreparedStatement( connection, args );
+			PreparedQuery prepared = prepare( args );
+			PreparedStatement statement = prepared.prepareStatement( connection );
 			return statement.executeQuery();
 		}
 		catch( SQLException e )
@@ -275,64 +278,60 @@ public class Query
 	}
 
 	/**
-	 * Retrieve a {@link List} of {@link Map}s from the given {@link Connection}. The maps contain the column names from the query as keys and the column values as the map's values.
+	 * Retrieve multiple RowLists from the given {@link Connection}. One RowList is returned for each defined entity in the result model of the query.
 	 *
 	 * @param connection The {@link Connection} to use.
 	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
-	 * @return A {@link List} of {@link Map}s.
+	 * @return A RowList.
 	 */
-	public List< Map< String, Object > > listOfMaps( Connection connection, Object args )
+	public DataList[] dataLists( Connection connection, Object args )
 	{
-		ResultSet resultSet = resultSet( connection, args );
 		try
 		{
-			return listOfMaps( resultSet, this.flyWeight );
+			PreparedQuery prepared = prepare( args );
+			PreparedStatement statement = prepared.prepareStatement( connection ); // FIXME We should close the statement here!
+			ResultSet resultSet = statement.executeQuery();
+			try
+			{
+				ResultSetMetaData metaData = resultSet.getMetaData();
+				int columnCount = metaData.getColumnCount();
+
+				// Determine the upper case names in advance
+				String[] names = new String[ columnCount ];
+				for( int col = 0; col < columnCount; col++ )
+					names[ col ] = metaData.getColumnLabel( col + 1 ).toUpperCase( Locale.ENGLISH );
+
+				DataObjectType type = new DataObjectType( names );
+
+				List<Object[]> tuples = listOfArrays( resultSet, this.flyWeight );
+				DataList rowList = new DataList( type, tuples );
+
+				if( prepared.getResultModel() != null )
+					return transform( rowList, prepared.getResultModel() );
+
+				return new DataList[] { rowList };
+			}
+			finally
+			{
+				close( resultSet );
+			}
 		}
-		finally
+		catch( SQLException e )
 		{
-			close( resultSet );
+			throw new QuerySQLException( e );
 		}
 	}
 
 	/**
-	 * Converts a {@link ResultSet} into a {@link List} of {@link Map}s.
-	 * The maps contain the column names from the query as keys and the column values as the map's values.
+	 * Retrieve a RowList from the given {@link Connection}.
 	 *
-	 * @param resultSet The {@link ResultSet} to convert.
-	 * @param flyWeight If true, duplicate values are stored in memory only once.
-	 * @return A {@link List} of {@link Map}s.
+	 * @param connection The {@link Connection} to use.
+	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @return A RowList.
 	 */
-	static public List< Map< String, Object > > listOfMaps( ResultSet resultSet, boolean flyWeight )
+	public DataList dataList( Connection connection, Object args )
 	{
-		try
-		{
-			// DETERMINE THE LOWERCASE NAMES IN ADVANCE!!! Otherwise the names will not be shared in memory.
-			Map< String, Integer > names = getColumnLabelMap( resultSet.getMetaData() );
-			List< Object[] > result = listOfArrays( resultSet, flyWeight );
-			return new ResultList( result, names );
-		}
-		catch( SQLException e )
-		{
-			throw new QuerySQLException( e );
-		}
-	}
-
-	static public Map< String, Integer > getColumnLabelMap( ResultSetMetaData metaData )
-	{
-		try
-		{
-			int columnCount = metaData.getColumnCount();
-
-			Map< String, Integer > names = new HashMap< String, Integer >();
-			for( int col = 0; col < columnCount; col++ )
-				names.put( metaData.getColumnLabel( col + 1 ).toLowerCase( Locale.ENGLISH ), col );
-
-			return names;
-		}
-		catch( SQLException e )
-		{
-			throw new QuerySQLException( e );
-		}
+		return dataLists( connection, args )[ 0 ];
 	}
 
 	/**
@@ -376,33 +375,8 @@ public class Query
 	 */
 	public PreparedStatement getPreparedStatement( Connection connection, Object args )
 	{
-		PreparedSQL preparedSql = getPreparedSQL( args );
-		List< Object > pars = preparedSql.getParameters();
-
-		try
-		{
-			PreparedStatement statement = connection.prepareStatement( preparedSql.getSQL() );
-			int i = 0;
-			for( Object par : pars )
-			{
-				if( par == null )
-				{
-					// Tested in Oracle with an INSERT
-					statement.setNull( ++i, Types.NULL );
-				}
-				else
-				{
-					Assert.isFalse( par instanceof Collection );
-					Assert.isFalse( par.getClass().isArray() );
-					statement.setObject( ++i, par );
-				}
-			}
-			return statement;
-		}
-		catch( SQLException e )
-		{
-			throw new QuerySQLException( e );
-		}
+		PreparedQuery query = prepare( args );
+		return query.prepareStatement( connection );
 	}
 
 	static private void appendParameter( Object object, String name, StringBuilder buildSql, List< Object > pars )
@@ -435,10 +409,11 @@ public class Query
 	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return A prepared SQL string together with a parameters array.
 	 */
-	public PreparedSQL getPreparedSQL( Object args )
+	public PreparedQuery prepare( Object args )
 	{
 		QueryEncodingWriter gsql = new QueryEncodingWriter();
-		this.template.apply( args, gsql );
+		QueryContext context = new QueryContext( this.template, args, gsql );
+		this.template.apply( context );
 
 		List< Object > pars = new ArrayList< Object >();
 		StringBuilder result = new StringBuilder();
@@ -454,46 +429,52 @@ public class Query
 				result.append( (String)values.get( i ) );
 
 		if( Loggers.execution.isDebugEnabled() )
+			log( result, pars );
+
+		if( context.getResultModel() != null )
+			context.getResultModel().link();
+
+		return new PreparedQuery( result.toString(), pars, context.getResultModel() );
+	}
+
+	private void log( StringBuilder result, List<Object> pars )
+	{
+		StringBuilder debug = new StringBuilder();
+		debug.append( "Prepare statement: " ).append( this.template.getPath() ).append( '\n' );
+		if( Loggers.execution.isTraceEnabled() )
+			debug.append( result ).append( '\n' );
+		debug.append( "Parameters:" );
+		if( pars.size() == 0 )
+			debug.append( "\n\t(none)" );
+		int i = 1;
+		for( Object par : pars )
 		{
-			StringBuilder debug = new StringBuilder();
-			debug.append( "Prepare statement: " ).append( this.template.getPath() ).append( '\n' );
-			if( Loggers.execution.isTraceEnabled() )
-				debug.append( result ).append( '\n' );
-			debug.append( "Parameters:" );
-			if( pars.size() == 0 )
-				debug.append( "\n\t(none)" );
-			int i = 1;
-			for( Object par : pars )
+			debug.append( '\n' ).append( i++ ).append( ":\t" );
+			if( par == null )
+				debug.append( "(null)" );
+			else
 			{
-				debug.append( '\n' ).append( i++ ).append( ":\t" );
-				if( par == null )
-					debug.append( "(null)" );
+				debug.append( '(' ).append( par.getClass().getName() ).append( ')' );
+				if( !par.getClass().isArray() )
+					debug.append( par.toString() );
 				else
 				{
-					debug.append( '(' ).append( par.getClass().getName() ).append( ')' );
-					if( !par.getClass().isArray() )
-						debug.append( par.toString() );
-					else
+					debug.append( '[' );
+					int size = Array.getLength( par );
+					for( int j = 0; j < size; j++ )
 					{
-						debug.append( '[' );
-						int size = Array.getLength( par );
-						for( int j = 0; j < size; j++ )
-						{
-							if( j > 0 )
-								debug.append( ',' );
-							debug.append( Array.get( par, j ) );
-						}
-						debug.append( ',' );
+						if( j > 0 )
+							debug.append( ',' );
+						debug.append( Array.get( par, j ) );
 					}
+					debug.append( ',' );
 				}
 			}
-			if( Loggers.execution.isTraceEnabled() )
-				Loggers.execution.trace( debug.toString() );
-			else
-				Loggers.execution.debug( debug.toString() );
 		}
-
-		return new PreparedSQL( result.toString(), pars );
+		if( Loggers.execution.isTraceEnabled() )
+			Loggers.execution.trace( debug.toString() );
+		else
+			Loggers.execution.debug( debug.toString() );
 	}
 
 	static private void appendExtraQuestionMarks( StringBuilder s, int count )
@@ -505,46 +486,256 @@ public class Query
 		}
 	}
 
-	/**
-	 * Prepared SQL combined with a parameter list.
-	 *
-	 * @author René de Bloois
-	 */
-	static public class PreparedSQL
+	// TODO Maybe this can be part of the ResultList
+	// TODO result & model relate case insensitive with each other
+	// TODO List<Object[]> -> TupleList
+	// TODO But there can be different types in the same rowlist
+	// TODO Need a root to collect multiple types when the main list contains multiple types
+	static private DataList[] transform( DataList result, ResultModel model )
 	{
-		private String sql;
-		private List< Object > pars;
+//		new Dumper().dumpTo( result, new File( "result.out" ) );
 
-		/**
-		 * Constructor.
-		 *
-		 * @param sql The prepared SQL string.
-		 * @param pars The parameter list.
-		 */
-		protected PreparedSQL( String sql, List< Object > pars )
+		List<Entity> entities = model.getEntities();
+		E[] es = new E[ model.getEntities().size() ];
+		int i = 0;
+		for( Entity entity : entities )
+			es[ i++ ] = new E( entity, result.getType().getAttributeIndex() );
+		for( E e : es ) e.link( es );
+
+		// TODO Check that all the entities attributes are in the result list
+
+		for( DataObject object : result.getObjects() )
 		{
-			this.sql = sql;
-			this.pars = pars;
+			Object[] tuple = object.getTuple();
+			for( E e : es )
+			{
+				int keyLen = e.keyLen;
+				int[] keyIndex = e.keyIndex;
+				Object[] k = new Object[ keyLen ];
+				for( i = 0; i < keyLen; i++ )
+					k[ i ] = tuple[ keyIndex[ i ] ];
+				Key key = new Key( k );
+				DataObject eRow = e.uniqueMap.get( key );
+				if( eRow == null )
+				{
+					int attLen = e.attLen;
+					int[] attIndex = e.attIndex;
+					Object[] tuple2 = new Object[ e.attCount ];
+					for( i = 0; i < attLen; i++ )
+						tuple2[ i ] = tuple[ attIndex[ i ] ];
+					eRow = new DataObject( e.type, tuple2 );
+					e.uniqueMap.put( key, eRow );
+					e.result.add( eRow );
+				}
+				e.list.add( eRow );
+			}
 		}
 
-		/**
-		 * Returns the prepared SQL string.
-		 *
-		 * @return The prepared SQL string.
-		 */
-		public String getSQL()
+//		i = 1;
+//		for( E e : es )
+//			new Dumper().dumpTo( e.list, new File( "list" + i++ + ".out" ) );
+
+		// TODO What about outer joins?
+		int size = result.size();
+		for( i = 0; i < size; i++ )
 		{
-			return this.sql;
+			for( E e : es )
+			{
+				E[][] collEntitys = e.collEntity;
+				if( collEntitys != null )
+				{
+					int len = collEntitys.length;
+					int collAtt = e.collAtt;
+					DataObject row = e.list.get( i );
+					Object[] tuple = row.getTuple();
+					for( int j = 0; j < len; j++ )
+					{
+						GuardedDataList x = (GuardedDataList)tuple[ collAtt + j ];
+						if( x == null )
+							tuple[ collAtt + j ] = x = new GuardedDataList();
+						for( E o : collEntitys[ j ] )
+							if( o != null )
+								x.add( o.list.get( i ) );
+					}
+				}
+				E[] refEntity = e.refEntity;
+				if( refEntity != null )
+				{
+					int len = refEntity.length;
+					int refAtt = e.refAtt;
+					DataObject row = e.list.get( i );
+					Object[] tuple = row.getTuple();
+					for( int j = 0; j < len; j++ )
+						tuple[ refAtt + j ] = refEntity[ j ].list.get( i );
+				}
+			}
 		}
 
-		/**
-		 * Returns the parameter list.
-		 *
-		 * @return The parameter list.
-		 */
-		public List< Object > getParameters()
+		for( E e : es )
+			if( e.collEntity != null )
+			{
+				int start = e.collAtt;
+				int end = start + e.collEntity.length;
+				for( DataObject row : e.result )
+				{
+					Object[] tuple = row.getTuple();
+					for( int j = start; j < end; j++ )
+					{
+						GuardedDataList x = (GuardedDataList)tuple[ j ];
+						tuple[ j ] = x.unwrap();
+					}
+				}
+			}
+
+		DataList[] r = new DataList[ es.length ];
+		for( int len = es.length, k = 0; k < len; k++ )
+			r[ k ] = new DataList( es[ k ].result );
+
+//		i = 1;
+//		for( RowList e : r )
+//			new Dumper().dumpTo( e, new File( "result" + i++ + ".out" ) );
+
+		return r;
+	}
+
+	static private class E
+	{
+		Entity entity;
+		int keyLen;
+		int[] keyIndex;
+		int attLen;
+		int[] attIndex;
+		DataObjectType type;
+		Map<Key,DataObject> uniqueMap = new HashMap<Key,DataObject>();
+		List<DataObject> list = new ArrayList<DataObject>();
+		List<DataObject> result = new ArrayList<DataObject>();
+		int collAtt;
+		E[][] collEntity;
+		int refAtt;
+		E[] refEntity;
+		int attCount;
+
+		E( Entity entity, Map<String,Integer> index )
 		{
-			return this.pars;
+			this.entity = entity;
+
+			String[] keys = entity.getKey();
+			int keyLen = this.keyLen = keys.length;
+			int[] keyIndex = this.keyIndex = new int[ keyLen ];
+			for( int i = 0; i < keyLen; i++ )
+				keyIndex[ i ] = index.get( keys[ i ].toUpperCase( Locale.ENGLISH ) ); // TODO Gives NPE when not exist
+
+			String[] atts = entity.getAttributes();
+			int attLen = this.attLen = atts.length;
+			int[] attIndex = this.attIndex = new int[ attLen ];
+			for( int i = 0; i < attLen; i++ )
+				attIndex[ i ] = index.get( atts[ i ].toUpperCase( Locale.ENGLISH ) ); // TODO Gives NPE when not exist
+
+			this.collAtt = attLen;
+			this.refAtt = attLen;
+			if( entity.getCollections() != null )
+				this.refAtt += entity.getCollections().size();
+			this.attCount = this.refAtt;
+			if( entity.getReferences() != null )
+				this.attCount += entity.getReferences().size();
+
+			String[] oldAtts = atts;
+			atts = new String[ this.attCount ];
+			System.arraycopy( oldAtts, 0, atts, 0, attLen );
+
+			int i = attLen;
+			if( entity.getCollections() != null )
+				for( String name : entity.getCollections().keySet() )
+					atts[ i++ ] = name.toUpperCase( Locale.ENGLISH );
+			if( entity.getReferences() != null )
+				for( String name : entity.getReferences().keySet() )
+					atts[ i++ ] = name.toUpperCase( Locale.ENGLISH );
+
+			this.type = new DataObjectType( entity.getName(), atts );
+
+		}
+
+		void link( E[] entities )
+		{
+			Map<String,Object> collections = this.entity.getCollections();
+			if( collections != null )
+			{
+				this.collEntity = new E[ collections.size() ][];
+				int i = 0;
+				for( Object entity : collections.values() )
+				{
+					if( entity instanceof List )
+					{
+						List<Object> list = (List<Object>)entity;
+						this.collEntity[ i ] = new E[ list.size() ];
+						int j = 0;
+						for( Object entity2 : list )
+						{
+							for( E e : entities )
+								if( e.entity == entity2 )
+								{
+									this.collEntity[ i ][ j ] = e;
+									break;
+								}
+							Assert.notNull( this.collEntity[ i ][ j ] );
+							j++;
+						}
+					}
+					else
+					{
+						this.collEntity[ i ] = new E[ 1 ];
+						for( E e : entities )
+							if( e.entity == entity )
+							{
+								this.collEntity[ i ][ 0 ] = e;
+								break;
+							}
+						Assert.notNull( this.collEntity[ i ][ 0 ] );
+					}
+					i++;
+				}
+			}
+			Map<String,Object> references = this.entity.getReferences();
+			if( references != null )
+			{
+				this.refEntity = new E[ references.size() ];
+				int i = 0;
+				for( Object entity : references.values() )
+				{
+					for( E e : entities )
+						if( e.entity == entity )
+						{
+							this.refEntity[ i ] = e;
+							break;
+						}
+					Assert.notNull( this.refEntity[ i ] );
+					i++;
+				}
+			}
+		}
+	}
+
+	static private class GuardedDataList // TODO Rename to IdentitySet?
+	{
+		private DataList list;
+		private IdentityHashMap<Object,Object> guard = new IdentityHashMap<Object,Object>();
+
+		GuardedDataList()
+		{
+			this.list = new DataList();
+		}
+
+		public void add( DataObject object )
+		{
+			if( this.guard.containsKey( object ) )
+				return;
+			this.guard.put( object, object );
+			this.list.add( object );
+		}
+
+		public DataList unwrap()
+		{
+			return this.list;
 		}
 	}
 }

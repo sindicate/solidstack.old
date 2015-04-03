@@ -19,16 +19,17 @@ package solidstack.query;
 
 /**
  * Needed to store results from an anonymous inner class method that has no return value.
- * 
+ *
  * @param <T> The type of the result.
  */
+// TODO Rename to ObjectContainer? & move to util
 public class ResultHolder< T >
 {
 	private T value;
 
 	/**
 	 * Set the result.
-	 * 
+	 *
 	 * @param value The value of the result.
 	 */
 	public void set( T value )
@@ -38,7 +39,7 @@ public class ResultHolder< T >
 
 	/**
 	 * Gets the result.
-	 * 
+	 *
 	 * @return The result.
 	 */
 	public T get()

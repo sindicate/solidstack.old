@@ -24,6 +24,7 @@ import solidstack.io.FatalIOException;
 import solidstack.template.ConvertingWriter;
 import solidstack.template.EncodingWriter;
 import solidstack.template.Template;
+import solidstack.template.TemplateContext;
 
 /**
  * A compiled Groovy template.
@@ -49,6 +50,23 @@ public class GroovyTemplate extends Template
 		Closure template = (Closure)this.closure.clone();
 		template.setDelegate( new GroovyTemplateDelegate( this, params, writer ) );
 		ConvertingWriter out = new GroovyConvertingWriter( writer );
+		template.call( out );
+		try
+		{
+			out.flush();
+		}
+		catch( IOException e )
+		{
+			throw new FatalIOException( e );
+		}
+	}
+
+	@Override
+	public void apply( TemplateContext context )
+	{
+		Closure template = (Closure)this.closure.clone();
+		template.setDelegate( new GroovyTemplateContextDelegate( context ) );
+		ConvertingWriter out = new GroovyConvertingWriter( context.getWriter() );
 		template.call( out );
 		try
 		{

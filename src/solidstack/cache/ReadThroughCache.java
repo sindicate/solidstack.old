@@ -507,7 +507,7 @@ public class ReadThroughCache
 	 * Call the loader and put the result in the cache.
 	 *
 	 * @param loading The entry to load.
-	 * @param keyString The key of the entry to load.
+	 * @param key The key of the entry to load.
 	 * @param loader The loader to use.
 	 * @return The value loaded.
 	 */
@@ -612,6 +612,7 @@ public class ReadThroughCache
 	 * @param objects The array of objects.
 	 * @return The resulting key.
 	 */
+	// TODO Use the Key class
 	static public String buildKey( Object... objects )
 	{
 		StringBuilder result = new StringBuilder( 32 );

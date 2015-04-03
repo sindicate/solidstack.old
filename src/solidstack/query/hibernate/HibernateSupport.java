@@ -29,9 +29,10 @@ import org.hibernate.Session;
 import org.hibernate.jdbc.Work;
 
 import solidstack.lang.Assert;
+import solidstack.query.DataList;
+import solidstack.query.PreparedQuery;
 import solidstack.query.Query;
 import solidstack.query.Query.Language;
-import solidstack.query.Query.PreparedSQL;
 import solidstack.query.QuerySQLException;
 import solidstack.query.ResultHolder;
 import solidstack.query.jpa.JPASupport;
@@ -116,11 +117,11 @@ public class HibernateSupport
 	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return A {@link List} of {@link Map}s.
 	 * @throws JDBCException SQLExceptions are translated to JDBCExceptions by Hibernate.
-	 * @see Query#listOfMaps(Connection, Object)
+	 * @see Query#dataList(Connection, Object)
 	 */
-	static public List< Map< String, Object > > listOfMaps( final Query query, final Session session, final Object args )
+	static public DataList dataList( final Query query, final Session session, final Object args )
 	{
-		final ResultHolder< List< Map< String, Object > > > result = new ResultHolder< List< Map< String, Object > > >();
+		final ResultHolder<DataList> result = new ResultHolder<DataList>();
 
 		session.doWork( new Work()
 		{
@@ -128,14 +129,14 @@ public class HibernateSupport
 			{
 				try
 				{
-					result.set( query.listOfMaps( connection, args ) );
+					result.set( query.dataList( connection, args ) );
 				}
 				catch( QuerySQLException e )
 				{
 					throw e.getSQLException();
 				}
 			}
-		});
+		} );
 
 		return result.get();
 	}
@@ -221,17 +222,17 @@ public class HibernateSupport
 	 */
 	static public org.hibernate.Query createQuery( Query query, Session session, Object args )
 	{
-		PreparedSQL preparedSql = query.getPreparedSQL( args );
+		PreparedQuery prepared = query.prepare( args );
 
 		org.hibernate.Query result;
 		if( query.getLanguage() == Language.SQL )
-			result = session.createSQLQuery( preparedSql.getSQL() );
+			result = session.createSQLQuery( prepared.getSQL() );
 		else if( query.getLanguage() == Language.HQL )
-			result = session.createQuery( preparedSql.getSQL() );
+			result = session.createQuery( prepared.getSQL() );
 		else
 			throw new QueryException( "Query type '" + query.getLanguage() + "' not recognized" );
 
-		List< Object > pars = preparedSql.getParameters();
+		List< Object > pars = prepared.getParameters();
 		int i = 0;
 		for( Object par : pars )
 		{

@@ -1,25 +1,8 @@
-/*--
- * Copyright 2012 René M. de Bloois
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package solidstack.query.hibernate;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Map;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -30,6 +13,8 @@ import org.testng.annotations.Test;
 
 import solidstack.query.Query;
 import solidstack.query.QueryLoader;
+import solidstack.query.DataObject;
+import solidstack.query.DataList;
 import solidstack.util.Pars;
 
 
@@ -67,8 +52,8 @@ public class Hibernate3Tests
 		QueryLoader queries = new QueryLoader();
 		queries.setTemplatePath( "classpath:/solidstack/query" );
 		Query query = queries.getQuery( "test.sql" );
-		List<Map<String, Object>> tables = query.hibernate().listOfMaps( session, new Pars() );
-		for( Map<String, Object> table : tables )
+		DataList tables = query.hibernate().dataList( session, new Pars() );
+		for( DataObject table : tables )
 			System.out.println( table.get( "TaBlEnAmE" ) );
 
 		session.close();

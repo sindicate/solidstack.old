@@ -24,9 +24,9 @@ import java.util.Map;
 import javax.persistence.EntityManager;
 
 import solidstack.lang.Assert;
+import solidstack.query.PreparedQuery;
 import solidstack.query.Query;
 import solidstack.query.Query.Language;
-import solidstack.query.Query.PreparedSQL;
 import solidstack.query.QueryException;
 
 
@@ -161,24 +161,24 @@ public class JPASupport
 	 */
 	static private javax.persistence.Query createQuery0( Query query, EntityManager entityManager, Class< ? > resultClass, Object args )
 	{
-		PreparedSQL preparedSql = query.getPreparedSQL( args );
+		PreparedQuery prepared = query.prepare( args );
 
 		// TODO Native query with resultSetMapping
 		javax.persistence.Query result;
 		if( query.getLanguage() == Language.SQL )
 			if( resultClass != null )
-				result = entityManager.createNativeQuery( preparedSql.getSQL(), resultClass );
+				result = entityManager.createNativeQuery( prepared.getSQL(), resultClass );
 			else
-				result = entityManager.createNativeQuery( preparedSql.getSQL() );
+				result = entityManager.createNativeQuery( prepared.getSQL() );
 		else if( query.getLanguage() == Language.JPQL )
 			if( resultClass != null )
-				result = entityManager.createQuery( preparedSql.getSQL(), resultClass );
+				result = entityManager.createQuery( prepared.getSQL(), resultClass );
 			else
-				result = entityManager.createQuery( preparedSql.getSQL() );
+				result = entityManager.createQuery( prepared.getSQL() );
 		else
 			throw new QueryException( "Query type '" + query.getLanguage() + "' not recognized" );
 
-		List< Object > pars = preparedSql.getParameters();
+		List< Object > pars = prepared.getParameters();
 		int i = 0;
 		for( Object par : pars )
 		{

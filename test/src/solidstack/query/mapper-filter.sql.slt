@@ -1,0 +1,42 @@
+<%@ template version="1.0" language = "groovy" %>
+SELECT S.SCHEMAID, S.SCHEMANAME, 
+	T.TABLEID, T.TABLENAME, T.TABLETYPE,
+	C.COLUMNNAME, C.COLUMNNUMBER,
+	CASE WHEN C.COLUMNNAME < 'O' THEN 'FIRST' ELSE 'SECOND' END TYPE
+FROM SYS.SYSSCHEMAS S 
+JOIN SYS.SYSTABLES T ON T.SCHEMAID = S.SCHEMAID
+JOIN SYS.SYSCOLUMNS C ON C.REFERENCEID = T.TABLEID
+ORDER BY T.TABLENAME, C.COLUMNNUMBER
+<%
+
+resultModel = [
+	entity(
+		name: "sysschema",
+		attributes: [ "SCHEMAID", "SCHEMANAME" ],
+		key: "SCHEMAID",
+		collections: [ tables: "systable" ]
+	),
+	entity(
+		name: "systable",
+		attributes: [ "SCHEMAID", "TABLEID", "TABLENAME", "TABLETYPE" ],
+		key: "TABLEID",
+		collections: [ columns: [ "lowercolumn", "uppercolumn" ] ],
+		references: [ schema: "sysschema" ]
+	),
+	entity(
+		name: "lowercolumn",
+		select: { row -> row.TYPE == 'FIRST' },
+		attributes: [ "COLUMNNAME", "COLUMNNUMBER" ],
+		key: [ "TABLEID", "COLUMNNAME" ],
+		references: [ table: "systable" ]
+	),
+	entity(
+		name: "uppercolumn",
+		select: { row -> row.TYPE == 'SECOND' },
+		attributes: [ "COLUMNNAME", "COLUMNNUMBER" ],
+		key: [ "TABLEID", "COLUMNNAME" ],
+		references: [ table: "systable" ]
+	)
+]
+
+%>

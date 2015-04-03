@@ -49,7 +49,7 @@
 	</path>
 
 	<path id="testng.classpath">
-		<fileset dir="test/lib" includes="testng*.jar" />
+		<fileset dir="tools/testng" includes="*.jar" />
 	</path>
 
 	<path id="cobertura.classpath">
@@ -72,8 +72,9 @@
 
 	<path id="compiletest.classpath">
 		<pathelement location="${build.home}/classes" />
-		<fileset dir="test/lib" includes="*.jar" />
 		<path refid="compile.classpath" />
+		<path refid="testng.classpath" />
+		<fileset dir="test/lib" includes="fest*.jar" /> <!-- TODO split folder into compile and runtime -->
 	</path>
 
 	<path id="test_.classpath">
@@ -83,6 +84,7 @@
 		<fileset dir="lib" includes="*.jar" />
 		<fileset dir="test/lib" includes="*.jar" />
 		<fileset dir="test/lib/hibernate" includes="*.jar" />
+		<path refid="testng.classpath" />
 		<path refid="cobertura.classpath" />
 	</path>
 
@@ -202,7 +204,7 @@
 		<dependencyCheck failOnUnwantedDependencies="true">
 			<fileset dir="${build.home}/classes"><include name="**/*.class" /></fileset>
 			[query] = solidstack.query.* excluding solidstack.query.jpa.* solidstack.query.hibernate.*
-			[template] = solidstack.template.* excluding solidstack.template.groovy.* solidstack.template.javascript.* solidstack.template.funny.*
+			[template] = solidstack.template.* excluding solidstack.template.groovy.* solidstack.template.javascript.*
 			check solidstack.cache.*               dependentOnlyOn java.* javax.* solidstack.* org.slf4j.*
 			check solidstack.io.*                  dependentOnlyOn java.* javax.* solidstack.*
 			check solidstack.lang.*                dependentOnlyOn java.* javax.* solidstack.*
@@ -210,7 +212,6 @@
 			check solidstack.query.jpa.*           dependentOnlyOn java.* javax.* solidstack.*
 			check solidstack.query.hibernate.*     dependentOnlyOn java.* javax.* solidstack.* org.hibernate.*
 			check [template]                       dependentOnlyOn java.* javax.* solidstack.* org.slf4j.*
-			check solidstack.script.*              dependentOnlyOn java.* javax.* solidstack.* funny.*
 			check solidstack.template.groovy.*     dependentOnlyOn java.* javax.* solidstack.* groovy.* org.codehaus.groovy.*
 			check solidstack.template.javascript.* dependentOnlyOn java.* javax.* solidstack.* org.mozilla.javascript.*
 			check solidstack.util.*                dependentOnlyOn java.* javax.* solidstack.*
