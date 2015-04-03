@@ -1,5 +1,5 @@
-<%@ template version="1.0" language = "groovy" %>
-<%@ query language = "JPQL" %>
+<%@ template language = "groovy" %>
+<%@ query type = "jpql" %>
 <%
 
 

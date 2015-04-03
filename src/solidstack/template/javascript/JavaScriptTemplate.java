@@ -16,25 +16,20 @@
 
 package solidstack.template.javascript;
 
-import java.io.IOException;
 import java.util.Map;
 
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ImporterTopLevel;
-import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.Script;
-import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.TopLevel;
 
-import solidstack.io.FatalIOException;
-import solidstack.template.ConvertingWriter;
 import solidstack.template.EncodingWriter;
 import solidstack.template.Template;
 
 
 /**
  * A compiled JavaScript template.
- *
+ * 
  * @author René M. de Bloois
  */
 public class JavaScriptTemplate extends Template
@@ -51,35 +46,16 @@ public class JavaScriptTemplate extends Template
 	}
 
 	@Override
-	public void apply( Object params, EncodingWriter writer )
+	public void apply( Map< String, Object > params, EncodingWriter writer )
 	{
 		Context cx = Context.enter();
 		try
 		{
-			TopLevel topLevel = new ImporterTopLevel( cx );
-
-			ConvertingWriter out = new JavaScriptConvertingWriter( writer );
-			topLevel.put( "out", topLevel, out );
-
-			Scriptable scope;
-			if( params instanceof Map )
-			{
-				scope = topLevel;
-				for( Map.Entry<String, Object> param : ( (Map<String, Object>)params ).entrySet() )
-					scope.put( param.getKey(), scope, Context.javaToJS( param.getValue(), scope ) );
-			}
-			else
-				scope = new NativeJavaObject( topLevel, params, null );
-
+			TopLevel scope = new ImporterTopLevel(cx);
+			for( Map.Entry< String, Object > param : params.entrySet() )
+				scope.put( param.getKey(), scope, Context.javaToJS( param.getValue(), scope ) );
+			scope.put( "out", scope, new JavaScriptConvertingWriter( writer ) );
 			cx.executeScriptWithContinuations( this.script, scope );
-			try
-			{
-				out.flush();
-			}
-			catch( IOException e )
-			{
-				throw new FatalIOException( e );
-			}
 		}
 		finally
 		{

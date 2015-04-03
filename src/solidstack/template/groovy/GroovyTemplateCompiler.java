@@ -1,19 +1,3 @@
-/*--
- * Copyright 2012 René M. de Bloois
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package solidstack.template.groovy;
 
 import groovy.lang.Closure;
@@ -36,7 +20,7 @@ import solidstack.template.Util;
 
 /**
  * Compiles the given parser events, directives and imports to a {@link GroovyTemplate}.
- *
+ * 
  * @author René de Bloois
  */
 public class GroovyTemplateCompiler
@@ -47,20 +31,18 @@ public class GroovyTemplateCompiler
 
 	/**
 	 * Generates the Groovy script.
-	 *
+	 * 
 	 * @param context The compilation context.
 	 */
 	public void generateScript( TemplateCompilerContext context )
 	{
-		// TODO This may give conflicts when more than one TemplateLoader is used. This must be the complete path.
+		// TODO This may give conflicts when more than one TemplateManager is used. This must be the complete path.
 		Matcher matcher = PATH_PATTERN.matcher( context.getPath() );
 		Assert.isTrue( matcher.matches() );
 		String path = matcher.group( 1 );
 		String name = matcher.group( 2 );
 
-		String pkg = TEMPLATE_PKG;
-		if( path != null )
-			pkg += "." + path.replaceAll( "/+", "." );
+		String pkg = TEMPLATE_PKG + "." + path.replaceAll( "/+", "." );
 
 		StringBuilder buffer = new StringBuilder( 1024 );
 		buffer.append( "package " ).append( pkg ).append( ";" );
@@ -101,7 +83,7 @@ public class GroovyTemplateCompiler
 					if( !text )
 						buffer.append( "out.write(\"\"\"" );
 					text = true;
-					buffer.append( "${" ).append( event.getData() ).append( '}' ); // FIXME Need to escape """
+					buffer.append( "${" ).append( event.getData() ).append( '}' );
 					break;
 
 				case DIRECTIVE:
@@ -128,14 +110,14 @@ public class GroovyTemplateCompiler
 
 	/**
 	 * Compiles the Groovy script.
-	 *
+	 * 
 	 * @param context The compilation context.
 	 */
 	public void compileScript( TemplateCompilerContext context )
 	{
 		// Compile to bytes
 		CompilationUnit unit = new CompilationUnit();
-		unit.addSource( context.getPath(), context.getScript().toString() );
+		unit.addSource( context.getName(), context.getScript().toString() );
 		unit.compile( Phases.CLASS_GENERATION );
 
 		// Results
@@ -143,13 +125,10 @@ public class GroovyTemplateCompiler
 		List< GroovyClass > classes = unit.getClasses();
 		Assert.isTrue( classes.size() > 0, "Expecting 1 or more classes" );
 
-		ClassLoader parent = Thread.currentThread().getContextClassLoader();
-		if( parent == null )
-			parent = GroovyTemplateCompiler.class.getClassLoader();
-
-		// Define the class
+		// Use class loader to define the classes
 		// TODO Configurable class loader
-		DefiningClassLoader classLoader = new DefiningClassLoader( parent );
+		// TODO See BeanShell 2 for resolving the parent classloader
+		DefiningClassLoader classLoader = new DefiningClassLoader( GroovyTemplate.class.getClassLoader() );
 		Class< ? > first = null;
 		for( GroovyClass cls : classes )
 		{

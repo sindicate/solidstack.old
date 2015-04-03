@@ -18,12 +18,11 @@ package solidstack.template.groovy;
 
 import groovy.lang.Closure;
 
-import java.io.IOException;
+import java.util.Map;
 
-import solidstack.io.FatalIOException;
-import solidstack.template.ConvertingWriter;
 import solidstack.template.EncodingWriter;
 import solidstack.template.Template;
+import solidstack.template.TemplateContext;
 
 /**
  * A compiled Groovy template.
@@ -44,19 +43,22 @@ public class GroovyTemplate extends Template
 	}
 
 	@Override
-	public void apply( Object params, EncodingWriter writer )
+	public void apply( Map< String, Object > args, EncodingWriter writer )
 	{
 		Closure template = (Closure)this.closure.clone();
-		template.setDelegate( new GroovyTemplateDelegate( this, params, writer ) );
-		ConvertingWriter out = new GroovyConvertingWriter( writer );
-		template.call( out );
-		try
-		{
-			out.flush();
-		}
-		catch( IOException e )
-		{
-			throw new FatalIOException( e );
-		}
+//		template.setResolveStrategy( Closure.DELEGATE_FIRST );
+		GroovyTemplateContext context = new GroovyTemplateContext( this, writer, args );
+		template.setDelegate( context );
+		template.call( new GroovyConvertingWriter( writer ) );
+	}
+
+	@Override
+	public void apply( TemplateContext parent, Map< String, Object > args )
+	{
+		Closure template = (Closure)this.closure.clone();
+//		template.setResolveStrategy( Closure.DELEGATE_FIRST );
+		GroovyTemplateContext context = new GroovyTemplateContext( this, parent, args );
+		template.setDelegate( context );
+		template.call( new GroovyConvertingWriter( context.getWriter() ) );
 	}
 }

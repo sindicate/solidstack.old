@@ -20,11 +20,10 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 
-import solidstack.io.Resource;
 import solidstack.template.JSPLikeTemplateParser.Directive;
+import solidstack.util.Pars;
 
 /**
  * A compiled template.
@@ -33,32 +32,24 @@ import solidstack.template.JSPLikeTemplateParser.Directive;
  */
 abstract public class Template
 {
-	private Resource resource;
-	private String path;
+//	private Resource resource;
+	private String name;
 	private Directive[] directives;
 
 	private String contentType;
-	private String charSet; // FIXME Rename to characterencoding, including the contenttype directive?
+	private String charSet;
 	private long lastModified;
-	private TemplateLoader loader;
+	private TemplateManager manager;
 
 
 	/**
-	 * Sets the loader that loaded this template. The template needs this to access the MIME type registry.
+	 * Sets the manager of the template. The template needs this to access the MIME type registry.
 	 *
-	 * @param loader The template loader.
+	 * @param manager A template manager.
 	 */
-	protected void setLoader( TemplateLoader loader )
+	protected void setManager( TemplateManager manager )
 	{
-		this.loader = loader;
-	}
-
-	/**
-	 * @return The loader that loaded this template.
-	 */
-	public TemplateLoader getLoader()
-	{
-		return this.loader;
+		this.manager = manager;
 	}
 
 	/**
@@ -67,7 +58,7 @@ abstract public class Template
 	 * @param params The parameters to be applied.
 	 * @param writer The result of applying this template is written to this writer.
 	 */
-	public void apply( Object params, Writer writer )
+	public void apply( Map< String, Object > params, Writer writer )
 	{
 		apply( params, createEncodingWriter( writer ) );
 	}
@@ -81,7 +72,7 @@ abstract public class Template
 	 */
 	// TODO Test this one
 	// TODO Use default per MIME type too, then use the encoding of the source file, then the operating system
-	public void apply( Object params, OutputStream out )
+	public void apply( Map< String, Object > params, OutputStream out )
 	{
 		Writer writer;
 		if( this.charSet != null )
@@ -106,12 +97,14 @@ abstract public class Template
 	 * @param params The parameters to be applied.
 	 * @return The result of applying this template.
 	 */
-	public String apply( Object params )
+	public String apply( Map< String, Object > params )
 	{
 		StringWriter writer = new StringWriter();
 		apply( params, writer );
 		return writer.toString();
 	}
+
+	abstract public void apply( TemplateContext params, Map<String, Object> args );
 
 	/**
 	 * Applies the given parameters to the template and writes the output to the given encoding writer.
@@ -119,7 +112,7 @@ abstract public class Template
 	 * @param params The parameters to apply to the template.
 	 * @param writer The writer to write the result to.
 	 */
-	abstract public void apply( Object params, EncodingWriter writer );
+	abstract public void apply( Map< String, Object > params, EncodingWriter writer );
 
 	/**
 	 * Returns the EncodingWriter for the configured MIME type.
@@ -131,7 +124,7 @@ abstract public class Template
 	{
 		if( this.contentType != null )
 		{
-			EncodingWriterFactory factory = this.loader.getWriterFactory( this.contentType );
+			EncodingWriterFactory factory = this.manager.getWriterFactory( this.contentType );
 			if( factory != null )
 				return factory.createWriter( writer );
 		}
@@ -169,13 +162,13 @@ abstract public class Template
 	}
 
 	/**
-	 * Returns the path of the template.
+	 * Returns the name of the template.
 	 *
-	 * @return The path of the template.
+	 * @return The name of the template.
 	 */
-	public String getPath()
+	public String getName()
 	{
-		return this.path;
+		return this.name;
 	}
 
 	/**
@@ -189,20 +182,7 @@ abstract public class Template
 	{
 		if( this.directives == null )
 			return null;
-		return getDirective( Arrays.asList( this.directives ), name, attribute );
-	}
-
-	/**
-	 * Returns the directive attribute value with the given directive name and attribute name.
-	 *
-	 * @param directives A list of directives.
-	 * @param name The name of the directive.
-	 * @param attribute The name of the attribute.
-	 * @return The directive attribute value.
-	 */
-	static public Directive getDirective( List<Directive> directives, String name, String attribute )
-	{
-		for( Directive directive : directives )
+		for( Directive directive : this.directives )
 			if( directive.getName().equals( name ) && directive.getAttribute().equals( attribute ) )
 				return directive;
 		return null;
@@ -211,11 +191,11 @@ abstract public class Template
 	/**
 	 * Sets the name of this template.
 	 *
-	 * @param path The path of this template.
+	 * @param name The name of this template.
 	 */
-	protected void setPath( String path )
+	protected void setName( String name )
 	{
-		this.path = path;
+		this.name = name;
 	}
 
 	/**
@@ -258,21 +238,19 @@ abstract public class Template
 		this.directives = directives;
 	}
 
-	/**
-	 * Sets the resource that contained this template.
-	 *
-	 * @param resource The resource that contained this template.
-	 */
-	protected void setResource( Resource resource )
+//	public void setResource( Resource resource )
+//	{
+//		this.resource = resource;
+//	}
+
+	public void include( String path, EncodingWriter writer )
 	{
-		this.resource = resource;
+		Template template = this.manager.getTemplate( path );
+		template.apply( new Pars(), writer );
 	}
 
-	/**
-	 * @return The resource that contained this template.
-	 */
-	public Resource getResource()
+	public TemplateManager getManager() // TODO Rename to getTemplateManager?
 	{
-		return this.resource;
+		return this.manager;
 	}
 }

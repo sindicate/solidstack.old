@@ -1,0 +1,4 @@
+<%@ template language="groovy" %>
+<%= top %>
+<% include( "included", middle2: "MIDDLE2" ) %>
+<%= bottom %>

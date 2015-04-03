@@ -26,7 +26,7 @@ import solidstack.template.EncodingWriter;
 
 /**
  * A writer that keeps values separate from the string segments.
- *
+ * 
  * @author René M. de Bloois
  */
 public class QueryEncodingWriter implements EncodingWriter
@@ -55,7 +55,7 @@ public class QueryEncodingWriter implements EncodingWriter
 
 	/**
 	 * Returns the string segments and the values.
-	 *
+	 * 
 	 * @return An array of string segments (String) and the values (unknown Object).
 	 */
 	public List< Object > getValues()
@@ -65,7 +65,7 @@ public class QueryEncodingWriter implements EncodingWriter
 
 	/**
 	 * Returns a bitset that indicates which indexes in the {@link #getValues()} list is a value.
-	 *
+	 * 
 	 * @return A bitset that indicates which indexes in the {@link #getValues()} list is a value.
 	 */
 	public BitSet getIsValue()
@@ -86,10 +86,5 @@ public class QueryEncodingWriter implements EncodingWriter
 				result.append( (String)this.values.get( i ) );
 		}
 		return result.toString();
-	}
-
-	public void flush() throws IOException
-	{
-		// Nothing to flush
 	}
 }
