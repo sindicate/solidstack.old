@@ -22,43 +22,60 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-public class MethodCall implements Cloneable
+public class MethodCall
 {
 	static public Class[] NO_PARAMETERS = new Class[ 0 ];
 
 	public Object object;
 	public Method method;
+	public ExtensionMethod extMethod;
 	public Constructor constructor;
-	private Object[] args;
+	public Object[] args;
 	public boolean isVarargCall;
-	public int difficulty;
 
-	public MethodCall( boolean isVarargCall, int difficulty, Object... args )
+	public MethodCall( boolean isVarargCall )
+	{
+		this.isVarargCall = isVarargCall;
+	}
+
+	public MethodCall( boolean isVarargCall, Object... args )
 	{
 		this.args = args;
 		this.isVarargCall = isVarargCall;
-		this.difficulty = difficulty;
 	}
 
 	public Class[] getParameterTypes()
 	{
 		if( this.constructor != null )
 			return this.constructor.getParameterTypes();
+		if( this.extMethod != null )
+			return this.extMethod.getParameterTypes();
 		return this.method.getParameterTypes();
 	}
 
-	public Class getDeclaringClass()
-	{
-		return this.method.getDeclaringClass();
-	}
+//	public Class getDeclaringClass()
+//	{
+//		// TODO What do we do if it is an extension method?
+//		return this.method.getDeclaringClass();
+//	}
 
 	public Object invoke() throws InvocationTargetException
 	{
-		this.args = Resolver.transformArguments( getParameterTypes(), this.args );
+		this.args = Types.transformArguments( getParameterTypes(), this.args );
 		try
 		{
 			if( this.constructor != null )
 				return this.constructor.newInstance( this.args );
+			if( this.extMethod != null )
+			{
+				// Combine this with the array copying used for variable arity arguments.
+				Object[] args = this.args;
+				int count = args.length;
+				Object[] newArgs = new Object[ count + 1 ];
+				newArgs[ 0 ] = this.object;
+				System.arraycopy( args, 0, newArgs, 1, count );
+				return this.extMethod.getMethod().invoke( this.object, newArgs );
+			}
 			if( !this.method.isAccessible() )
 				this.method.setAccessible( true );
 			return this.method.invoke( this.object, this.args );
@@ -78,23 +95,31 @@ public class MethodCall implements Cloneable
 	{
 		if( this.constructor != null )
 			return this.constructor;
+		if( this.extMethod != null )
+			return this.extMethod.getMethod();
 		return this.method;
 	}
 
-	public String getName()
-	{
-		return this.method.getName();
-	}
+//	public String getName()
+//	{
+//		if( this.extMethod != null )
+//			return this.extMethod.getMethod().getName();
+//		return this.method.getName();
+//	}
 
 	public boolean isVararg()
 	{
+		if( this.extMethod != null )
+			return this.extMethod.isVararg();
 		return ( this.method.getModifiers() & Modifier.TRANSIENT ) != 0;
 	}
 
-	public Object getReturnType()
-	{
-		return this.method.getReturnType();
-	}
+//	public Object getReturnType()
+//	{
+//		if( this.extMethod != null )
+//			return this.extMethod.getMethod().getReturnType();
+//		return this.method.getReturnType();
+//	}
 
 	public Object[] getArgs()
 	{

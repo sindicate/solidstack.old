@@ -20,11 +20,11 @@ import java.util.List;
 
 
 // TODO Rename to UnresolvableMethodException
-public class ResolverException extends RuntimeException
+public class CallResolutionException extends RuntimeException
 {
 	private List< MethodCall > candidates;
 
-	public ResolverException( List candidates )
+	public CallResolutionException( List candidates )
 	{
 		this.candidates = candidates;
 	}

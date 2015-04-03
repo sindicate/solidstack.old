@@ -41,11 +41,35 @@ public class Java
 	 */
 	static public Object invoke( Object object, String name, Object... args ) throws InvocationTargetException, MissingMethodException
 	{
-		CallContext context = new CallContext( object, name, args );
-		MethodCall call = Resolver.resolveMethodCall( context );
+		CallResolutionContext context = new CallResolutionContext( object, name, args );
+		MethodCall call = CallResolver.resolveMethodCall( context );
 		if( call == null )
 			throw new MissingMethodException( context );
+		addArgs( call, args );
 		return call.invoke();
+	}
+
+	static private void addArgs( MethodCall call, Object[] args )
+	{
+		if( !call.isVarargCall )
+		{
+			call.setArgs( args );
+			return;
+		}
+
+		int count = call.getParameterTypes().length;
+		if( count == 1 )
+		{
+			call.setArgs( new Object[] { args } );
+			return;
+		}
+
+		Object[] pars = new Object[ count ];
+		count--;
+		System.arraycopy( args, 0, pars, 0, count );
+		Object[] varargs = new Object[ args.length - count ];
+		System.arraycopy( args, count, varargs, 0, varargs.length );
+		call.setArgs( varargs );
 	}
 
 	/**
@@ -60,10 +84,11 @@ public class Java
 	 */
 	static public Object invokeStatic( Class<?> type, String name, Object... args ) throws InvocationTargetException, MissingMethodException
 	{
-		CallContext context = new CallContext( type, name, args );
-		MethodCall call = Resolver.resolveMethodCall( context );
+		CallResolutionContext context = new CallResolutionContext( type, name, args );
+		MethodCall call = CallResolver.resolveMethodCall( context );
 		if( call == null )
 			throw new MissingMethodException( context );
+		addArgs( call, args );
 		return call.invoke();
 	}
 
@@ -129,10 +154,11 @@ public class Java
 	 */
 	static public Object construct( Class<?> type, Object... args ) throws InvocationTargetException, MissingMethodException
 	{
-		CallContext context = new CallContext( type, null, args );
-		MethodCall call = Resolver.resolveConstructorCall( context );
+		CallResolutionContext context = new CallResolutionContext( type, null, args );
+		MethodCall call = CallResolver.resolveConstructorCall( context );
 		if( call == null )
 			throw new MissingMethodException( context );
+		addArgs( call, args );
 		return call.invoke();
 	}
 

@@ -69,7 +69,7 @@ public class DumperTests
 	private void test( Object object, String expected )
 	{
 		this.dumper.resetIds();
-		Assert.assertEquals( this.dumper.dump( object ), expected );
+		Assertions.assertThat( this.dumper.dump( object ) ).isEqualTo( expected );
 	}
 
 	static public class SerializableObject implements Serializable
