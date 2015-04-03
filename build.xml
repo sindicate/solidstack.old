@@ -202,7 +202,7 @@
 		<dependencyCheck failOnUnwantedDependencies="true">
 			<fileset dir="${build.home}/classes"><include name="**/*.class" /></fileset>
 			[query] = solidstack.query.* excluding solidstack.query.jpa.* solidstack.query.hibernate.*
-			[template] = solidstack.template.* excluding solidstack.template.groovy.* solidstack.template.javascript.*
+			[template] = solidstack.template.* excluding solidstack.template.groovy.* solidstack.template.javascript.* solidstack.template.funny.*
 			check solidstack.cache.*               dependentOnlyOn java.* javax.* solidstack.* org.slf4j.*
 			check solidstack.io.*                  dependentOnlyOn java.* javax.* solidstack.*
 			check solidstack.lang.*                dependentOnlyOn java.* javax.* solidstack.*

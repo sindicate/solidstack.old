@@ -33,14 +33,14 @@ public class ReaderSourceReader implements SourceReader
 	private Reader reader;
 
 	/**
-	 * The current line the reader is positioned on.
-	 */
-	private int lineNumber;
-
-	/**
 	 * The current location.
 	 */
 	private SourceLocation location;
+
+	/**
+	 * The last location.
+	 */
+	private SourceLocation lastLocation;
 
 	/**
 	 * Buffer to contain a character that has been read by mistake.
@@ -53,11 +53,6 @@ public class ReaderSourceReader implements SourceReader
 	private StringBuilder line;
 
 	/**
-	 * The underlying resource.
-	 */
-	private Resource resource;
-
-	/**
 	 * The character encoding of the resource.
 	 */
 	private String encoding;
@@ -68,8 +63,7 @@ public class ReaderSourceReader implements SourceReader
 	 */
 	public ReaderSourceReader( Reader reader )
 	{
-		this.reader = reader;
-		this.lineNumber = 1;
+		this( reader, new SourceLocation( null, 1 ), null );
 	}
 
 	/**
@@ -78,9 +72,7 @@ public class ReaderSourceReader implements SourceReader
 	 */
 	public ReaderSourceReader( Reader reader, SourceLocation location )
 	{
-		this.reader = reader;
-		this.resource = location.getResource();
-		this.lineNumber = location.getLineNumber();
+		this( reader, location, null );
 	}
 
 	/**
@@ -91,8 +83,7 @@ public class ReaderSourceReader implements SourceReader
 	public ReaderSourceReader( Reader reader, SourceLocation location, String encoding )
 	{
 		this.reader = reader;
-		this.resource = location.getResource();
-		this.lineNumber = location.getLineNumber();
+		this.location = location;
 		this.encoding = encoding;
 	}
 
@@ -120,6 +111,7 @@ public class ReaderSourceReader implements SourceReader
 	{
 		if( this.line == null )
 			this.line = new StringBuilder();
+		this.line.setLength( 0 );
 
 		int ch;
 		while( true )
@@ -128,11 +120,10 @@ public class ReaderSourceReader implements SourceReader
 				case -1:
 					if( this.line.length() == 0 )
 						return null;
+					this.location = this.location.nextLine(); // Not incremented by read(), so do it here
 					//$FALL-THROUGH$
 				case '\n':
-					String result = this.line.toString();
-					this.line.setLength( 0 );
-					return result;
+					return this.line.toString();
 				default:
 					this.line.append( (char)ch );
 			}
@@ -142,11 +133,15 @@ public class ReaderSourceReader implements SourceReader
 	{
 		if( this.reader == null )
 			throw new IllegalStateException( "Closed" );
-		return this.lineNumber;
+		return this.location.getLineNumber();
 	}
 
 	public int read()
 	{
+		if( this.reader == null )
+			throw new IllegalStateException( "Closed" );
+
+		this.lastLocation = this.location;
 		try
 		{
 			int result;
@@ -166,7 +161,7 @@ public class ReaderSourceReader implements SourceReader
 						this.buffer = result;
 					//$FALL-THROUGH$
 				case '\n':
-					this.lineNumber++;
+					this.location = this.location.nextLine();
 					return '\n';
 				default:
 					return result;
@@ -180,7 +175,7 @@ public class ReaderSourceReader implements SourceReader
 
 	public Resource getResource()
 	{
-		return this.resource;
+		return this.location.getResource();
 	}
 
 	public String getEncoding()
@@ -190,15 +185,29 @@ public class ReaderSourceReader implements SourceReader
 
 	public SourceLocation getLocation()
 	{
-		if( this.location != null && this.location.getLineNumber() == this.lineNumber )
-			return this.location;
-		return new SourceLocation( this.resource, this.lineNumber );
+		if( this.reader == null )
+			throw new IllegalStateException( "Closed" );
+		return this.location;
 	}
 
+	public SourceLocation getLastLocation()
+	{
+		if( this.reader == null )
+			throw new IllegalStateException( "Closed" );
+		if( this.lastLocation == null )
+			throw new IllegalStateException( "No character read yet" );
+		if( this.buffer >= 0 )
+			throw new IllegalStateException( "Last location is not valid, pushed back a character" );
+		return this.lastLocation;
+	}
+
+	// This is only used to push back the first character (for byte order mark detection)
 	void push( int ch )
 	{
+		if( ch == '\n' || ch == '\r' )
+			throw new IllegalArgumentException( "Can't push back CR or LF" );
 		if( this.buffer != -1 )
-			throw new IllegalStateException( "buffer is not empty" );
+			throw new IllegalStateException( "Buffer is not empty" );
 		this.buffer = ch;
 	}
 }
