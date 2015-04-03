@@ -1,19 +1,3 @@
-/*--
- * Copyright 2012 René M. de Bloois
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package solidstack.hyperdb;
 
 import java.sql.Connection;
@@ -22,14 +6,16 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import solidstack.httpserver.HttpException;
+import solidstack.httpserver.HttpResponse;
 import solidstack.httpserver.RequestContext;
+import solidstack.httpserver.ResponseOutputStream;
 import solidstack.httpserver.Servlet;
 import solidstack.lang.Assert;
 
 
 public class TableRecordCountServlet implements Servlet
 {
-	public void call( RequestContext context )
+	public HttpResponse call( RequestContext context )
 	{
 		boolean complete = false;
 		try
@@ -47,8 +33,16 @@ public class TableRecordCountServlet implements Servlet
 					final ResultSet result1 = statement.executeQuery( "SELECT COUNT(*) FROM " + table );
 					Assert.isTrue( result1.next() );
 					final Object object = result1.getObject( 1 );
-					context.getResponse().getWriter().write( object );
+					HttpResponse response = new HttpResponse()
+					{
+						@Override
+						public void write( ResponseOutputStream out )
+						{
+							out.write( object.toString().getBytes() );
+						}
+					};
 					complete = true;
+					return response;
 				}
 				finally
 				{
@@ -68,7 +62,16 @@ public class TableRecordCountServlet implements Servlet
 		finally
 		{
 			if( !complete )
-				context.getResponse().getWriter().write( "#ERROR#" );
+			{
+				return new HttpResponse()
+				{
+					@Override
+					public void write( ResponseOutputStream out )
+					{
+						out.write( "#ERROR#".getBytes() ); // TODO Make constant
+					}
+				};
+			}
 		}
 
 //		try

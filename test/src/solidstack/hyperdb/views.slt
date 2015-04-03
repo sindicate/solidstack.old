@@ -2,17 +2,19 @@
 <%@ template import="solidstack.hyperdb.*" %>
 <%
 include( template: "/template", title: "Views", body: {
-	def database = request.getParameter( "database" )
+	def databaseName = request.getParameter( "database" )
 	def user = request.getParameter( "user" )
 	def schema = request.getParameter( "schema" )
 	def connections = session.getAttribute( "connections" )
-	def connection = connections.getConnection( database, user )
-	def views = Database.getViews( connection, schema )
+	def connectionHolder = connections.getConnection( databaseName, user )
+	def connection = connectionHolder.connection
+	def database = connectionHolder.database
+	def views = database.getViews( connection, schema )
 %>
 		<table id="views">
-			<tr><th>Views</th></tr>
+			<tr><th>Schema</th><th>View</th></tr>
 <%		for( View view : views ) { %>
-			<tr><td><a href="views/${view.name}">${view.name}</a></td></tr>
+			<tr><td>${view.schema}</td><td><a href="../${view.schema}/tables/${view.name}">${view.name}</a></td></tr>
 <%		} %>
 		</table>
 <% } ) %>

@@ -66,11 +66,6 @@ public interface SourceReader
 	SourceLocation getLocation();
 
 	/**
-	 * @return The location of the last read character.
-	 */
-	SourceLocation getLastLocation();
-
-	/**
 	 * Returns the character encoding of the source.
 	 *
 	 * @return The character encoding of the source.

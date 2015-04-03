@@ -57,12 +57,12 @@ public class EncodingDetector implements solidstack.io.EncodingDetector
 		if( matcher.matches() )
 			result = matcher.group( 1 );
 
-		// TODO When UTF-8, test that the JVM skips the optional byte order mark. Also for UTF-16BE/LE.
+		// TODO When UTF-8, test the the JVM skips the optional byte order mark. Also for UTF-16BE/LE.
 
-		if( CHARSET_UTF.equals( result ) )
-			return detectUTF( bytes );
+		if( !CHARSET_UTF.equals( result ) )
+			return result;
 
-		return result;
+		return detectUTF( bytes );
 	}
 
 	// Only works when first 2 characters are ascii
@@ -93,12 +93,6 @@ public class EncodingDetector implements solidstack.io.EncodingDetector
 		return CHARSET_UTF_32BE; // TODO Throw undetectable when length < 4
 	}
 
-	/**
-	 * Filters out ASCII bytes smaller than 128 and returns the result as a string.
-	 *
-	 * @param chars The bytes to filter.
-	 * @return The ASCII bytes smaller than 128.
-	 */
 	static public String toAscii( byte[] chars )
 	{
 		int len = chars.length;

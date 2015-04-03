@@ -1,7 +1,7 @@
-<%@ template version="1.0" language="funny" contentType="text/html; charset=UTF-8" %>
+<%@ template version="1.0" language="groovy" contentType="text/html; charset=UTF-8" %>
 <%
-database = request.getParameter( "database" );
-include( template: "/template", title: "Connect to ${database}", body: () -> (
+def database = request.getParameter( "database" )
+include( template: "/template", title: "Connect to ${database}", body: {
 %>
 		<form method="post">
 			<table>
@@ -11,4 +11,4 @@ include( template: "/template", title: "Connect to ${database}", body: () -> (
 				<tr><td colspan="2"><input name="login" type="submit" value="Login" /></td></tr>
 			</table>
 		</form>
-<% ) ) %>
+<% } ) %>

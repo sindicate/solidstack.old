@@ -1,19 +1,3 @@
-/*--
- * Copyright 2012 René M. de Bloois
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package solidstack.httpserver;
 
 import java.util.ArrayList;
@@ -44,7 +28,7 @@ public class ApplicationContext
 		this.filterMappings.add( new FilterMapping( Pattern.compile( pattern ), filter ) );
 	}
 
-	public void dispatch( RequestContext context )
+	public HttpResponse dispatch( RequestContext context )
 	{
 		FilterChain chain = null;
 
@@ -59,15 +43,15 @@ public class ApplicationContext
 			}
 		}
 
-		dispatch2( context, chain );
+		return dispatch2( context, chain );
 	}
 
-	public void dispatchInternal( RequestContext context )
+	public HttpResponse dispatchInternal( RequestContext context )
 	{
-		dispatch2( context, null );
+		return dispatch2( context, null );
 	}
 
-	protected void dispatch2( RequestContext context, FilterChain chain )
+	protected HttpResponse dispatch2( RequestContext context, FilterChain chain )
 	{
 		for( ServletMapping mapping : this.mappings )
 		{
@@ -85,15 +69,13 @@ public class ApplicationContext
 				if( chain != null )
 				{
 					chain.set( mapping.servlet  );
-					chain.call( context );
+					return chain.call( context );
 				}
-				else
-					mapping.servlet.call( context );
-				return;
+				return mapping.servlet.call( context );
 			}
 		}
 
-		context.getResponse().setStatusCode( 404, "Not Found" );
+		return new StatusResponse( 404, "Not found" );
 	}
 
 //	public void callJsp( String name, RequestContext context )

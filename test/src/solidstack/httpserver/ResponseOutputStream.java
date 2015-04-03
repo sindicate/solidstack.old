@@ -1,44 +1,40 @@
-/*--
- * Copyright 2012 René M. de Bloois
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package solidstack.httpserver;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import solidstack.io.FatalIOException;
 import solidstack.lang.Assert;
 
 
+// TODO It overrides OutputStream, shouldn't we throw IOExceptions?
 public class ResponseOutputStream extends OutputStream
 {
 	protected OutputStream out;
-	protected Response response;
+//	protected Response response;
 	protected byte[] buffer = new byte[ 8192 ];
 	protected int pos;
 	protected boolean committed;
+	protected Map< String, List< String > > headers = new HashMap< String, List<String> >();
+	private boolean connectionClose;
+	protected String contentType;
+	protected String charSet;
+	protected int statusCode = 200;
+	protected String statusMessage = "OK";
 
 	public ResponseOutputStream()
 	{
 
 	}
 
-	public ResponseOutputStream( Response response, OutputStream out )
+	public ResponseOutputStream( OutputStream out, boolean connectionClose )
 	{
-		this.response = response;
 		this.out = out;
+		this.connectionClose = connectionClose;
 	}
 
 	@Override
@@ -53,7 +49,7 @@ public class ResponseOutputStream extends OutputStream
 			}
 			else if( this.buffer.length - this.pos < len )
 			{
-				this.response.writeHeader( this.out );
+				writeHeader();
 //				System.out.write( this.buffer, 0, this.pos );
 				this.out.write( this.buffer, 0, this.pos );
 //				System.out.write( b, off, len );
@@ -84,7 +80,7 @@ public class ResponseOutputStream extends OutputStream
 			}
 			else if( this.buffer.length - this.pos < b.length )
 			{
-				this.response.writeHeader( this.out );
+				writeHeader();
 //				System.out.write( this.buffer, 0, this.pos );
 				this.out.write( this.buffer, 0, this.pos );
 //				System.out.write( b );
@@ -115,7 +111,7 @@ public class ResponseOutputStream extends OutputStream
 			}
 			else if( this.buffer.length - this.pos < 1 )
 			{
-				this.response.writeHeader( this.out );
+				writeHeader();
 //				System.out.write( this.buffer, 0, this.pos );
 				this.out.write( this.buffer, 0, this.pos );
 //				System.out.write( b );
@@ -137,15 +133,16 @@ public class ResponseOutputStream extends OutputStream
 	@Override
 	public void close()
 	{
-		commit();
-		try
-		{
-			this.out.close();
-		}
-		catch( IOException e )
-		{
-			throw new HttpException( e );
-		}
+		flush();
+		if( this.out instanceof ChunkedOutputStream )
+			try
+			{
+				this.out.close();
+			}
+			catch( IOException e )
+			{
+				throw new HttpException( e );
+			}
 	}
 
 	private void commit()
@@ -154,7 +151,7 @@ public class ResponseOutputStream extends OutputStream
 		{
 			if( !this.committed )
 			{
-				this.response.writeHeader( this.out );
+				writeHeader();
 				// The outputstream may be changed at this point
 				this.out.write( this.buffer, 0, this.pos );
 				this.committed = true;
@@ -166,11 +163,15 @@ public class ResponseOutputStream extends OutputStream
 		}
 	}
 
+	public boolean isCommitted()
+	{
+		return this.committed;
+	}
+
 	@Override
 	public void flush()
 	{
-		if( !this.committed )
-			commit();
+		commit();
 		try
 		{
 			this.out.flush();
@@ -185,5 +186,105 @@ public class ResponseOutputStream extends OutputStream
 	{
 		Assert.isFalse( this.committed );
 		this.pos = 0;
+	}
+
+	public void setStatusCode( int code, String message )
+	{
+		if( this.committed )
+			throw new IllegalStateException( "Response is already committed" );
+		this.statusCode = code;
+		this.statusMessage = message;
+	}
+
+	public void setContentType( String contentType, String charSet )
+	{
+		if( this.committed )
+			throw new IllegalStateException( "Response is already committed" );
+		this.contentType = contentType;
+		this.charSet = charSet;
+	}
+
+	public void setHeader( String name, String value )
+	{
+		if( this.committed )
+			throw new IllegalStateException( "Response is already committed" );
+//		if( name.equals( "Content-Type" ) )
+//			throw new IllegalArgumentException( "Content type should be set with setContentType()" );
+		// TODO Interpret content-type, or not?
+		setHeader0( name, value );
+	}
+
+	protected void setHeader0( String name, String value )
+	{
+		List< String > values = new ArrayList< String >();
+		values.add( value );
+		this.headers.put( name, values );
+	}
+
+	public String getHeader( String name )
+	{
+		List< String > values = this.headers.get( name );
+		if( values == null )
+			return null;
+		Assert.isTrue( !values.isEmpty() );
+		if( values.size() > 1 )
+			throw new IllegalStateException( "Found more than 1 value for the header " + name );
+		return values.get( 0 );
+	}
+
+	public void setCookie( String name, String value )
+	{
+		// TODO The path should be configurable
+		setHeader( "Set-Cookie", name + "=" + value + "; Path=/" );
+	}
+
+	static public final byte[] HTTP = "HTTP/1.1 ".getBytes();
+	static public final byte[] NEWLINE = new byte[] { '\r', '\n' };
+	static public final byte[] COLON = new byte[] { ':', ' ' };
+
+	private void writeHeader()
+	{
+		OutputStream out = this.out;
+
+		if( this.connectionClose )
+			setHeader( "Connection", "close" );
+		else
+			if( getHeader( "Content-Length" ) == null ) // TODO What about empty string?
+				setHeader0( "Transfer-Encoding", "chunked" );
+
+		// TODO status 404 and chunked encoding conflict each other
+
+		// TODO How can we send the charset if no content type is set?
+		if( this.contentType != null )
+			if( this.charSet != null )
+				setHeader0( "Content-Type", this.contentType + "; charset=" + this.charSet );
+			else
+				setHeader0( "Content-Type", this.contentType );
+
+		try
+		{
+			out.write( HTTP );
+			out.write( Integer.toString( this.statusCode ).getBytes() );
+			out.write( ' ' );
+			out.write( this.statusMessage.getBytes() );
+			out.write( NEWLINE );
+			for( Map.Entry< String, List< String > > entry : this.headers.entrySet() )
+				for( String value : entry.getValue() )
+				{
+					out.write( entry.getKey().getBytes() );
+					out.write( COLON );
+					out.write( value.getBytes() );
+					out.write( NEWLINE );
+				}
+			out.write( NEWLINE );
+		}
+		catch( IOException e )
+		{
+			throw new FatalIOException( e );
+		}
+
+		// TODO Are these header names case sensitive or not? And the values like 'chunked'?
+		if( "chunked".equals( getHeader( "Transfer-Encoding" ) ) )
+			this.out = new ChunkedOutputStream( this.out );
 	}
 }

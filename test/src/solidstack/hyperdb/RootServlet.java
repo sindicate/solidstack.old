@@ -1,29 +1,19 @@
-/*--
- * Copyright 2012 René M. de Bloois
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package solidstack.hyperdb;
 
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+
+import solidstack.httpserver.HttpException;
+import solidstack.httpserver.HttpResponse;
 import solidstack.httpserver.RequestContext;
-import solidstack.httpserver.ResponseWriter;
+import solidstack.httpserver.ResponseOutputStream;
 import solidstack.httpserver.Servlet;
 
 
 public class RootServlet implements Servlet
 {
-	public void call( RequestContext context )
+	public HttpResponse call( RequestContext context )
 	{
 //		new TemplateServlet().call( context, new Parameters( params ).put( "title", null ).put( "body", new Servlet()
 //		{
@@ -34,18 +24,23 @@ public class RootServlet implements Servlet
 //			}
 //		}));
 
-		context.getResponse().setContentType( "text/html", null );
-		ResponseWriter writer = context.getResponse().getWriter();
-
-//		try
-//		{
-//			Thread.sleep( 500 );
-//		}
-//		catch( InterruptedException e )
-//		{
-//			throw new ThreadInterrupted();
-//		}
-
-		writer.write( "<a href=\"/databases\">databases</a>\n" );
+		return new HttpResponse()
+		{
+			@Override
+			public void write( ResponseOutputStream out )
+			{
+				out.setContentType( "text/html", "UTF-8" );
+				try
+				{
+					Writer writer = new OutputStreamWriter( out, "UTF-8" );
+					writer.write( "<a href=\"/databases\">databases</a>\n" );
+					writer.flush();
+				}
+				catch( IOException e )
+				{
+					throw new HttpException( e );
+				}
+			}
+		};
 	}
 }

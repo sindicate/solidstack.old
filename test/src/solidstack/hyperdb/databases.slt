@@ -1,13 +1,13 @@
-<%@ template version="1.0" language="funny" contentType="text/html; charset=UTF-8" %>
+<%@ template version="1.0" language="groovy" contentType="text/html; charset=UTF-8" %>
 <%@ template import="solidstack.hyperdb.*" %>
 <%
-include( template: "/template", title: "Databases", body: () -> (
-	databases = class( "solidstack.hyperdb.Config" )#getDatabases();
+include( template: "/template", title: "Databases", body: {
+	def databases = Config.databases
 %>
 		<table>
 			<tr><th>Database</th></tr>
-<%	databases.keySet().each( name -> ( %>
+<%		for( def name : databases.keySet() ) { %>
 			<tr><td><a href="databases/${name}/connect">${name}</a></td></tr>
-<%	) ) %>
+<%		} %>
 		</table>
-<% ) ) %>
+<% } ) %>

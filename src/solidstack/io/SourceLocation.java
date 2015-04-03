@@ -54,21 +54,13 @@ public class SourceLocation
 	}
 
 	/**
-	 * @return A source location where the line number is decremented by one.
+	 * @return A source location where the line number is one smaller than this source location.
 	 */
 	public SourceLocation previousLine()
 	{
 		if( this.lineNumber <= 0 )
 			throw new FatalIOException( "There is no previous line" );
 		return new SourceLocation( this.resource, this.lineNumber - 1 );
-	}
-
-	/**
-	 * @return A source location where the line number is incremented by one.
-	 */
-	public SourceLocation nextLine()
-	{
-		return new SourceLocation( this.resource, this.lineNumber + 1 );
 	}
 
 	/**
@@ -83,8 +75,6 @@ public class SourceLocation
 	@Override
 	public String toString()
 	{
-		if( this.resource != null )
-			return "line " + this.lineNumber + " of file " + this.resource;
-		return "line " + this.lineNumber;
+		return "line " + this.lineNumber + " of file " + this.resource;
 	}
 }

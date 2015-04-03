@@ -1,24 +1,8 @@
-/*--
- * Copyright 2012 René M. de Bloois
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package solidstack.httpserver;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 
@@ -109,6 +93,7 @@ public class Handler extends Thread
 						//			System.out.println( "    "+ field.getValue() + " = " + value.getValue() );
 						if( field.equals( "Cookie" ) ) // TODO Case insensitive?
 						{
+							// TODO This is a ; separated string of multiple cookies with possibly equal names.
 							String s = value.getValue();
 							int pos2 = s.indexOf( '=' );
 							if( pos2 >= 0 )
@@ -141,13 +126,16 @@ public class Handler extends Thread
 						}
 					}
 
-					OutputStream out = this.socket.getOutputStream();
-					out = new CloseBlockingOutputStream( out );
-					Response response = new Response( request, out );
-					RequestContext context = new RequestContext( request, response, this.applicationContext );
+//					OutputStream out = this.socket.getOutputStream();
+//					out = new CloseBlockingOutputStream( out );
+//					Response response = new Response( request, out );
+					RequestContext context = new RequestContext( request, this.applicationContext );
+					ResponseOutputStream out = new ResponseOutputStream( this.socket.getOutputStream(), request.isConnectionClose() );
 					try
 					{
-						this.applicationContext.dispatch( context );
+						// TODO 2 try catches, one for read one for write
+						HttpResponse response = this.applicationContext.dispatch( context );
+						response.write( out );
 					}
 					catch( FatalSocketException e )
 					{
@@ -159,28 +147,28 @@ public class Handler extends Thread
 						if( t.getClass().equals( HttpException.class ) && t.getCause() != null )
 							t = t.getCause();
 						t.printStackTrace( System.out );
-						if( !response.isCommitted() )
+						if( !out.isCommitted() )
 						{
-							response.reset();
-							response.setStatusCode( 500, "Internal Server Error" );
-							response.setContentType( "text/plain", "ISO-8859-1" );
-							PrintWriter writer = response.getPrintWriter( "ISO-8859-1" );
+							out.clear();
+							out.setStatusCode( 500, "Internal Server Error" );
+							out.setContentType( "text/plain", "ISO-8859-1" );
+							PrintWriter writer = new PrintWriter( new OutputStreamWriter( out, "ISO-8859-1" ) );
 							t.printStackTrace( writer );
 							writer.flush();
 						}
 						// TODO Is the socket going to be closed?
 					}
 
-					response.finish();
+					out.close();
 
 					// TODO Detect Connection: close headers on the request & response
 					// TODO A GET request has no body, when a POST comes without content size, the connection should be closed.
 					// TODO What about socket.getKeepAlive() and the other properties?
 
-					String length = response.getHeader( "Content-Length" );
+					String length = out.getHeader( "Content-Length" );
 					if( length == null )
 					{
-						String transfer = response.getHeader( "Transfer-Encoding" );
+						String transfer = out.getHeader( "Transfer-Encoding" );
 						if( !"chunked".equals( transfer ) )
 							this.socket.close();
 					}
