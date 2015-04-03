@@ -43,8 +43,6 @@ public class FileResource extends Resource
 	 */
 	public FileResource( File file )
 	{
-		if( file == null )
-			throw new NullPointerException( "file must not be null" );
 		this.file = file;
 	}
 
