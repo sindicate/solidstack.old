@@ -19,10 +19,85 @@ package solidstack.script;
 import java.io.StringReader;
 
 import solidstack.io.ReaderSourceReader;
-import solidstack.script.Context.Value;
+import solidstack.io.SourceReader;
+import solidstack.script.expressions.Expression;
+import solidstack.script.java.Types;
+import solidstack.script.objects.Tuple;
+import solidstack.script.objects.Util;
+import solidstack.script.scopes.AbstractScope;
+import solidstack.script.scopes.AbstractScope.Ref;
+import solidstack.script.scopes.Scope;
 
 public class Script
 {
+	static public Script compile( String script )
+	{
+		return compile( new ReaderSourceReader( new StringReader( script ) ) );
+	}
+
+	static public Script compile( SourceReader reader )
+	{
+		return new Script( new ScriptParser( new ScriptTokenizer( reader ) ).parse() );
+	}
+
+	static private Object eval0( Expression expression, AbstractScope scope )
+	{
+		if( expression == null )
+			return null;
+
+		if( scope == null )
+			scope = new Scope();
+
+		ThreadContext thread = ThreadContext.init( scope );
+		try
+		{
+			return expression.evaluate( thread );
+		}
+		catch( Returning e )
+		{
+			return e.getValue();
+		}
+		catch( ThrowException e )
+		{
+			throw new ScriptException( e );
+		}
+//		catch( JavaException e )
+//		{
+//			throw new ScriptException( e );
+//		}
+	}
+
+	static public Object eval( Expression expression, AbstractScope scope )
+	{
+		return Util.toJava( eval0( expression, scope ) );
+	}
+
+	static public boolean evalBoolean( Expression expression, AbstractScope scope )
+	{
+		return isTrue( eval0( expression, scope ) );
+	}
+
+	static public boolean isTrue( Object object )
+	{
+		if( object instanceof Ref )
+		{
+			if( ( (Ref)object ).isUndefined() )
+				return false;
+			object = ( (Ref)object ).get();
+		}
+		if( object instanceof Tuple )
+		{
+			// TODO Maybe we shouldn't even do this
+			Tuple results = (Tuple)object;
+			if( results.size() == 0 )
+				return false;
+			object = results.getLast();
+		}
+		return Types.castToBoolean( Util.toJava( object ) );
+	}
+
+	// --- Non static members
+
 	private Expression expression;
 
 	public Script( Expression expression )
@@ -30,26 +105,13 @@ public class Script
 		this.expression = expression;
 	}
 
-	// TODO Add location
-	static public Script compile( String script )
+	public Object eval( AbstractScope scope )
 	{
-		ScriptTokenizer t = new ScriptTokenizer( new ReaderSourceReader( new StringReader( script ) ) );
-		ScriptParser p = new ScriptParser( t );
-		Expression result = p.parse( null, null );
-		return new Script( result );
+		return eval( this.expression, scope );
 	}
 
-	public Object execute( Context context )
+	public boolean evalBoolean( AbstractScope scope )
 	{
-		if( context == null )
-			context = new Context();
-		if( this.expression == null )
-			return null;
-
-		// TODO Add unwrap() method somewhere
-		Object result = this.expression.evaluate( context );
-		if( result instanceof Value )
-			return ( (Value)result ).get();
-		return result;
+		return evalBoolean( this.expression, scope );
 	}
 }

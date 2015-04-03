@@ -16,13 +16,16 @@
 
 package solidstack.script.java;
 
+import groovy.lang.GroovyRuntimeException;
+
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import solidstack.script.ScriptException;
+import solidstack.lang.Assert;
 
 
 
@@ -33,23 +36,83 @@ public class Resolver
 
 	static public MethodCall resolveMethodCall( CallContext context )
 	{
-		for( Method method : context.getType().getMethods() )
-			if( method.getName().equals( context.getName() ) )
-				matchAndAddMethod( context, method );
+		boolean needStatic = context.getObject() == null;
 
-		MethodCall call = Resolver.calculateBestMethodCandidate( context.getCandidates() );
-		return call;
+		for( Method method : context.getType().getMethods() )
+			if( !needStatic || ( method.getModifiers() & Modifier.STATIC ) != 0 )
+				if( method.getName().equals( context.getName() ) )
+				{
+					MethodCall caller = Resolver.matchArguments( context, method.getParameterTypes(), ( method.getModifiers() & Modifier.TRANSIENT ) != 0, false );
+					if( caller != null )
+					{
+						caller.object = context.getObject();
+						caller.method = method;
+						context.addCandidate( caller );
+					}
+				}
+
+		if( !needStatic )
+		{
+			context.setThisMode( true );
+			collectMethods( context.getType(), context );
+			context.setThisMode( false );
+		}
+
+		return Resolver.calculateBestMethodCandidate( context.getCandidates() );
 	}
 
-	static protected void matchAndAddMethod( CallContext context, Method method )
+	static public void collectMethods( Class cls, CallContext context )
 	{
-		MethodCall caller = Resolver.matchArguments( context, method );
-		if( caller != null )
+		ClassExt ext = ClassExt.forClass( cls );
+		if( ext != null )
 		{
-			caller.object = context.getObject();
-			caller.method = method;
-			context.addCandidate( caller );
+			// TODO Multiple
+			Method method = ext.getMethod( context.getName() );
+			if( method != null )
+			{
+				MethodCall caller = Resolver.matchArguments( context, method.getParameterTypes(), ( method.getModifiers() & Modifier.TRANSIENT ) != 0, true );
+				if( caller != null )
+				{
+					caller.object = context.getObject();
+					caller.method = method;
+					context.addCandidate( caller );
+				}
+			}
 		}
+
+		Class[] interfaces = cls.getInterfaces();
+		for( Class iface : interfaces )
+		{
+			if( !context.isInterfaceDone( iface ) )
+			{
+				collectMethods( iface, context );
+				context.interfaceDone( iface );
+			}
+		}
+
+		if( cls.isArray() && cls != Object[].class )
+			collectMethods( Object[].class, context ); // Makes Object[] the virtual super class of all arrays
+		else
+		{
+			cls = cls.getSuperclass();
+			if( cls != null )
+				collectMethods( cls, context );
+		}
+	}
+
+	static public MethodCall resolveConstructorCall( CallContext context )
+	{
+		for( Constructor constructor : context.getType().getConstructors() )
+		{
+			MethodCall caller = Resolver.matchArguments( context, constructor.getParameterTypes(), ( constructor.getModifiers() & Modifier.TRANSIENT ) != 0, false );
+			if( caller != null )
+			{
+				caller.constructor = constructor;
+				context.addCandidate( caller );
+			}
+		}
+
+		return Resolver.calculateBestMethodCandidate( context.getCandidates() );
 	}
 
 
@@ -60,18 +123,16 @@ public class Resolver
 
     // ---------- STEP 1: Used to match argument values with argument types
 
-	static public MethodCall matchArguments( CallContext context, Method method )
+	static public MethodCall matchArguments( CallContext context, Class[] types, boolean vararg, boolean ths )
 	{
 		// Initialize all used values from the context
-		Class[] types = method.getParameterTypes();
 		Object[] args = context.getArgs();
 		Class[] argTypes = context.getArgTypes();
-		boolean vararg = ( method.getModifiers() & Modifier.TRANSIENT ) != 0;
 
 		int argCount = args.length;
 		int typeCount = types.length;
 		int lastType = typeCount - 1;
-		int start = 0;
+		int start = ths ? 1 : 0;
 
 		if( vararg )
 		{
@@ -112,6 +173,9 @@ public class Resolver
 			difficulty += ret;
 		}
 
+		if( ths && lastType == 0 )
+			throw new GroovyRuntimeException( "Can't have vararg and includesThis, and lastType == 0" );
+
 		// Adapt the arguments to the method
 
 		Object[] newArgs = new Object[ typeCount ];
@@ -144,7 +208,7 @@ public class Resolver
 	// ---- STEP 2: Used to calculate the best candidate
 
 	// TODO (RMB) Can we exchange precedence for the specificity of 'this'
-    static public MethodCall calculateBestMethodCandidate( List<MethodCall> candidates )
+    static public MethodCall calculateBestMethodCandidate( List<MethodCall> candidates ) throws ResolverException
     {
 		if( candidates.size() == 0 )
 			return null;
@@ -308,25 +372,25 @@ public class Resolver
     }
 
 
-	public static int calculateArgumentsDistance( Class[] types, Object[] args )
-	{
-		// TODO (RMB) We don't have the old vararg penalty yet (x<<28)
-
-    	// Varargs are already applied by matchArguments
-
-		int ret = 0;
-		for( int i = /* includesThis ? 1 : */ 0; i < types.length; i++ )
-		{
-			// TODO (RMB) vararg distance?
-			Object arg = args[ i ];
-			int distance = Types.getDistance( arg != null ? arg.getClass() : null, types[ i ] );
-			if( distance < 0 )
-				return -1;
-			ret += distance;
-		}
-
-		return ret;
-	}
+//	public static int calculateArgumentsDistance( Class[] types, Object[] args )
+//	{
+//		// TODO (RMB) We don't have the old vararg penalty yet (x<<28)
+//
+//    	// Varargs are already applied by matchArguments
+//
+//		int ret = 0;
+//		for( int i = /* includesThis ? 1 : */ 0; i < types.length; i++ )
+//		{
+//			// TODO (RMB) vararg distance?
+//			Object arg = args[ i ];
+//			int distance = Types.calculateDistance( arg != null ? arg.getClass() : null, types[ i ] );
+//			if( distance < 0 )
+//				return -1;
+//			ret += distance;
+//		}
+//
+//		return ret;
+//	}
 
 
 	/**
@@ -370,29 +434,29 @@ public class Resolver
 		}
 
 		if( !varArg1 )
+		{
 			if( i1 > last1 ) // Are we over the last argument?
 			{
 				if( varArg2 )
 					return 1;
 				if( i2 > last2 )
 					return 0;
-				throw new ScriptException( "impossible1" );
+				throw Assert.fail();
 			}
-			else
-			{
-				type1 = call1[ i1 ];
-				arg1 = args1[ i1 ];
-			}
+			type1 = call1[ i1 ];
+			arg1 = args1[ i1 ];
+		}
 
 		if( !varArg2 )
+		{
 			if( i2 > last2 ) // Are we over the last argument?
 			{
 				if( varArg1 )
 					return -1; // call2 is bigger then call1 (call1 has an unused vararg)
 				return 1; // call1 is bigger then call2 (call1 has more arguments)
 			}
-			else
-				type2 = call2[ i2 ];
+			type2 = call2[ i2 ];
+		}
 
 		while( true )
 		{
@@ -469,13 +533,13 @@ public class Resolver
 			{
 				if( varArg2 || type2 == null )
 					break;
-				throw new ScriptException( "impossible5" );
+				throw Assert.fail();
 			}
 			else if( type2 == null )
 			{
 				if( varArg1 )
 					break;
-				throw new ScriptException( "impossible6" );
+				throw Assert.fail();
 			}
 		}
 

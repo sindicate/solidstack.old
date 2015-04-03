@@ -18,10 +18,9 @@ package solidstack.script.java;
 
 import java.util.List;
 
-import solidstack.script.ScriptException;
 
-
-public class ResolverException extends ScriptException
+// TODO Rename to UnresolvableMethodException
+public class ResolverException extends RuntimeException
 {
 	private List< MethodCall > candidates;
 
@@ -34,19 +33,9 @@ public class ResolverException extends ScriptException
 	public String getMessage()
 	{
 		StringBuilder msg = new StringBuilder();
-		msg.append( "Cannot resolve method:" );
+		msg.append( "Could not choose between the following methods:" );
 		for( MethodCall candidate : this.candidates )
-		{
-			msg.append( "\n\t" ).append( candidate.getDeclaringClass().getName() ).append( '#' ).append( candidate.getName() ).append( '(' );
-			Class[] types = candidate.getParameterTypes();
-			for( int i = 0; i < types.length; i++ )
-			{
-				if( i > 0 )
-					msg.append( ", " );
-				msg.append( types[ i ].getClass().getName()  );
-			}
-			msg.append( ')' );
-		}
+			msg.append( "\n\t" ).append( candidate.getMember() );
 		return msg.toString();
 	}
 }

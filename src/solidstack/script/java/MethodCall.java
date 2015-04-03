@@ -16,11 +16,11 @@
 
 package solidstack.script.java;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-
-import solidstack.script.ScriptException;
 
 public class MethodCall implements Cloneable
 {
@@ -28,6 +28,7 @@ public class MethodCall implements Cloneable
 
 	public Object object;
 	public Method method;
+	public Constructor constructor;
 	private Object[] args;
 	public boolean isVarargCall;
 	public int difficulty;
@@ -41,6 +42,8 @@ public class MethodCall implements Cloneable
 
 	public Class[] getParameterTypes()
 	{
+		if( this.constructor != null )
+			return this.constructor.getParameterTypes();
 		return this.method.getParameterTypes();
 	}
 
@@ -49,21 +52,33 @@ public class MethodCall implements Cloneable
 		return this.method.getDeclaringClass();
 	}
 
-	public Object invoke()
+	public Object invoke() throws InvocationTargetException
 	{
-		this.args = Resolver.transformArguments( this.method.getParameterTypes(), this.args );
+		this.args = Resolver.transformArguments( getParameterTypes(), this.args );
 		try
 		{
+			if( this.constructor != null )
+				return this.constructor.newInstance( this.args );
+			if( !this.method.isAccessible() )
+				this.method.setAccessible( true );
 			return this.method.invoke( this.object, this.args );
-		}
-		catch( IllegalAccessException e )
-		{
-			throw new ScriptException( e );
 		}
 		catch( InvocationTargetException e )
 		{
-			throw new ScriptException( e.getCause() );
+			throw e;
 		}
+		catch( Exception e )
+		{
+			Java.throwUnchecked( e );
+		}
+		return null;
+	}
+
+	public Member getMember()
+	{
+		if( this.constructor != null )
+			return this.constructor;
+		return this.method;
 	}
 
 	public String getName()

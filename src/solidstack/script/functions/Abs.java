@@ -16,20 +16,19 @@
 
 package solidstack.script.functions;
 
-import java.math.BigDecimal;
-import java.util.List;
+import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
+import solidstack.script.objects.FunctionObject;
+import solidstack.script.objects.Util;
+import solidstack.script.operators.Operator;
 
-import solidstack.lang.Assert;
-import solidstack.script.FunctionInstance;
-
-public class Abs extends FunctionInstance
+public class Abs extends FunctionObject
 {
 	@Override
-	public Object call( List<?> parameters )
+	public Object call( ThreadContext thread, Object... parameters )
 	{
-		Assert.isTrue( parameters.size() == 1 );
-		Object object = parameters.get( 0 );
-		Assert.isInstanceOf( object, BigDecimal.class );
-		return ( (BigDecimal)object ).abs();
+		if( parameters.length != 1 )
+			throw new ThrowException( "abs() needs exactly one parameter", thread.cloneStack() );
+		return Operator.abs( Util.deref( parameters[ 0 ] ) );
 	}
 }

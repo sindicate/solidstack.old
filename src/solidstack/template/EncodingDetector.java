@@ -57,12 +57,12 @@ public class EncodingDetector implements solidstack.io.EncodingDetector
 		if( matcher.matches() )
 			result = matcher.group( 1 );
 
-		// TODO When UTF-8, test the the JVM skips the optional byte order mark. Also for UTF-16BE/LE.
+		// TODO When UTF-8, test that the JVM skips the optional byte order mark. Also for UTF-16BE/LE.
 
-		if( !CHARSET_UTF.equals( result ) )
-			return result;
+		if( CHARSET_UTF.equals( result ) )
+			return detectUTF( bytes );
 
-		return detectUTF( bytes );
+		return result;
 	}
 
 	// Only works when first 2 characters are ascii
