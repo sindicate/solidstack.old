@@ -1,13 +1,16 @@
-called = call( "callee.funny" );
-called.test || throw( "Expected called.test" );
-println( called.test );
+result = call( "callee.funny" );
+result == "result" || throw "Expected 'result'";
+println( result );
 
-loaded = load( "callee.funny" );
-loaded.eval( this );
-if( !test; throw( "Expected test" ) );
+compileFile( "callee.funny" ).eval( this );
+if( !test ) throw "Expected test";
 println( test );
 
-// load, call, run, eval, exec, include, import, required, optional, module
+loaded = load( "callee.funny" );
+if( !loaded.test ) throw "Expected loaded.test";
+println( loaded.test );
+
+// load, call, run, eval, exec, include, import, require, optional, module, compile
 // classpath: protocol will find 'system' modules
 
 // load(string): loads and parses the given file as a script, returns a script object
@@ -18,3 +21,5 @@ println( test );
 // run(string): loads, parses and evaluates the given file as a script in its own scope, returns the result
 // call(string): loads, parses and evaluates the given file as a script in the current scope, returns the result
 // exec(string): == run? or an OS command?
+
+// What about executing a character stream, byte stream or char sequence?

@@ -44,11 +44,12 @@ public class CallSignature
         result = 31 * result; if( this.name != null ) result += this.name.hashCode();
         result = 31 * result + ( this.staticCall ? 1231 : 1237 );
 		result = 31 * result + ( this.property ? 1231 : 1237 );
-		for( Class<?> type : this.argTypes )
-		{
-			result *= 31;
-			if( type != null ) result += type.hashCode();
-		}
+		if( this.argTypes != null ) // argTypes is only null when reading a property, no need to hash this fact
+			for( Class<?> type : this.argTypes )
+			{
+				result *= 31;
+				if( type != null ) result += type.hashCode();
+			}
         return result;
 	}
 

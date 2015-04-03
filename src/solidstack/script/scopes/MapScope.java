@@ -12,50 +12,43 @@ public class MapScope extends AbstractScope
 	}
 
 	@Override
-	public Ref findRef( Symbol symbol )
+	public void var( Symbol symbol, Object value )
 	{
-		return new MapRef( symbol.toString() );
+		this.map.put( symbol.toString(), value );
 	}
 
 	@Override
-	public Variable def( Symbol symbol, Object value )
+	public void val( Symbol symbol, Object value )
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public Value val( Symbol symbol, Object value )
+	public Object get( Symbol symbol )
 	{
-		throw new UnsupportedOperationException();
+		Object result = this.map.get( symbol.toString() );
+		if( result != null )
+			return result;
+		if( this.map.containsKey( symbol.toString() ) )
+			return null;
+		throw new UndefinedException();
 	}
 
-	public class MapRef implements Ref
+	@Override
+	protected void set0( Symbol symbol, Object value )
 	{
-		private String key;
-
-		public MapRef( String key )
-		{
-			this.key = key;
+		if( !this.map.containsKey( symbol.toString() ) ) // TODO Huh?
+			throw new UndefinedException();
+		this.map.put( symbol.toString(), value );
 		}
 
-		public Object get()
+	public Object apply( Symbol symbol, Object... args )
 		{
-			return MapScope.this.map.get( this.key );
+		return DefaultScope.apply( get( symbol ), args );
 		}
 
-		public void set( Object value )
+	public Object apply( Symbol symbol, Map args )
 		{
-			MapScope.this.map.put( this.key, value );
+		return DefaultScope.apply( get( symbol ), args );
 		}
-
-		public boolean isUndefined()
-		{
-			return MapScope.this.map.containsKey( this.key );
 		}
-
-		public Symbol getKey()
-		{
-			return new TempSymbol( this.key );
-		}
-	}
-}

@@ -19,12 +19,11 @@ package solidstack.script.expressions;
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
-import solidstack.script.objects.Util;
-import solidstack.script.scopes.AbstractScope.Ref;
 import solidstack.script.scopes.CombinedScope;
 import solidstack.script.scopes.DefaultScope;
 import solidstack.script.scopes.GlobalScope;
 import solidstack.script.scopes.Scope;
+import solidstack.script.scopes.UndefinedException;
 import funny.Symbol;
 
 
@@ -41,41 +40,49 @@ public class Module extends LocalizedExpression
 		this.expression = expression;
 	}
 
+	public Expression compile()
+	{
+		this.object = this.object.compile();
+		this.expression = this.expression.compile();
+		return this;
+	}
+
 	// TODO This resembles with() a lot
 	public Object evaluate( ThreadContext thread )
 	{
 		// The name
-		Object object = Util.deref( this.object.evaluate( thread ) );
+		Object object = this.object.evaluate( thread );
 		if( !( object instanceof String ) )
 			throw new ThrowException( "Expected a String as module name", thread.cloneStack( getLocation() ) );
 		String name = (String)object;
 
-		Ref moduleRef = GlobalScope.instance.getRef( Symbol.apply( name ) );
-		if( !moduleRef.isUndefined() )
+		try
 		{
-			Scope module = (Scope)moduleRef.get();
+			Scope module = (Scope)GlobalScope.instance.get( Symbol.apply( name ) );
 			if( !(Boolean)module.get( Symbol.apply( "initialized" ) ) )
 				throw new ThrowException( "Circular module dependency detected", thread.cloneStack( getLocation() ) );
 			return module;
 		}
-
-		// Create module scope and define globally
-		DefaultScope module = new DefaultScope();
-		moduleRef.set( module );
-		Ref initializedRef = module.def( Symbol.apply( "initialized" ), false );
-
-		// Continue processing with the module scope
-		Scope scope = new CombinedScope( module, thread.getScope() );
-		scope = thread.swapScope( scope );
-		try
+		catch( UndefinedException e )
 		{
-			this.expression.evaluate( thread );
-			initializedRef.set( true );
-			return module;
-		}
-		finally
-		{
-			thread.swapScope( scope );
+			// Create module scope and define globally
+			DefaultScope module = new DefaultScope();
+			GlobalScope.instance.set( Symbol.apply( name ), module );
+			module.var( Symbol.apply( "initialized" ), false ); // TODO Make constant symbol (any others?)
+
+			// Continue processing with the module scope
+			Scope scope = new CombinedScope( module, thread.getScope() );
+			scope = thread.swapScope( scope );
+			try
+			{
+				this.expression.evaluate( thread );
+				module.var( Symbol.apply( "initialized" ), true );
+				return module;
+			}
+			finally
+			{
+				thread.swapScope( scope );
+			}
 		}
 	}
 

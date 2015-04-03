@@ -32,17 +32,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import solidstack.script.functions.Abs;
-import solidstack.script.functions.Call;
-import solidstack.script.functions.Class;
-import solidstack.script.functions.Compile;
-import solidstack.script.functions.Defined;
-import solidstack.script.functions.Length;
-import solidstack.script.functions.Load;
-import solidstack.script.functions.Print;
-import solidstack.script.functions.Println;
-import solidstack.script.functions.Require;
+import solidstack.script.GlobalFunctions;
 import solidstack.script.functions.Return;
+import solidstack.script.objects.Tuple;
+import solidstack.script.objects.Type;
+import funny.Symbol;
 import funny.sql.JDBC;
 
 
@@ -54,6 +48,7 @@ public class GlobalScope extends DefaultScope
 
 	public GlobalScope()
 	{
+		super( new ObjectScope( new GlobalFunctions() ) );
 		reset();
 	}
 
@@ -62,16 +57,7 @@ public class GlobalScope extends DefaultScope
 	{
 		clear();
 
-		val( Symbol.apply( "call" ), new Call() );
-		val( Symbol.apply( "classOf" ), new ClassOf() );
-		val( Symbol.apply( "compile" ), new Compile() );
-		val( Symbol.apply( "defined" ), new Defined() );
-		val( Symbol.apply( "load" ), new Load() );
-		val( Symbol.apply( "loadClass" ), new LoadClass() ); // TODO Or loadType?
-		val( Symbol.apply( "print" ), new Print() );
-		val( Symbol.apply( "println" ), new Println() );
-		val( Symbol.apply( "require" ), new Require() );
-		val( Symbol.apply( "return" ), new Return() ); // TODO Remove
+		val( Symbol.apply( "return" ), new Return() ); // TODO Remove, should be keyword
 
 		val( Symbol.forString( "boolean" ), boolean.class );
 		val( Symbol.forString( "byte" ), byte.class );
@@ -139,5 +125,6 @@ public class GlobalScope extends DefaultScope
 		val( Symbol.apply( "JDBC" ), new Type( JDBC.class ) );
 		val( Symbol.apply( "Scope" ), new Type( Scope.class ) );
 		val( Symbol.apply( "Symbol" ), new Type( Symbol.class ) );
+		val( Symbol.apply( "Tuple" ), new Type( Tuple.class ) );
 	}
 }

@@ -18,7 +18,6 @@ package solidstack.script.operators;
 
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
-import solidstack.script.objects.Util;
 
 
 public class GreaterOrEqualTo extends Operator
@@ -30,8 +29,8 @@ public class GreaterOrEqualTo extends Operator
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = Util.deref( this.left.evaluate( thread ) );
-		Object right = Util.deref( this.right.evaluate( thread ) );
+		Object left = this.left.evaluate( thread );
+		Object right = this.right.evaluate( thread );
 		return Operator.compare( left, right ) >= 0;
 	}
 }

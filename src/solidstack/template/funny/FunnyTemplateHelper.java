@@ -29,10 +29,10 @@ import solidstack.util.Pars;
 public class FunnyTemplateHelper
 {
 	private FunnyTemplate template;
-	private Map< String, Object > parameters;
+	private Object parameters;
 	private EncodingWriter writer;
 
-	public FunnyTemplateHelper( FunnyTemplate template, Map< String, Object > parameters, EncodingWriter writer )
+	public FunnyTemplateHelper( FunnyTemplate template, Object parameters, EncodingWriter writer )
 	{
 		this.template = template;
 		this.parameters = parameters;

@@ -17,6 +17,7 @@
 package solidstack.script.expressions;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import solidstack.io.SourceLocation;
@@ -27,15 +28,44 @@ public class Expressions implements Expression
 {
 	private List<Expression> expressions = new ArrayList<Expression>();
 
-
-	public Expressions()
+	public Expressions( Expression... expressions )
 	{
+		Collections.addAll( this.expressions, expressions );
 	}
 
 	public Expressions( Expression expression )
 	{
 		if( expression != null )
 			append( expression );
+	}
+
+	public List<Expression> getExpressions()
+	{
+		return this.expressions;
+	}
+
+	public Expression compile()
+	{
+		List<Expression> result = new ArrayList<Expression>();
+
+		for( Expression expression : this.expressions )
+			if( expression != null )
+			{
+				expression = expression.compile();
+				if( expression != null )
+				{
+					if( expression instanceof Expressions )
+						result.addAll( ( (Expressions)expression ).getExpressions() );
+					else
+						result.add( expression );
+				}
+			}
+
+		if( result.isEmpty() ) return null;
+		if( result.size() == 1 ) return result.get( 0 );
+		this.expressions = result;
+
+		return this;
 	}
 
 	public Object evaluate( ThreadContext thread )
@@ -45,11 +75,6 @@ public class Expressions implements Expression
 			if( e != null )
 				result = e.evaluate( thread );
 		return result;
-	}
-
-	public Object evaluateRef( ThreadContext thread )
-	{
-		return evaluate( thread );
 	}
 
 	public Expressions append( Expression expression )
