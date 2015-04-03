@@ -18,11 +18,12 @@ package solidstack.template;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
-import solidstack.io.PushbackReader;
-import solidstack.io.SourceLocation;
 import solidstack.io.SourceReader;
+import solidstack.io.PushbackReader;
+import solidstack.lang.Assert;
 
 
 /**
@@ -99,6 +100,13 @@ public class JSPLikeTemplateParser
 	 */
 	private StringBuilder buffer = new StringBuilder( 1024 );
 
+	/**
+	 * This queue of parse events is used to consolidate whitespace. This means that when scripts, comments and
+	 * directives are completely contained in their own lines in the template, the surrounding whitespace is assigned to
+	 * the script, comment and directive events and no whitespace events are triggered.
+	 */
+	private List< ParseEvent > queue = new ArrayList< ParseEvent >();
+
 	private boolean firstRead;
 
 	/**
@@ -118,26 +126,58 @@ public class JSPLikeTemplateParser
 	 */
 	public ParseEvent next()
 	{
-		ParseEvent event = next0();
-		if( this.firstRead )
-			return event;
+		if( this.queue.size() > 0 )
+			return this.queue.remove( 0 );
 
-		// Get first event which must be a <%@ template version="1.0" %>
+		ParseEvent event;
 
-		if( event.getEvent() != EVENT.DIRECTIVE )
-			throw new ParseException( "Template must start with a 'template' directive on the first character of the first line", this.reader.getLocation() );
+		if( !this.firstRead )
+		{
+			// Get first event which must be a <%@ template version="1.0" %>
 
-		Directive version = Template.getDirective( event.getDirectives(), "template", "version" );
-		if( version == null )
-			throw new ParseException( "Template must start with a 'template' directive that has a 'version' attribute", this.reader.getLocation() );
+			event = next0();
+			if( event.getEvent() != EVENT.DIRECTIVE )
+				throw new ParseException( "Template must start with a 'template' directive on the first character of the first line", this.reader.getLineNumber() );
 
-		String versionString = version.getValue();
-		if( !versionString.equals( "1.0" ) )
-			throw new ParseException( "Version '" + versionString + "' is not supported", this.reader.getLocation() );
+			Directive version = Template.getDirective( event.getDirectives(), "template", "version" );
+			if( version == null )
+				throw new ParseException( "Template must start with a 'template' directive that has a 'version' attribute", this.reader.getLineNumber() );
 
-		this.firstRead = true;
+			String versionString = version.getValue();
+			if( !versionString.equals( "1.0" ) )
+				throw new ParseException( "Version '" + versionString + "' is not supported", this.reader.getLineNumber() );
 
-		return event;
+			this.queue.add( event ); // Need to wait for the rest
+
+			this.firstRead = true;
+		}
+
+		while( true )
+			switch( ( event = next0() ).getEvent() )
+			{
+				case TEXT:
+				case EXPRESSION:
+				case EXPRESSION2:
+				case EOF:
+					if( this.queue.size() == 0 )
+						return event; // Just pass through
+					this.queue.add( event );
+					return this.queue.remove( 0 ); // The queue can now be emptied again
+
+				case WHITESPACE:
+				case SCRIPT:
+				case DIRECTIVE:
+				case COMMENT:
+					this.queue.add( event ); // Need to wait for the rest
+					break;
+
+				case NEWLINE:
+					if( this.queue.size() == 0 )
+						return event; // Just pass through
+					this.queue.add( event );
+					reassignNewlines(); // We need to reassign the whitespace because no template text has been found on the last lines
+					return this.queue.remove( 0 ); // The queue can now be emptied again
+			}
 	}
 
 	/**
@@ -172,7 +212,7 @@ public class JSPLikeTemplateParser
 								return new ParseEvent( EVENT.TEXT, popBuffer() );
 							continue;
 						default:
-							throw new ParseException( "Only <, $ or \\ can be escaped", reader.getLocation() );
+							throw new ParseException( "Only <, $ or \\ can be escaped", reader.getLineNumber() );
 					}
 
 				case '<':
@@ -226,6 +266,66 @@ public class JSPLikeTemplateParser
 	}
 
 	/**
+	 * Consolidates whitespace and newlines.
+	 */
+	private void reassignNewlines()
+	{
+		// Remove all whitespace
+		for( Iterator< ParseEvent > i = this.queue.iterator(); i.hasNext(); )
+			if( i.next().getEvent() == EVENT.WHITESPACE )
+				i.remove();
+
+		// And reassign newlines
+		int index = 0;
+		while( index < this.queue.size() )
+		{
+			ParseEvent event = this.queue.get( index++ );
+			ParseEvent event2;
+			switch( event.getEvent() )
+			{
+				case NEWLINE:
+					if( index >= this.queue.size() ) // Is it the last one?
+					{
+						index -= 2;
+						Assert.isTrue( index >= 0 );
+						switch( ( event2 = this.queue.get( index ) ).getEvent() ) // TODO This whole switch is only for the assertion failure
+						{
+							case SCRIPT:
+							case DIRECTIVE:
+							case COMMENT:
+								event2.setData( event2.getData() + event.getData() );
+								this.queue.remove( ++index );
+								return;
+							default:
+								Assert.fail( "Should not come here" );
+						}
+					}
+					switch( ( event2 = this.queue.get( index ) ).getEvent() )
+					{
+						case SCRIPT:
+						case DIRECTIVE:
+						case COMMENT:
+						case NEWLINE:
+							event2.setData( event.getData() + event2.getData() );
+							this.queue.remove( --index );
+							break;
+						default:
+							Assert.fail( "Should not come here" );
+					}
+					break;
+
+				case DIRECTIVE:
+				case SCRIPT:
+				case COMMENT:
+					break;
+
+				default:
+					Assert.fail( "Unexpected event " + event.getEvent() );
+			}
+		}
+	}
+
+	/**
 	 * Returns the contents of the buffer, and clears it.
 	 *
 	 * @return The contents of the buffer.
@@ -272,7 +372,7 @@ public class JSPLikeTemplateParser
 	{
 		int c = this.reader.read();
 		if( c != '{' )
-			throw new ParseException( "Expecting an { after the $", this.reader.getLocation() );
+			throw new ParseException( "Expecting an { after the $", this.reader.getLineNumber() );
 		readGStringExpression( true );
 		return new ParseEvent( EVENT.EXPRESSION2, popBuffer() );
 	}
@@ -317,7 +417,7 @@ public class JSPLikeTemplateParser
 
 					ch = reader.read();
 					if( ch == -1 || ch == '\n' )
-						throw new ParseException( "Unclosed string", reader.getLocation() );
+						throw new ParseException( "Unclosed string", reader.getLineNumber() );
 					if( ch == quote )
 					{
 						result.append( (char)ch );
@@ -328,7 +428,7 @@ public class JSPLikeTemplateParser
 				// Read %>
 				ch = reader.read();
 				if( ch != '>' )
-					throw new ParseException( "Expecting > after an %", reader.getLocation() );
+					throw new ParseException( "Expecting > after an %", reader.getLineNumber() );
 				return "%>";
 			default:
 				// Read an identifier
@@ -363,7 +463,7 @@ public class JSPLikeTemplateParser
 
 		String name = getToken();
 		if( name == null )
-			throw new ParseException( "Expecting a name", reader.getLocation() );
+			throw new ParseException( "Expecting a name", reader.getLineNumber() );
 
 		ParseEvent result = new ParseEvent( EVENT.DIRECTIVE );
 
@@ -376,15 +476,15 @@ public class JSPLikeTemplateParser
 				return result;
 			}
 			if( !getToken().equals( "=" ) )
-				throw new ParseException( "Expecting '=' in directive", reader.getLocation() );
+				throw new ParseException( "Expecting '=' in directive", reader.getLineNumber() );
 			String value = getToken();
 			if( value == null || !value.startsWith( "\"" ) || !value.endsWith( "\"" ) )
-				throw new ParseException( "Expecting a string value in directive", reader.getLocation() );
-			result.addDirective( name, token, value.substring( 1, value.length() - 1 ), reader.getLocation() );
+				throw new ParseException( "Expecting a string value in directive", reader.getLineNumber() );
+			result.addDirective( name, token, value.substring( 1, value.length() - 1 ), reader.getLineNumber() );
 			token = getToken();
 		}
 
-		throw new ParseException( "Unexpected end of file", reader.getLocation() );
+		throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
 	}
 
 	private ParseEvent readScript( EVENT event )
@@ -402,7 +502,7 @@ public class JSPLikeTemplateParser
 			switch( c )
 			{
 				case -1:
-					throw new ParseException( "Unexpected end of file", reader.getLocation() );
+					throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
 
 				case '"':
 				case '\'':
@@ -449,10 +549,10 @@ public class JSPLikeTemplateParser
 			switch( c = reader.read() )
 			{
 				case -1:
-					throw new ParseException( "Unexpected end of file", reader.getLocation() );
+					throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
 				case '\n':
 					if( !multiline )
-						throw new ParseException( "Unexpected end of line", reader.getLocation() );
+						throw new ParseException( "Unexpected end of line", reader.getLineNumber() );
 					buffer.append( (char)c );
 					break;
 				case '\\':
@@ -460,7 +560,7 @@ public class JSPLikeTemplateParser
 					switch( c = reader.read() )
 					{
 						default:
-							throw new ParseException( "Only b, f, n, r, t, ', \",  $ or \\ can be escaped", reader.getLocation() );
+							throw new ParseException( "Only b, f, n, r, t, ', \",  $ or \\ can be escaped", reader.getLineNumber() );
 						case 'b':
 						case 'f':
 						case 'n':
@@ -478,7 +578,7 @@ public class JSPLikeTemplateParser
 					{
 						c = reader.read();
 						if( c != '{' )
-							throw new ParseException( "Expecting an { after the $", reader.getLocation() );
+							throw new ParseException( "Expecting an { after the $", reader.getLineNumber() );
 						buffer.append( '$' );
 						buffer.append( '{' );
 						readGStringExpression( multiline );
@@ -527,7 +627,7 @@ public class JSPLikeTemplateParser
 			switch( c = reader.read() )
 			{
 				case -1:
-					throw new ParseException( "Unexpected end of file", reader.getLocation() );
+					throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
 				case '}':
 					return;
 				case '"':
@@ -539,7 +639,7 @@ public class JSPLikeTemplateParser
 					break;
 				case '\n':
 					if( !multiline  )
-						throw new ParseException( "Unexpected end of line", reader.getLocation() );
+						throw new ParseException( "Unexpected end of line", reader.getLineNumber() );
 					//$FALL-THROUGH$
 				default:
 					buffer.append( (char)c );
@@ -561,7 +661,7 @@ public class JSPLikeTemplateParser
 			switch( c = reader.read() )
 			{
 				case -1:
-					throw new ParseException( "Unexpected end of file", reader.getLocation() );
+					throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
 				case '}':
 					buffer.append( '}' );
 					return;
@@ -574,7 +674,7 @@ public class JSPLikeTemplateParser
 					break;
 				case '\n':
 					if( !multiline  )
-						throw new ParseException( "Unexpected end of line", reader.getLocation() );
+						throw new ParseException( "Unexpected end of line", reader.getLineNumber() );
 					//$FALL-THROUGH$
 				default:
 					buffer.append( (char)c );
@@ -594,7 +694,7 @@ public class JSPLikeTemplateParser
 			switch( reader.read() )
 			{
 				case -1:
-					throw new ParseException( "Unexpected end of file", reader.getLocation() );
+					throw new ParseException( "Unexpected end of file", reader.getLineNumber() );
 				case '-':
 					reader.mark( 3 );
 					if( reader.read() == '-' && reader.read() == '%' && reader.read() == '>' )
@@ -688,11 +788,11 @@ public class JSPLikeTemplateParser
 			this.data = data;
 		}
 
-		void addDirective( String name, String attribute, String value, SourceLocation location )
+		void addDirective( String name, String attribute, String value, int lineNumber )
 		{
 			if( this.directives == null )
 				this.directives = new ArrayList< Directive >();
-			this.directives.add( new Directive( name, attribute, value, location ) );
+			this.directives.add( new Directive( name, attribute, value, lineNumber ) );
 		}
 
 		@Override
@@ -710,14 +810,14 @@ public class JSPLikeTemplateParser
 		private String name;
 		private String attribute;
 		private String value;
-		private SourceLocation location;
+		private int lineNumber;
 
-		Directive( String name, String attribute, String value, SourceLocation location )
+		Directive( String name, String attribute, String value, int lineNumber )
 		{
 			this.name = name;
 			this.attribute = attribute;
 			this.value = value;
-			this.location = location;
+			this.lineNumber = lineNumber;
 		}
 
 		/**
@@ -755,9 +855,9 @@ public class JSPLikeTemplateParser
 		 *
 		 * @return The line number of the directive in the source file.
 		 */
-		public SourceLocation getLocation()
+		public int getLineNumber()
 		{
-			return this.location;
+			return this.lineNumber;
 		}
 	}
 }

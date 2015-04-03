@@ -44,7 +44,7 @@ public class TemplateWriterTests
 	@Test
 	public void testPlainTemplate()
 	{
-		TemplateLoader templates = new TemplateLoader();
+		TemplateManager templates = new TemplateManager();
 		templates.setTemplatePath( "classpath:/solidstack/template" );
 
 		Template template = templates.getTemplate( "test.xml" );
@@ -59,7 +59,7 @@ public class TemplateWriterTests
 	@Test
 	public void testXMLTemplate()
 	{
-		TemplateLoader templates = new TemplateLoader();
+		TemplateManager templates = new TemplateManager();
 		templates.setTemplatePath( "classpath:/solidstack/template" );
 
 		Template template = templates.getTemplate( "test.xml" );

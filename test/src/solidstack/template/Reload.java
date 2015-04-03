@@ -28,7 +28,7 @@ import solidstack.io.ClassPathResource;
 import solidstack.io.FatalIOException;
 import solidstack.io.FileResource;
 import solidstack.io.Resource;
-import solidstack.io.Resources;
+import solidstack.io.ResourceFactory;
 import solidstack.io.URIResource;
 
 
@@ -38,28 +38,28 @@ public class Reload
 	@Test
 	public void testResourceFactory() throws IOException
 	{
-		Resource resource = Resources.getResource( "classpath:/java/lang/String.class" );
+		Resource resource = ResourceFactory.getResource( "classpath:/java/lang/String.class" );
 		Assert.assertTrue( resource instanceof ClassPathResource );
 		Assert.assertEquals( resource.getURL().getProtocol(), "jar" );
 		InputStream in = resource.newInputStream();
 		Assert.assertTrue( in.read() >= 0 );
 		in.close();
 
-		resource = Resources.getResource( "classpath:/solidstack/template/dummy.slt" );
+		resource = ResourceFactory.getResource( "classpath:/solidstack/template/dummy.slt" );
 		Assert.assertTrue( resource instanceof ClassPathResource );
 		Assert.assertEquals( resource.getURL().getProtocol(), "file" );
 		in = resource.newInputStream();
 		Assert.assertTrue( in.read() >= 0 );
 		in.close();
 
-		resource = Resources.getResource( "file:build.xml" );
+		resource = ResourceFactory.getResource( "file:build.xml" );
 		Assert.assertTrue( resource instanceof FileResource );
 		Assert.assertEquals( resource.getURL().getProtocol(), "file" );
 		in = resource.newInputStream();
 		Assert.assertTrue( in.read() >= 0 );
 		in.close();
 
-		resource = Resources.getResource( "http://solidbase.org" );
+		resource = ResourceFactory.getResource( "http://nu.nl" );
 		Assert.assertTrue( resource instanceof URIResource );
 		Assert.assertEquals( resource.getURL().getProtocol(), "http" );
 		try
@@ -78,13 +78,13 @@ public class Reload
 	@Test
 	public void testReloading() throws IOException
 	{
-		TemplateLoader templates = new TemplateLoader();
+		TemplateManager templates = new TemplateManager();
 		templates.setTemplatePath( "classpath:/solidstack/template" );
 		templates.setDefaultLanguage( "javascript" );
 
 		Template template = templates.getTemplate( "dummy" );
 
-		Resource resource = Resources.getResource( "classpath:/solidstack/template/dummy.slt" );
+		Resource resource = ResourceFactory.getResource( "classpath:/solidstack/template/dummy.slt" );
 		OutputStream out = resource.unwrap().getOutputStream();
 		out.write( "<%@template version=\"1.0\"%>test".getBytes() );
 		out.close();

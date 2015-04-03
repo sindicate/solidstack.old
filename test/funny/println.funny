@@ -1,2 +1,0 @@
-println( args( 1 ) );
-throw "exception";

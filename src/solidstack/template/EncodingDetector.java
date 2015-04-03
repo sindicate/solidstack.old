@@ -28,14 +28,45 @@ import solidstack.lang.SystemException;
  *
  * @author René de Bloois
  */
+// FIXME This does not work yet with the version="1.0" in the directive.
 public class EncodingDetector implements solidstack.io.EncodingDetector
 {
-	static final private Pattern ENCODING_PATTERN = Pattern.compile( "^<%@[ \t]*template[ \t]+(?:.+[ \t]+)?encoding[ \t]*=\"([^\"]*)\".*" ); // TODO Improve
+	static final private Pattern ENCODING_PATTERN = Pattern.compile( "^<%@[ \t]*template[ \t]+encoding[ \t]*=\"([^\"]*)\".*", Pattern.CASE_INSENSITIVE ); // TODO Improve, case sensitive?
+
+	/**
+	 * Constant for the ISO-8859-1 character set.
+	 */
+	static final public String CHARSET_ISO = "ISO-8859-1";
+
+	/**
+	 * Constant for the UTF-8 character set.
+	 */
+	static final public String CHARSET_UTF8 = "UTF-8";
 
 	/**
 	 * Constant for the UTF character set.
 	 */
 	static final public String CHARSET_UTF = "UTF";
+
+	/**
+	 * Constant for the UTF-16BE character set.
+	 */
+	static final public String CHARSET_UTF16BE = "UTF-16BE";
+
+	/**
+	 * Constant for the UTF-16LE character set.
+	 */
+	static final public String CHARSET_UTF16LE = "UTF-16LE";
+
+	/**
+	 * Constant for the UTF-32BE character set.
+	 */
+	static final public String CHARSET_UTF32BE = "UTF-32BE";
+
+	/**
+	 * Constant for the UTF-32LE character set.
+	 */
+	static final public String CHARSET_UTF32LE = "UTF-32LE";
 
 	/**
 	 * The singleton instance of this encoding detector.
@@ -57,12 +88,12 @@ public class EncodingDetector implements solidstack.io.EncodingDetector
 		if( matcher.matches() )
 			result = matcher.group( 1 );
 
-		// TODO When UTF-8, test that the JVM skips the optional byte order mark. Also for UTF-16BE/LE.
+		// TODO When UTF-8, test the the JVM skips the optional byte order mark. Also for UTF-16BE/LE.
 
-		if( CHARSET_UTF.equals( result ) )
-			return detectUTF( bytes );
+		if( !CHARSET_UTF.equals( result ) )
+			return result;
 
-		return result;
+		return detectUTF( bytes );
 	}
 
 	// Only works when first 2 characters are ascii
@@ -76,30 +107,29 @@ public class EncodingDetector implements solidstack.io.EncodingDetector
 		// 00 xx          UTF-16BE (default for UTF-16)
 		// 00 00 (00 xx)  UTF-32BE
 
+		// BOM is only read by the JVM when UTF-8, UTF-16 or UTF-32. TODO Test
+		// specifying BE or LE means the BOM is not removed when there is one. TODO Test
+		// The BOM is a Zero-width non-breaking space (ZWNBSP), but is deprecated as a real character, so that it can be used as a BOM.
+		// TODO Maybe we should use UTF-16 and UTF-32 to make sure that any BOM is removed from the file.
+
 		if( bytes.length <= 1 )
-			return CHARSET_UTF_8;
+			return CHARSET_UTF8;
 		if( bytes[ 0 ] != 0 )
 		{
 			if( bytes[ 1 ] != 0 )
-				return CHARSET_UTF_8;
+				return CHARSET_UTF8;
 			if( bytes.length == 2 )
-				return CHARSET_UTF_16LE;
+				return CHARSET_UTF16LE;
 			if( bytes[ 2 ] != 0 )
-				return CHARSET_UTF_16LE; // TODO Throw undetectable when length < 4
-			return CHARSET_UTF_32LE; // TODO Throw undetectable when length < 4
+				return CHARSET_UTF16LE; // TODO Throw undetectable when length < 4
+			return CHARSET_UTF32LE; // TODO Throw undetectable when length < 4
 		}
 		if( bytes[ 1 ] != 0 )
-			return CHARSET_UTF_16BE;
-		return CHARSET_UTF_32BE; // TODO Throw undetectable when length < 4
+			return CHARSET_UTF16BE;
+		return CHARSET_UTF32BE; // TODO Throw undetectable when length < 4
 	}
 
-	/**
-	 * Filters out ASCII bytes smaller than 128 and returns the result as a string.
-	 *
-	 * @param chars The bytes to filter.
-	 * @return The ASCII bytes smaller than 128.
-	 */
-	static public String toAscii( byte[] chars )
+	static private String toAscii( byte[] chars )
 	{
 		int len = chars.length;
 		int j = 0;

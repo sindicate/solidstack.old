@@ -17,6 +17,7 @@
 package solidstack.io;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,7 +25,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.charset.Charset;
-import java.util.regex.Pattern;
 
 
 /**
@@ -34,9 +34,6 @@ import java.util.regex.Pattern;
  */
 public class SourceReaders
 {
-	// TODO Maybe this is different in different JVM's. If so, then just always skip the BOM.
-	static private final Pattern SKIP_BOM_PATTERN = Pattern.compile( "UTF-(8|16(BE|LE))", Pattern.CASE_INSENSITIVE );
-
 	/**
 	 * @param resource The resource.
 	 * @return A source reader for the given resource.
@@ -78,15 +75,10 @@ public class SourceReaders
 	 */
 	static public SourceReader forResource( Resource resource, EncodingDetector detector, String defaultEncoding ) throws FileNotFoundException
 	{
-		if( resource.supportsReader() )
-			return new ReaderSourceReader( resource.newReader(), resource.getLocation() );
-
 		InputStream is = new BufferedInputStream( resource.newInputStream() );
 		boolean success = false;
 		try
 		{
-			String encoding = null;
-
 			if( detector != null )
 			{
 				is.mark( 256 );
@@ -96,39 +88,26 @@ public class SourceReaders
 
 				is.reset();
 
-				if( len != -1 )
+				if( len < 256 )
 				{
-					if( len < 256 )
-					{
-						byte[] bytes = new byte[ len ];
-						System.arraycopy( buffer, 0, bytes, 0, len );
-						buffer = bytes;
-					}
-
-					String detectedEncoding = detector.detect( buffer );
-					if( detectedEncoding != null )
-						encoding = detectedEncoding;
+					byte[] bytes = new byte[ len ];
+					System.arraycopy( buffer, 0, bytes, 0, len );
+					buffer = bytes;
 				}
+
+				String encoding = detector.detect( buffer );
+				if( encoding != null )
+					defaultEncoding = encoding;
 			}
 
-			if( encoding == null )
-				if( defaultEncoding != null )
-					encoding = defaultEncoding;
-				else
-					encoding = Charset.defaultCharset().name();
+			if( defaultEncoding == null )
+				defaultEncoding = Charset.defaultCharset().name();
 
-			Reader reader = new InputStreamReader( is, encoding );
-			ReaderSourceReader result = new ReaderSourceReader( reader, resource.getLocation(), encoding );
-
-			if( SKIP_BOM_PATTERN.matcher( encoding ).matches() )
-			{
-				int bom = result.read();
-				if( bom != 0xFEFF ) // The Byte Order Mark = ZERO WIDTH NO-BREAK SPACE (deprecated character)
-					result.push( bom );
-			}
+			// TODO Do we need this BufferedReader?
+			Reader reader = new BufferedReader( new InputStreamReader( is, defaultEncoding ) );
 
 			success = true;
-			return result;
+			return new ReaderSourceReader( reader, resource.getLocation(), defaultEncoding );
 		}
 		catch( IOException e )
 		{

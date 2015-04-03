@@ -52,7 +52,7 @@ public class GroovyTemplateCompiler
 	 */
 	public void generateScript( TemplateCompilerContext context )
 	{
-		// TODO This may give conflicts when more than one TemplateLoader is used. This must be the complete path.
+		// TODO This may give conflicts when more than one TemplateManager is used. This must be the complete path.
 		Matcher matcher = PATH_PATTERN.matcher( context.getPath() );
 		Assert.isTrue( matcher.matches() );
 		String path = matcher.group( 1 );
@@ -101,7 +101,7 @@ public class GroovyTemplateCompiler
 					if( !text )
 						buffer.append( "out.write(\"\"\"" );
 					text = true;
-					buffer.append( "${" ).append( event.getData() ).append( '}' ); // FIXME Need to escape """
+					buffer.append( "${" ).append( event.getData() ).append( '}' );
 					break;
 
 				case DIRECTIVE:
@@ -135,7 +135,7 @@ public class GroovyTemplateCompiler
 	{
 		// Compile to bytes
 		CompilationUnit unit = new CompilationUnit();
-		unit.addSource( context.getPath(), context.getScript().toString() );
+		unit.addSource( context.getName(), context.getScript().toString() );
 		unit.compile( Phases.CLASS_GENERATION );
 
 		// Results

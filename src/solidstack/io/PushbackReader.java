@@ -36,7 +36,7 @@ public class PushbackReader
 	/**
 	 * The push back buffer;
 	 */
-	private StringBuilder buffer = new StringBuilder();
+	private StringBuilder buffer;
 
 	/**
 	 * The current line number.
@@ -55,6 +55,7 @@ public class PushbackReader
 	public PushbackReader( SourceReader reader )
 	{
 		this.reader = reader;
+		this.buffer = new StringBuilder();
 		this.lineNumber = reader.getLineNumber();
 	}
 
@@ -71,17 +72,7 @@ public class PushbackReader
 	 */
 	public SourceLocation getLocation()
 	{
-		SourceLocation result = this.reader.getLocation();
-		if( result.getLineNumber() != this.lineNumber )
-			throw new IllegalStateException( "There is a newline in the push back buffer" );
-		return result;
-	}
-
-	public SourceLocation getLastLocation()
-	{
-		if( this.buffer.length() > 0 )
-			throw new IllegalStateException( "There are still characters in the push back buffer" );
-		return this.reader.getLastLocation();
+		return new SourceLocation( this.reader.getResource(), this.lineNumber );
 	}
 
 	/**
@@ -94,14 +85,6 @@ public class PushbackReader
 		if( this.buffer.length() > 0 )
 			throw new IllegalStateException( "There are still characters in the push back buffer" );
 		return this.reader;
-	}
-
-	/**
-	 * @return The resource that is being read.
-	 */
-	public Resource getResource()
-	{
-		return this.reader.getResource();
 	}
 
 	/**
@@ -131,7 +114,7 @@ public class PushbackReader
 
 		if( this.markBuffer != null )
 		{
-			if( this.markBuffer.length() == this.markBuffer.capacity() ) // TODO May need unit test for this, or do it differently
+			if( this.markBuffer.length() == this.markBuffer.capacity() ) // TODO May need unit test for this
 				this.markBuffer = null; // Reached limit
 			else
 				this.markBuffer.append( (char)result );
@@ -148,7 +131,7 @@ public class PushbackReader
 	public void push( int ch )
 	{
 		if( ch == '\r' )
-			throw new IllegalArgumentException( "CR's can't be pushed back into the reader" );
+			throw new IllegalArgumentException( "A carriage return can't be pushed back into the reader" );
 		if( ch != -1 )
 		{
 			if( ch == '\n' )
@@ -158,15 +141,27 @@ public class PushbackReader
 	}
 
 	/**
-	 * Push a complete {@link CharSequence} back into the reader. The current line number is decremented for each newline encountered.
+	 * Push a complete {@link StringBuilder} back into the reader. The current line number is decremented for each newline encountered.
 	 *
-	 * @param chars The {@link CharSequence} to push back.
+	 * @param builder The {@link StringBuilder} to push back.
 	 */
-	public void push( CharSequence chars )
+	public void push( StringBuilder builder )
 	{
-		int len = chars.length();
+		int len = builder.length();
 		while( len > 0 )
-			push( chars.charAt( --len ) ); // Use push to decrement the line number when a \n is found
+			push( builder.charAt( --len ) ); // Use push to decrement the line number when a \n is found
+	}
+
+	/**
+	 * Push a complete {@link String} back into the reader. The current line number is decremented for each newline encountered.
+	 *
+	 * @param string The {@link String} to push back.
+	 */
+	public void push( String string )
+	{
+		int len = string.length();
+		while( len > 0 )
+			push( string.charAt( --len ) ); // Use push to decrement the line number when a \n is found
 	}
 
     /**

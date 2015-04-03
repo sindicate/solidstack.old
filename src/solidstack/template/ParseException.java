@@ -16,27 +16,34 @@
 
 package solidstack.template;
 
-import solidstack.io.SourceException;
-import solidstack.io.SourceLocation;
-
 
 /**
  * Something has gone wrong during template parsing.
  *
  * @author René M. de Bloois
  */
-public class ParseException extends SourceException
+public class ParseException extends RuntimeException
 {
 	private static final long serialVersionUID = 1L;
+
+	private int lineNumber;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param message The message.
-	 * @param location The file location where the problem is located.
+	 * @param lineNumber The line number where the problem occurred.
 	 */
-	public ParseException( String message, SourceLocation location )
+	// FIXME Use location instead of only line number
+	public ParseException( String message, int lineNumber )
 	{
-		super( message, location );
+		super( message );
+		this.lineNumber = lineNumber;
+	}
+
+	@Override
+	public String getMessage()
+	{
+		return super.getMessage() + ", at line " + this.lineNumber;
 	}
 }

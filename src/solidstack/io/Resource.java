@@ -19,7 +19,6 @@ package solidstack.io;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Reader;
 import java.net.URI;
 import java.net.URL;
 
@@ -31,8 +30,6 @@ import java.net.URL;
  */
 public class Resource
 {
-	private boolean gzip;
-
 	/**
 	 * @return True if this resource has a URL and URI, false otherwise.
 	 */
@@ -59,43 +56,29 @@ public class Resource
 
 	/**
 	 * @return The URL of this resource.
+	 * @throws FileNotFoundException If the resource is not found.
 	 */
-	public URL getURL()
+	// TODO Don't throw FileNotFoundException
+	public URL getURL() throws FileNotFoundException
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	/**
 	 * @return The URI of this resource.
+	 * @throws FileNotFoundException If the resource is not found.
 	 */
-	public URI getURI()
+	// TODO Don't throw FileNotFoundException
+	public URI getURI() throws FileNotFoundException
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	/**
-	 * @return A new InputStream to read from the resource.
+	 * @return An new InputStream to read from the resource.
 	 * @throws FileNotFoundException If the resource is not found.
 	 */
 	public InputStream newInputStream() throws FileNotFoundException
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * @return True if {@link #newReader()} is supported, false otherwise.
-	 */
-	// TODO Rename to ?
-	public boolean supportsReader()
-	{
-		return false;
-	}
-
-	/**
-	 * @return A new Reader to read from the resource.
-	 * @throws FileNotFoundException If the resource is not found.
-	 */
-	public Reader newReader() throws FileNotFoundException
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -123,15 +106,13 @@ public class Resource
  	/**
  	 * Calculates a relative path from the given resource to this resource.
  	 *
- 	 * @param base The resource to calculate the relative path from.
+ 	 * @param other The resource to calculate the relative path from.
  	 * @return The relative path from the given resource to this resource.
  	 */
-	// TODO Return String or URI?
-	public URI getPathFrom( Resource base )
+	public String getPathFrom( @SuppressWarnings( "unused" ) Resource other )
 	{
-		return URIResource.relativize( base.getURI(), getURI() );
+		throw new UnsupportedOperationException();
 	}
-
 
     /**
      * @return A normalized path to this resource.
@@ -155,23 +136,5 @@ public class Resource
 	public SourceLocation getLocation()
 	{
 		return new SourceLocation( this, 1 );
-	}
-
-	/**
-	 * Indicate that this resource is gzipped or not.
-	 *
-	 * @param gzip True indicates that this resource is gzipped.
-	 */
-	public void setGZip( boolean gzip )
-	{
-		this.gzip = gzip;
-	}
-
-	/**
-	 * @return True indicates that this resource is gzipped.
-	 */
-	public boolean isGZip()
-	{
-		return this.gzip;
 	}
 }

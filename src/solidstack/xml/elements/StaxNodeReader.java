@@ -29,7 +29,6 @@ import solidstack.lang.SystemException;
  *
  * @author René M. de Bloois
  */
-@SuppressWarnings( "restriction" )
 public class StaxNodeReader
 {
 	/**

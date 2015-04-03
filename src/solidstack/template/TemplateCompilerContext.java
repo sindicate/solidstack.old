@@ -69,6 +69,11 @@ public class TemplateCompilerContext
 		return this.path;
 	}
 
+	public String getName()
+	{
+		return this.path; // TODO How should we determine the name?
+	}
+
 	public void setEvents( List<ParseEvent> events )
 	{
 		this.events = events;

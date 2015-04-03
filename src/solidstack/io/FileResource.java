@@ -26,7 +26,6 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.zip.GZIPInputStream;
 
 
 /**
@@ -43,8 +42,6 @@ public class FileResource extends Resource
 	 */
 	public FileResource( File file )
 	{
-		if( file == null )
-			throw new NullPointerException( "file must not be null" );
 		this.file = file;
 	}
 
@@ -102,17 +99,7 @@ public class FileResource extends Resource
 	@Override
 	public InputStream newInputStream() throws FileNotFoundException
 	{
-		InputStream result = new FileInputStream( this.file );
-		if( isGZip() ) // TODO Also for outputstream, and the other resources.
-			try
-			{
-				result = new GZIPInputStream( result );
-			}
-			catch( IOException e )
-			{
-				throw new FatalIOException( e );
-			}
-		return result;
+		return new FileInputStream( this.file );
 	}
 
 	@Override
@@ -131,10 +118,59 @@ public class FileResource extends Resource
 		}
 	}
 
+	// TODO Need test for this
 	@Override
 	public Resource resolve( String path )
 	{
-		return Resources.getResource( this.file.toURI().resolve( path ) );
+		return ResourceFactory.getResource( this.file.toURI().resolve( path ) );
+	}
+
+	// TODO Need test for this
+	@Override
+	public String getPathFrom( Resource base )
+	{
+		if( !( base instanceof FileResource ) )
+			throw new IllegalArgumentException( "base should be a FileResource" );
+
+		String myPath;
+		String basePath;
+		try
+		{
+			myPath = this.file.getCanonicalPath();
+			basePath = ((FileResource)base).file.getCanonicalPath();
+		}
+		catch( IOException e )
+		{
+			throw new FatalIOException( e );
+		}
+
+		// getCanonicalPath returns the os dependent path separator
+		String[] myElems = myPath.split( "[\\\\/]" );
+		String[] baseElems = basePath.split( "[\\\\/]" );
+
+		int common = 0;
+		while( common < myElems.length && common < baseElems.length && myElems[ common ].equals( baseElems[ common ] ) )
+			common++;
+		if( common == 0 )
+			throw new FatalIOException( "Internal error" );
+
+		StringBuffer result = new StringBuffer();
+
+		if( baseElems.length > common )
+			for( int j = 0; j < baseElems.length - common - 1; j++ )
+				result.append( "../" );
+
+		if( common >= myElems.length )
+			throw new FatalIOException( "Internal error" );
+		result.append( myElems[ common ] );
+
+		for( int j = common + 1; j < myElems.length; j++ )
+		{
+			result.append( '/' );
+			result.append( myElems[ j ] );
+		}
+
+		return result.toString();
 	}
 
 	@Override

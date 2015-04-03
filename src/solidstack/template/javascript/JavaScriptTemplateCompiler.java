@@ -119,7 +119,7 @@ public class JavaScriptTemplateCompiler
 		try
 		{
 			cx.setOptimizationLevel( -1 ); // Generate only an AST, not bytecode
-			Script script = cx.compileString( context.getScript().toString(), context.getPath(), 1, null );
+			Script script = cx.compileString( context.getScript().toString(), context.getName(), 1, null );
 			context.setTemplate( new JavaScriptTemplate( script ) );
 		}
 		finally

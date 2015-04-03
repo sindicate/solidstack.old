@@ -24,46 +24,6 @@ package solidstack.io;
 public interface EncodingDetector
 {
 	/**
-	 * Constant for the ISO-8859-1 character set.
-	 */
-	static final public String CHARSET_ISO_8859_1 = "ISO-8859-1";
-
-	/**
-	 * Constant for the UTF-8 character set.
-	 */
-	static final public String CHARSET_UTF_8 = "UTF-8";
-
-	/**
-	 * Constant for the UTF-16 character set.
-	 */
-	static final public String CHARSET_UTF_16 = "UTF-16";
-
-	/**
-	 * Constant for the UTF-16BE character set.
-	 */
-	static final public String CHARSET_UTF_16BE = "UTF-16BE";
-
-	/**
-	 * Constant for the UTF-16LE character set.
-	 */
-	static final public String CHARSET_UTF_16LE = "UTF-16LE";
-
-	/**
-	 * Constant for the UTF-32 character set.
-	 */
-	static final public String CHARSET_UTF_32 = "UTF-32";
-
-	/**
-	 * Constant for the UTF-32BE character set.
-	 */
-	static final public String CHARSET_UTF_32BE = "UTF-32BE";
-
-	/**
-	 * Constant for the UTF-32LE character set.
-	 */
-	static final public String CHARSET_UTF_32LE = "UTF-32LE";
-
-	/**
 	 * @param bytes The first couple of bytes from the source.
 	 * @return The detected character encoding.
 	 */

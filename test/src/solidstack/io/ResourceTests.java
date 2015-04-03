@@ -1,22 +1,7 @@
-/*--
- * Copyright 2012 René M. de Bloois
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package solidstack.io;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -27,10 +12,10 @@ import org.testng.annotations.Test;
 @SuppressWarnings( "javadoc" )
 public class ResourceTests
 {
-	@Test
+	@Test(groups="new")
 	public void test()
 	{
-		Resource r1 = Resources.getResource( "classpath:/solidstack/" );
+		Resource r1 = ResourceFactory.getResource( "classpath:/solidstack/" );
 		Assert.assertTrue( r1 instanceof ClassPathResource, r1.getClass().getName() );
 		Resource r2 = r1.resolve( "io" );
 		Assert.assertTrue( r2 instanceof ClassPathResource, r2.getClass().getName() );
@@ -38,22 +23,22 @@ public class ResourceTests
 		Assert.assertTrue( r2.toString().endsWith( "io" ) );
 	}
 
-	@Test
+	@Test(groups="new")
 	public void testToString()
 	{
-		Resource resource = Resources.getResource( "classpath:/solidstack/../solidstack/io" );
+		Resource resource = ResourceFactory.getResource( "classpath:/solidstack/../solidstack/io" );
 		System.out.println( resource.toString() );
 
-		resource = Resources.getResource( "http://test.com/test" );
+		resource = ResourceFactory.getResource( "http://test.com/test" );
 		resource = resource.resolve( "test2" );
 		System.out.println( resource.getNormalized() );
 
-		resource = Resources.getResource( "http://test.com/test/" );
+		resource = ResourceFactory.getResource( "http://test.com/test/" );
 		resource = resource.resolve( "test2" );
 		System.out.println( resource.getNormalized() );
 	}
 
-	@Test
+	@Test(groups="new")
 	public void testClassPathResource()
 	{
 		URL url = ResourceTests.class.getClassLoader().getResource( "solidstack/template/test.js" );
@@ -68,15 +53,15 @@ public class ResourceTests
 		System.out.println( resource );
 	}
 
-	@Test
-	public void testFileResource()
+	@Test(groups="new")
+	public void testFileResource() throws FileNotFoundException
 	{
-		Resource resource = Resources.getResource( "file:test/src/solidstack/query/test.sql.slt" );
+		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/query/test.sql.slt" );
 		Assert.assertTrue( resource.exists() );
 
 		String file = resource.toString();
 		System.out.println( file );
-		resource = Resources.getResource( file );
+		resource = ResourceFactory.getResource( file );
 		System.out.println( resource.toString() );
 		Assert.assertTrue( resource.exists() );
 
@@ -88,7 +73,7 @@ public class ResourceTests
 		System.out.println( resource.toString() );
 		Assert.assertTrue( resource.exists() );
 
-		resource = Resources.currentFolder();
+		resource = ResourceFactory.currentFolder();
 		System.out.println( resource.getURL() );
 		resource = resource.resolve( "build.xml" );
 		System.out.println( resource.getURL() );
@@ -98,7 +83,7 @@ public class ResourceTests
 		System.out.println( new File( "" ).toURI().toString() );
 	}
 
-	@Test
+	@Test(groups="new")
 	public void testURI() throws URISyntaxException
 	{
 		URI uri = new URI( "classpath:/solidstack/io" );
@@ -153,156 +138,5 @@ public class ResourceTests
 		uri = new URI( "/test/test1/.." );
 		System.out.println( uri );
 		System.out.println( uri.normalize() );
-	}
-
-	static private void test1_( String base, String child, String result, String resolve ) throws URISyntaxException
-	{
-		URI uri1 = new URI( base );
-		URI uri2 = new URI( child );
-		URI res = URIResource.relativize( uri1, uri2 );
-		//String s = res.toString();
-		Assert.assertEquals( res.toString(), result );
-		URI back = uri1.resolve( res );
-		Assert.assertEquals( back.toString(), resolve );
-	}
-
-	static private void test1_( String base, String child, String result ) throws URISyntaxException
-	{
-		test1_( base, child, result, child );
-	}
-
-	@Test
-	static public void testPathFrom1() throws URISyntaxException
-	{
-		// Relative folder to folder
-		test1_( "/folder1/folder2/", "/folder1/folder2/", "" );
-		test1_( "/folder1/folder2/", "/folder1/folder2/folder3/", "folder3/" );
-		test1_( "/folder1/folder2/", "/folder1/", "../" );
-		test1_( "/folder1/folder2/", "/folder1/folder3/", "../folder3/" );
-		test1_( "/folder1/folder2/", "/folder3/", "../../folder3/" );
-		test1_( "/folder1/folder2/", "/", "../../" );
-
-		// Relative file to folder
-		test1_( "/folder1/folder2/", "/folder1/folder2/file", "file" );
-		test1_( "/folder1/folder2/", "/folder1/file", "../file" );
-		test1_( "/folder1/folder2/", "/file", "../../file" );
-		test1_( "/folder1/folder2/", "/folder3/file", "../../folder3/file" );
-
-		// Relative folder to file
-		test1_( "/folder1/folder2/f", "/folder1/folder2/", "" );
-		test1_( "/folder1/folder2/f", "/folder1/folder2/folder3/", "folder3/" );
-		test1_( "/folder1/folder2/f", "/folder1/", "../" );
-		test1_( "/folder1/folder2/f", "/folder1/folder3/", "../folder3/" );
-		test1_( "/folder1/folder2/f", "/folder3/", "../../folder3/" );
-		test1_( "/folder1/folder2/f", "/", "../../" );
-
-		// Relative file to file
-		test1_( "/folder1/folder2/f", "/folder1/folder2/file", "file" );
-		test1_( "/folder1/folder2/f", "/folder1/file", "../file" );
-		test1_( "/folder1/folder2/f", "/file", "../../file" );
-		test1_( "/folder1/folder2/f", "/folder3/file", "../../folder3/file" );
-
-		// With query and fragment
-		test1_( "/folder1/folder2/f?q#f", "/folder1/folder2/file?query", "file?query" );
-		test1_( "/folder1/folder2/f?q#f", "/folder1/folder2/file#fragment", "file#fragment" );
-		test1_( "/folder1/folder2/f?q#f", "/folder1/folder2/file?query#fragment", "file?query#fragment" );
-		test1_( "/folder1/folder2/f?q#f", "/folder1/folder2/file#fragment?query", "file#fragment?query" ); // This is only a fragment
-
-		// Relative paths, assume relative to the same
-		test1_( "folder1/folder2/f", "folder1/folder3/file", "../folder3/file" );
-		test1_( "folder1/folder2/", "folder1/folder3/file", "../folder3/file" );
-		test1_( "folder2/", "folder3/file", "../folder3/file" );
-		test1_( "folder1/folder2/f", "", "../../" );
-		test1_( "", "folder1/folder2/f", "folder1/folder2/f" );
-		test1_( "folder1/folder2/f", ".", "../../", "" );
-		test1_( ".", "folder1/folder2/f", "folder1/folder2/f" );
-
-		test1_( "folder1/../folder2/f", "folder3/file", "../folder3/file" );
-		test1_( "../folder2/f", "../folder3/file", "../folder3/file" );
-		test1_( "../folder2/f", "../folder2/folder3/file", "folder3/file" );
-		test1_( "folder2/f", "../folder3/file", "../../folder3/file" );
-		test1_( "../folder2/f", "../../folder3/file", "../../folder3/file" );
-
-		// TODO These should fail
-//		test1_( "../folder2/f", "folder3/file", "../folder3/file" );
-//		test1_( "../../folder2/f", "../folder3/file", "../folder3/file" );
-
-		// Relative paths with a scheme, that's just not right. So the result is ok.
-		test1_( "http:folder1/folder2/", "http:folder1/folder3/file", "http:folder1/folder3/file" );
-
-		// TODO These should fail
-//		test1_( "/folder1/folder2/f", "folder1/folder3/file", "../folder3/file" );
-//		test1_( "/folder1/folder2/", "folder1/folder3/file", "../folder3/file" );
-//		test1_( "/folder1/folder2/", "", "" ); // TODO
-//		test1_( "/folder1/folder2/f", "", "" ); // TODO
-
-		// TODO These should return the child
-//		test1_( "folder1/folder2/f", "/folder1/folder3/file", "../folder3/file" );
-//		test1_( "folder1/folder2/", "/folder1/folder3/file", "../folder3/file" );
-//		test1_( "", "/folder1/folder2/", "" ); // TODO
-//		test1_( "", "/folder1/folder2/f", "" ); // TODO
-	}
-
-	static public void test2_( String base, String child, String result )
-	{
-		Resource baseResource = new FileResource( base );
-		Resource childResource = new FileResource( child );
-		URI resultURI = childResource.getPathFrom( baseResource );
-		Assert.assertEquals( resultURI.toString(), result );
-		Resource back = baseResource.resolve( resultURI.toString() );
-		Assert.assertTrue( back.toString().endsWith( child ) );
-	}
-
-	@Test
-	static public void testPathFrom2()
-	{
-		test2_( "/folder1/folder2/f", "/folder1/folder2/file", "file" );
-		test2_( "/folder1/folder2/f", "/folder1/folder3/file", "../folder3/file" );
-		test2_( "/folder1/folder2/f", "/folder1/folder2/folder3/file", "folder3/file" );
-		test2_( "/folder1/folder2/f", "/folder1/file", "../file" );
-		test2_( "/folder1/folder2/f", "/file", "../../file" );
-		test2_( "/folder1/folder2/f", "/folder3/file", "../../folder3/file" );
-
-		// Folders only works if the folder really exists on the file system
-		test2_( "test/src", "test/src/file", "file" );
-		test2_( "test/src", "test/file", "../file" );
-		test2_( "test/src", "test/src/folder/file", "folder/file" );
-		test2_( "test/src", "test/folder/file", "../folder/file" );
-
-		test2_( "test/src", "test/src/solidstack", "solidstack/" );
-		test2_( "test/src", "test/lib/hibernate", "../lib/hibernate/" );
-	}
-
-	static public void test3_( Resource base, Resource child, String result, String resolve )
-	{
-		URI resultURI = child.getPathFrom( base );
-		Assert.assertEquals( resultURI.toString(), result );
-		Resource back = base.resolve( resultURI.toString() );
-//		Assert.assertTrue( back.toString().equals( child.toString() ) );
-		Assert.assertEquals( back.toString(), resolve );
-	}
-
-	@Test
-	static public void testPathFrom3()
-	{
-		test3_( new URIResource( "http:/folder1/folder2/f" ), new URIResource( "file:/folder1/folder2/file" ), "file:/folder1/folder2/file", "file:/folder1/folder2/file" );
-		test3_( new URIResource( "http:/folder1/folder2/f" ), new URIResource( "/folder1/folder2/file" ), "/folder1/folder2/file", "http:/folder1/folder2/file" );
-		test3_( new URIResource( "/folder1/folder2/f" ), new URIResource( "file:/folder1/folder2/file" ), "file:/folder1/folder2/file", "file:/folder1/folder2/file" );
-		test3_( new URIResource( "/folder1/folder2/f" ), new URIResource( "/folder1/folder2/file" ), "file", "/folder1/folder2/file" );
-
-//		test2_( "/folder1/folder2/f", "/folder1/folder3/file", "../folder3/file" );
-//		test2_( "/folder1/folder2/f", "/folder1/folder2/folder3/file", "folder3/file" );
-//		test2_( "/folder1/folder2/f", "/folder1/file", "../file" );
-//		test2_( "/folder1/folder2/f", "/file", "../../file" );
-//		test2_( "/folder1/folder2/f", "/folder3/file", "../../folder3/file" );
-//
-//		// Folders only works if the folder really exists on the file system
-//		test2_( "test/src", "test/src/file", "file" );
-//		test2_( "test/src", "test/file", "../file" );
-//		test2_( "test/src", "test/src/folder/file", "folder/file" );
-//		test2_( "test/src", "test/folder/file", "../folder/file" );
-//
-//		test2_( "test/src", "test/src/solidstack", "solidstack/" );
-//		test2_( "test/src", "test/lib/hibernate", "../lib/hibernate/" );
 	}
 }
