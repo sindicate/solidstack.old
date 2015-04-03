@@ -16,26 +16,36 @@
 
 package solidstack.script.functions;
 
-import java.math.BigDecimal;
-import java.util.List;
+import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
+import solidstack.script.objects.FunctionObject;
+import solidstack.script.objects.Util;
 
-import solidstack.lang.Assert;
-import solidstack.script.FunctionInstance;
 
-public class Substr extends FunctionInstance
+// TODO Need to catch the java exceptions (index out of range)
+public class Substr extends FunctionObject
 {
 	@Override
-	public Object call( List<?> parameters )
+	public Object call( ThreadContext thread, Object... parameters )
 	{
-		Object object = parameters.get( 0 );
-		Object start = parameters.get( 1 );
-		Assert.isInstanceOf( object, String.class );
-		Assert.isInstanceOf( start, BigDecimal.class );
-		if( parameters.size() == 2 )
-			return ( (String)object ).substring( ( (BigDecimal)start ).intValue() );
-		Assert.isTrue( parameters.size() == 3 );
-		Object end = parameters.get( 2 );
-		Assert.isInstanceOf( end, BigDecimal.class );
-		return ( (String)object ).substring( ( (BigDecimal)start ).intValue(), ( (BigDecimal)end ).intValue() );
+		if( parameters.length != 2 && parameters.length != 3 )
+			throw new ThrowException( "substr() needs 2 or 3 parameters", thread.cloneStack() );
+
+		Object object = Util.deref( parameters[ 0 ] );
+		if( !( object instanceof String ) )
+			throw new ThrowException( "substr() needs a string as first parameter", thread.cloneStack() );
+
+		Object start = Util.deref( parameters[ 1 ] );
+		if( !( start instanceof Integer ) )
+			throw new ThrowException( "substr() needs an integer as second parameter", thread.cloneStack() );
+
+		if( parameters.length == 2 )
+			return ( (String)object ).substring( (Integer)start );
+
+		Object end = Util.deref( parameters[ 2 ] );
+		if( !( end instanceof Integer ) )
+			throw new ThrowException( "substr() needs an integer as third parameter", thread.cloneStack() );
+
+		return ( (String)object ).substring( (Integer)start, (Integer)end );
 	}
 }

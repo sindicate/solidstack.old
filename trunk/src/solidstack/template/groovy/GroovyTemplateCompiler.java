@@ -101,7 +101,7 @@ public class GroovyTemplateCompiler
 					if( !text )
 						buffer.append( "out.write(\"\"\"" );
 					text = true;
-					buffer.append( "${" ).append( event.getData() ).append( '}' );
+					buffer.append( "${" ).append( event.getData() ).append( '}' ); // FIXME Need to escape """
 					break;
 
 				case DIRECTIVE:

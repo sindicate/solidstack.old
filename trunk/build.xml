@@ -49,7 +49,7 @@
 	</path>
 
 	<path id="testng.classpath">
-		<fileset dir="tools/testng" includes="*.jar" />
+		<fileset dir="test/lib" includes="testng*.jar" />
 	</path>
 
 	<path id="cobertura.classpath">
@@ -72,8 +72,8 @@
 
 	<path id="compiletest.classpath">
 		<pathelement location="${build.home}/classes" />
+		<fileset dir="test/lib" includes="*.jar" />
 		<path refid="compile.classpath" />
-		<path refid="testng.classpath" />
 	</path>
 
 	<path id="test_.classpath">
@@ -83,7 +83,6 @@
 		<fileset dir="lib" includes="*.jar" />
 		<fileset dir="test/lib" includes="*.jar" />
 		<fileset dir="test/lib/hibernate" includes="*.jar" />
-		<path refid="testng.classpath" />
 		<path refid="cobertura.classpath" />
 	</path>
 

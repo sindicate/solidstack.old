@@ -35,7 +35,12 @@ public class ReaderSourceReader implements SourceReader
 	/**
 	 * The current line the reader is positioned on.
 	 */
-	private int currentLineNumber;
+	private int lineNumber;
+
+	/**
+	 * The current location.
+	 */
+	private SourceLocation location;
 
 	/**
 	 * Buffer to contain a character that has been read by mistake.
@@ -64,7 +69,7 @@ public class ReaderSourceReader implements SourceReader
 	public ReaderSourceReader( Reader reader )
 	{
 		this.reader = reader;
-		this.currentLineNumber = 1;
+		this.lineNumber = 1;
 	}
 
 	/**
@@ -75,7 +80,7 @@ public class ReaderSourceReader implements SourceReader
 	{
 		this.reader = reader;
 		this.resource = location.getResource();
-		this.currentLineNumber = location.getLineNumber();
+		this.lineNumber = location.getLineNumber();
 	}
 
 	/**
@@ -87,7 +92,7 @@ public class ReaderSourceReader implements SourceReader
 	{
 		this.reader = reader;
 		this.resource = location.getResource();
-		this.currentLineNumber = location.getLineNumber();
+		this.lineNumber = location.getLineNumber();
 		this.encoding = encoding;
 	}
 
@@ -137,7 +142,7 @@ public class ReaderSourceReader implements SourceReader
 	{
 		if( this.reader == null )
 			throw new IllegalStateException( "Closed" );
-		return this.currentLineNumber;
+		return this.lineNumber;
 	}
 
 	public int read()
@@ -161,7 +166,7 @@ public class ReaderSourceReader implements SourceReader
 						this.buffer = result;
 					//$FALL-THROUGH$
 				case '\n':
-					this.currentLineNumber++;
+					this.lineNumber++;
 					return '\n';
 				default:
 					return result;
@@ -185,7 +190,9 @@ public class ReaderSourceReader implements SourceReader
 
 	public SourceLocation getLocation()
 	{
-		return new SourceLocation( this.resource, getLineNumber() );
+		if( this.location != null && this.location.getLineNumber() == this.lineNumber )
+			return this.location;
+		return new SourceLocation( this.resource, this.lineNumber );
 	}
 
 	void push( int ch )
