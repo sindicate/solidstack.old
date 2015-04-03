@@ -46,13 +46,17 @@ import solidstack.script.scopes.Scope;
 import solidstack.util.ObjectArrayListIterator;
 import funny.Symbol;
 
+
 /**
  * Default Java extensions.
  */
 // TODO Move this out of the java package. May need plugin mechanism.
 public class DefaultClassExtensions
 {
-	static public List collect( Collection collection, Function function )
+	// TODO: count(), distinct(), filter(), filterNot(), find(), findIndexOf(), fold(), forall(), foreach(), groupBy(), intersect(), map(), partition(), reduce(), reverse(), reverseMap()
+
+	// TODO Should be covered by the integer version
+	static public Integer abs( Byte _byte )
 	{
 		return Math.abs( _byte );
 	}
@@ -298,23 +302,50 @@ public class DefaultClassExtensions
 
 	static public Object fold( Iterable iterable, Object start, Function function )
 	{
+		return fold( iterable.iterator(), start, function );
+	}
+
+	static public Object fold( Iterator iterator, Object start, Function function )
+	{
+		while( iterator.hasNext() )
+			start = function.call( start, iterator.next() );
+		return start;
+	}
+
+	static public Object foldLeft( Iterable iterable, Object start, Function function )
+	{
+		return fold( iterable.iterator(), start, function );
+	}
+
+	static public Object foldLeft( Iterator iterator, Object start, Function function )
+	{
+		return fold( iterator, start, function );
+	}
+
+	static public Object foreach( Iterable iterable, Function function )
+	{
+		return foreach( iterable.iterator(), function );
+	}
+
+	static public Object foreach( Iterator iterator, Function function )
+	{
 		// TODO Or should the ThreadContext be a parameter too?
 		int count = function.getParameters().length;
 		if( count == 2 )
 		{
 			Object result = null;
 			int index = 0;
-			for( Object object : collection )
-				result = function.call( index++, object );
+			while( iterator.hasNext() )
+				result = function.call( index++, iterator.next() );
 			return result;
 		}
 		Object result = null;
-		for( Object object : collection )
-			result = function.call( object );
+		while( iterator.hasNext() )
+			result = function.call( iterator.next() );
 		return result;
 	}
 
-	static public Object each( Map<?,?> map, Function function )
+	static public Object foreach( Map<?,?> map, Function function )
 	{
 		Object result = null;
 		for( Entry<?,?> entry : map.entrySet() )
@@ -322,7 +353,7 @@ public class DefaultClassExtensions
 		return result;
 	}
 
-	static public Object eachKey( Map<?,?> map, Function function )
+	static public Object foreach( Object[] array, Function function )
 	{
 		return foreach( new ObjectArrayListIterator( array ), function );
 	}
@@ -498,7 +529,13 @@ public class DefaultClassExtensions
 	{
 		return string.length();
 	}
-}
+
+	static public final Pattern STRIPMARGIN_PATTERN = Pattern.compile( "(?m)^[ \\t]*\\|" ); // TODO Why not \s for whitespace?
+
+	static public String stripMargin( String string )
+	{
+		return STRIPMARGIN_PATTERN.matcher( string ).replaceAll( "" );
+	}
 
 	static public String stripMargin( PString string ) // TODO This method should not be needed
 	{

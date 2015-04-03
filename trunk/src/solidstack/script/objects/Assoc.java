@@ -18,24 +18,24 @@ package solidstack.script.objects;
 
 
 
-public class ClassMember
+public class Assoc
 {
-	private Class type;
-	private String name;
+	private Object label;
+	private Object value;
 
-	public ClassMember( Class type, String name )
+	public Assoc( Object label, Object value )
 	{
-		this.type = type;
-		this.name = name;
+		this.label = label;
+		this.value = value;
 	}
 
-	public Class getType()
+	public Object getLabel()
 	{
-		return this.type;
+		return this.label;
 	}
 
-	public String getName()
+	public Object getValue()
 	{
-		return this.name;
+		return this.value;
 	}
 }

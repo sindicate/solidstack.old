@@ -154,7 +154,7 @@ public class PushbackReader
 			if( ch == '\n' )
 				this.lineNumber--;
 			this.buffer.append( (char)ch );
-	}
+		}
 	}
 
 	/**

@@ -59,23 +59,16 @@ public class GlobalScope extends DefaultScope
 
 		val( Symbol.apply( "return" ), new Return() ); // TODO Remove, should be keyword
 
-		val( Symbol.forString( "boolean" ), boolean.class );
-		val( Symbol.forString( "byte" ), byte.class );
-		val( Symbol.forString( "char" ), char.class );
-		val( Symbol.forString( "short" ), short.class );
-		val( Symbol.forString( "int" ), int.class );
-		val( Symbol.forString( "long" ), long.class );
-		val( Symbol.forString( "float" ), float.class );
-		val( Symbol.forString( "double" ), double.class );
+		// Primitives
 
-		val( Symbol.forString( "Boolean" ), Boolean.class );
-		val( Symbol.forString( "Byte" ), Byte.class );
-		val( Symbol.forString( "Character" ), Character.class );
-		val( Symbol.forString( "Short" ), Short.class );
-		val( Symbol.forString( "Integer" ), Integer.class );
-		val( Symbol.forString( "Long" ), Long.class );
-		val( Symbol.forString( "Float" ), Float.class );
-		val( Symbol.forString( "Double" ), Double.class );
+		val( Symbol.apply( "boolean" ), new Type( boolean.class ) );
+		val( Symbol.apply( "byte" ), new Type( byte.class ) );
+		val( Symbol.apply( "char" ), new Type( char.class ) );
+		val( Symbol.apply( "short" ), new Type( short.class ) );
+		val( Symbol.apply( "int" ), new Type( int.class ) );
+		val( Symbol.apply( "long" ), new Type( long.class ) );
+		val( Symbol.apply( "float" ), new Type( float.class ) );
+		val( Symbol.apply( "double" ), new Type( double.class ) );
 
 		// java.lang
 

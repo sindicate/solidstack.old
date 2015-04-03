@@ -29,6 +29,7 @@ import solidstack.script.scopes.Scope;
 import solidstack.template.ConvertingWriter;
 import solidstack.template.EncodingWriter;
 import solidstack.template.Template;
+import funny.Symbol;
 
 
 /**
@@ -38,7 +39,7 @@ import solidstack.template.Template;
  */
 public class FunnyTemplate extends Template
 {
-	static public final Symbol OUT = Symbol.forString( "out" );
+	static public final Symbol OUT = Symbol.apply( "out" );
 
 	private Script script;
 

@@ -14,25 +14,35 @@
  * limitations under the License.
  */
 
-package solidstack.script.functions;
+package solidstack.script.expressions;
 
+import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
-import solidstack.script.ThrowException;
-import solidstack.script.objects.FunctionObject;
-import solidstack.script.objects.Util;
 
-
-// TODO And lower()?
-public class Upper extends FunctionObject
+public class IntegerLiteral extends LocalizedExpression
 {
-	@Override
-	public Object call( ThreadContext thread, Object... parameters )
+	private int value;
+
+
+	public IntegerLiteral( SourceLocation location, int value )
 	{
-		if( parameters.length != 1 )
-			throw new ThrowException( "upper() needs exactly one parameter", thread.cloneStack() );
-		Object object = Util.deref( parameters[ 0 ] );
-		if( !( object instanceof String ) )
-			throw new ThrowException( "upper() needs a string parameter", thread.cloneStack() );
-		return ( (String)object ).toUpperCase();
+		super( location );
+
+		this.value = value;
+	}
+
+	public Expression compile()
+	{
+		return this;
+	}
+
+	public Integer evaluate( ThreadContext thread )
+	{
+		return this.value;
+	}
+
+	public void writeTo( StringBuilder out )
+	{
+		out.append( this.value );
 	}
 }

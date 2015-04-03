@@ -8,7 +8,7 @@ import java.math.BigInteger;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.testng.Assert;
+import org.fest.assertions.api.Assertions;
 import org.testng.annotations.Test;
 
 public class DumperTests
@@ -63,7 +63,7 @@ public class DumperTests
 
 	private void test( String actual, String expected )
 	{
-		Assert.assertEquals( actual, expected );
+		Assertions.assertThat( actual ).isEqualTo( expected );
 	}
 
 	private void test( Object object, String expected )

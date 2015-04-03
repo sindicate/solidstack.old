@@ -14,23 +14,33 @@
  * limitations under the License.
  */
 
-package solidstack.script.expressions;
+package solidstack.script.operators;
 
-import java.util.HashMap;
-
-import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
+import solidstack.script.expressions.Expression;
+import solidstack.script.objects.Assoc;
+import solidstack.script.scopes.ScopeException;
 
 
-public class EmptyMap extends LocalizedExpression
+public class Associate extends Operator
 {
-	public EmptyMap( SourceLocation location )
+	public Associate( String name, Expression left, Expression right)
 	{
-		super( location );
+		super( name, left, right );
 	}
 
 	public Object evaluate( ThreadContext thread )
 	{
-		return new HashMap<Object, Object>();
+		try // TODO And the other derefs?
+		{
+			Object left = this.left.evaluate( thread );
+			Object right = this.right.evaluate( thread );
+			return new Assoc( left, right );
+		}
+		catch( ScopeException e )
+		{
+			throw new ThrowException( e.getMessage(), thread.cloneStack( getLocation() ) );
+		}
 	}
 }

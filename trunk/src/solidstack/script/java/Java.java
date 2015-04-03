@@ -97,23 +97,15 @@ public class Java
 	 * @param name The name of the field.
 	 * @return The value of the field.
 	 * @throws MissingFieldException
+	 * @throws InvocationTargetException
 	 */
-	static public Object get( Object object, String name ) throws MissingFieldException
+	static public Object get( Object object, String name ) throws MissingFieldException, InvocationTargetException
 	{
 		CallResolutionContext context = CallResolutionContext.forPropertyRead( object, name );
 		MethodCall call = CallResolver.resolvePropertyRead( context );
 		if( call == null )
 			throw new MissingFieldException( object, object.getClass(), name ); // TODO MissingPropertyException?
 		return call.invoke();
-		}
-		catch( NoSuchFieldException e )
-		{
-			throw new MissingFieldException( object, object.getClass(), name );
-		}
-		catch( IllegalAccessException e )
-		{
-			throw throwUnchecked( e );
-		}
 	}
 
 	static public Object set( Object object, String name, Object value ) throws MissingFieldException, InvocationTargetException

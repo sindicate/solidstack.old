@@ -44,7 +44,7 @@ public class Script
 		return new Script( expression );
 	}
 
-	static private Object eval0( Expression expression, AbstractScope scope )
+	static private Object eval0( Expression expression, Object scope )
 	{
 		if( expression == null )
 			return null;
@@ -84,7 +84,7 @@ public class Script
 		}
 	}
 
-	static public Object eval( Expression expression, AbstractScope scope )
+	static public Object eval( Expression expression, Object scope )
 	{
 		return Util.toJava( eval0( expression, scope ) );
 	}
@@ -132,7 +132,7 @@ public class Script
 		this.expression = expression;
 	}
 
-	public Object eval( AbstractScope scope )
+	public Object eval( Object scope )
 	{
 		return eval( this.expression, scope );
 	}
@@ -157,4 +157,5 @@ public class Script
 	{
 		if( this.expression != null )
 			this.expression.writeTo( out );
+	}
 }

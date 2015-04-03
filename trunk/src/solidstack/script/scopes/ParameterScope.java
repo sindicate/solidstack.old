@@ -99,7 +99,7 @@ public class ParameterScope extends AbstractScope
 				if( function instanceof Type )
 					return Java.invokeStatic( ( (Type)function ).theClass(), "apply", pars );
 				return Java.invoke( function, "apply", pars );
-	}
+			}
 			catch( InvocationTargetException e )
 			{
 				Throwable t = e.getCause();

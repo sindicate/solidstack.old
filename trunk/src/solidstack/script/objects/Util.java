@@ -1,13 +1,9 @@
 package solidstack.script.objects;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import solidstack.script.ThrowException;
 import solidstack.script.objects.FunctionObject.ParWalker;
-import solidstack.script.scopes.Symbol;
 
 public class Util
 {
@@ -42,4 +38,4 @@ public class Util
 			return ( (Tuple)values ).list().toArray();
 		return new Object[] { values };
 	}
-	}
+}

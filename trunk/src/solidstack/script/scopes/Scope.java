@@ -33,4 +33,4 @@ public interface Scope
 
 	Object apply( Symbol symbol, Object... args );
 	Object apply( Symbol symbol, Map args );
-	}
+}

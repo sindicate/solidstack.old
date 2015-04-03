@@ -14,23 +14,37 @@
  * limitations under the License.
  */
 
-package solidstack.script.functions;
+package solidstack.script.operators;
 
+import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
-import solidstack.script.ThrowException;
-import solidstack.script.objects.FunctionObject;
-import solidstack.script.objects.Util;
+import solidstack.script.expressions.Expression;
 
-public class StripMargin extends FunctionObject
+
+public class New extends Operator
 {
-	@Override
-	public Object call( ThreadContext thread, Object... parameters )
+	private SourceLocation location;
+
+	public New( SourceLocation location, String name, Expression right )
 	{
-		if( parameters.length != 1 )
-			throw new ThrowException( "stripMargin() needs exactly one parameter", thread.cloneStack() );
-		Object object = Util.deref( parameters[ 0 ] );
-		if( !( object instanceof String ) )
-			throw new ThrowException( "stripMargin() needs a string parameter", thread.cloneStack() );
-		return ( (String)object ).replaceAll( "(?m)^[ \\t]*\\|", "" );
+		super( name, null, right );
+
+		this.location = location;
+	}
+
+	public Object evaluate( ThreadContext thread )
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	public Object evaluateForApply( ThreadContext thread )
+	{
+		return this.right.evaluate( thread );
+	}
+
+	@Override
+	public SourceLocation getLocation()
+	{
+		return this.location;
 	}
 }

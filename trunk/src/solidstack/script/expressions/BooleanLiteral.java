@@ -19,20 +19,30 @@ package solidstack.script.expressions;
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
 
-public class IntegerConstant extends LocalizedExpression
+
+
+public class BooleanLiteral extends LocalizedExpression
 {
-	private int value;
+	private boolean value;
 
-
-	public IntegerConstant( SourceLocation location, int value )
+	public BooleanLiteral( SourceLocation location, boolean value )
 	{
 		super( location );
-
 		this.value = value;
 	}
 
-	public Integer evaluate( ThreadContext thread )
+	public Expression compile()
+	{
+		return this;
+	}
+
+	public Boolean evaluate( ThreadContext thread )
 	{
 		return this.value;
+	}
+
+	public void writeTo( StringBuilder out )
+	{
+		out.append( this.value );
 	}
 }

@@ -10,12 +10,12 @@ FROM SYS.SYSTABLES
 	interfere with the linenumbers
 	--%>
 WHERE 1 = 1
-		<% if( prefix; ( %>
+		<% if( prefix ) ( %>
 AND TABLENAME LIKE '<%= prefix %>%'
-		<% )) %>
-		<% if( name; ( %>
+		<% ) %>
+		<% if( name ) ( %>
 AND TABLENAME = ${name}
-		<% )) %>
-		<% if( names; ( %>
+		<% ) %>
+		<% if( names ) ( %>
 AND TABLENAME IN (${names})
-		<% )) %>
+		<% ) %>

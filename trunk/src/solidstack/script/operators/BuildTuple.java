@@ -82,6 +82,17 @@ public class BuildTuple extends Operator
 	}
 
 	@Override
+	public void writeTo( StringBuilder out )
+	{
+		boolean first = true;
+		for( Expression expression : this.expressions )
+		{
+			if( first ) first = false; else out.append( ',' );
+			expression.writeTo( out );
+		}
+	}
+
+	@Override
 	public SourceLocation getLocation()
 	{
 		return this.expressions.get( 0 ).getLocation();

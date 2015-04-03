@@ -18,7 +18,9 @@ package solidstack.script.java;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -34,14 +36,21 @@ public class ClassExtension
 
 	static
 	{
-		for( Method method : DefaultClassExtensions.class.getMethods() )
-			if( ( method.getModifiers() & Modifier.STATIC ) != 0 ) // Only statics
+		for( Method method : DefaultClassExtensions.class.getMethods() ) // Only public members
+			if( ( method.getModifiers() & Modifier.STATIC ) != 0 ) // Only statics members
 			{
 				Class<?>[] types = method.getParameterTypes();
-				if( types.length != 0 )
+				if( types.length > 0 ) // Need at least one argument
 				{
-					String name = method.getName().indexOf( '_' ) == 0 ? method.getName().substring( 1 ) : method.getName() ;
-					forClass( types[ 0 ] ).addMethod( name, method );
+					String name = method.getName();
+					if( name.startsWith( "static_" ) )
+						forClass( types[ 0 ] ).addStaticMethod( name.substring( 7 ), method );
+					else
+					{
+						if( name.startsWith( "_" ) )
+							name = name.substring( 1 ); // Remove leading _ from name
+						forClass( types[ 0 ] ).addMethod( name, method );
+					}
 				}
 			}
 	}
@@ -77,15 +86,29 @@ public class ClassExtension
 
 	// ----------
 
-	private Map<String, ExtensionMethod> methods = new HashMap<String, ExtensionMethod>();
+	private Map<String, List<ExtensionMethod>> methods = new HashMap<String, List<ExtensionMethod>>(); // TODO Optimise this data structure
+	private Map<String, ExtensionMethod> staticMethods = new HashMap<String, ExtensionMethod>();
 
 	private void addMethod( String name, Method method )
 	{
-		this.methods.put( name,  new ExtensionMethod( method ) );
+		List<ExtensionMethod> methods = this.methods.get( name );
+		if( methods == null )
+			this.methods.put( name, methods = new ArrayList<ExtensionMethod>() );
+		methods.add( new ExtensionMethod( method ) );
 	}
 
-	public ExtensionMethod getMethod( String name )
+	private void addStaticMethod( String name, Method method )
+	{
+		this.staticMethods.put( name, new ExtensionMethod( method ) );
+	}
+
+	public List<ExtensionMethod> getMethods( String name )
 	{
 		return this.methods.get( name );
+	}
+
+	public ExtensionMethod getStaticMethod( String name )
+	{
+		return this.staticMethods.get( name );
 	}
 }

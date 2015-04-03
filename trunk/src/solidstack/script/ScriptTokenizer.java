@@ -16,12 +16,16 @@
 
 package solidstack.script;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import solidstack.io.PushbackReader;
 import solidstack.io.SourceException;
 import solidstack.io.SourceLocation;
 import solidstack.io.SourceReader;
 import solidstack.lang.Assert;
-import solidstack.script.ScriptTokenizer.Token.TYPE;
 
 
 /**
@@ -32,7 +36,7 @@ import solidstack.script.ScriptTokenizer.Token.TYPE;
 public class ScriptTokenizer
 {
 	/**
-	 * The reader used to read from and push back characters.
+	 * Reserved words.
 	 */
 	@SuppressWarnings( "javadoc" )
 	static public enum TokenType {
@@ -67,23 +71,40 @@ public class ScriptTokenizer
 	}
 
 	/**
+	 * Map of reserved words.
+	 */
+	static public final Map<String, TokenType> RESERVED_WORDS;
+
+	static
+	{
+		RESERVED_WORDS = new HashMap<String, TokenType>();
+		for( TokenType type : TokenType.values() )
+			if( type.reserved )
+				RESERVED_WORDS.put( type.word, type );
+	}
+
+	/**
+	 * The reader used to read from and push back characters.
+	 */
+	private PushbackReader in;
+
+	/**
 	 * Buffer for the result.
 	 */
 	private StringBuilder buffer = new StringBuilder( 256 );
 
-	/**
-	 * The last token read.
-	 */
-	private Token last;
+	// A window that caches the last 3 tokens
+	private List<Token> window = new ArrayList<Token>();
+	{
+		this.window.add( null );
+		this.window.add( null );
+		this.window.add( null );
+	}
+	private int pos = 3;
+
 
 	/**
-	 * The last token is pushed back.
-	 */
-	private boolean pushed;
-
-
-	/**
-	 * Constructs a new instance of the Tokenizer.
+	 * Constructs a new instance of the tokenizer.
 	 *
 	 * @param in The input.
 	 */
@@ -92,12 +113,19 @@ public class ScriptTokenizer
 		this.in = new PushbackReader( in );
 	}
 
+	public ScriptTokenizer( PushbackReader in )
+	{
+		this.in = in;
+	}
+
 	/**
 	 * @return The underlying reader.
 	 */
 	public PushbackReader getIn()
 	{
-		return this.in;
+		if( this.pos == 3 )
+			return this.in;
+		throw new IllegalStateException( "There are still token in the push back buffer" );
 	}
 
 	/**
@@ -105,7 +133,7 @@ public class ScriptTokenizer
 	 *
 	 * @return The cleared buffer.
 	 */
-	public StringBuilder clearBuffer()
+	protected StringBuilder clearBuffer()
 	{
 		StringBuilder buffer = this.buffer;
 		buffer.setLength( 0 );
@@ -117,26 +145,29 @@ public class ScriptTokenizer
 	 *
 	 * @return A token from the input. Null if there are no more tokens available.
 	 */
-	public Token get()
+	public Token next()
 	{
-		if( this.pushed )
+		if( this.pos == 3 )
 		{
-			this.pushed = false;
-			return lastToken();
+			this.window.remove( 0 );
+			Token token = readToken();
+			this.window.add( token );
+			return token;
 		}
-		return this.last = get0();
+		return this.window.get( this.pos++ );
 	}
 
 	/**
 	 * @return The last token read.
 	 */
-	public Token lastToken()
+	public Token last()
 	{
-		if( this.pushed )
-			throw new IllegalStateException( "Token has been pushed back" );
-		if( this.last == null )
+		if( this.pos == 0 )
 			throw new IllegalStateException( "There is no last token" );
-		return this.last;
+		Token result = this.window.get( this.pos - 1 );
+		if( result == null )
+			throw new IllegalStateException( "No token available" );
+		return result;
 	}
 
 	/**
@@ -144,12 +175,12 @@ public class ScriptTokenizer
 	 */
 	public void push()
 	{
-		if( this.pushed )
-			throw new IllegalStateException( "Token has already been pushed back" );
-		this.pushed = true;
+		if( this.pos == 0 )
+			throw new IllegalStateException( "Can't push further" );
+		this.pos--;
 	}
 
-	private Token get0()
+	private Token readToken()
 	{
 		StringBuilder result = clearBuffer();
 		PushbackReader in = getIn();
@@ -157,68 +188,58 @@ public class ScriptTokenizer
 		while( true )
 		{
 			int ch;
+
 			ws: while( true )
-			{
-				ch = in.read();
-				switch( ch )
+				switch( ch = in.read() )
 				{
-					case -1:
-						return new Token( TYPE.EOF, in.getLocation() );
-
-					default:
-						break ws;
-
-					// Whitespace
-					case ' ':
-					case '\t':
-					case '\n':
-					case '\r':
+					case -1: return new Token( TokenType.EOF, in.getLocation(), null );
+					default: break ws;
+					case ' ': case '\t': case '\n': case '\r': // Whitespace
 				}
-			}
 
 			SourceLocation location = in.getLocation();
+
 			switch( ch )
 			{
 				// Identifier
-				case 'a': case 'b': case 'c': case 'd': case 'e':
-				case 'f': case 'g': case 'h': case 'i': case 'j':
-				case 'k': case 'l': case 'm': case 'n': case 'o':
-				case 'p': case 'q': case 'r': case 's': case 't':
-				case 'u': case 'v': case 'w': case 'x': case 'y':
-				case 'z':
-				case 'A': case 'B': case 'C': case 'D': case 'E':
-				case 'F': case 'G': case 'H': case 'I': case 'J':
-				case 'K': case 'L': case 'M': case 'N': case 'O':
-				case 'P': case 'Q': case 'R': case 'S': case 'T':
-				case 'U': case 'V': case 'W': case 'X': case 'Y':
-				case 'Z':
+				case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j':
+				case 'k': case 'l': case 'm': case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't':
+				case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
+				case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J':
+				case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T':
+				case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
 				case '_': case '$':
-					while( ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch >= '0' && ch <= '9' || ch == '$' || ch == '_' )
+					do
 					{
 						result.append( (char)ch );
 						ch = in.read();
 					}
+					while( ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch >= '0' && ch <= '9' || ch == '$' || ch == '_' );
+					String value = result.toString();
+					TokenType type = RESERVED_WORDS.get( value );
+					if( type != null )
+					{
+						in.push( ch );
+						return new Token( type, location, value );
+					}
+					if( ch == '"' )
+						return new Token( TokenType.PSTRING, location, value );
 					in.push( ch );
-					// TODO Internalize identifier tokens
-					return new Token( TYPE.IDENTIFIER, location, result.toString() );
+					return new Token( TokenType.IDENTIFIER, location, value );
 
 				// String
 				case '"':
 					while( true )
 					{
-						ch = in.read();
-						switch( ch )
+						switch( ch = in.read() )
 						{
-							case -1:
-								throw new SourceException( "Missing \"", in.getLocation() );
-							case '"':
-								return new Token( TYPE.STRING, location, result.toString() );
+							case -1: throw new SourceException( "Missing \"", in.getLocation() );
+							case '"': return new Token( TokenType.STRING, location, result.toString() );
 							case '\\':
-								ch = in.read();
-								switch( ch )
+								switch( ch = in.read() )
 								{
 									case -1: throw new SourceException( "Incomplete escape sequence", in.getLocation() );
-									case '\n': continue;
+									case '\n': continue; // Skip newline
 									case 'b': ch = '\b'; break;
 									case 'f': ch = '\f'; break;
 									case 'n': ch = '\n'; break;
@@ -226,33 +247,53 @@ public class ScriptTokenizer
 									case 't': ch = '\t'; break;
 									case '\"': break;
 									case '\\': break;
-									case '$': result.append( '\\' ); break; // TODO Remember, not for '' strings
-									case 'u':
+									case '$': result.append( '\\' ); break; // As is. TODO Remember, not for '' strings
+									case 'u': // TODO Actually, these escapes should be active through the entire script, like Java and Scala do. Maybe disabled by default. Or removed and optional for String literals.
 										char[] codePoint = new char[ 4 ];
 										for( int i = 0; i < 4; i++ )
 										{
-											ch = in.read();
-											codePoint[ i ] = (char)ch;
-											if( !( ch >= '0' && ch <= '9' ) )
-												throw new SourceException( "Illegal escape sequence: \\u" + new String( codePoint, 0, i + 1 ), in.getLocation() );
+											codePoint[ i ] = Character.toUpperCase( (char)( ch = in.read() ) );
+											if( !( ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'F' ) )
+												throw new SourceException( "Illegal escape sequence: \\u" + new String( codePoint, 0, i + 1 ), in.getLastLocation() );
 										}
 										ch = Integer.valueOf( new String( codePoint ), 16 );
 										break;
 									default:
-										throw new SourceException( "Illegal escape sequence: \\" + ( ch >= 0 ? (char)ch : "" ), in.getLocation() );
+										throw new SourceException( "Illegal escape sequence: \\" + ( ch >= 0 ? (char)ch : "" ), in.getLastLocation() );
 								}
 						}
 						result.append( (char)ch );
 					}
 
-				// Number
-				case '0': case '1': case '2': case '3': case '4':
-				case '5': case '6': case '7': case '8': case '9':
-					while( ch >= '0' && ch <= '9' )
+				// Character
+				case '\'':
+					// FIXME '\n' and the other escapes do not work yet
+					ch = in.read();
+					if( ch == -1 ) throw new SourceException( "Unexpected EOF", in.getLocation() );
+					int ch2 = in.read();
+					if( ch2 == '\'' )
+						return new Token( TokenType.CHAR, location, String.valueOf( (char)ch ) );
+					in.push( ch2 );
+					if( !( ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch == '$' || ch == '_' ) )
+						throw new SourceException( "Unexpected character '" + (char)ch + "'", in.getLocation() ); // TODO What about non-printable characters
+					do
 					{
 						result.append( (char)ch );
 						ch = in.read();
 					}
+					while( ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch >= '0' && ch <= '9' || ch == '$' || ch == '_' );
+					in.push( ch );
+					return new Token( TokenType.SYMBOL, location, result.toString() );
+
+				// Number
+				case '0': case '1': case '2': case '3': case '4':
+				case '5': case '6': case '7': case '8': case '9':
+					do
+					{
+						result.append( (char)ch );
+						ch = in.read();
+					}
+					while( ch >= '0' && ch <= '9' );
 					boolean decimal = false;
 					if( ch == '.' )
 					{
@@ -261,14 +302,15 @@ public class ScriptTokenizer
 						{
 							in.push( ch );
 							in.push( '.' );
-							return new Token( TYPE.INT, location, result.toString() );
+							return new Token( TokenType.INTEGER, location, result.toString() );
 						}
 						result.append( '.' );
-						while( ch >= '0' && ch <= '9' )
+						do
 						{
 							result.append( (char)ch );
 							ch = in.read();
 						}
+						while( ch >= '0' && ch <= '9' );
 						decimal = true;
 					}
 					if( ch == 'E' || ch == 'e' )
@@ -282,92 +324,54 @@ public class ScriptTokenizer
 						}
 						if( !( ch >= '0' && ch <= '9' ) )
 							throw new SourceException( "Invalid number", in.getLocation() );
-						while( ch >= '0' && ch <= '9' )
+						do
 						{
 							result.append( (char)ch );
 							ch = in.read();
 						}
+						while( ch >= '0' && ch <= '9' );
 						decimal = true;
 					}
 					in.push( ch );
-					return new Token( decimal ? TYPE.DECIMAL : TYPE.INT, location, result.toString() );
+					return new Token( decimal ? TokenType.DECIMAL : TokenType.INTEGER, location, result.toString() );
 
-				// Operators
-				case '+':
-				case '-':
-					int ch2 = in.read();
-					if( ch2 == ch )
-						return new Token( TYPE.UNAOP, location, new String( new char[] { (char)ch, (char)ch } ) );
-					if( ch == '-' && ch2 == '>' )
-						return new Token( TYPE.BINOP, location, "->" );
-					in.push( ch2 );
-					//$FALL-THROUGH$
-				case '*':
-				case '.':
-				case '#':
-				case '%':
-				case ':':
-				case ',':
-					return new Token( TYPE.BINOP, location, String.valueOf( (char)ch ) );
-				case '!':
-					ch = in.read();
-					if( ch == '=' )
-						return new Token( TYPE.BINOP, location, "!=" );
-					in.push( ch );
-					return new Token( TYPE.UNAOP, location, "!" );
-				case '<':
-				case '>':
-					ch2 = in.read();
-					if( ch2 == '=' )
-						return new Token( TYPE.BINOP, location, new String( new char[] { (char)ch, (char)ch2 } ) );
-					in.push( ch2 );
-					return new Token( TYPE.BINOP, location, String.valueOf( (char)ch ) );
-				case '=':
-					ch = in.read();
-					if( ch == '=' )
-						return new Token( TYPE.BINOP, location, "==" );
-					in.push( ch );
-					return new Token( TYPE.BINOP, location, "=" ); // TODO Predefine all operator tokens
-				case '&':
-					ch = in.read();
-					if( ch == '&' )
-						return new Token( TYPE.BINOP, location, "&&" );
-					in.push( ch );
-					throw new SourceException( "Unexpected character '" + (char)ch + "'", in.getLocation() );
-				case '|':
-					ch = in.read();
-					if( ch == '|' )
-						return new Token( TYPE.BINOP, location, "||" );
-					in.push( ch );
-					throw new SourceException( "Unexpected character '" + (char)ch + "'", in.getLocation() );
-
-				// Others
+				// Parenthesis
 				case '(':
-					return new Token( TYPE.PAREN_OPEN, location, "(" );
+					return new Token( TokenType.PAREN_OPEN, location, "(" );
 				case ')':
-					return new Token( TYPE.PAREN_CLOSE, location, ")" );
+					return new Token( TokenType.PAREN_CLOSE, location, ")" );
 				case '[':
-					return new Token( TYPE.BRACKET_OPEN, location, "[" );
+					return new Token( TokenType.BRACKET_OPEN, location, "[" );
 				case ']':
-					return new Token( TYPE.BRACKET_CLOSE, location, "]" );
+					return new Token( TokenType.BRACKET_CLOSE, location, "]" );
 				case '{':
-					return new Token( TYPE.BRACE_OPEN, location, "{" );
+					return new Token( TokenType.BRACE_OPEN, location, "{" );
 				case '}':
-					return new Token( TYPE.BRACE_CLOSE, location, "}" );
-				case ';':
-					return new Token( TYPE.SEMICOLON, location, ";" );
+					return new Token( TokenType.BRACE_CLOSE, location, "}" );
 
+				// Delimiters
+				case '`':
+					return new Token( TokenType.BACKQUOTE, location, "`" );
+				case '.':
+					return new Token( TokenType.DOT, location, "." );
+				case ';':
+					return new Token( TokenType.SEMICOLON, location, ";" );
+				case ',':
+					return new Token( TokenType.COMMA, location, "," );
+
+				// Comment
 				case '/':
-					ch = in.read();
-					if( ch == '/' )
+					ch2 = in.read();
+					if( ch2 == '/' )
 					{
-						ch = in.read();
-						while( ch != '\n' && ch != -1 )
+						do
 							ch = in.read();
+						while( ch != '\n' && ch != -1 );
 						break;
 					}
-					if( ch == '*' )
+					if( ch2 == '*' )
 					{
+						// TODO Scala allows them to be nested
 						while( true )
 						{
 							ch = in.read();
@@ -383,8 +387,24 @@ public class ScriptTokenizer
 						}
 						break;
 					}
+					in.push( ch2 );
+
+				// Operators
+				// $FALL-THROUGH$
+				case '!': case '#': case '%': case '&': case '*': case '+': case '-': case ':':
+				case '<': case '=': case '>': case '?': case '@': case '\\': case '^': case '|': case '~':
+					do
+					{
+						result.append( (char)ch );
+						ch = in.read();
+					}
+					while( isOperatorChar( ch ) );
 					in.push( ch );
-					return new Token( TYPE.BINOP, location, "/" );
+					value = result.toString();
+					type = RESERVED_WORDS.get( value );
+					if( type != null )
+						return new Token( type, location, value );
+					return new Token( TokenType.OPERATOR, location, value );
 
 				default:
 					throw new SourceException( "Unexpected character '" + (char)ch + "'", in.getLocation() );
@@ -392,88 +412,41 @@ public class ScriptTokenizer
 		}
 	}
 
+	static private boolean isOperatorChar( int ch )
+	{
+		switch( ch )
+		{
+			case '!': case '#': case '%': case '&': case '*': case '+': case '-': case '/':
+			case ':': case '<': case '=': case '>': case '?': case '@': case '\\': case '^':
+			case '|': case '~':
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * Close the underlying reader.
+	 */
+	public void close()
+	{
+		getIn().close();
+	}
+
 	/**
 	 * A token.
-	 *
-	 * @author René M. de Bloois
 	 */
-	// TODO Maybe we should remove this token class, and introduce the event mechanism like in JSONParser.
 	static public class Token
 	{
-		/**
-		 * Token types.
-		 */
-		@SuppressWarnings( "javadoc" )
-		static public enum TYPE { IDENTIFIER, DECIMAL, INT, STRING, BINOP, UNAOP, PAREN_OPEN, PAREN_CLOSE, BRACE_OPEN, BRACE_CLOSE, BRACKET_OPEN, BRACKET_CLOSE, SEMICOLON, EOF }
-
-		/**
-		 * The type of the token.
-		 */
-		private TYPE type;
-
-		/**
-		 * The value of the token.
-		 */
+		private TokenType type;
+		private SourceLocation location;
 		private String value;
 
-		private SourceLocation location;
-
-		/**
-		 * Constructs a new token.
-		 *
-		 * @param type The type of the token.
-		 */
-		private Token( TYPE type, SourceLocation location )
+		Token( TokenType type, SourceLocation location, String value )
 		{
 			this.type = type;
 			this.location = location;
-		}
-
-		/**
-		 * @param type The type of the token.
-		 * @param value The value of the token.
-		 */
-		private Token( TYPE type, SourceLocation location, String value )
-		{
-			this( type, location );
 			this.value = value;
-		}
-
-		/**
-		 * @return The type of the token.
-		 */
-		public TYPE getType()
-		{
-			return this.type;
-		}
-
-		/**
-		 * Returns the value of token.
-		 *
-		 * @return The value of token.
-		 */
-		public String getValue()
-		{
-			if( this.value == null )
-				throw new IllegalStateException( "Value is null" );
-			return this.value;
-		}
-
-		public SourceLocation getLocation()
-		{
-			return this.location;
-		}
-
-		@Override
-		public String toString()
-		{
-			if( getType() == TYPE.STRING )
-				return "\"" + this.value + "\""; // TODO Or maybe just the double quote. Actually, we don't know what quote is used.
-			// TODO Maybe we should not parse the complete string as a token, especially with super strings
-			if( this.value != null )
-				return this.value.toString();
-			Assert.isTrue( this.type == TYPE.EOF );
-			return "EOF";
 		}
 
 		/**
@@ -487,13 +460,41 @@ public class ScriptTokenizer
 				return false;
 			return this.value.equals( s );
 		}
-	}
 
-	/**
-	 * Close the underlying reader.
-	 */
-	public void close()
-	{
-		getIn().close();
+		/**
+		 * @return The type of the token.
+		 */
+		public TokenType getType()
+		{
+			return this.type;
+		}
+
+		/**
+		 * @return The location of the token in the source.
+		 */
+		public SourceLocation getLocation()
+		{
+			return this.location;
+		}
+
+		/**
+		 * @return The value of the token.
+		 */
+		public String getValue()
+		{
+			return this.value;
+		}
+
+		@Override
+		public String toString()
+		{
+			if( this.type == TokenType.STRING )
+				return "\"" + this.value + "\""; // TODO Or maybe just the double quote. Actually, we don't know what quote is used.
+			// TODO Maybe we should not parse the complete string as a token, especially with super strings
+			if( this.value != null )
+				return this.value.toString();
+			Assert.isTrue( this.type == TokenType.EOF );
+			return "EOF";
+		}
 	}
 }

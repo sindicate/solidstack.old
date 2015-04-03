@@ -32,7 +32,7 @@ public class ThreadContext
 		protected ThreadContext initialValue()
 		{
 			return new ThreadContext();
-	}
+		}
 	};
 
 	static public ThreadContext get()
@@ -96,7 +96,7 @@ public class ThreadContext
 			this.saved = (Tuple)tuple;
 		else
 			this.saved = new Tuple( tuple );
-}
+	}
 
 	public Object load( int index )
 	{
