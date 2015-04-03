@@ -1,5 +1,5 @@
 /*--
- * Copyright 2006 René M. de Bloois
+ * Copyright 2012 René M. de Bloois
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,80 +16,89 @@
 
 package solidstack.query;
 
+import groovy.lang.Closure;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
-import solidstack.template.EncodingWriter;
+import org.codehaus.groovy.runtime.InvokerHelper;
 
+import solidstack.template.EncodingWriter;
+import solidstack.template.TemplateException;
 
 /**
- * A writer that keeps values separate from the string segments.
- *
+ * An encoding writer. Adds a {@link #writeEncoded(String)} method. This implementation does not encode.
+ * 
  * @author René M. de Bloois
+ *
  */
+// Can't implement Writer. DefaultGroovyMethods.write(Writer self, Writable writable) will be called when value is null, which results in NPE.
 public class QueryEncodingWriter implements EncodingWriter
 {
 	private List< Object > values = new ArrayList< Object >();
 	private BitSet isValue = new BitSet();
 
-	//@Override
-	public void write( String s )
+	public void write( String s ) throws IOException
 	{
-		if( s != null && s.length() > 0 )
+		if( s != null )
 			this.values.add( s );
 	}
 
-	//@Override
+	public void write( Object o ) throws IOException
+	{
+		if( o != null )
+			this.values.add( InvokerHelper.invokeMethod( o, "asType", String.class ) );
+	}
+
+	public void write( Closure c ) throws IOException
+	{
+		if( c != null )
+		{
+			int pars = c.getMaximumNumberOfParameters();
+			if( pars > 0 )
+				throw new TemplateException( "Closures with parameters are not supported in expressions." );
+			Object result = c.call();
+			if( result != null )
+				this.values.add( InvokerHelper.invokeMethod( result, "asType", String.class ) );
+		}
+	}
+
+	public void writeEncoded( String s ) throws IOException
+	{
+		if( s == null )
+			return;
+		this.isValue.set( this.values.size() );
+		write( s );
+	}
+
 	public void writeEncoded( Object o ) throws IOException
 	{
-		this.isValue.set( this.values.size() );
-		this.values.add( o );
+		if( o != null )
+			writeEncoded( (String)InvokerHelper.invokeMethod( o, "asType", String.class ) );
 	}
 
-	public boolean stringsOnly()
+	public void writeEncoded( Closure c ) throws IOException
 	{
-		return false;
+		if( c != null )
+		{
+			int pars = c.getMaximumNumberOfParameters();
+			if( pars > 0 )
+				throw new TemplateException( "Closures with parameters are not supported in expressions." );
+			Object result = c.call();
+			if( result != null )
+				writeEncoded( result );
+		}
 	}
 
-	/**
-	 * Returns the string segments and the values.
-	 *
-	 * @return An array of string segments (String) and the values (unknown Object).
-	 */
 	public List< Object > getValues()
 	{
 		return this.values;
 	}
 
-	/**
-	 * Returns a bitset that indicates which indexes in the {@link #getValues()} list is a value.
-	 *
-	 * @return A bitset that indicates which indexes in the {@link #getValues()} list is a value.
-	 */
 	public BitSet getIsValue()
 	{
 		return this.isValue;
-	}
-
-	@Override
-	public String toString()
-	{
-		StringBuilder result = new StringBuilder();
-		int len = this.values.size();
-		for( int i = 0; i < len; i++ )
-		{
-			if( this.isValue.get( i ) )
-				result.append( this.values.get( i ).toString() );
-			else
-				result.append( (String)this.values.get( i ) );
-		}
-		return result.toString();
-	}
-
-	public void flush() throws IOException
-	{
-		// Nothing to flush
 	}
 }

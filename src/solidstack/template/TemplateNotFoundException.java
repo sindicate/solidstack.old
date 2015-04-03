@@ -23,8 +23,6 @@ package solidstack.template;
  */
 public class TemplateNotFoundException extends RuntimeException
 {
-	private static final long serialVersionUID = 1L;
-
 	/**
 	 * Constructor.
 	 * 

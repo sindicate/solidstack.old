@@ -1,0 +1,19 @@
+<% // Test if the import at the bottom works, and this comment too of course
+new Timestamp( new Date().time ) %>
+SELECT *
+FROM SYS.SYSTABLES
+	<%--
+	This comment should not 
+	interfere with the linenumbers
+	--%>
+WHERE 1 = 1
+		<% if( prefix ) { %>
+AND TABLENAME LIKE '<%= prefix %>%'
+		<% } %>
+		<% if( name ) { %>
+AND TABLENAME = ${"${name}"} <%-- Don't use it like this, this is just a test --%>
+		<% } %>
+		<% if( names ) { %>
+AND <% out.write( "${"TABLENAME"}" ) %> IN (${names})
+		<% } %>
+<%@ query import = "java.sql.Timestamp" %>

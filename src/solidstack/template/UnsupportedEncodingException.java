@@ -18,14 +18,12 @@ package solidstack.template;
 
 
 /**
- * The character encoding is not supported.
+ * The Character Encoding is not supported.
  * 
  * @author René de Bloois
  */
 public class UnsupportedEncodingException extends RuntimeException
 {
-	private static final long serialVersionUID = 1L;
-
 	/**
 	 * Constructor.
 	 * 

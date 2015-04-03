@@ -16,42 +16,63 @@
 
 package solidstack.template;
 
+import groovy.lang.Closure;
+
 import java.io.IOException;
 
 /**
- * An encoding writer. Can encode strings to the target content type.
- *
+ * An encoding writer. Adds a {@link #writeEncoded(String)} method. This implementation does not encode.
+ * 
  * @author René M. de Bloois
+ *
  */
 public interface EncodingWriter
 {
 	/**
 	 * Write the string to the writer unencoded.
-	 *
+	 * 
 	 * @param s The string to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
 	void write( String s ) throws IOException;
 
 	/**
-	 * Write the value to the writer encoded.
-	 *
-	 * @param value The value to write.
+	 * Write the object to the writer unencoded.
+	 * 
+	 * @param o The object to write.
 	 * @throws IOException Whenever an IOException occurs.
 	 */
-	void writeEncoded( Object value ) throws IOException;
+	void write( Object o ) throws IOException;
 
 	/**
-	 * Indicates that {@link #writeEncoded(Object)} only accepts Strings, not Objects.
-	 *
-	 * @return True when {@link #writeEncoded(Object)} only accepts Strings, not Objects.
+	 * Write the output of the closure to the writer unencoded.
+	 * 
+	 * @param c The closure.
+	 * @throws IOException Whenever an IOException occurs.
 	 */
-	boolean stringsOnly();
+	void write( Closure c ) throws IOException;
 
 	/**
-     * Flushes the stream.
-     *
-	 * @throws IOException If an I/O error occurs.
+	 * Write the specified string to the writer encoded.
+	 * 
+	 * @param s The string to write.
+	 * @throws IOException Whenever an IOException occurs.
 	 */
-	void flush() throws IOException;
+	void writeEncoded( String s ) throws IOException;
+
+	/**
+	 * Write the object to the writer encoded.
+	 * 
+	 * @param o The object to write.
+	 * @throws IOException Whenever an IOException occurs.
+	 */
+	void writeEncoded( Object o ) throws IOException;
+
+	/**
+	 * Write the output of the closure to the writer encoded.
+	 * 
+	 * @param c The closure.
+	 * @throws IOException Whenever an IOException occurs.
+	 */
+	void writeEncoded( Closure c ) throws IOException;
 }

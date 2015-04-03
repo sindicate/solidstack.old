@@ -16,6 +16,7 @@
 
 package solidstack.template;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,23 +24,21 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 
-@SuppressWarnings( "javadoc" )
 public class Closures
 {
-	@Test
-	public void testClosures()
+	@Test(groups="new")
+	public void testClosures() throws SQLException, ClassNotFoundException
 	{
-		TemplateLoader templates = new TemplateLoader();
-		templates.setTemplatePath( "classpath:/solidstack/template" );
+		TemplateManager templates = new TemplateManager();
+		templates.setPackage( "solidstack.template" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
-		Template template = templates.getTemplate( "closures.xml" );
+		Template template = templates.getTemplate( "closures.gxml" );
 		String result = template.apply( params );
 		System.out.println( result );
-		// TODO Compiling the template to a GString has a unfortunate side effect. But if we do it differently then ${if()...else...} does not work anymore.
-		Assert.assertEquals( result, "te<stte&lt;st\n" + // out.write gets written first
+		Assert.assertEquals( result, "te&lt;st\n" +
 				"te<st\n" +
-				"\n" +
+				"te<st\n" +
 				"te<st\n" +
 				"te<st\n" +
 				"te<st\n" +
