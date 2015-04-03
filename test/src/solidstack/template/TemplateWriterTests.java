@@ -25,7 +25,6 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 
-@SuppressWarnings( "javadoc" )
 public class TemplateWriterTests
 {
 	@Test
@@ -42,12 +41,12 @@ public class TemplateWriterTests
 	}
 
 	@Test
-	public void testPlainTemplate()
+	public void testPlainTemplate() throws IOException
 	{
-		TemplateLoader templates = new TemplateLoader();
-		templates.setTemplatePath( "classpath:/solidstack/template" );
+		TemplateManager templates = new TemplateManager();
+		templates.setPackage( "solidstack.template" );
 
-		Template template = templates.getTemplate( "test.xml" );
+		Template template = templates.getTemplate( "test.gxml" );
 		template.setContentType( null );
 		Map< String, Object > pars = new HashMap< String, Object >();
 		pars.put( "test", "&<>\"'" );
@@ -57,12 +56,12 @@ public class TemplateWriterTests
 	}
 
 	@Test
-	public void testXMLTemplate()
+	public void testXMLTemplate() throws IOException
 	{
-		TemplateLoader templates = new TemplateLoader();
-		templates.setTemplatePath( "classpath:/solidstack/template" );
+		TemplateManager templates = new TemplateManager();
+		templates.setPackage( "solidstack.template" );
 
-		Template template = templates.getTemplate( "test.xml" );
+		Template template = templates.getTemplate( "test.gxml" );
 		Map< String, Object > pars = new HashMap< String, Object >();
 		pars.put( "test", "&<>\"'" );
 

@@ -30,8 +30,6 @@ import solidstack.util.ObjectArrayList;
  */
 public class ValuesMap implements Map< String, Object >, Serializable
 {
-	private static final long serialVersionUID = 1L;
-
 	private Map< String, Integer > names; // This one is shared by all instances
 	private Object[] values;
 

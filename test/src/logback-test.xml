@@ -9,8 +9,6 @@
 		</encoder>
 	</appender>
 
-	<logger name="org.hibernate" level="info" />
-
 	<root level="trace">
 		<appender-ref ref="console" />
 	</root>

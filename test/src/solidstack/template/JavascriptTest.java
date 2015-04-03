@@ -1,19 +1,3 @@
-/*--
- * Copyright 2012 René M. de Bloois
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package solidstack.template;
 
 import java.io.FileReader;
@@ -37,17 +21,16 @@ import org.mozilla.javascript.TopLevel;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import solidstack.io.Resource;
-import solidstack.io.Resources;
-import solidstack.template.Basic.ParameterObject;
+import solidbase.io.BOMDetectingLineReader;
+import solidbase.io.Resource;
+import solidbase.io.ResourceFactory;
 
 
-@SuppressWarnings( { "javadoc", "restriction" } )
 public class JavascriptTest
 {
 	static public final String CONSTANT = "CONSTANT";
 
-	@Test
+	@Test//( groups = "new" )
 	public void test() throws ScriptException, IOException
 	{
 		{
@@ -83,7 +66,7 @@ public class JavascriptTest
 				scope.defineFunctionProperties( new String[] { "f" }, JavascriptTest.class, ScriptableObject.DONTENUM );
 //				Object result = cx.evaluateString(scope, "f(\"x\");\"test\"", "<cmd>", 1, null);
 				Object result = cx.executeScriptWithContinuations( script, scope );
-				System.out.println( Context.toString( result ) );
+				System.out.println( cx.toString( result ) );
 			}
 
 			{
@@ -109,16 +92,13 @@ public class JavascriptTest
 		System.out.println( test );
 	}
 
-	@Test
+	@Test//(groups="new")
 	public void testTransform() throws Exception
 	{
-		Resource resource = Resources.getResource( "file:test/src/solidstack/template/testjs.txt.slt" );
-		TemplateCompilerContext context = new TemplateCompilerContext();
-		context.setResource( resource );
-		context.setPath( "p/c" );
-		new TemplateCompiler( null ).compile( context );
-//		System.out.println( template.getSource().replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
-		Assert.assertEquals( context.getScript().toString(), "importClass(Packages.java.sql.Timestamp);importPackage(Packages.java.util);\n" +
+		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/template/testjs.gtext" );
+		Template template = new TemplateCompiler( null ).translate( "p", "c", new BOMDetectingLineReader( resource ) );
+		System.out.println( template.getSource().replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
+		Assert.assertEquals( template.getSource(), "importClass(Packages.java.sql.Timestamp);importPackage(Packages.java.util);\n" +
 				" // Test if the import at the bottom works, and this comment too of course\n" +
 				"new Timestamp( new java.util.Date().time ) \n" +
 				";out.write(\"SELECT *\\n\\\n" +
@@ -140,14 +120,14 @@ public class JavascriptTest
 				"\"); } \n" +
 				";\n" );
 
-		TemplateLoader queries = new TemplateLoader();
-		queries.setTemplatePath( "classpath:/solidstack/template" );
+		TemplateManager queries = new TemplateManager();
+		queries.setPackage( "solidstack.template" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
 		params.put( "prefix", "SYST" );
 		params.put( "name", null );
 		params.put( "names", null );
-		Template template = queries.getTemplate( "testjs.txt" );
+		template = queries.getTemplate( "testjs.gtext" );
 		String result = template.apply( params );
 
 //		Writer out = new OutputStreamWriter( new FileOutputStream( "test2.out" ), "UTF-8" );
@@ -158,20 +138,5 @@ public class JavascriptTest
 				"FROM SYS.SYSTABLES\n" +
 				"WHERE 1 = 1\n" +
 				"AND TABLENAME LIKE 'SYST%'\n" );
-	}
-
-	@Test
-	public void testObjectScope()
-	{
-		TemplateLoader templates = new TemplateLoader();
-		templates.setTemplatePath( "classpath:/solidstack/template" );
-
-		Template template = templates.getTemplate( "testjs.txt" );
-		String result = template.apply( new ParameterObject() );
-		Assert.assertEquals( result, "SELECT *\n" +
-				"FROM SYS.SYSTABLES\n" +
-				"WHERE 1 = 1\n" +
-				"AND TABLENAME LIKE 'prefix%'\n" +
-				"AND TABLENAME = name\n" );
 	}
 }

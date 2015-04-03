@@ -31,82 +31,43 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import solidstack.lang.Assert;
-import solidstack.lang.SystemException;
-import solidstack.query.hibernate.HibernateConnectedQueryAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import solidstack.Assert;
 import solidstack.query.hibernate.HibernateQueryAdapter;
-import solidstack.query.jpa.JPAConnectedQueryAdapter;
 import solidstack.query.jpa.JPAQueryAdapter;
-import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.Template;
 
 
 /**
- * A query object.
- *
+ * A query object will normally be constructed by a call to {@link QueryManager#apply(String, Map)}.
+ * The query object can be used to retrieve data from the database or to execute DML or DDL statements.
+ * 
  * @author René M. de Bloois
  */
 public class Query
 {
-	/**
-	 * The query language.
-	 */
-	static public enum Language
-	{
-		/**
-		 * Native SQL.
-		 */
-		SQL,
-		/**
-		 * JPA query.
-		 */
-		JPQL,
-		/**
-		 * Hibernate query.
-		 */
-		HQL
-	}
+	// TODO We need well defined logger channels like hibernate
+	static  private Logger log = LoggerFactory.getLogger( Query.class );
 
 	private Template template;
 	private boolean flyWeight = true;
-	private Language language;
-
 
 	/**
+	 * Constructor.
+	 * 
 	 * @param template The template for the query.
 	 */
-	// TODO Directive to enable/disable JDBC escaping <%@ query jdbc-escapes="true" %>. What's the default?
 	public Query( Template template )
 	{
 		this.template = template;
-
-		Directive languageDirective = template.getDirective( "query", "language" );
-		if( languageDirective != null )
-		{
-			String language = languageDirective.getValue();
-			if( language.equals( "SQL" ) )
-				this.language = Language.SQL;
-			else if( language.equals( "JPQL" ) )
-				this.language = Language.JPQL;
-			else if( language.equals( "HQL" ) )
-				this.language = Language.HQL;
-			else
-				throw new QueryException( "Query language '" + language + "' not recognized" );
-		}
-		else
-			this.language = Language.SQL;
 	}
 
 	/**
-	 * @return The language of the query.
-	 */
-	public Language getLanguage()
-	{
-		return this.language;
-	}
-
-	/**
-	 * @return An adapter which enables you to use the query with Hibernate.
+	 * Returns an adapter for Hibernate which enables you to use the query with Hibernate.
+	 * 
+	 * @return An adapter for Hibernate.
 	 */
 	public HibernateQueryAdapter hibernate()
 	{
@@ -114,16 +75,9 @@ public class Query
 	}
 
 	/**
-	 * @param session A Hibernate session.
-	 * @return An adapter which enables you to use the query with Hibernate.
-	 */
-	public HibernateConnectedQueryAdapter hibernate( Object session )
-	{
-		return new HibernateConnectedQueryAdapter( this, session );
-	}
-
-	/**
-	 * @return An adapter which enables you to use the query with JPA.
+	 * Returns an adapter for JPA which enables you to use the query with JPA.
+	 * 
+	 * @return An adapter for JPA.
 	 */
 	public JPAQueryAdapter jpa()
 	{
@@ -131,26 +85,10 @@ public class Query
 	}
 
 	/**
-	 * @param entityManager A {@link javax.persistence.EntityManager}.
-	 * @return An adapter which enables you to use the query with JPA.
+	 * If set to true, which is the default, duplicate values from a query will only be stored once in memory.
+	 * 
+	 * @param flyWeight If set to true, duplicate values from a query will only be stored once in memory.
 	 */
-	public JPAConnectedQueryAdapter jpa( Object entityManager )
-	{
-		return new JPAConnectedQueryAdapter( this, entityManager );
-	}
-
-	/**
-	 * @return True if fly weight is enabled, false otherwise.
-	 */
-	public boolean isFlyWeight()
-	{
-		return this.flyWeight;
-	}
-
-	/**
-	 * @param flyWeight If set to true (the default), duplicate values from a query result will only be stored once in memory.
-	 */
-	// TODO Configure default value in the QueryLoader
 	public void setFlyWeight( boolean flyWeight )
 	{
 		this.flyWeight = flyWeight;
@@ -158,14 +96,13 @@ public class Query
 
 	/**
 	 * Retrieves a {@link ResultSet} from the given {@link Connection}.
-	 *
+	 * 
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return a {@link ResultSet}.
-	 * @see #resultSet(Connection, Object)
+	 * @see #resultSet()
 	 */
 	// TODO Test the args map with groovy script.
-	public ResultSet resultSet( Connection connection, Object args )
+	public ResultSet resultSet( Connection connection, Map< String, Object > args )
 	{
 		try
 		{
@@ -174,45 +111,25 @@ public class Query
 		}
 		catch( SQLException e )
 		{
-			throw new QuerySQLException( e );
+			throw new QueryException( e );
 		}
 	}
 
 	/**
 	 * Retrieves a {@link List} of {@link Object} arrays from the given {@link Connection}.
-	 *
+	 * 
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return A {@link List} of {@link Object} arrays from the given {@link Connection}.
 	 */
-	public List< Object[] > listOfArrays( Connection connection, Object args )
+	public List< Object[] > listOfArrays( Connection connection, Map< String, Object > args )
 	{
 		ResultSet resultSet = resultSet( connection, args );
-		try
-		{
-			return listOfArrays( resultSet, this.flyWeight );
-		}
-		finally
-		{
-			close( resultSet );
-		}
-	}
-
-	static private void close( ResultSet resultSet )
-	{
-		try
-		{
-			resultSet.close();
-		}
-		catch( SQLException e )
-		{
-			throw new SystemException( e );
-		}
+		return listOfArrays( resultSet, this.flyWeight );
 	}
 
 	/**
 	 * Converts a {@link ResultSet} into a {@link List} of {@link Object} arrays.
-	 *
+	 * 
 	 * @param resultSet The {@link ResultSet} to convert.
 	 * @param flyWeight If true, duplicate values are stored in memory only once.
 	 * @return A {@link List} of {@link Object} arrays containing the data from the result set.
@@ -230,7 +147,7 @@ public class Query
 			{
 				// THIS CAN REDUCE MEMORY USAGE WITH 90 TO 95 PERCENT, PERFORMANCE IMPACT IS ONLY 5 PERCENT
 
-				Map< Object, Object > dictionary = new HashMap< Object, Object >();
+				Map< Object, Object > sharedData = new HashMap< Object, Object >();
 				while( resultSet.next() )
 				{
 					Object[] line = new Object[ columnCount ];
@@ -239,12 +156,12 @@ public class Query
 						Object object = resultSet.getObject( col );
 						if( object != null )
 						{
-							Object temp = dictionary.get( object );
+							Object temp = sharedData.get( object );
 							if( temp != null )
 								line[ col - 1 ] = temp;
 							else
 							{
-								dictionary.put( object, object );
+								sharedData.put( object, object );
 								line[ col - 1 ] = object;
 							}
 						}
@@ -270,92 +187,58 @@ public class Query
 		}
 		catch( SQLException e )
 		{
-			throw new QuerySQLException( e );
+			throw new QueryException( e );
 		}
 	}
 
 	/**
 	 * Retrieve a {@link List} of {@link Map}s from the given {@link Connection}. The maps contain the column names from the query as keys and the column values as the map's values.
-	 *
+	 * 
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return A {@link List} of {@link Map}s.
 	 */
-	public List< Map< String, Object > > listOfMaps( Connection connection, Object args )
+	public List< Map< String, Object > > listOfMaps( Connection connection, Map< String, Object > args )
 	{
-		ResultSet resultSet = resultSet( connection, args );
 		try
 		{
-			return listOfMaps( resultSet, this.flyWeight );
-		}
-		finally
-		{
-			close( resultSet );
-		}
-	}
+			ResultSet resultSet = resultSet( connection, args );
 
-	/**
-	 * Converts a {@link ResultSet} into a {@link List} of {@link Map}s.
-	 * The maps contain the column names from the query as keys and the column values as the map's values.
-	 *
-	 * @param resultSet The {@link ResultSet} to convert.
-	 * @param flyWeight If true, duplicate values are stored in memory only once.
-	 * @return A {@link List} of {@link Map}s.
-	 */
-	static public List< Map< String, Object > > listOfMaps( ResultSet resultSet, boolean flyWeight )
-	{
-		try
-		{
-			// DETERMINE THE LOWERCASE NAMES IN ADVANCE!!! Otherwise the names will not be shared in memory.
-			Map< String, Integer > names = getColumnLabelMap( resultSet.getMetaData() );
-			List< Object[] > result = listOfArrays( resultSet, flyWeight );
-			return new ResultList( result, names );
-		}
-		catch( SQLException e )
-		{
-			throw new QuerySQLException( e );
-		}
-	}
-
-	static public Map< String, Integer > getColumnLabelMap( ResultSetMetaData metaData )
-	{
-		try
-		{
+			ResultSetMetaData metaData = resultSet.getMetaData();
 			int columnCount = metaData.getColumnCount();
 
+			// DETERMINE THE LOWERCASE NAMES IN ADVANCE!!! Otherwise the names will not be shared in memory.
 			Map< String, Integer > names = new HashMap< String, Integer >();
 			for( int col = 0; col < columnCount; col++ )
 				names.put( metaData.getColumnLabel( col + 1 ).toLowerCase( Locale.ENGLISH ), col );
 
-			return names;
+			List< Object[] > result = listOfArrays( resultSet, this.flyWeight );
+			return new ResultList( result, names );
 		}
 		catch( SQLException e )
 		{
-			throw new QuerySQLException( e );
+			throw new QueryException( e );
 		}
 	}
 
 	/**
 	 * Executes an update (DML) or a DDL query.
-	 *
+	 * 
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 * @throws SQLException Whenever the query caused an {@link SQLException}.
 	 */
-	public int updateChecked( Connection connection, Object args ) throws SQLException
+	public int updateChecked( Connection connection, Map< String, Object > args ) throws SQLException
 	{
 		return getPreparedStatement( connection, args ).executeUpdate();
 	}
 
 	/**
 	 * Executes an update (DML) or a DDL query. {@link SQLException}s are wrapped in a {@link QueryException}.
-	 *
+	 * 
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 */
-	public int update( Connection connection, Object args )
+	public int update( Connection connection, Map< String, Object > args )
 	{
 		try
 		{
@@ -363,102 +246,27 @@ public class Query
 		}
 		catch( SQLException e )
 		{
-			throw new QuerySQLException( e );
+			throw new QueryException( e );
 		}
 	}
 
 	/**
 	 * Returns a {@link PreparedStatement} for the query.
-	 *
+	 * 
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return a {@link PreparedStatement} for the query.
 	 */
-	public PreparedStatement getPreparedStatement( Connection connection, Object args )
+	public PreparedStatement getPreparedStatement( Connection connection, Map< String, Object > args )
 	{
 		PreparedSQL preparedSql = getPreparedSQL( args );
-		List< Object > pars = preparedSql.getParameters();
+		List< Object > pars = preparedSql.getParameters(); // TODO Parameters or Args?;
 
-		try
-		{
-			PreparedStatement statement = connection.prepareStatement( preparedSql.getSQL() );
-			int i = 0;
-			for( Object par : pars )
-			{
-				if( par == null )
-				{
-					// Tested in Oracle with an INSERT
-					statement.setNull( ++i, Types.NULL );
-				}
-				else
-				{
-					Assert.isFalse( par instanceof Collection );
-					Assert.isFalse( par.getClass().isArray() );
-					statement.setObject( ++i, par );
-				}
-			}
-			return statement;
-		}
-		catch( SQLException e )
-		{
-			throw new QuerySQLException( e );
-		}
-	}
-
-	static private void appendParameter( Object object, String name, StringBuilder buildSql, List< Object > pars )
-	{
-		buildSql.append( '?' );
-		if( object instanceof Collection<?> )
-		{
-			Collection<?> collection = (Collection<?>)object;
-			int size = collection.size();
-			Assert.isTrue( size > 0, "Parameter [" + name + "] is empty collection" );
-			for( Object object2 : collection )
-				pars.add( object2 );
-			appendExtraQuestionMarks( buildSql, size - 1 );
-		}
-		else if( object != null && object.getClass().isArray() )
-		{
-			int size = Array.getLength( object );
-			Assert.isTrue( size > 0, "Parameter [" + name + "] is empty array" );
-			for( int j = 0; j < size; j++ )
-				pars.add( Array.get( object, j ) );
-			appendExtraQuestionMarks( buildSql, size - 1 );
-		}
-		else
-			pars.add( object );
-	}
-
-	/**
-	 * Returns a prepared SQL string together with a parameters array.
-	 *
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
-	 * @return A prepared SQL string together with a parameters array.
-	 */
-	public PreparedSQL getPreparedSQL( Object args )
-	{
-		QueryEncodingWriter gsql = new QueryEncodingWriter();
-		this.template.apply( args, gsql );
-
-		List< Object > pars = new ArrayList< Object >();
-		StringBuilder result = new StringBuilder();
-
-		List< Object > values = gsql.getValues();
-		BitSet isValue = gsql.getIsValue();
-		int len = values.size();
-
-		for( int i = 0; i < len; i++ )
-			if( isValue.get( i ) )
-				appendParameter( values.get( i ), "unknown", result, pars );
-			else
-				result.append( (String)values.get( i ) );
-
-		if( Loggers.execution.isDebugEnabled() )
+		if( log.isDebugEnabled() )
 		{
 			StringBuilder debug = new StringBuilder();
-			debug.append( "Prepare statement: " ).append( this.template.getPath() ).append( '\n' );
-			if( Loggers.execution.isTraceEnabled() )
-				debug.append( result ).append( '\n' );
+			debug.append( "Prepare statement: " ).append( this.template.getName() ).append( '\n' );
+			if( log.isTraceEnabled() )
+				debug.append( preparedSql.getSQL() ).append( '\n' );
 			debug.append( "Parameters:" );
 			if( pars.size() == 0 )
 				debug.append( "\n\t(none)" );
@@ -487,11 +295,79 @@ public class Query
 					}
 				}
 			}
-			if( Loggers.execution.isTraceEnabled() )
-				Loggers.execution.trace( debug.toString() );
+			if( log.isTraceEnabled() )
+				log.trace( debug.toString() );
 			else
-				Loggers.execution.debug( debug.toString() );
+				log.debug( debug.toString() );
 		}
+
+		try
+		{
+			PreparedStatement statement = connection.prepareStatement( preparedSql.getSQL() );
+			int i = 0;
+			for( Object par : pars )
+			{
+				if( par == null )
+				{
+					// Tested in Oracle with an INSERT
+					statement.setNull( ++i, Types.NULL );
+				}
+				else
+				{
+					Assert.isFalse( par instanceof Collection );
+					Assert.isFalse( par.getClass().isArray() );
+					statement.setObject( ++i, par );
+				}
+			}
+			return statement;
+		}
+		catch( SQLException e )
+		{
+			throw new QueryException( e );
+		}
+	}
+
+	static private void appendParameter( Object object, String name, StringBuilder buildSql, List< Object > pars )
+	{
+		buildSql.append( '?' );
+		if( object instanceof Collection<?> )
+		{
+			Collection<?> collection = (Collection<?>)object;
+			int size = collection.size();
+			Assert.isTrue( size > 0, "Parameter [" + name + "] is empty collection" );
+			for( Object object2 : collection )
+				pars.add( object2 );
+			appendExtraQuestionMarks( buildSql, size - 1 );
+		}
+		else if( object != null && object.getClass().isArray() )
+		{
+			int size = Array.getLength( object );
+			Assert.isTrue( size > 0, "Parameter [" + name + "] is empty array" );
+			for( int j = 0; j < size; j++ )
+				pars.add( Array.get( object, j ) );
+			appendExtraQuestionMarks( buildSql, size - 1 );
+		}
+		else
+			pars.add( object );
+	}
+
+	public PreparedSQL getPreparedSQL( Map< String, Object > args )
+	{
+		QueryEncodingWriter gsql = new QueryEncodingWriter();
+		this.template.apply( args, gsql );
+
+		List< Object > pars = new ArrayList< Object >();
+		StringBuilder result = new StringBuilder();
+
+		List< Object > values = gsql.getValues();
+		BitSet isValue = gsql.getIsValue();
+		int len = values.size();
+
+		for( int i = 0; i < len; i++ )
+			if( isValue.get( i ) )
+				appendParameter( values.get( i ), "unknown", result, pars );
+			else
+				result.append( (String)values.get( i ) );
 
 		return new PreparedSQL( result.toString(), pars );
 	}
@@ -505,43 +381,22 @@ public class Query
 		}
 	}
 
-	/**
-	 * Prepared SQL combined with a parameter list.
-	 *
-	 * @author René de Bloois
-	 */
 	static public class PreparedSQL
 	{
 		private String sql;
 		private List< Object > pars;
 
-		/**
-		 * Constructor.
-		 *
-		 * @param sql The prepared SQL string.
-		 * @param pars The parameter list.
-		 */
 		protected PreparedSQL( String sql, List< Object > pars )
 		{
 			this.sql = sql;
 			this.pars = pars;
 		}
 
-		/**
-		 * Returns the prepared SQL string.
-		 *
-		 * @return The prepared SQL string.
-		 */
 		public String getSQL()
 		{
 			return this.sql;
 		}
 
-		/**
-		 * Returns the parameter list.
-		 *
-		 * @return The parameter list.
-		 */
 		public List< Object > getParameters()
 		{
 			return this.pars;
