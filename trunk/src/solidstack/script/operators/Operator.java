@@ -22,10 +22,11 @@ import java.util.HashMap;
 
 import solidstack.io.SourceLocation;
 import solidstack.lang.Assert;
+import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.java.Types;
-import solidstack.script.scopes.AbstractScope;
 import solidstack.script.scopes.CombinedScope;
+import solidstack.script.scopes.Scope;
 
 
 abstract public class Operator implements Expression
@@ -253,15 +254,30 @@ abstract public class Operator implements Expression
 		return null;
 	}
 
+	public Expression getLeft()
+	{
+		return this.left;
+	}
+
+	public Expression getRight()
+	{
+		return this.right;
+	}
+
+	public Object evaluateRef( ThreadContext thread )
+	{
+		return evaluate( thread );
+	}
+
 	static protected Object add( Object left, Object right )
 	{
 		if( left instanceof String )
 			return (String)left + right.toString(); // TODO In Java: whenever there is a string anywhere in the addition, everything becomes a string.
 
-		if( left instanceof AbstractScope )
+		if( left instanceof Scope )
 		{
-			Assert.isInstanceOf( right, AbstractScope.class );
-			return new CombinedScope( (AbstractScope)left, (AbstractScope)right );
+			Assert.isInstanceOf( right, Scope.class );
+			return new CombinedScope( (Scope)left, (Scope)right );
 		}
 
 		Assert.isTrue( left instanceof Number || left instanceof Character );

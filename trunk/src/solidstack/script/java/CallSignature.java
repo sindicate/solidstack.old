@@ -23,13 +23,15 @@ public class CallSignature
 {
 	public Class type; // Class of the object to call or, in the case of a static call, the class to call
 	public String name; // The name of the method, null for constructor
+	public boolean property;
 	public boolean staticCall; // Calling the class?
 	public Class[] argTypes; // Types of the arguments.
 
-	public CallSignature( Class type, String name, boolean staticCall, Class[] argTypes )
+	public CallSignature( Class type, String name, boolean property, boolean staticCall, Class[] argTypes )
 	{
 		this.type = type;
 		this.name = name;
+		this.property = property;
 		this.staticCall = staticCall;
 		this.argTypes = argTypes;
 	}
@@ -41,8 +43,12 @@ public class CallSignature
         result = 31 * result + this.type.hashCode();
         result = 31 * result; if( this.name != null ) result += this.name.hashCode();
         result = 31 * result + ( this.staticCall ? 1231 : 1237 );
-        for( Class<?> type : this.argTypes )
-            result = 31 * result + type.hashCode();
+		result = 31 * result + ( this.property ? 1231 : 1237 );
+		for( Class<?> type : this.argTypes )
+		{
+			result *= 31;
+			if( type != null ) result += type.hashCode();
+		}
         return result;
 	}
 
@@ -54,10 +60,12 @@ public class CallSignature
 
 		CallSignature key = (CallSignature)other;
 
-		if( key.type != this.type )
-			return false;
-		if( key.staticCall != this.staticCall )
-			return false;
+		if( key.type != this.type ) return false;
+		if( key.staticCall != this.staticCall ) return false;
+		if( key.property != this.property ) return false;
+		if( key.name == null ? this.name != null : !key.name.equals( this.name ) ) return false;
+		if( key.argTypes == null ) return this.argTypes == null;
+		if( this.argTypes == null ) return false;
 
 		if( key.name == null ? this.name != null : !key.name.equals( this.name ) )
 			return false;

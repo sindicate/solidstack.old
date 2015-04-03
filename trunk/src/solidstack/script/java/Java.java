@@ -41,7 +41,7 @@ public class Java
 	 */
 	static public Object invoke( Object object, String name, Object... args ) throws InvocationTargetException, MissingMethodException
 	{
-		CallResolutionContext context = new CallResolutionContext( object, name, args );
+		CallResolutionContext context = new CallResolutionContext( object, name, false, args );
 		MethodCall call = CallResolver.resolveMethodCall( context );
 		if( call == null )
 			throw new MissingMethodException( context );
@@ -49,7 +49,7 @@ public class Java
 		return call.invoke();
 	}
 
-	static private void addArgs( MethodCall call, Object[] args )
+	static private void addArgs( MethodCall call, Object... args )
 	{
 		if( !call.isVarargCall )
 		{
@@ -84,7 +84,7 @@ public class Java
 	 */
 	static public Object invokeStatic( Class<?> type, String name, Object... args ) throws InvocationTargetException, MissingMethodException
 	{
-		CallResolutionContext context = new CallResolutionContext( type, name, args );
+		CallResolutionContext context = new CallResolutionContext( type, name, false, args );
 		MethodCall call = CallResolver.resolveMethodCall( context );
 		if( call == null )
 			throw new MissingMethodException( context );
@@ -102,9 +102,11 @@ public class Java
 	 */
 	static public Object get( Object object, String name ) throws MissingFieldException
 	{
-		try
-		{
-			return object.getClass().getField( name ).get( object );
+		CallResolutionContext context = new CallResolutionContext( object, name, true );
+		MethodCall call = CallResolver.resolvePropertyRead( context );
+		if( call == null )
+			throw new MissingFieldException( object, object.getClass(), name ); // TODO MissingPropertyException?
+		return call.invoke();
 		}
 		catch( NoSuchFieldException e )
 		{
@@ -114,6 +116,16 @@ public class Java
 		{
 			throw throwUnchecked( e );
 		}
+	}
+
+	static public void set( Object object, String name, Object value ) throws MissingFieldException, InvocationTargetException
+	{
+		CallResolutionContext context = new CallResolutionContext( object, name, true, value );
+		MethodCall call = CallResolver.resolvePropertyWrite( context );
+		if( call == null )
+			throw new MissingFieldException( object, object.getClass(), name ); // TODO MissingPropertyException?
+		addArgs( call, value );
+		call.invoke();
 	}
 
 	/**
@@ -154,7 +166,7 @@ public class Java
 	 */
 	static public Object construct( Class<?> type, Object... args ) throws InvocationTargetException, MissingMethodException
 	{
-		CallResolutionContext context = new CallResolutionContext( type, null, args );
+		CallResolutionContext context = new CallResolutionContext( type, null, false, args );
 		MethodCall call = CallResolver.resolveConstructorCall( context );
 		if( call == null )
 			throw new MissingMethodException( context );

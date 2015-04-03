@@ -1,13 +1,27 @@
 
-sql = class( "funny.sql.Sql" )( "org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:memory:test;create=true" );
+JDBC.doWith( "org.apache.derby.jdbc.EmbeddedDriver", "jdbc:derby:memory:test;create=true" ) (
+	jdbc => (
+		name = "SYSTABLES";
 
-sql.eachResult( "SELECT * FROM SYS.SYSTABLES", ( result ->
-	println( result.getString( "TABLENAME" ) );
-) );
+		result = jdbc.query( "SELECT * FROM SYS.SYSTABLES" );
+		while( result.next() ) println( result.getString( "tablename" ) );
+		result = jdbc.query( s"SELECT * FROM SYS.SYSTABLES WHERE TABLENAME = ${name}" );
+		if( !result.next() || result.next() ) throw "Expected only 1 row";
 
-tables = sql.list( "SELECT * FROM SYS.SYSTABLES" );
-if( !tables; throw( "Expected some tables" ) );
+		jdbc.eachRow( "SELECT * FROM SYS.SYSTABLES", result => println( result.getString( "TABLENAME" ) ) );
+		jdbc.eachRow( s"SELECT * FROM SYS.SYSTABLES WHERE TABLENAME = ${name}", result => println( result.getString( "TABLENAME" ) ) );
 
-tables.each( table -> println( table[ "tablename" ] ) );
+		tables = jdbc.list( "SELECT * FROM SYS.SYSTABLES" );
+		if( !tables ) throw "Expected some tables";
+		tables.foreach( table => println( table.tablename ) );
+		tables.map( t => t.tablename ).foreach( t => println( t ) );
+		tables = jdbc.list( s"SELECT * FROM SYS.SYSTABLES WHERE TABLENAME = ${name}" );
+		if( tables.size() != 1 ) throw "Expected exactly 1 table";
 
-tables.collect( t -> t[ "tablename" ] ).each( t -> println( t ) );
+		jdbc.execute( "CREATE TABLE TEST ( TEST VARCHAR(10) )" );
+		rows = jdbc.update( "INSERT INTO TEST VALUES ( 'test1' )" );
+		if( rows != 1 ) throw "Expected 1 affected row";
+		rows = jdbc.update( s"INSERT INTO TEST VALUES ( ${"test2"} )" );
+		if( rows != 1 ) throw "Expected 1 affected row";
+	)
+)

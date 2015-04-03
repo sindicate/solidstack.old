@@ -29,7 +29,7 @@ import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Util;
-import solidstack.script.scopes.Scope;
+import solidstack.script.scopes.DefaultScope;
 
 public class Call extends FunctionObject
 {
@@ -67,7 +67,7 @@ public class Call extends FunctionObject
 			throw new ThrowException( e.getMessage(), thread.cloneStack() );
 		}
 
-		Scope scope = new Scope();
+		DefaultScope scope = new DefaultScope();
 //		scope.def( Symbol.forString( "args" ), args );
 
 //		try

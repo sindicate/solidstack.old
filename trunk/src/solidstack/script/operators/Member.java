@@ -16,6 +16,9 @@
 
 package solidstack.script.operators;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
+
 import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
@@ -25,7 +28,7 @@ import solidstack.script.java.Java;
 import solidstack.script.java.MissingFieldException;
 import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Util;
-import solidstack.script.scopes.AbstractScope;
+import solidstack.script.scopes.Scope;
 import solidstack.script.scopes.ScopeException;
 import solidstack.script.scopes.Symbol;
 
@@ -44,9 +47,13 @@ public class Member extends Operator
 			Object left = Util.deref( this.left.evaluate( thread ) );
 			Assert.isInstanceOf( this.right, Identifier.class );
 			Symbol right = ( (Identifier)this.right ).getSymbol();
-			Assert.isFalse( left == null, "member: " + right.toString() );
-			if( left instanceof AbstractScope ) // TODO This is part of the OO we want
-				return ( (AbstractScope)left ).getRef( right );
+			if( left == null )
+				// TODO Use the Java exception hierarchy
+				throw new ThrowException( "null reference: member: " + right.toString(), thread.cloneStack( getLocation() ) );
+			if( left instanceof Scope ) // TODO This is part of the OO we want
+				return ( (Scope)left ).getRef( right );
+			if( left instanceof Map )
+				return ( (Map)left ).get( right.toString() );
 			try
 			{
 				return Java.get( left, right.toString() );
@@ -62,18 +69,20 @@ public class Member extends Operator
 		}
 	}
 
-	public Object evaluateForApply( ThreadContext thread )
+	@Override
+	public Object evaluateRef( ThreadContext thread )
 	{
 		try
 		{
 			Object left = Util.deref( this.left.evaluate( thread ) );
 			Assert.isInstanceOf( this.right, Identifier.class );
 			Symbol right = ( (Identifier)this.right ).getSymbol();
-			Assert.isFalse( left == null, "member: " + right.toString() );
-			if( left instanceof AbstractScope ) // TODO This is part of the OO we want
-				return ( (AbstractScope)left ).getRef( right );
+			if( left == null )
+				throw new ThrowException( "null reference: member: " + right.toString(), thread.cloneStack( getLocation() ) );
+			if( left instanceof Scope ) // TODO This is part of the OO we want
+				return ( (Scope)left ).getRef( right );
 			// TODO Also read properties to look for Functions
-			return new ObjectMember( left, right.toString() );
+			return new ObjectMember( left, right );
 		}
 		catch( ScopeException e )
 		{

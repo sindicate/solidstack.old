@@ -16,50 +16,62 @@
 
 package solidstack.script.scopes;
 
+import java.io.File;
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import solidstack.script.functions.Abs;
 import solidstack.script.functions.Call;
 import solidstack.script.functions.Class;
-import solidstack.script.functions.Def;
+import solidstack.script.functions.Compile;
 import solidstack.script.functions.Defined;
 import solidstack.script.functions.Length;
 import solidstack.script.functions.Load;
 import solidstack.script.functions.Print;
 import solidstack.script.functions.Println;
+import solidstack.script.functions.Require;
 import solidstack.script.functions.Return;
-import solidstack.script.functions.StripMargin;
-import solidstack.script.functions.Substr;
-import solidstack.script.functions.Throw;
-import solidstack.script.functions.Upper;
-import solidstack.script.functions.Val;
+import funny.sql.JDBC;
 
 
 
 
-public class GlobalScope extends Scope
+public class GlobalScope extends DefaultScope
 {
-	static public final GlobalScope INSTANCE = new GlobalScope();
+	static public final GlobalScope instance = new GlobalScope();
 
 	public GlobalScope()
 	{
-		val( Symbol.forString( "abs" ), new Abs() );
-		val( Symbol.forString( "call" ), new Call() );
-		val( Symbol.forString( "class" ), new Class() );
-		val( Symbol.forString( "def" ), new Def() );
-		val( Symbol.forString( "defined" ), new Defined() );
-		val( Symbol.forString( "length" ), new Length() );
-		val( Symbol.forString( "load" ), new Load() );
-		val( Symbol.forString( "print" ), new Print() );
-		val( Symbol.forString( "println" ), new Println() );
-		val( Symbol.forString( "return" ), new Return() );
-		val( Symbol.forString( "scope" ), new solidstack.script.functions.Scope() );
-		val( Symbol.forString( "stripMargin" ), new StripMargin() );
-		val( Symbol.forString( "substr" ), new Substr() );
-		val( Symbol.forString( "throw" ), new Throw() );
-		val( Symbol.forString( "upper" ), new Upper() );
-		val( Symbol.forString( "val" ), new Val() );
+		reset();
+	}
+
+	// For testing
+	public void reset()
+	{
+		clear();
+
+		val( Symbol.apply( "call" ), new Call() );
+		val( Symbol.apply( "classOf" ), new ClassOf() );
+		val( Symbol.apply( "compile" ), new Compile() );
+		val( Symbol.apply( "defined" ), new Defined() );
+		val( Symbol.apply( "load" ), new Load() );
+		val( Symbol.apply( "loadClass" ), new LoadClass() ); // TODO Or loadType?
+		val( Symbol.apply( "print" ), new Print() );
+		val( Symbol.apply( "println" ), new Println() );
+		val( Symbol.apply( "require" ), new Require() );
+		val( Symbol.apply( "return" ), new Return() ); // TODO Remove
 
 		val( Symbol.forString( "boolean" ), boolean.class );
 		val( Symbol.forString( "byte" ), byte.class );
@@ -79,8 +91,53 @@ public class GlobalScope extends Scope
 		val( Symbol.forString( "Float" ), Float.class );
 		val( Symbol.forString( "Double" ), Double.class );
 
-		val( Symbol.forString( "BigInteger" ), BigInteger.class );
-		val( Symbol.forString( "BigDecimal" ), BigDecimal.class );
-		val( Symbol.forString( "String" ), String.class );
+		// java.lang
+
+		// TODO Use script eval or default methods
+		val( Symbol.apply( "Boolean" ), new Type( Boolean.class ) );
+		val( Symbol.apply( "Byte" ), new Type( Byte.class ) );
+		val( Symbol.apply( "Character" ), new Type( Character.class ) );
+		val( Symbol.apply( "CharSequence" ), new Type( CharSequence.class ) );
+		val( Symbol.apply( "Class" ), new Type( Class.class ) );
+		val( Symbol.apply( "Short" ), new Type( Short.class ) );
+		val( Symbol.apply( "Integer" ), new Type( Integer.class ) );
+		val( Symbol.apply( "Long" ), new Type( Long.class ) );
+		val( Symbol.apply( "Float" ), new Type( Float.class ) );
+		val( Symbol.apply( "Double" ), new Type( Double.class ) );
+		val( Symbol.apply( "String" ), new Type( String.class ) );
+		val( Symbol.apply( "System" ), new Type( System.class ) );
+
+		// java.io
+
+		val( Symbol.apply( "File" ), new Type( File.class ) );
+
+		// java.math
+
+		val( Symbol.apply( "BigInteger" ), new Type( BigInteger.class ) );
+		val( Symbol.apply( "BigDecimal" ), new Type( BigDecimal.class ) );
+
+		// java.util
+
+		val( Symbol.apply( "ArrayList" ), new Type( ArrayList.class ) );
+		val( Symbol.apply( "Arrays" ), new Type( Arrays.class ) );
+		val( Symbol.apply( "Calendar" ), new Type( Calendar.class ) );
+		val( Symbol.apply( "Date" ), new Type( Date.class ) );
+		val( Symbol.apply( "LinkedHashMap" ), new Type( LinkedHashMap.class ) );
+		val( Symbol.apply( "LinkedHashSet" ), new Type( LinkedHashSet.class ) );
+		val( Symbol.apply( "LinkedList" ), new Type( LinkedList.class ) );
+		val( Symbol.apply( "List" ), new Type( List.class ) );
+		val( Symbol.apply( "Map" ), new Type( Map.class ) );
+		val( Symbol.apply( "Properties" ), new Type( Properties.class ) );
+		val( Symbol.apply( "Set" ), new Type( Set.class ) );
+
+		// java.reflect
+
+		val( Symbol.apply( "Array" ), new Type( Array.class ) );
+
+		// funny
+
+		val( Symbol.apply( "JDBC" ), new Type( JDBC.class ) );
+		val( Symbol.apply( "Scope" ), new Type( Scope.class ) );
+		val( Symbol.apply( "Symbol" ), new Type( Symbol.class ) );
 	}
 }

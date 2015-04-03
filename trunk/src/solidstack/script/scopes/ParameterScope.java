@@ -16,7 +16,6 @@
 
 package solidstack.script.scopes;
 
-import solidstack.script.scopes.AbstractScope.Ref;
 
 
 
@@ -24,11 +23,11 @@ import solidstack.script.scopes.AbstractScope.Ref;
 
 public class ParameterScope extends AbstractScope
 {
-	private AbstractScope parent;
+	private Scope parent;
 
 	private ValueMap<Value> values = new ValueMap<Value>();
 
-	public ParameterScope( AbstractScope parent )
+	public ParameterScope( Scope parent )
 	{
 		this.parent = parent;
 	}

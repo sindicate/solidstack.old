@@ -26,21 +26,24 @@ import solidstack.lang.Assert;
 import solidstack.script.ScriptTokenizer.Token;
 import solidstack.script.ScriptTokenizer.Token.TYPE;
 import solidstack.script.expressions.Block;
-import solidstack.script.expressions.BooleanConstant;
-import solidstack.script.expressions.DecimalConstant;
-import solidstack.script.expressions.EmptyMap;
+import solidstack.script.expressions.BooleanLiteral;
+import solidstack.script.expressions.CharLiteral;
+import solidstack.script.expressions.DecimalLiteral;
 import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Expressions;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.expressions.If;
-import solidstack.script.expressions.IntegerConstant;
-import solidstack.script.expressions.NullConstant;
+import solidstack.script.expressions.IntegerLiteral;
+import solidstack.script.expressions.Module;
+import solidstack.script.expressions.NullLiteral;
 import solidstack.script.expressions.Parenthesis;
 import solidstack.script.expressions.StringConstant;
 import solidstack.script.expressions.StringExpression;
 import solidstack.script.expressions.SymbolExpression;
+import solidstack.script.expressions.Throw;
+import solidstack.script.expressions.Var;
 import solidstack.script.expressions.While;
-import solidstack.script.operators.Function;
+import solidstack.script.expressions.With;
 import solidstack.script.operators.Operator;
 import solidstack.script.operators.Spread;
 
@@ -205,6 +208,9 @@ public class ScriptParser
 			case SEMICOLON:
 				return null;
 
+			case CHAR:
+				return new CharLiteral( token.getLocation(), token.getValue().charAt( 0 ) );
+
 			case DECIMAL:
 				return new DecimalConstant( token.getLocation(), new BigDecimal( token.getValue() ) );
 
@@ -270,7 +276,7 @@ public class ScriptParser
 				{
 					token2 = this.tokenizer.get();
 					if( token2.getType() != TYPE.PAREN_OPEN )
-						throw new SourceException( "Expected an opening parenthesis", token2.getLocation() );
+					throw new SourceException( "Expected an opening parenthesis after 'while', not " + token2, token2.getLocation() );
 					oldStop = swapStops( TYPE.PAREN_CLOSE );
 					Expressions expressions = parseExpressions();
 					swapStops( oldStop );
@@ -279,11 +285,36 @@ public class ScriptParser
 					return new If( token.getLocation(), expressions.get( 0 ), expressions.get( 1 ), expressions.size() == 3 ? expressions.get( 2 ) : null );
 				}
 
-				if( token.getValue().equals( "while" ) )
-				{
-					token2 = this.tokenizer.get();
-					if( token2.getType() != TYPE.PAREN_OPEN )
-						throw new SourceException( "Expected an opening parenthesis", token2.getLocation() );
+			case WITH:
+				token2 = this.tokenizer.next();
+				if( token2.getType() != TokenType.PAREN_OPEN )
+					throw new SourceException( "Expected an opening parenthesis after 'with', not " + token2, token2.getLocation() );
+				oldStop = swapStops( TokenType.PAREN_CLOSE );
+				expressions = parseExpressions();
+				swapStops( oldStop );
+				left = parseExpression();
+				token2 = this.tokenizer.last();
+				Assert.isTrue( token2.getType() == this.stop || token2.getType() == TokenType.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
+				this.tokenizer.push();
+				return new With( token.getLocation(), expressions, left );
+
+			case MODULE:
+				token2 = this.tokenizer.next();
+				if( token2.getType() != TokenType.PAREN_OPEN )
+					throw new SourceException( "Expected an opening parenthesis after 'module', not " + token2, token2.getLocation() );
+				oldStop = swapStops( TokenType.PAREN_CLOSE );
+				expressions = parseExpressions();
+				swapStops( oldStop );
+				left = parseExpression();
+				token2 = this.tokenizer.last();
+				Assert.isTrue( token2.getType() == this.stop || token2.getType() == TokenType.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
+				this.tokenizer.push();
+				return new Module( token.getLocation(), expressions, left );
+
+			case IF:
+				token2 = this.tokenizer.next();
+				if( token2.getType() != TokenType.PAREN_OPEN )
+					throw new SourceException( "Expected an opening parenthesis after 'if', not " + token2, token2.getLocation() );
 					oldStop = swapStops( TYPE.PAREN_CLOSE );
 					Expressions expressions = parseExpressions();
 					swapStops( oldStop );
@@ -311,6 +342,52 @@ public class ScriptParser
 					return new Parenthesis( token2.getLocation(), new Function( "->", pars, block ) );
 				}
 
+			case NEW:
+				return Operator.preOp( token.getLocation(), "new", parseAtom() );
+
+			case TRUE:
+				return new BooleanLiteral( token.getLocation(), true );
+
+			case FALSE:
+				return new BooleanLiteral( token.getLocation(), false );
+
+			case VAR:
+				token2 = this.tokenizer.next();
+				if( token2.getType() == TokenType.IDENTIFIER )
+					return new Var( token.getLocation(), new Identifier( token2.getLocation(), token2.getValue() ) );
+				throw new SourceException( "identifier expected after 'var', not " + token2, token2.getLocation() );
+
+			case THROW:
+				Expression exception = parseExpression();
+				if( exception == null )
+					throw new SourceException( "expression expected after 'throw'", token.getLocation() );
+				token2 = this.tokenizer.last();
+				Assert.isTrue( token2.getType() == this.stop || token2.getType() == TokenType.EOF || token2.eq( ";" ), "Did not expect token " + token2 );
+				this.tokenizer.push();
+				return new Throw( token.getLocation(), exception );
+
+			case IDENTIFIER:
+			case RETURN: // TODO Make a statement instead of a function
+			case VAL: // TODO Make a statement instead of a function
+			case THIS:
+//				if( token.getValue().equals( "fun" ) ) // TODO Remove this or use Scala's function syntax
+//				{
+//					token2 = this.tokenizer.next();
+//					if( token2.getType() != TokenType.PAREN_OPEN && token2.getType() != TokenType.BRACE_OPEN )
+//						throw new SourceException( "Expected one of (, {", token2.getLocation() );
+//					if( token2.getType() == TokenType.PAREN_OPEN )
+//						oldStop = swapStops( TokenType.PAREN_CLOSE );
+//					else
+//						oldStop = swapStops( TokenType.BRACE_CLOSE );
+//					expressions = parseExpressions();
+//					swapStops( oldStop );
+//					if( expressions.size() < 2 )
+//						throw new SourceException( "Expected 2 or more expressions", token2.getLocation() );
+//					Expression pars = expressions.remove( 0 );
+//					Expression block = token2.getType() == TokenType.BRACE_OPEN ? new Block( expressions.getLocation(), expressions ) : expressions;
+//					return new Parenthesis( token2.getLocation(), new Function( "->", pars, block ) );
+//				}
+
 				return new Identifier( token.getLocation(), token.getValue() );
 
 			case UNAOP:
@@ -318,6 +395,8 @@ public class ScriptParser
 				return Operator.preOp( token.getLocation(), token.getValue() + "@", result ); // TODO Pre-apply
 
 			default:
+				if( token.getType().isReserved() )
+					throw new SourceException( "Unexpected reserved word " + token, token.getLocation() );
 				throw new SourceException( "Unexpected token " + token, token.getLocation() );
 		}
 	}
@@ -345,7 +424,7 @@ public class ScriptParser
 		{
 			Expression expression = parser.parse();
 			if( expression != null ) // TODO Unit test
-				result.append( expression );
+				result.append( expression instanceof StringLiteral ? new Parenthesis( expression.getLocation(), expression ) : expression );
 			fragment = t.getFragment();
 			if( fragment.length() != 0 )
 				result.append( new StringConstant( location, fragment ) );

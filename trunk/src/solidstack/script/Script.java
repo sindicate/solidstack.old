@@ -17,6 +17,7 @@
 package solidstack.script;
 
 import java.io.StringReader;
+import java.util.Map;
 
 import solidstack.io.ReaderSourceReader;
 import solidstack.io.SourceReader;
@@ -24,8 +25,10 @@ import solidstack.script.expressions.Expression;
 import solidstack.script.java.Types;
 import solidstack.script.objects.Tuple;
 import solidstack.script.objects.Util;
-import solidstack.script.scopes.AbstractScope;
 import solidstack.script.scopes.AbstractScope.Ref;
+import solidstack.script.scopes.DefaultScope;
+import solidstack.script.scopes.MapScope;
+import solidstack.script.scopes.ObjectScope;
 import solidstack.script.scopes.Scope;
 
 public class Script
@@ -46,9 +49,17 @@ public class Script
 			return null;
 
 		if( scope == null )
-			scope = new Scope();
+			scope = new DefaultScope();
 
-		ThreadContext thread = ThreadContext.init( scope );
+		Scope s;
+		if( scope instanceof Scope )
+			s = (Scope)scope;
+		else if( scope instanceof Map )
+			s = new MapScope( (Map)scope );
+		else
+			s = new ObjectScope( scope );
+
+		ThreadContext thread = ThreadContext.init( s );
 		try
 		{
 			return expression.evaluate( thread );
@@ -72,7 +83,7 @@ public class Script
 		return Util.toJava( eval0( expression, scope ) );
 	}
 
-	static public boolean evalBoolean( Expression expression, AbstractScope scope )
+	static public boolean evalBoolean( Expression expression, Object scope )
 	{
 		return isTrue( eval0( expression, scope ) );
 	}
@@ -110,8 +121,24 @@ public class Script
 		return eval( this.expression, scope );
 	}
 
-	public boolean evalBoolean( AbstractScope scope )
+	public Object eval()
+	{
+		return eval( this.expression, null );
+	}
+
+	public boolean evalBoolean( Object scope )
 	{
 		return evalBoolean( this.expression, scope );
 	}
+
+	public boolean evalBoolean()
+	{
+		return evalBoolean( this.expression, null );
+	}
+
+	// TODO WriteTo should actually be used to write the output of the script execution.
+	public void writeTo( StringBuilder out )
+	{
+		if( this.expression != null )
+			this.expression.writeTo( out );
 }

@@ -14,36 +14,24 @@
  * limitations under the License.
  */
 
-package solidstack.script.operators;
+package solidstack.script.functions;
 
-import solidstack.io.SourceLocation;
-import solidstack.lang.Assert;
+import solidstack.script.Script;
 import solidstack.script.ThreadContext;
-import solidstack.script.expressions.Expression;
+import solidstack.script.ThrowException;
+import solidstack.script.objects.FunctionObject;
 import solidstack.script.objects.Util;
 
-
-public class Negate extends Operator
+public class Compile extends FunctionObject
 {
-	private SourceLocation location;
-
-	public Negate( SourceLocation location, String name, Expression right)
-	{
-		super( name, null, right );
-
-		this.location = location;
-	}
-
-	public Object evaluate( ThreadContext thread )
-	{
-		Assert.isNull( this.left );
-		Object right = Util.deref( this.right.evaluate( thread ) ); // TODO What about tuples?
-		return Operator.negate( right );
-	}
-
 	@Override
-	public SourceLocation getLocation()
+	public Script call( ThreadContext thread, Object... parameters )
 	{
-		return this.location;
+		if( parameters.length != 1 )
+			throw new ThrowException( "compile() needs exactly one parameter", thread.cloneStack() );
+		Object object = Util.toJava( parameters[ 0 ] );
+		if( !( object instanceof String ) )
+			throw new ThrowException( "compile() needs a string parameter", thread.cloneStack() );
+		return Script.compile( (String)object );
 	}
 }

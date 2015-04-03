@@ -35,7 +35,24 @@ public class Assign extends Operator
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object left = this.left.evaluate( thread );
+		if( this.left instanceof Apply )
+		{
+			// TODO This is ugly
+			Apply apply = (Apply)this.left;
+			Expression object = apply.left;
+			if( !( object instanceof Identifier && ( (Identifier)object ).getSymbol().toString().equals( "var" ) ) )
+			{
+				Expression pars = apply.right;
+				if( !( pars instanceof BuildTuple ) ) // TODO And what if it is?
+				{
+					Member update = new Member( ".", object, new Identifier( getLocation(), "update" ) );
+					BuildTuple par = new BuildTuple( ",", pars, this.right );
+					return new Apply( "(", update, par ).evaluate( thread );
+				}
+			}
+		}
+
+		Object left = this.left.evaluateRef( thread );
 		Object right = Util.deref( this.right.evaluate( thread ) );
 
 		if( left instanceof Tuple )
@@ -70,6 +87,8 @@ public class Assign extends Operator
 			throw new ThrowException( "Can't assign tuples to variables", thread.cloneStack( getLocation() ) );
 		if( value instanceof FunctionObject )
 			( (FunctionObject)value ).setAssigned();
+		if( !( var instanceof Ref ) )
+			throw new ThrowException( "Can't assign to a " + var.getClass().getName(), thread.cloneStack( getLocation() ) );
 		( (Ref)var ).set( value );
 	}
 }

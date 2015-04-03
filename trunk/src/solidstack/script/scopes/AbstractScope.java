@@ -21,7 +21,7 @@ import java.util.Map;
 import solidstack.script.scopes.ValueMap.Entry;
 
 
-abstract public class AbstractScope
+abstract public class AbstractScope implements Scope
 {
 	abstract public Ref findRef( Symbol symbol );
 

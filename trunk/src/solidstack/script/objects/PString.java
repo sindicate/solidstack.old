@@ -16,16 +16,16 @@
 
 package solidstack.script.objects;
 
-import java.util.List;
 
 
-// FIXME So how do we know what was part of the string and what was a substituted value?
-public class FunnyString
+public class PString
 {
-	private List<Object> values;
+	private String[] fragments;
+	private Object[] values;
 
-	public FunnyString( List<Object> values )
+	public PString( String[] fragments, Object[] values )
 	{
+		this.fragments = fragments;
 		this.values = values;
 	}
 
@@ -33,21 +33,30 @@ public class FunnyString
 	public String toString()
 	{
 		StringBuilder result = new StringBuilder();
-		for( Object value : this.values )
-			result.append( value );
+		int len = this.fragments.length;
+		int v = 0;
+		for( int i = 0; i < len; i++ )
+		{
+			if( this.fragments[ i ] != null )
+				result.append( this.fragments[ i ] );
+			else
+				result.append( this.values[ v++ ] );
+		}
 		return result.toString();
 	}
 
 	public boolean isEmpty()
 	{
-		for( Object value : this.values )
-			if( value.toString().length() != 0 ) // TODO What about nulls?
-				return false;
-		return true;
+		return toString().length() == 0;
 	}
 
 	public int size()
 	{
 		return toString().length();
+	}
+
+	public Object[] getValues()
+	{
+		return this.values;
 	}
 }

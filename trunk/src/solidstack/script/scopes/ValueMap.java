@@ -16,6 +16,7 @@
 
 package solidstack.script.scopes;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -233,6 +234,12 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<Symbol, T>
 		}
 	}
 
+	public void clear()
+	{
+		Arrays.fill( this.entries, null );
+		this.size = 0;
+	}
+
 	public boolean isEmpty()
 	{
 		throw new UnsupportedOperationException();
@@ -249,11 +256,6 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<Symbol, T>
 	}
 
 	public void putAll( Map<? extends Symbol, ? extends T> m )
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	public void clear()
 	{
 		throw new UnsupportedOperationException();
 	}

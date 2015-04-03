@@ -34,7 +34,37 @@ public class ScriptTokenizer
 	/**
 	 * The reader used to read from and push back characters.
 	 */
-	private PushbackReader in;
+	@SuppressWarnings( "javadoc" )
+	static public enum TokenType {
+		// Literals & identifiers
+		INTEGER, DECIMAL, STRING, CHAR, IDENTIFIER, SYMBOL, OPERATOR, PSTRING,
+		// Fixed characters
+		PAREN_OPEN( "(", false ), PAREN_CLOSE( ")", false ), BRACKET_OPEN( "[", false ), BRACKET_CLOSE( "]", false ), BRACE_OPEN( "{", false ), BRACE_CLOSE( "}", false ),
+		BACKQUOTE( "`", false ), /* QUOTE( "'", false ), */ DOT( ".", false ), SEMICOLON( ";", false ), COMMA( ",", false ),
+		EOF,
+		// My reserved words
+		MODULE( "module" ),
+		// Reserved words
+		ABSTRACT( "abstract" ), CASE( "case" ), CATCH( "catch" ), /* CLASS( "class" ), */
+		DEF( "def" ), DO( "do" ), ELSE( "else" ), EXTENDS( "extends" ),
+		FALSE( "false" ), FINAL( "final" ), FINALLY( "finally" ), FOR( "for" ),
+		FORSOME( "forSome" ), IF( "if" ), IMPLICIT( "implicit" ), IMPORT( "import" ),
+		LAZY( "lazy" ), MATCH( "match" ), NEW( "new" ), NULL( "null" ),
+		OBJECT( "object" ), OVERRIDE( "override" ), PACKAGE( "package" ), PRIVATE( "private" ),
+		PROTECTED( "protected" ), RETURN( "return" ), SEALED( "sealed" ), SUPER( "super" ),
+		THIS( "this" ), THROW( "throw" ), TRAIT( "trait" ), TRY( "try" ),
+		TRUE( "true" ), TYPE( "type" ), VAL( "val" ), VAR( "var" ),
+		WHILE( "while" ), WITH( "with" ), YIELD( "yield" ),
+		UNDERSCORE( "_" ), COLON( ":" ), EQUALS( "=" ), HASH( "#" ), AT( "@" ),
+		FUNCTION( "=>" ), GENERATOR( "<-" ), UPPERBOUND( "<:" ), VIEWBOUND( "<%" ), LOWERBOUND( ">:" );
+		public final String word;
+		public final boolean reserved;
+		private TokenType() { this( null, false ); }
+		private TokenType( String word ) { this( word, true ); }
+		private TokenType( String word, boolean reserved ) { this.word = word; this.reserved = reserved; }
+		@Override public String toString() { if( this.word != null ) return this.word; return super.toString(); }
+		public boolean isReserved() { return this.reserved; }
+	}
 
 	/**
 	 * Buffer for the result.

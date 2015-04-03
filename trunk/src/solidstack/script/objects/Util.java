@@ -28,8 +28,8 @@ public class Util
 		Object result = Util.deref( value );
 		if( result == null )
 			return null;
-		if( result instanceof FunnyString )
-			return result.toString();
+//		if( result instanceof PString )
+//			return result.toString();
 		return result;
 	}
 
@@ -50,7 +50,7 @@ public class Util
 		return result;
 	}
 
-	static public Object[] toJavaParameters( Object[] pars, ThreadContext thread )
+	static public Object[] toJavaParameters( ThreadContext thread, Object... pars )
 	{
 		// TODO Not all parameters need to be named here: example method( String, String, Map )
 		if( pars.length > 0 && pars[ 0 ] instanceof Labeled )
@@ -93,7 +93,7 @@ public class Util
 //			return list;
 //		}
 		if( value instanceof Ref )
-			value = ( (Ref)value ).get();
+			return ( (Ref)value ).get();
 		return value;
 	}
 }
