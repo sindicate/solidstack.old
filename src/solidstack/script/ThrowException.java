@@ -17,6 +17,7 @@
 package solidstack.script;
 
 import solidstack.io.SourceLocation;
+import solidstack.lang.Assert;
 
 public class ThrowException extends RuntimeException
 {
@@ -25,6 +26,7 @@ public class ThrowException extends RuntimeException
 
 	public ThrowException( Object object, SourceLocation[] stack )
 	{
+		Assert.notNull( object );
 		this.object = object;
 		this.stack = stack;
 	}

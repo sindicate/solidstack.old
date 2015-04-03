@@ -42,6 +42,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import solidstack.lang.Assert;
 import solidstack.lang.SystemException;
+import solidstack.script.java.Java;
 
 
 public class Dumper
@@ -159,7 +160,7 @@ public class Dumper
 		}
 		catch( IOException e )
 		{
-			throw new SystemException( e );
+			throw Java.throwUnchecked( e );
 		}
 	}
 

@@ -121,6 +121,7 @@ public class Apply extends Operator
 		catch( Exception e )
 		{
 			throw new ThrowException( e.getMessage(), thread.cloneStack( getLocation() ) );
+//			throw new JavaException( e, thread.cloneStack( getLocation() ) );
 		}
 
 		throw new ThrowException( "Can't apply parameters to a " + left.getClass().getName(), thread.cloneStack( getLocation() ) );

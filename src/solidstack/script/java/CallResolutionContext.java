@@ -22,9 +22,11 @@ import java.util.List;
 import java.util.Set;
 
 
-public class CallContext
+public class CallResolutionContext
 {
 	// Values for the original call context
+
+	private CallSignature call;
 
 	private Object object; // The object to call
 	private String name; // The name to call
@@ -35,32 +37,31 @@ public class CallContext
 	private Class type; // Type of the object, or if the object is a class, then the object itself.
 	private Class[] argTypes; // Types of the arguments.
 
-	private boolean thisMode;
-	private Object[] combiArgs; // The arguments of the call
-	private Class[] combiArgTypes; // Types of the arguments.
-
 	// Dynamic stuff
 
 	private List< MethodCall > candidates = new ArrayList<MethodCall>();
 	private Set< Class > interfacesDone = new HashSet();
 
 
-	public CallContext( Object object, String name, Object[] args )
+	public CallResolutionContext( Object object, String name, Object[] args )
 	{
-		this( object.getClass(), name, args );
 		this.object = object;
-	}
-
-	public CallContext( Class type, String name, Object[] args )
-	{
+		this.type = object.getClass();
 		this.name = name;
 		this.args = args;
-		this.type = type;
+		this.argTypes = Types.getTypes( this.args );
+
+		this.call = new CallSignature( this.type, name, false, this.argTypes );
 	}
 
-	public void setThisMode( boolean thisMode )
+	public CallResolutionContext( Class type, String name, Object[] args )
 	{
-		this.thisMode = thisMode;
+		this.type = type;
+		this.name = name;
+		this.args = args;
+		this.argTypes = Types.getTypes( this.args );
+
+		this.call = new CallSignature( type, name, true, this.argTypes );
 	}
 
 	public Object getObject()
@@ -75,17 +76,6 @@ public class CallContext
 
 	public Object[] getArgs()
 	{
-		if( this.thisMode )
-		{
-			if( this.combiArgs == null )
-			{
-				int argCount = this.args.length;
-				this.combiArgs = new Object[ argCount + 1 ];
-				this.combiArgs[ 0 ] = this.object;
-				System.arraycopy( this.args, 0, this.combiArgs, 1, argCount );
-			}
-			return this.combiArgs;
-		}
 		return this.args;
 	}
 
@@ -96,20 +86,17 @@ public class CallContext
 
 	public Class[] getArgTypes()
 	{
-		if( this.argTypes == null )
-			this.argTypes = Types.getTypes( this.args );
-		if( this.thisMode )
-		{
-			if( this.combiArgTypes == null )
-			{
-				int argCount = this.argTypes.length;
-				this.combiArgTypes = new Class[ argCount + 1 ];
-				this.combiArgTypes[ 0 ] = getType();
-				System.arraycopy( this.argTypes, 0, this.combiArgTypes, 1, argCount );
-			}
-			return this.combiArgTypes;
-		}
 		return this.argTypes;
+	}
+
+	public boolean staticCall()
+	{
+		return this.call.staticCall;
+	}
+
+	public CallSignature getCallKey()
+	{
+		return this.call;
 	}
 
 	public void addCandidate( MethodCall method )
@@ -132,4 +119,3 @@ public class CallContext
 		this.interfacesDone.add( iface );
 	}
 }
-
