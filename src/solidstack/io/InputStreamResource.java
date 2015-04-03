@@ -43,7 +43,7 @@ public class InputStreamResource extends Resource
 	}
 
 	@Override
-	public InputStream newInputStream()
+	public InputStream getInputStream()
 	{
 		if( this.inputStream == null )
 			throw new IllegalStateException( "inputStream has been accessed already" );

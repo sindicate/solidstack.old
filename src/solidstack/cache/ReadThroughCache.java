@@ -507,7 +507,7 @@ public class ReadThroughCache
 	 * Call the loader and put the result in the cache.
 	 *
 	 * @param loading The entry to load.
-	 * @param keyString The key of the entry to load.
+	 * @param key The key of the entry to load.
 	 * @param loader The loader to use.
 	 * @return The value loaded.
 	 */
@@ -732,7 +732,8 @@ public class ReadThroughCache
 			}
 			catch( InterruptedException e )
 			{
-				throw new ThreadInterrupted();
+				// TODO Problem is, this one may be logged as error, and ThreadDeath possibly not
+				throw new ThreadInterrupted( e );
 			}
 
 			if( this.result == null )

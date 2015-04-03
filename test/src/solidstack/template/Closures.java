@@ -29,7 +29,7 @@ public class Closures
 	@Test
 	public void testClosures()
 	{
-		TemplateLoader templates = new TemplateLoader();
+		TemplateManager templates = new TemplateManager();
 		templates.setTemplatePath( "classpath:/solidstack/template" );
 
 		Map< String, Object > params = new HashMap< String, Object >();

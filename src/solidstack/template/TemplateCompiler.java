@@ -22,14 +22,13 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import solidstack.io.BOMDetectingLineReader;
+import solidstack.io.LineReader;
 import solidstack.io.Resource;
-import solidstack.io.SourceReader;
-import solidstack.io.SourceReaders;
 import solidstack.lang.Assert;
 import solidstack.template.JSPLikeTemplateParser.Directive;
 import solidstack.template.JSPLikeTemplateParser.EVENT;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
-import solidstack.template.funny.FunnyTemplateCompiler;
 import solidstack.template.groovy.GroovyTemplateCompiler;
 import solidstack.template.javascript.JavaScriptTemplateCompiler;
 
@@ -45,20 +44,21 @@ import solidstack.template.javascript.JavaScriptTemplateCompiler;
 public class TemplateCompiler
 {
 	static final private Pattern CONTENT_TYPE_PATTERN = Pattern.compile( "^[ \\t]*(\\S*)[ \\t]*(?:;[ \\t]*charset[ \\t]*=[ \\t]*(\\S*)[ \\t]*)?$" ); // TODO case sensitive & http://www.iana.org/assignments/media-types/index.html
+	static final private Pattern ENCODING_PATTERN = Pattern.compile( "^<%@[ \t]*template[ \t]+encoding[ \t]*=\"([^\"]*)\".*", Pattern.CASE_INSENSITIVE ); // TODO Improve, case sensitive?
 
 	static boolean keepSource = false;
 
-	private TemplateLoader loader;
+	private TemplateManager manager;
 
 
 	/**
 	 * Constructor.
 	 *
-	 * @param loader The template loader that created this compiler.
+	 * @param manager The template manager that created this compiler.
 	 */
-	public TemplateCompiler( TemplateLoader loader )
+	public TemplateCompiler( TemplateManager manager )
 	{
-		this.loader = loader;
+		this.manager = manager;
 	}
 
 	/**
@@ -86,11 +86,11 @@ public class TemplateCompiler
 	/**
 	 * Compiles a template into a {@link Template}.
 	 *
-	 * @param reader The {@link SourceReader} that contains the template.
+	 * @param reader The {@link LineReader} that contains the template.
 	 * @param path The path of the template, needed to generate a name for the class in memory.
 	 * @return A {@link Template}.
 	 */
-	public Template compile( SourceReader reader, String path )
+	public Template compile( LineReader reader, String path )
 	{
 		Loggers.compiler.info( "Compiling [{}] from [{}]", path, reader.getResource() );
 
@@ -111,54 +111,39 @@ public class TemplateCompiler
 	public void compile( TemplateCompilerContext context )
 	{
 		createReader( context );
-		try
-		{
-			parse( context );
-			consolidateWhitespace( context );
-			collectDirectives( context );
-			processDirectives( context );
+		parse( context );
+		collectDirectives( context );
+		processDirectives( context );
 
-			String lang = context.getLanguage();
-			if( lang == null )
-				if( this.loader != null )
-				{
-					lang = this.loader.getDefaultLanguage();
-					if( lang == null )
-						throw new TemplateException( "Template has no \"language\" directive, and no defaultLanguage configured in the TemplateLoader" );
-				}
-				else
-					throw new TemplateException( "Template has no \"language\" directive" );
-
-			if( lang.equals( "funny" ) )
+		String lang = context.getLanguage();
+		if( lang == null )
+			if( this.manager != null )
 			{
-				FunnyTemplateCompiler compiler = new FunnyTemplateCompiler();
-				compiler.generateScript( context );
-				Loggers.compiler.trace( "Generated FunnyScript:\n{}", context.getScript() );
-				compiler.compileScript( context );
-			}
-			else if( lang.equals( "javascript" ) )
-			{
-				JavaScriptTemplateCompiler compiler = new JavaScriptTemplateCompiler();
-				compiler.generateScript( context );
-				Loggers.compiler.trace( "Generated JavaScript:\n{}", context.getScript() );
-				compiler.compileScript( context );
-			}
-			else if( lang.equals( "groovy" ) )
-			{
-				GroovyTemplateCompiler compiler = new GroovyTemplateCompiler();
-				compiler.generateScript( context );
-				Loggers.compiler.trace( "Generated Groovy:\n{}", context.getScript() );
-				compiler.compileScript( context );
+				lang = this.manager.getDefaultLanguage();
+				if( lang == null )
+					throw new TemplateException( "Template has no \"language\" directive, and no defaultLanguage configured in the TemplateManager" );
 			}
 			else
-				throw new TemplateException( "Unsupported scripting language: " + lang );
+				throw new TemplateException( "Template has no \"language\" directive" );
 
-			configureTemplate( context );
-		}
-		finally
+		if( lang.equals( "javascript" ) )
 		{
-			closeReader( context );
+			JavaScriptTemplateCompiler compiler = new JavaScriptTemplateCompiler();
+			compiler.generateScript( context );
+			Loggers.compiler.trace( "Generated JavaScript:\n{}", context.getScript() );
+			compiler.compileScript( context );
 		}
+		else if( lang.equals( "groovy" ) )
+		{
+			GroovyTemplateCompiler compiler = new GroovyTemplateCompiler();
+			compiler.generateScript( context );
+			Loggers.compiler.trace( "Generated Groovy:\n{}", context.getScript() );
+			compiler.compileScript( context );
+		}
+		else
+			throw new TemplateException( "Unsupported scripting language: " + lang );
+
+		configureTemplate( context );
 	}
 
 	/**
@@ -168,22 +153,16 @@ public class TemplateCompiler
 	 */
 	protected void createReader( TemplateCompilerContext context )
 	{
-		if( context.getReader() != null ) // TODO Why is this?
+		if( context.getReader() != null )
 			return;
-
 		try
 		{
-			context.setReader( SourceReaders.forResource( context.getResource(), EncodingDetector.INSTANCE ) );
+			context.setReader( new BOMDetectingLineReader( context.getResource(), ENCODING_PATTERN ) );
 		}
 		catch( FileNotFoundException e )
 		{
-			throw new TemplateNotFoundException( context.getResource().getNormalized() + " not found" );
+			throw new TemplateNotFoundException( context.getResource().toString() + " not found" );
 		}
-	}
-
-	protected void closeReader( TemplateCompilerContext context )
-	{
-		context.getReader().close();
 	}
 
 	/**
@@ -203,84 +182,6 @@ public class TemplateCompiler
 			event = parser.next();
 		}
 		context.setEvents( events );
-	}
-
-	protected void consolidateWhitespace( TemplateCompilerContext context )
-	{
-		List<ParseEvent> events = context.getEvents();
-		List<ParseEvent> result = new ArrayList<ParseEvent>();
-		int len = events.size();
-		int start = 0;
-		boolean hasText = false;
-		boolean hasScript = false;
-		for( int i = 0; i < len; i++ )
-		{
-			ParseEvent event = events.get( i );
-			switch( event.getEvent() )
-			{
-				case EXPRESSION:
-				case EXPRESSION2:
-				case TEXT:
-					hasText = true;
-					break;
-				case DIRECTIVE:
-				case COMMENT:
-				case SCRIPT:
-					if( event.getData().indexOf( '\n' ) >= 0 )
-					{
-						consolidate( events, start, i - 1, result, hasText, true );
-						start = i;
-						hasText = false;
-					}
-					hasScript = true;
-					break;
-				case WHITESPACE:
-					break;
-				case NEWLINE:
-					consolidate( events, start, i, result, hasText, hasScript );
-					start = i + 1;
-					hasText = hasScript = false;
-					break;
-				default:
-					Assert.fail( "Unexpected event " + event.getEvent() );
-			}
-		}
-		if( start < len )
-			consolidate( events, start, len - 1, result, hasText, hasScript );
-		context.setEvents( result );
-	}
-
-	private static void consolidate( List<ParseEvent> source, int start, int end, List<ParseEvent> result, boolean hasText, boolean hasScript )
-	{
-		if( hasText || !hasScript )
-		{
-			for( int i = start; i <= end; i++ )
-				result.add( source.get( i ) );
-			return;
-		}
-
-		ParseEvent last = null;
-		for( int i = start; i <= end; i++ )
-		{
-			ParseEvent event = source.get( i );
-			switch( event.getEvent() )
-			{
-				case WHITESPACE:
-					break;
-				case DIRECTIVE:
-				case COMMENT:
-				case SCRIPT:
-					result.add( event );
-					last = event;
-					break;
-				case NEWLINE:
-					Assert.isTrue( i == end );
-					last.setData( last.getData() + event.getData() );
-					break;
-				default:
-					Assert.fail( "Unexpected event " + event.getEvent() );
-			}
-		}
 	}
 
 	/**
@@ -335,7 +236,7 @@ public class TemplateCompiler
 	protected void configureTemplate( TemplateCompilerContext context )
 	{
 		Template template = context.getTemplate();
-		template.setPath( context.getPath() );
+		template.setName( context.getName() );
 		template.setDirectives( context.getDirectivesArray() );
 		template.setContentType( context.getContentType() );
 		template.setCharSet( context.getCharSet() );

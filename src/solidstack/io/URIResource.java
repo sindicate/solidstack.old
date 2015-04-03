@@ -24,42 +24,44 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-
-import solidstack.util.Strings;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
- * A resource identified by a URI.
+ * A resource identified by a URL.
  *
  * @author René M. de Bloois
  */
+// TODO Maybe we should use URIResource. That one has no problems with the classpath scheme.
 public class URIResource extends Resource
 {
 	/**
-	 * The URI.
+	 * The URL.
 	 */
 	protected URI uri;
 
-
 	/**
-	 * @param uri The URI.
+	 * Constructor.
+	 *
+	 * @param url The URL.
 	 */
-	public URIResource( URI uri )
+	public URIResource( URI url )
 	{
-		this.uri = uri;
+		this.uri = url;
 	}
 
 	/**
-	 * @param uri The URI.
+	 * Constructor.
+	 *
+	 * @param url The URL.
+	 * @throws URISyntaxException
 	 */
 	public URIResource( String uri )
 	{
 		this( toURI( uri ) );
 	}
 
-	/**
-	 * @param url A URL.
-	 */
 	public URIResource( URL url )
 	{
 		this( toURI( url ) );
@@ -109,21 +111,17 @@ public class URIResource extends Resource
 	}
 
 	@Override
-	public URI getURI()
+	public URI getURI() throws FileNotFoundException
 	{
 		return this.uri;
 	}
 
 	@Override
-	public InputStream newInputStream() throws FileNotFoundException
+	public InputStream getInputStream()
 	{
 		try
 		{
 			return this.uri.toURL().openStream();
-		}
-		catch( FileNotFoundException e )
-		{
-			throw e;
 		}
 		catch( IOException e )
 		{
@@ -134,7 +132,19 @@ public class URIResource extends Resource
 	@Override
 	public Resource resolve( String path )
 	{
+		// TODO Unit test with folder url
+		// TODO The resource factory has more logic then this
 		return new URIResource( this.uri.resolve( path ) );
+	}
+
+	static String getScheme( String path )
+	{
+		// scheme starts with a-zA-Z, and contains a-zA-Z0-9 and $-_@.&+- and !*"'(), and %
+		Pattern pattern = Pattern.compile( "^([a-zA-Z][a-zA-Z0-9$_@.&+\\-!*\"'(),%]*):" );
+		Matcher matcher = pattern.matcher( path );
+		if( matcher.find() )
+			return matcher.group( 1 );
+		return null;
 	}
 
 	@Override
@@ -146,25 +156,14 @@ public class URIResource extends Resource
 	@Override
 	public boolean exists()
 	{
-		try
-		{
-			this.uri.toURL().openStream();
-			return true;
-		}
-		catch( FileNotFoundException e )
-		{
-			return false;
-		}
-		catch( IOException e )
-		{
-			throw new FatalIOException( e );
-		}
+		// TODO This should be implemented I think
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public long getLastModified()
 	{
-		// TODO This should be implemented I think (for file: and http:), maybe we need a HttpResource
+		// TODO This should be implemented I think
 		return 0;
 	}
 
@@ -177,82 +176,16 @@ public class URIResource extends Resource
 	@Override
 	public Resource unwrap()
 	{
-		if( "file".equals( this.uri.getScheme() ) )
-			return new FileResource( new File( this.uri ) );
+		URL url = getURL();
+		if( url.getProtocol().equals( "file" ) )
+			try
+			{
+				return new FileResource( new File( url.toURI() ) );
+			}
+			catch( URISyntaxException e )
+			{
+				throw new FatalURISyntaxException( e );
+			}
 		return this;
-	}
-
-	static private int findCommonIndex( char[] path1, char[] path2 )
-	{
-		int len = path1.length;
-		if( len > path2.length )
-			len = path2.length;
-
-		int lastSlash = -1;
-		for( int i = 0; i < len; i++ )
-		{
-			char ch1 = path1[ i ];
-			if( ch1 != path2[ i ] )
-				break;
-			if( ch1 == '/' )
-				lastSlash = i;
-		}
-
-		return lastSlash + 1;
-	}
-
-	static private int countSlashes( char[] base, int from )
-	{
-		int len = base.length;
-		int result = 0;
-		for( int i = from; i < len; i++ )
-			if( base[ i ] == '/' )
-				result++;
-		return result;
-	}
-
-	/**
-	 * Returns a relative URI from the base URI to the child URI.
-	 *
-	 * @param base The base URI.
-	 * @param child The child URI.
-	 * @return A relative URI from the base URI to the child URI.
-	 */
-	static public URI relativize( URI base, URI child )
-	{
-		// Checks
-
-		// TODO Or should we throw an exception when a relative path is not possible?
-
-		if( child.isOpaque() )
-			return child;
-		if( base.isOpaque() )
-			return child;
-		if( !Strings.equals( base.getScheme(), child.getScheme() ) )
-			return child;
-		if( !Strings.equalsIgnoreCase( base.getAuthority(), child.getAuthority() ) )
-			return child;
-
-		// Do it
-
-		char[] baseChars = base.normalize().getPath().toCharArray();
-		char[] childChars = child.normalize().getPath().toCharArray();
-
-		int common = findCommonIndex( baseChars, childChars );
-		int slashes = countSlashes( baseChars, common );
-
-		StringBuilder result = new StringBuilder();
-		for( int i = 0; i < slashes; i++ )
-			result.append( "../" );
-		result.append( childChars, common, childChars.length - common );
-
-		try
-		{
-			return new URI( null, null, result.toString(), child.getQuery(), child.getFragment() );
-		}
-		catch( URISyntaxException e )
-		{
-			throw new FatalURISyntaxException( e );
-		}
 	}
 }

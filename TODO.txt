@@ -1,7 +1,4 @@
-The following branches are not merged into the trunk yet:
-	remove-query-compiler
-	beanshell
-	include
-	http-pipelining
-	eclipselink
-	result-mapper
+<%= kjhgf %><%= kjhgf %> does not work
+<% kjhf %><% kjhf %> may not work
+Configure file encoding with a directive?
+What about the output encoding? Not applicable I think.

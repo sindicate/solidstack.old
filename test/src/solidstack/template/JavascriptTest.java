@@ -1,19 +1,3 @@
-/*--
- * Copyright 2012 René M. de Bloois
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package solidstack.template;
 
 import java.io.FileReader;
@@ -38,11 +22,10 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import solidstack.io.Resource;
-import solidstack.io.Resources;
-import solidstack.template.Basic.ParameterObject;
+import solidstack.io.ResourceFactory;
 
 
-@SuppressWarnings( { "javadoc", "restriction" } )
+@SuppressWarnings( "javadoc" )
 public class JavascriptTest
 {
 	static public final String CONSTANT = "CONSTANT";
@@ -112,7 +95,7 @@ public class JavascriptTest
 	@Test
 	public void testTransform() throws Exception
 	{
-		Resource resource = Resources.getResource( "file:test/src/solidstack/template/testjs.txt.slt" );
+		Resource resource = ResourceFactory.getResource( "file:test/src/solidstack/template/testjs.txt.slt" );
 		TemplateCompilerContext context = new TemplateCompilerContext();
 		context.setResource( resource );
 		context.setPath( "p/c" );
@@ -140,7 +123,7 @@ public class JavascriptTest
 				"\"); } \n" +
 				";\n" );
 
-		TemplateLoader queries = new TemplateLoader();
+		TemplateManager queries = new TemplateManager();
 		queries.setTemplatePath( "classpath:/solidstack/template" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
@@ -158,20 +141,5 @@ public class JavascriptTest
 				"FROM SYS.SYSTABLES\n" +
 				"WHERE 1 = 1\n" +
 				"AND TABLENAME LIKE 'SYST%'\n" );
-	}
-
-	@Test
-	public void testObjectScope()
-	{
-		TemplateLoader templates = new TemplateLoader();
-		templates.setTemplatePath( "classpath:/solidstack/template" );
-
-		Template template = templates.getTemplate( "testjs.txt" );
-		String result = template.apply( new ParameterObject() );
-		Assert.assertEquals( result, "SELECT *\n" +
-				"FROM SYS.SYSTABLES\n" +
-				"WHERE 1 = 1\n" +
-				"AND TABLENAME LIKE 'prefix%'\n" +
-				"AND TABLENAME = name\n" );
 	}
 }

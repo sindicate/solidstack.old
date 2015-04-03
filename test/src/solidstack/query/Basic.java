@@ -28,14 +28,14 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import solidstack.io.Resource;
-import solidstack.io.Resources;
-import solidstack.io.SourceReaders;
+import solidstack.io.ResourceFactory;
+import solidstack.io.StringLineReader;
 import solidstack.query.Query.PreparedSQL;
 import solidstack.template.ParseException;
 import solidstack.template.Template;
 import solidstack.template.TemplateCompiler;
 import solidstack.template.TemplateCompilerContext;
-import solidstack.template.TemplateLoader;
+import solidstack.template.TemplateManager;
 import solidstack.util.Pars;
 
 
@@ -48,7 +48,7 @@ public class Basic
 		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
 		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
-		QueryLoader queries = new QueryLoader();
+		QueryManager queries = new QueryManager();
 		queries.setTemplatePath( "classpath:/solidstack/query" );
 
 		Query query = queries.getQuery( "test.sql" );
@@ -72,34 +72,13 @@ public class Basic
 		assert result.size() == 2;
 	}
 
-	static public class ParameterObject
-	{
-		public String prefix = "SYST";
-		public String getName() { return "SYSTABLES"; }
-		public String getNames() { return null; }
-	}
-
-	@Test
-	public void testObjectScope() throws SQLException, ClassNotFoundException
-	{
-		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
-		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
-
-		QueryLoader queries = new QueryLoader();
-		queries.setTemplatePath( "classpath:/solidstack/query" );
-
-		Query query = queries.getQuery( "test.sql" );
-		List< Map< String, Object > > result = query.listOfMaps( connection, new ParameterObject() );
-		assert result.size() == 1;
-	}
-
 	@Test
 	public void testBasicJS() throws SQLException, ClassNotFoundException
 	{
 		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
 		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
-		QueryLoader queries = new QueryLoader();
+		QueryManager queries = new QueryManager();
 		queries.setTemplatePath( "classpath:/solidstack/query" );
 		queries.setDefaultLanguage( "javascript" );
 
@@ -127,24 +106,9 @@ public class Basic
 	}
 
 	@Test
-	public void testObjectScopeJS() throws SQLException, ClassNotFoundException
-	{
-		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
-		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
-
-		QueryLoader queries = new QueryLoader();
-		queries.setTemplatePath( "classpath:/solidstack/query" );
-		queries.setDefaultLanguage( "javascript" );
-
-		Query query = queries.getQuery( "testjs.sql" );
-		List< Map< String, Object > > result = query.listOfMaps( connection, new ParameterObject() );
-		assert result.size() == 1;
-	}
-
-	@Test
 	public void testTransform() throws Exception
 	{
-		Resource resource = Resources.getResource( "test/src/solidstack/query/test.sql.slt" );
+		Resource resource = ResourceFactory.getResource( "test/src/solidstack/query/test.sql.slt" );
 		TemplateCompilerContext context = new TemplateCompilerContext();
 		context.setResource( resource );
 		context.setPath( "p/c" );
@@ -176,7 +140,7 @@ public class Basic
 				"}}}"
 				);
 
-		QueryLoader queries = new QueryLoader();
+		QueryManager queries = new QueryManager();
 		queries.setTemplatePath( "classpath:/solidstack/query" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
@@ -200,20 +164,19 @@ public class Basic
 	@Test
 	public void testTransformJS() throws Exception
 	{
-		TemplateLoader loader = new TemplateLoader();
-		loader.setTemplatePath( "classpath:/solidstack/query" );
-		loader.setDefaultLanguage( "javascript" );
+		TemplateManager manager = new TemplateManager();
+		manager.setTemplatePath( "classpath:/solidstack/query" );
+		manager.setDefaultLanguage( "javascript" );
 
-		Resource resource = Resources.getResource( "test/src/solidstack/query/testjs.sql.slt" );
+		Resource resource = ResourceFactory.getResource( "test/src/solidstack/query/testjs.sql.slt" );
 		TemplateCompilerContext context = new TemplateCompilerContext();
 		context.setResource( resource );
 		context.setPath( "p/c" );
-		new TemplateCompiler( loader ).compile( context );
+		new TemplateCompiler( manager ).compile( context );
 
 //		System.out.println( groovy.replaceAll( "\t", "\\\\t" ).replaceAll( " ", "#" ) );
 
-		Assert.assertEquals( context.getScript().toString(), "importClass(Packages.java.sql.Timestamp);\n" +
-				" // Test if the import at the bottom works, and this comment too of course\n" +
+		Assert.assertEquals( context.getScript().toString(), "importClass(Packages.java.sql.Timestamp); // Test if the import at the bottom works, and this comment too of course\n" +
 				"new Timestamp( new java.util.Date().time ) \n" +
 				";out.write(\"SELECT *\\n\\\n" +
 				"FROM SYS.SYSTABLES\\n\\\n" +
@@ -233,7 +196,7 @@ public class Basic
 				"\"); } \n" +
 				";\n" );
 
-		QueryLoader queries = new QueryLoader( loader );
+		QueryManager queries = new QueryManager( manager );
 
 		Map< String, Object > params = new HashMap< String, Object >();
 		params.put( "prefix", "SYST" );
@@ -258,7 +221,7 @@ public class Basic
 	{
 		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
-		QueryLoader queries = new QueryLoader();
+		QueryManager queries = new QueryManager();
 		queries.setTemplatePath( "classpath:/solidstack/query" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
@@ -290,7 +253,7 @@ public class Basic
 		Class.forName( "org.apache.derby.jdbc.EmbeddedDriver" );
 		Connection connection = DriverManager.getConnection( "jdbc:derby:memory:test;create=true", "app", null );
 
-		QueryLoader queries = new QueryLoader();
+		QueryManager queries = new QueryManager();
 		queries.setTemplatePath( "classpath:/solidstack/query" );
 		queries.setDefaultLanguage( "groovy" );
 
@@ -315,10 +278,8 @@ public class Basic
 	// For testing purposes
 	static TemplateCompilerContext translate( String text )
 	{
-		text = "<%@template version=\"1.0\"%>" + text;
-
 		TemplateCompilerContext context = new TemplateCompilerContext();
-		context.setReader( SourceReaders.forString( text ) );
+		context.setReader( new StringLineReader( text ) );
 		context.setPath( "p/c" );
 		new TemplateCompiler( null ).compile( context );
 		return context;
@@ -326,7 +287,7 @@ public class Basic
 
 	private void translateTest( String input, String groovy, String output )
 	{
-		input = "<%@template version=\"1.0\" language=\"groovy\"%>" + input;
+		input = "<%@template language=\"groovy\"%>" + input;
 
 		TemplateCompilerContext context = translate( input );
 		String g = context.getScript().toString();
@@ -348,7 +309,7 @@ public class Basic
 		}
 		catch( ParseException e )
 		{
-			Assert.assertTrue( e.getMessage().contains( "Unexpected end of " ), e.toString() );
+			assert e.getMessage().contains( "Unexpected end of " );
 		}
 	}
 

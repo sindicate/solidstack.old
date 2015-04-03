@@ -30,7 +30,7 @@ import solidstack.template.TemplateException;
 
 /**
  * A ConvertingWriter that converts Groovy specific data types to Java data types.
- *
+ * 
  * @author René de Bloois
  */
 public class GroovyConvertingWriter implements ConvertingWriter
@@ -42,7 +42,7 @@ public class GroovyConvertingWriter implements ConvertingWriter
 
 	/**
 	 * Constructor.
-	 *
+	 * 
 	 * @param writer The EncodingWriter to write to.
 	 */
 	public GroovyConvertingWriter( EncodingWriter writer )
@@ -106,10 +106,5 @@ public class GroovyConvertingWriter implements ConvertingWriter
 			else
 				this.writer.writeEncoded( o );
 		}
-	}
-
-	public void flush() throws IOException
-	{
-		this.writer.flush();
 	}
 }

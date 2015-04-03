@@ -1,19 +1,3 @@
-/*--
- * Copyright 2012 René M. de Bloois
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package solidstack.query.jpa;
 
 import java.util.List;
@@ -28,12 +12,11 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import solidstack.query.Query;
-import solidstack.query.QueryLoader;
+import solidstack.query.QueryManager;
 import solidstack.query.hibernate.DerbyTable;
 import solidstack.query.hibernate.Test1;
 import solidstack.util.Pars;
 
-@SuppressWarnings( value = { "javadoc", "unchecked" } )
 public class JPA1Tests
 {
 	private EntityManagerFactory factory;
@@ -54,7 +37,7 @@ public class JPA1Tests
 	{
 		EntityManager em = this.factory.createEntityManager();
 
-		QueryLoader queries = new QueryLoader();
+		QueryManager queries = new QueryManager();
 		queries.setTemplatePath( "classpath:/solidstack/query" );
 		Query query = queries.getQuery( "test.sql" );
 		List<DerbyTable> tables = query.jpa().getResultList( em, DerbyTable.class, new Pars() );
@@ -69,7 +52,7 @@ public class JPA1Tests
 	{
 		EntityManager em = this.factory.createEntityManager();
 
-		QueryLoader queries = new QueryLoader();
+		QueryManager queries = new QueryManager();
 		queries.setTemplatePath( "classpath:/solidstack/query" );
 		Query query = queries.getQuery( "test.sql" );
 		List<Object[]> tables = query.jpa().getResultList( em, new Pars() );
@@ -91,7 +74,7 @@ public class JPA1Tests
 			System.out.println( table.getName() );
 		System.out.println( "-----" );
 
-		QueryLoader queries = new QueryLoader();
+		QueryManager queries = new QueryManager();
 		queries.setTemplatePath( "classpath:/solidstack/query/jpa" );
 		Query query = queries.getQuery( "test.jpql" );
 
@@ -117,7 +100,7 @@ public class JPA1Tests
 	{
 		EntityManager em = this.factory.createEntityManager();
 
-		QueryLoader queries = new QueryLoader();
+		QueryManager queries = new QueryManager();
 		queries.setTemplatePath( "classpath:/solidstack/query/hibernate" );
 		Query query = queries.getQuery( "test.hql" );
 
@@ -136,7 +119,7 @@ public class JPA1Tests
 
 		EntityTransaction transaction = em.getTransaction();
 
-		QueryLoader queries = new QueryLoader();
+		QueryManager queries = new QueryManager();
 		queries.setTemplatePath( "classpath:/solidstack/query/jpa" );
 		Query sqlQuery = queries.getQuery( "big.sql" );
 		Query jpqlQuery = queries.getQuery( "big.jpql" );

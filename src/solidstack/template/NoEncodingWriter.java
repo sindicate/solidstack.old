@@ -41,17 +41,9 @@ public class NoEncodingWriter implements EncodingWriter
 		this.out = out;
 	}
 
-	/**
-	 * Writes the given characters.
-	 *
-	 * @param chars The characters.
-	 * @param off The start index.
-	 * @param len The length.
-	 * @throws IOException Whenever an IOException is thrown.
-	 */
-	public void write( char[] chars, int off, int len ) throws IOException
+	public void write( char[] cbuf, int off, int len ) throws IOException
 	{
-		this.out.write( chars, off, len );
+		this.out.write( cbuf, off, len );
 	}
 
 	public void write( String s ) throws IOException
@@ -68,10 +60,5 @@ public class NoEncodingWriter implements EncodingWriter
 	public boolean stringsOnly()
 	{
 		return true;
-	}
-
-	public void flush() throws IOException
-	{
-		this.out.flush();
 	}
 }

@@ -18,7 +18,6 @@ package solidstack.io;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -38,15 +37,9 @@ public class ClassPathResource extends Resource
 	protected URI uri;
 
 	/**
-	 * The class loader used to find the resource.
-	 */
-	protected ClassLoader classLoader;
-
-
-	/**
 	 * @param path The path of the resource.
 	 */
-	// TODO Need a classloader parameter?
+	// TODO Need a classloader too
 	public ClassPathResource( String path )
 	{
 		this( toURI( path ) );
@@ -58,13 +51,11 @@ public class ClassPathResource extends Resource
 	public ClassPathResource( URI uri )
 	{
 		String path = uri.getPath();
-		if( !"classpath".equals( uri.getScheme() ) )
-			throw new IllegalArgumentException( "uri scheme must be 'classpath'" );
 		if( path == null ) // If path does not start with / then getPath() returns null
 			throw new IllegalArgumentException( "path must start with /" );
+		if( !"classpath".equals( uri.getScheme() ) )
+			throw new IllegalArgumentException( "uri scheme must be 'classpath'" );
 		this.uri = uri.normalize();
-
-		this.classLoader = Thread.currentThread().getContextClassLoader();
 	}
 
 	static private URI toURI( String path )
@@ -87,27 +78,20 @@ public class ClassPathResource extends Resource
 	@Override
 	public boolean supportsURL()
 	{
-		return exists();
+		return true;
 	}
 
 	@Override
-	public URL getURL()
+	public URL getURL() throws FileNotFoundException
 	{
-		URL result = getResource();
+		URL result = ClassPathResource.class.getClassLoader().getResource( getPath() );
 		if( result == null )
-			throw new UnsupportedOperationException( "File " + toString() + " not found" );
+			throw new FileNotFoundException( "File " + toString() + " not found" );
 		return result;
 	}
 
-	private URL getResource()
-	{
-		if( this.classLoader != null )
-			return this.classLoader.getResource( getPath() );
-		return ClassPathResource.class.getClassLoader().getResource( getPath() );
-	}
-
 	@Override
-	public URI getURI()
+	public URI getURI() throws FileNotFoundException
 	{
 		try
 		{
@@ -120,27 +104,19 @@ public class ClassPathResource extends Resource
 	}
 
 	@Override
-	public InputStream newInputStream() throws FileNotFoundException
+	public InputStream getInputStream() throws FileNotFoundException
 	{
-		URL result = getResource();
+		InputStream result = ClassPathResource.class.getClassLoader().getResourceAsStream( getPath() );
 		if( result == null )
 			throw new FileNotFoundException( "File " + toString() + " not found" );
-		try
-		{
-			return result.openStream();
-		}
-		catch( IOException e )
-		{
-			throw new FatalIOException( e );
-		}
+		return result;
 	}
 
 	// TODO Need test for this
 	@Override
 	public Resource resolve( String path )
 	{
-		// FIXME I think this should inherit the class loader
-		return Resources.getResource( this.uri.resolve( path ).toString() ); // TODO Test \
+		return ResourceFactory.getResource( this.uri.resolve( path ).toString() ); // TODO Test \
 	}
 
 	@Override
@@ -152,7 +128,7 @@ public class ClassPathResource extends Resource
 	@Override
 	public boolean exists()
 	{
-		return getResource() != null;
+		return ClassPathResource.class.getClassLoader().getResource( getPath() ) != null;
 	}
 
 	// A resource in the class path cannot start with a /
@@ -179,13 +155,12 @@ public class ClassPathResource extends Resource
 	 *
 	 * @return A {@link FileResource}, {@link URIResource} or a {@link ClassPathResource}.
 	 */
-	// TODO Find another way, maybe automatic unwrap when getLastModified() is called, etc. Maybe cache the unwrapped resource.
 	@Override
 	public Resource unwrap()
 	{
-		URL url = getResource();
+		URL url = ClassPathResource.class.getClassLoader().getResource( getPath() );
 		if( url == null )
-			return this;
+			return this; // TODO Or file not found?
 		if( url.getProtocol().equals( "jar" ) )
 			return this;
 		try

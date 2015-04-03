@@ -1,19 +1,3 @@
-/*--
- * Copyright 2012 René M. de Bloois
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package solidstack.io;
 
 import java.io.IOException;
@@ -30,19 +14,13 @@ import java.nio.charset.Charset;
  */
 public class DeferringWriter extends Writer
 {
-	private int threshold;
-	private Resource resource;
-	private String encoding;
+	protected int threshold;
+	protected Resource resource;
+	protected String encoding;
 
-	private StringBuilder buffer;
-	private Writer writer;
+	protected StringBuilder buffer;
+	protected Writer writer;
 
-	/**
-	 * @param threshold The threshold.
-	 * @param resource The resource to write to.
-	 * @param encoding The character encoding to use.
-	 * @throws UnsupportedEncodingException When the encoding is not supported.
-	 */
 	public DeferringWriter( int threshold, Resource resource, String encoding ) throws UnsupportedEncodingException
 	{
 		if( !Charset.isSupported( encoding ) )
@@ -56,7 +34,7 @@ public class DeferringWriter extends Writer
 			this.buffer = new StringBuilder();
 	}
 
-	private void initWriter()
+	protected void initWriter()
 	{
 		try
 		{
@@ -74,10 +52,11 @@ public class DeferringWriter extends Writer
 		if( this.buffer != null )
 		{
 			this.buffer.append( (char)c );
-			if( this.buffer.length() >= this.threshold )
+			if( this.buffer.length() > this.threshold )
 			{
 				initWriter();
-				this.writer.write( clearBuffer() );
+				this.writer.write( this.buffer.toString() );
+				this.buffer = null;
 			}
 		}
 		else
@@ -92,11 +71,12 @@ public class DeferringWriter extends Writer
 	public void write( char[] cbuf, int off, int len ) throws IOException
 	{
 		if( this.buffer != null )
-			if( this.buffer.length() + len >= this.threshold )
+			if( this.buffer.length() + len > this.threshold )
 			{
 				initWriter();
-				this.writer.write( clearBuffer() );
+				this.writer.write( this.buffer.toString() );
 				this.writer.write( cbuf, off, len );
+				this.buffer = null;
 			}
 			else
 				this.buffer.append( cbuf, off, len );
@@ -108,31 +88,19 @@ public class DeferringWriter extends Writer
 		}
 	}
 
-	/**
-	 * @return True when the characters are still in the buffer.
-	 */
-	public boolean isBuffered()
+	public boolean isInMemory()
 	{
 		return this.buffer != null;
 	}
 
-	/**
-	 * Returns the characters from the buffer and clears the buffer.
-	 *
-	 * @return The characters from the buffer.
-	 */
-	public String clearBuffer()
+	public String getData()
 	{
-		String result = this.buffer.toString();
-		this.buffer = null;
-		return result;
+		return this.buffer.toString();
 	}
 
 	@Override
 	public void flush() throws IOException
 	{
-		if( isBuffered() )
-			throw new IllegalStateException( "Characters are still in the buffer" );
 		if( this.writer != null )
 			this.writer.flush();
 	}
@@ -140,8 +108,6 @@ public class DeferringWriter extends Writer
 	@Override
 	public void close() throws IOException
 	{
-		if( isBuffered() )
-			throw new IllegalStateException( "Characters are still in the buffer" );
 		if( this.writer != null )
 			this.writer.close();
 	}

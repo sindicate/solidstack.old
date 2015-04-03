@@ -22,11 +22,10 @@ import java.util.Map;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import solidstack.io.LineReader;
 import solidstack.io.Resource;
-import solidstack.io.Resources;
-import solidstack.io.SourceReader;
-import solidstack.io.SourceReaders;
-import solidstack.io.StringResource;
+import solidstack.io.ResourceFactory;
+import solidstack.io.StringLineReader;
 import solidstack.template.JSPLikeTemplateParser.EVENT;
 import solidstack.template.JSPLikeTemplateParser.ParseEvent;
 import solidstack.util.Pars;
@@ -38,7 +37,7 @@ public class Basic
 	@Test
 	public void testBasic()
 	{
-		TemplateLoader templates = new TemplateLoader();
+		TemplateManager templates = new TemplateManager();
 		templates.setTemplatePath( "classpath:/solidstack/template" );
 
 		Template template = templates.getTemplate( "test.txt" );
@@ -49,32 +48,10 @@ public class Basic
 				"AND TABLENAME IN ([name1, name2])\n" );
 	}
 
-	static public class ParameterObject
-	{
-		public String prefix = "prefix";
-		public String getName() { return "name"; }
-		public String getNames() { return null; }
-	}
-
-	@Test
-	public void testObjectScope()
-	{
-		TemplateLoader templates = new TemplateLoader();
-		templates.setTemplatePath( "classpath:/solidstack/template" );
-
-		Template template = templates.getTemplate( "test.txt" );
-		String result = template.apply( new ParameterObject() );
-		Assert.assertEquals( result, "SELECT *\n" +
-				"FROM SYS.SYSTABLES\n" +
-				"WHERE 1 = 1\n" +
-				"AND TABLENAME LIKE 'prefix%'\n" +
-				"AND TABLENAME = name\n" );
-	}
-
 	@Test
 	public void testTransform() throws Exception
 	{
-		Resource resource = Resources.getResource( "test/src/solidstack/template/test.txt.slt" );
+		Resource resource = ResourceFactory.getResource( "test/src/solidstack/template/test.txt.slt" );
 		TemplateCompilerContext context = new TemplateCompilerContext();
 		context.setResource( resource );
 		context.setPath( "a/b/c" );
@@ -105,7 +82,7 @@ public class Basic
 				"}}}"
 				);
 
-		TemplateLoader queries = new TemplateLoader();
+		TemplateManager queries = new TemplateManager();
 		queries.setTemplatePath( "classpath:/solidstack/template" );
 
 		Map< String, Object > params = new HashMap< String, Object >();
@@ -126,11 +103,9 @@ public class Basic
 	@Test
 	public void testNewlinesWithinDirective() throws Exception
 	{
-		SourceReader reader = SourceReaders.forString( "<%@ template\n" +
+		LineReader reader = new StringLineReader( "<%@ template\n" +
 				"import=\"java.util.ArrayList\"\n" +
 				"import=\"java.io.*\"\n" +
-				"version=\n" +
-				"\"1.0\"\n" +
 				"language=\"groovy\"\n" +
 				"%>\n" +
 				"TEST" );
@@ -147,8 +122,6 @@ public class Basic
 				"\n" +
 				"\n" +
 				"\n" +
-				"\n" +
-				"\n" +
 				"out.write(\"\"\"TEST\"\"\");}}}"
 				);
 	}
@@ -156,7 +129,7 @@ public class Basic
 	@Test
 	public void testNulls()
 	{
-		TemplateLoader templates = new TemplateLoader();
+		TemplateManager templates = new TemplateManager();
 		TemplateCompiler.keepSource = true;
 		templates.setTemplatePath( "classpath:/solidstack/template" );
 
@@ -182,9 +155,9 @@ public class Basic
 	{
 		StringBuilder buffer = new StringBuilder();
 		for( int i = 0; i < 1000; i++ )
-			buffer.append( "<%@template version=\"1.0\"%>abcdefghijklmnopqrstuvwxyz" );
+			buffer.append( "abcdefghijklmnopqrstuvwxyz" );
 
-		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( SourceReaders.forString( buffer.toString() ) );
+		JSPLikeTemplateParser parser = new JSPLikeTemplateParser( new StringLineReader( buffer.toString() ) );
 		ParseEvent event = parser.next();
 		while( event.getEvent() != EVENT.EOF )
 		{
@@ -193,40 +166,9 @@ public class Basic
 		}
 	}
 
-	@Test
+	@Test(groups="new")
 	public void testContextClassLoaderNull()
 	{
 		Assert.assertNotNull( Thread.currentThread().getContextClassLoader(), "ContextClassLoader should not be null" );
-	}
-
-	static private void test_( String input, String expect )
-	{
-		input = "<%@ template version=\"1.0\" language=\"javascript\" %>" + input;
-		Template template = new TemplateCompiler( null ).compile( new StringResource( input ), "test" );
-		String output = template.apply( Pars.EMPTY );
-		Assert.assertEquals( output, expect );
-	}
-
-	@Test
-	public void testEmptyLineWithWhiteSpace()
-	{
-		test_( "abcd\n    \nefgh\n", "abcd\n    \nefgh\n" );
-	}
-
-	@Test
-	public void testEOFBehavesAsNewline()
-	{
-		test_( "    \n", "" );
-		test_( "    ", "" );
-		test_( "    <% null %>    ", "" );
-		test_( "\n    \n", "    \n" );
-		test_( "\n    ", "    " );
-		test_( "\n    <% null %>    ", "" );
-	}
-
-	@Test
-	public void testCommentAfterDoctype()
-	{
-		test_( "\n<!DOCTYPE html><%-- An HTML 5 page --%>\n<html>", "<!DOCTYPE html>\n<html>" );
 	}
 }

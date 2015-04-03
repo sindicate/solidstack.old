@@ -19,6 +19,8 @@ package solidstack.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.LinkedList;
+import java.util.List;
 
 
 /**
@@ -31,7 +33,7 @@ public class MemoryResource extends Resource
 	/**
 	 * The buffer containing the resource's bytes.
 	 */
-	private ByteMatrixOutputStream buffer = new ByteMatrixOutputStream();
+	protected List< byte[] > buffer = new LinkedList< byte[] >();
 
 	/**
 	 * Constructor for an empty memory resource.
@@ -48,14 +50,7 @@ public class MemoryResource extends Resource
 	 */
 	public MemoryResource( byte[] bytes )
 	{
-		try
-		{
-			this.buffer.write( bytes );
-		}
-		catch( IOException e )
-		{
-			throw new FatalIOException( e );
-		}
+		this.buffer.add( bytes );
 	}
 
 	/**
@@ -68,11 +63,10 @@ public class MemoryResource extends Resource
 		append( input );
 	}
 
-	// TODO supportsURL does not indicate that this one is re-iterable
 	@Override
-	public InputStream newInputStream()
+	public InputStream getInputStream()
 	{
-		return new ByteMatrixInputStream( this.buffer.toByteMatrix() );
+		return new ByteMatrixInputStream( this.buffer.toArray( new byte[ this.buffer.size() ][] ) );
 	}
 
 	@Override
@@ -85,6 +79,8 @@ public class MemoryResource extends Resource
 	@Override
 	public Resource resolve( String path )
 	{
+		// TODO Should we keep a reference to the original resource so that this can work?
+		// TODO Should we rename this resource to BufferedResource then?
 		throw new UnsupportedOperationException();
 	}
 
@@ -99,13 +95,25 @@ public class MemoryResource extends Resource
 		int count;
 		try
 		{
+			// TODO What if the input stream returns very small blocks?
 			while( ( count = input.read( buffer ) ) >= 0 )
-				this.buffer.write( buffer, 0, count );
+				if( count > 0 )
+				{
+					byte[] b = new byte[ count ];
+					System.arraycopy( buffer, 0, b, 0, count );
+					this.buffer.add( b );
+				}
 		}
 		catch( IOException e )
 		{
 			throw new FatalIOException( e );
 		}
+	}
+
+	@Override
+	public String getPathFrom( Resource other )
+	{
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

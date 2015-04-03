@@ -1,19 +1,3 @@
-/*--
- * Copyright 2012 René M. de Bloois
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package solidstack.query.hibernate;
 
 import java.lang.reflect.InvocationTargetException;
@@ -29,17 +13,15 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import solidstack.query.Query;
-import solidstack.query.QueryLoader;
+import solidstack.query.QueryManager;
 import solidstack.util.Pars;
 
 
-@SuppressWarnings( value = { "javadoc", "unchecked" } )
 public class Hibernate3Tests
 {
 	private SessionFactory factory;
 	private Method openSession;
 
-	@SuppressWarnings( "deprecation" )
 	@BeforeClass(groups="new")
 	public void init() throws NoSuchMethodException, SecurityException
 	{
@@ -64,7 +46,7 @@ public class Hibernate3Tests
 	{
 		Session session = (Session)this.openSession.invoke( this.factory );
 
-		QueryLoader queries = new QueryLoader();
+		QueryManager queries = new QueryManager();
 		queries.setTemplatePath( "classpath:/solidstack/query" );
 		Query query = queries.getQuery( "test.sql" );
 		List<Map<String, Object>> tables = query.hibernate().listOfMaps( session, new Pars() );
@@ -76,7 +58,7 @@ public class Hibernate3Tests
 
 
 	@Test
-	public void testHQL() throws SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
+	public void testHQL() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{
 		Session session = (Session)this.openSession.invoke( this.factory );
 
@@ -87,7 +69,7 @@ public class Hibernate3Tests
 			System.out.println( table.getName() );
 		System.out.println( "-----" );
 
-		QueryLoader queries = new QueryLoader();
+		QueryManager queries = new QueryManager();
 		queries.setTemplatePath( "classpath:/solidstack/query/hibernate" );
 		Query query = queries.getQuery( "test.hql" );
 

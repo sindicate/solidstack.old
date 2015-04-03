@@ -1,4 +1,4 @@
-<%@ template version="1.0" language = "groovy" %>
+<%@ template language = "groovy" %>
 <%@ query language = "SQL" %>
 <%
 

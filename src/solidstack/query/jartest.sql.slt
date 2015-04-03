@@ -1,4 +1,4 @@
-<%@ template version="1.0" language = "javascript" %>
+<%@ template language = "javascript" %>
 SELECT *
 FROM SYS.SYSTABLES
 WHERE 1 = 1

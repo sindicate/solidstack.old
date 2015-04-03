@@ -71,11 +71,11 @@ public class Query
 	private boolean flyWeight = true;
 	private Language language;
 
-
 	/**
+	 * Constructor.
+	 *
 	 * @param template The template for the query.
 	 */
-	// TODO Directive to enable/disable JDBC escaping <%@ query jdbc-escapes="true" %>. What's the default?
 	public Query( Template template )
 	{
 		this.template = template;
@@ -106,7 +106,9 @@ public class Query
 	}
 
 	/**
-	 * @return An adapter which enables you to use the query with Hibernate.
+	 * Returns an adapter for Hibernate which enables you to use the query with Hibernate.
+	 *
+	 * @return An adapter for Hibernate.
 	 */
 	public HibernateQueryAdapter hibernate()
 	{
@@ -114,8 +116,9 @@ public class Query
 	}
 
 	/**
-	 * @param session A Hibernate session.
-	 * @return An adapter which enables you to use the query with Hibernate.
+	 * Returns an adapter for Hibernate which enables you to use the query with Hibernate.
+	 *
+	 * @return An adapter for Hibernate.
 	 */
 	public HibernateConnectedQueryAdapter hibernate( Object session )
 	{
@@ -123,7 +126,7 @@ public class Query
 	}
 
 	/**
-	 * @return An adapter which enables you to use the query with JPA.
+	 * @return An adapter for JPA which enables you to use the query with JPA.
 	 */
 	public JPAQueryAdapter jpa()
 	{
@@ -132,7 +135,7 @@ public class Query
 
 	/**
 	 * @param entityManager A {@link javax.persistence.EntityManager}.
-	 * @return An adapter which enables you to use the query with JPA.
+	 * @return An adapter for JPA which enables you to use the query with JPA.
 	 */
 	public JPAConnectedQueryAdapter jpa( Object entityManager )
 	{
@@ -150,7 +153,7 @@ public class Query
 	/**
 	 * @param flyWeight If set to true (the default), duplicate values from a query result will only be stored once in memory.
 	 */
-	// TODO Configure default value in the QueryLoader
+	// TODO Configure default value in the QueryManager
 	public void setFlyWeight( boolean flyWeight )
 	{
 		this.flyWeight = flyWeight;
@@ -160,12 +163,12 @@ public class Query
 	 * Retrieves a {@link ResultSet} from the given {@link Connection}.
 	 *
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return a {@link ResultSet}.
-	 * @see #resultSet(Connection, Object)
+	 * @see #resultSet(Connection, Map)
 	 */
 	// TODO Test the args map with groovy script.
-	public ResultSet resultSet( Connection connection, Object args )
+	public ResultSet resultSet( Connection connection, Map< String, Object > args )
 	{
 		try
 		{
@@ -182,10 +185,10 @@ public class Query
 	 * Retrieves a {@link List} of {@link Object} arrays from the given {@link Connection}.
 	 *
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return A {@link List} of {@link Object} arrays from the given {@link Connection}.
 	 */
-	public List< Object[] > listOfArrays( Connection connection, Object args )
+	public List< Object[] > listOfArrays( Connection connection, Map< String, Object > args )
 	{
 		ResultSet resultSet = resultSet( connection, args );
 		try
@@ -230,7 +233,7 @@ public class Query
 			{
 				// THIS CAN REDUCE MEMORY USAGE WITH 90 TO 95 PERCENT, PERFORMANCE IMPACT IS ONLY 5 PERCENT
 
-				Map< Object, Object > dictionary = new HashMap< Object, Object >();
+				Map< Object, Object > sharedData = new HashMap< Object, Object >();
 				while( resultSet.next() )
 				{
 					Object[] line = new Object[ columnCount ];
@@ -239,12 +242,12 @@ public class Query
 						Object object = resultSet.getObject( col );
 						if( object != null )
 						{
-							Object temp = dictionary.get( object );
+							Object temp = sharedData.get( object );
 							if( temp != null )
 								line[ col - 1 ] = temp;
 							else
 							{
-								dictionary.put( object, object );
+								sharedData.put( object, object );
 								line[ col - 1 ] = object;
 							}
 						}
@@ -278,56 +281,31 @@ public class Query
 	 * Retrieve a {@link List} of {@link Map}s from the given {@link Connection}. The maps contain the column names from the query as keys and the column values as the map's values.
 	 *
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return A {@link List} of {@link Map}s.
 	 */
-	public List< Map< String, Object > > listOfMaps( Connection connection, Object args )
-	{
-		ResultSet resultSet = resultSet( connection, args );
-		try
-		{
-			return listOfMaps( resultSet, this.flyWeight );
-		}
-		finally
-		{
-			close( resultSet );
-		}
-	}
-
-	/**
-	 * Converts a {@link ResultSet} into a {@link List} of {@link Map}s.
-	 * The maps contain the column names from the query as keys and the column values as the map's values.
-	 *
-	 * @param resultSet The {@link ResultSet} to convert.
-	 * @param flyWeight If true, duplicate values are stored in memory only once.
-	 * @return A {@link List} of {@link Map}s.
-	 */
-	static public List< Map< String, Object > > listOfMaps( ResultSet resultSet, boolean flyWeight )
+	public List< Map< String, Object > > listOfMaps( Connection connection, Map< String, Object > args )
 	{
 		try
 		{
-			// DETERMINE THE LOWERCASE NAMES IN ADVANCE!!! Otherwise the names will not be shared in memory.
-			Map< String, Integer > names = getColumnLabelMap( resultSet.getMetaData() );
-			List< Object[] > result = listOfArrays( resultSet, flyWeight );
-			return new ResultList( result, names );
-		}
-		catch( SQLException e )
-		{
-			throw new QuerySQLException( e );
-		}
-	}
+			ResultSet resultSet = resultSet( connection, args );
+			try
+			{
+				ResultSetMetaData metaData = resultSet.getMetaData();
+				int columnCount = metaData.getColumnCount();
 
-	static public Map< String, Integer > getColumnLabelMap( ResultSetMetaData metaData )
-	{
-		try
-		{
-			int columnCount = metaData.getColumnCount();
+				// DETERMINE THE LOWERCASE NAMES IN ADVANCE!!! Otherwise the names will not be shared in memory.
+				Map< String, Integer > names = new HashMap< String, Integer >();
+				for( int col = 0; col < columnCount; col++ )
+					names.put( metaData.getColumnLabel( col + 1 ).toLowerCase( Locale.ENGLISH ), col );
 
-			Map< String, Integer > names = new HashMap< String, Integer >();
-			for( int col = 0; col < columnCount; col++ )
-				names.put( metaData.getColumnLabel( col + 1 ).toLowerCase( Locale.ENGLISH ), col );
-
-			return names;
+				List< Object[] > result = listOfArrays( resultSet, this.flyWeight );
+				return new ResultList( result, names );
+			}
+			finally
+			{
+				close( resultSet );
+			}
 		}
 		catch( SQLException e )
 		{
@@ -339,11 +317,11 @@ public class Query
 	 * Executes an update (DML) or a DDL query.
 	 *
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 * @throws SQLException Whenever the query caused an {@link SQLException}.
 	 */
-	public int updateChecked( Connection connection, Object args ) throws SQLException
+	public int updateChecked( Connection connection, Map< String, Object > args ) throws SQLException
 	{
 		return getPreparedStatement( connection, args ).executeUpdate();
 	}
@@ -352,10 +330,10 @@ public class Query
 	 * Executes an update (DML) or a DDL query. {@link SQLException}s are wrapped in a {@link QueryException}.
 	 *
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 */
-	public int update( Connection connection, Object args )
+	public int update( Connection connection, Map< String, Object > args )
 	{
 		try
 		{
@@ -371,10 +349,10 @@ public class Query
 	 * Returns a {@link PreparedStatement} for the query.
 	 *
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return a {@link PreparedStatement} for the query.
 	 */
-	public PreparedStatement getPreparedStatement( Connection connection, Object args )
+	public PreparedStatement getPreparedStatement( Connection connection, Map< String, Object > args )
 	{
 		PreparedSQL preparedSql = getPreparedSQL( args );
 		List< Object > pars = preparedSql.getParameters();
@@ -432,10 +410,10 @@ public class Query
 	/**
 	 * Returns a prepared SQL string together with a parameters array.
 	 *
-	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
+	 * @param args The arguments to the query.
 	 * @return A prepared SQL string together with a parameters array.
 	 */
-	public PreparedSQL getPreparedSQL( Object args )
+	public PreparedSQL getPreparedSQL( Map< String, Object > args )
 	{
 		QueryEncodingWriter gsql = new QueryEncodingWriter();
 		this.template.apply( args, gsql );
@@ -456,7 +434,7 @@ public class Query
 		if( Loggers.execution.isDebugEnabled() )
 		{
 			StringBuilder debug = new StringBuilder();
-			debug.append( "Prepare statement: " ).append( this.template.getPath() ).append( '\n' );
+			debug.append( "Prepare statement: " ).append( this.template.getName() ).append( '\n' );
 			if( Loggers.execution.isTraceEnabled() )
 				debug.append( result ).append( '\n' );
 			debug.append( "Parameters:" );
