@@ -19,6 +19,7 @@ package solidstack.script.scopes;
 import java.util.Map;
 
 import solidstack.script.scopes.ValueMap.Entry;
+import funny.Symbol;
 
 
 abstract public class AbstractScope implements Scope
@@ -32,13 +33,13 @@ abstract public class AbstractScope implements Scope
 	public void set( Symbol symbol, Object value )
 	{
 		try
-	{
+		{
 			set0( symbol, value );
-	}
+		}
 		catch( UndefinedException e )
-	{
+		{
 			var( symbol, value );
-	}
+		}
 	}
 
 	public void setAll( Map<String, ? extends Object> parameters )
@@ -88,4 +89,4 @@ abstract public class AbstractScope implements Scope
 			this.value = value;
 		}
 	}
-		}
+}

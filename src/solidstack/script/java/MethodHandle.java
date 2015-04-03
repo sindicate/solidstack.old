@@ -17,109 +17,23 @@
 package solidstack.script.java;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 public class MethodHandle
 {
-//	static public Class[] NO_PARAMETERS = new Class[ 0 ];
-
 	public Method method;
 	public ExtensionMethod extMethod;
 	public Constructor constructor;
 	public boolean isVarargCall;
+	public Field field;
 
-	public MethodHandle( Method method, ExtensionMethod extMethod, Constructor constructor, boolean isVarargCall )
+	public MethodHandle( Method method, ExtensionMethod extMethod, Constructor constructor, boolean isVarargCall, Field field )
 	{
 		this.method = method;
 		this.extMethod = extMethod;
 		this.constructor = constructor;
 		this.isVarargCall = isVarargCall;
+		this.field = field;
 	}
-
-//	public Class[] getParameterTypes()
-//	{
-//		if( this.constructor != null )
-//			return this.constructor.getParameterTypes();
-//		if( this.extMethod != null )
-//			return this.extMethod.getParameterTypes();
-//		return this.method.getParameterTypes();
-//	}
-//
-//	public Class getDeclaringClass()
-//	{
-//		// TODO What do we do if it is an extension method?
-//		return this.method.getDeclaringClass();
-//	}
-//
-//	public Object invoke() throws InvocationTargetException
-//	{
-//		this.args = Types.transformArguments( getParameterTypes(), this.args );
-//		try
-//		{
-//			if( this.constructor != null )
-//				return this.constructor.newInstance( this.args );
-//			if( this.extMethod != null )
-//			{
-//				// Combine this with the array copying used for variable arity arguments.
-//				Object[] args = this.args;
-//				int count = args.length;
-//				Object[] newArgs = new Object[ count + 1 ];
-//				newArgs[ 0 ] = this.object;
-//				System.arraycopy( args, 0, newArgs, 1, count );
-//				return this.extMethod.getMethod().invoke( this.object, newArgs );
-//			}
-//			if( !this.method.isAccessible() )
-//				this.method.setAccessible( true );
-//			return this.method.invoke( this.object, this.args );
-//		}
-//		catch( InvocationTargetException e )
-//		{
-//			throw e;
-//		}
-//		catch( Exception e )
-//		{
-//			Java.throwUnchecked( e );
-//		}
-//		return null;
-//	}
-//
-//	public Member getMember()
-//	{
-//		if( this.constructor != null )
-//			return this.constructor;
-//		if( this.extMethod != null )
-//			return this.extMethod.getMethod();
-//		return this.method;
-//	}
-//
-////	public String getName()
-////	{
-////		if( this.extMethod != null )
-////			return this.extMethod.getMethod().getName();
-////		return this.method.getName();
-////	}
-//
-//	public boolean isVararg()
-//	{
-//		if( this.extMethod != null )
-//			return this.extMethod.isVararg();
-//		return ( this.method.getModifiers() & Modifier.TRANSIENT ) != 0;
-//	}
-//
-////	public Object getReturnType()
-////	{
-////		if( this.extMethod != null )
-////			return this.extMethod.getMethod().getReturnType();
-////		return this.method.getReturnType();
-////	}
-//
-//	public Object[] getArgs()
-//	{
-//		return this.args;
-//	}
-//
-//	public void setArgs( Object[] value )
-//	{
-//		this.args = value;
-//	}
 }

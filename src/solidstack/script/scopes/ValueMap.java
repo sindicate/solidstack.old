@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import funny.Symbol;
+
 
 
 /**
@@ -37,7 +39,6 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<Symbol, T>
 	private int threshold = (int)( this.entries.length * LOAD_FACTOR );
 
 
-	// TODO Work with Identifier instead of String. That way we can pre-compute the hash.
 	public T get( Object key )
 	{
 		if( key == null )
@@ -112,15 +113,18 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<Symbol, T>
 	{
 		if( key == null )
 			throw new NullPointerException( "key" );
+		if( !( key instanceof Symbol ) )
+			throw new IllegalArgumentException( "Only symbols can be keys" );
 
-		int hash = key.hashCode();
+		Symbol symbol = (Symbol)key;
+		int hash = symbol.hashCode();
 		int index = hash & this.entries.length - 1;
 
 		Entry entry = this.entries[ index ];
 		Entry last = null;
 		while( entry != null ) // Loop till we find it
 		{
-			if( entry.key.equals( key ) )
+			if( entry.isKeyEqual( symbol ) )
 			{
 				this.size--;
 				if( last == null )
@@ -283,54 +287,35 @@ public class ValueMap<T extends ValueMap.Entry> implements Map<Symbol, T>
 		// Can't make this private, else it won't compile on Java 7. Added ___ to prevent name shadowing by subclasses.
 		Entry ___next;
 		private Symbol symbol;
-		private String key;
-		private int hashCode;
-		// TODO Replace key/hashCode with symbol when it is available during the isKeyEqual execution
 
 		protected Entry( Symbol symbol )
 		{
-			if( symbol instanceof TempSymbol )
-			{
-				this.key = symbol.toString();
-				this.hashCode = symbol.hashCode();
-			}
-			else
-				this.symbol = symbol;
+			this.symbol = symbol;
 		}
 
 		public Symbol getKey()
 		{
-			if( this.symbol != null )
-				return this.symbol;
-			return new TempSymbol( this.key, this.hashCode );
+			return this.symbol;
 		}
 
 		public String getName()
 		{
-			if( this.symbol != null )
-				return this.symbol.toString();
-			return this.key;
+			return this.symbol.toString();
 		}
 
 		int getKeyHashCode()
 		{
-			if( this.symbol != null )
-				return this.symbol.hashCode();
-			return this.hashCode;
+			return this.symbol.hashCode();
 		}
 
 		boolean isKeyEqual( Entry other )
 		{
-			if( other.symbol != null || this.symbol != null )
-				return this.symbol == other.symbol;
-			return getName().equals( other.getName() );
+			return this.symbol == other.symbol;
 		}
 
 		boolean isKeyEqual( Symbol symbol )
 		{
-			if( this.symbol != null )
-				return this.symbol.equals( symbol );
-			return getName().equals( symbol.toString() );
+			return this.symbol == symbol;
 		}
 	}
 }

@@ -32,16 +32,16 @@ public class ScriptTests2 extends Util
 				work too" );
 			println( "Single line \\
 with escaped newline" );
-			println( stripMargin( "\\
-				|Multiline |strings
-				|with indentation stripped" ) );
+			println( "\\
+|Multiline |strings
+				|with indentation stripped".stripMargin() );
 			i = 0;
-			while( i < 10; // This is a comment
+			while( i < 10 ) ( // This is a comment
 				println( i );
-				i++
+				i = i + 1
 			);
 			// Comment at the end''',
-			9
+			10
 		);
 	}
 
@@ -50,9 +50,9 @@ with escaped newline" );
 	{
 		test( '''
 			i = 0;
-			f = fun( ; println( i ); ++i );
-			while( i < 10; f() );
-			println( "total: " + while( i < 20; f() ) + " numbers" );
+			f = () => ( println( i ); i = i + 1 );
+			while( i < 10 ) f();
+			println( "total: " + ( while( i < 20 ) f() ) + " numbers" );
 			''',
 			"total: 20 numbers"
 		);
@@ -66,44 +66,40 @@ with escaped newline" );
 		eval( '''
 			o = {
 				a = 4;
-				f = fun( b; b * a );
+				f = b => b * a;
 				this;
 			};
-			if( ( got = o.f( 3 ) ) != 12;
-				throw( "Expected 12, got ${got}" )
-			);
+			if( ( got = o.f( 3 ) ) != 12 )
+				throw( "Expected 12, got ${got}" );
 			oo = {
-				f = fun( b; b );
+				f = b => b;
 				this + o;
 			};
-			if( ( got = oo.f( 4 ) ) != 4;
-				throw( "Expected 4, got ${got}" )
-			);
+			if( ( got = oo.f( 4 ) ) != 4 )
+				throw( "Expected 4, got ${got}" );
 			'''
 		);
 		eval( '''
 			// Creates a function. The function returns its own scope.
-			c = fun{ a;
-				f = fun( b; b * a );
+			c = a => {
+				f = b => b * a;
 				this;
 			};
 			// Calls the function and receives the new scope. The scope contains f and a = 5.
 			o = c( 5 );
 			// Calls f in the scope o and returns 15 because a = 5.
-			if( ( got = o.f( 3 ) ) != 15;
-				throw( "Expected 15, got ${got}" )
-			);
+			if( ( got = o.f( 3 ) ) != 15 )
+				throw( "Expected 15, got ${got}" );
 			// Creates a second function. The function returns the combined scope of itself and the one returned by calling c.
-			cc = fun{ ;
-				f = fun( b; b );
+			cc = () => {
+				f = b => b;
 				this + c( 6 );
 			};
 			// Calls cc and receives the new scope. The scope overrides f from the c scope.
 			oo = cc();
 			// Calls f in the scope oo and returns 3.
-			if( ( got = oo.f( 3 ) ) != 3;
-				throw( "Expected 3, got ${got}" )
-			);
+			if( ( got = oo.f( 3 ) ) != 3 )
+				throw( "Expected 3, got ${got}" );
 			'''
 		);
 	}
@@ -112,7 +108,7 @@ with escaped newline" );
 	static public void test4()
 	{
 		fail( '''
-			f = fun(;
+			f = () => (
 				throw( "error" )
 			);
 			f();
@@ -129,9 +125,8 @@ with escaped newline" );
 	static public void test5()
 	{
 		eval( '''
-			ArrayList = class( "java.util.ArrayList" );
-			l = ArrayList.getMethods().collect( method -> method.getName() );
-			l.each( name -> println( name ) );
+			l = classOf( ArrayList ).getMethods().map( method => method.getName() );
+			l.foreach( name => println( name ) );
 			'''
 		);
 	}

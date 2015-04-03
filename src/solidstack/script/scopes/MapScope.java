@@ -2,6 +2,8 @@ package solidstack.script.scopes;
 
 import java.util.Map;
 
+import funny.Symbol;
+
 public class MapScope extends AbstractScope
 {
 	private Map<Object, Object> map;
@@ -40,15 +42,15 @@ public class MapScope extends AbstractScope
 		if( !this.map.containsKey( symbol.toString() ) ) // TODO Huh?
 			throw new UndefinedException();
 		this.map.put( symbol.toString(), value );
-		}
+	}
 
 	public Object apply( Symbol symbol, Object... args )
-		{
+	{
 		return DefaultScope.apply( get( symbol ), args );
-		}
+	}
 
 	public Object apply( Symbol symbol, Map args )
-		{
+	{
 		return DefaultScope.apply( get( symbol ), args );
-		}
-		}
+	}
+}

@@ -75,52 +75,28 @@ public class FunctionObject implements solidstack.script.java.Function
 		return call( ThreadContext.get(), args );
 	}
 
-	public Object call( ThreadContext thread, Object... pars )
+	public Object call( ThreadContext thread, Object... args )
 	{
 		Expression[] parameters = this.function.getParameters();
 		int oCount = parameters.length;
 		Symbol[] symbols = new Symbol[ oCount ];
 		Object[] values = new Object[ oCount ];
 
-		if( pars.length > 0 && pars[ 0 ] instanceof Labeled )
-		{
-			pars = Util.toNamedParameters( pars, thread );
-			int count = pars.length;
-			int index = 0;
-			while( index < count )
-			{
-				boolean found = false;
-				Symbol label = (Symbol)pars[ index++ ];
-				for( int i = 0; i < oCount; i++ )
-					if( ( (Identifier)parameters[ i ] ).getSymbol().equals( label ) )
-					{
-						values[ i ] = pars[ index++ ];
-						found = true;
-						break;
-					}
-				if( !found )
-					throw new ThrowException( "Parameter '" + label + "' undefined", thread.cloneStack() );
-			}
-			for( int i = 0; i < oCount; i++ )
-				symbols[ i ] = ( (Identifier)parameters[ i ] ).getSymbol();
-		}
-		else
-		{
-			ParWalker pw = new ParWalker( pars );
+		ParWalker pw = new ParWalker( args );
 
-			int o = 0;
-			while( o < oCount )
+		int o = 0;
+		while( o < oCount )
+		{
+			Expression parameter = parameters[ o ];
+			if( parameter instanceof Spread )
 			{
-				Expression parameter = parameters[ o ];
-				if( parameter instanceof Spread )
-				{
-					parameter = ( (Spread)parameter ).getExpression();
-					symbols[ o ] = ( (Identifier)parameter ).getSymbol();
-					values[ o ] = pw.rest();
-					o++;
-					if( o < oCount )
-						throw new ThrowException( "Collecting parameter must be the last parameter", thread.cloneStack() ); // TODO Also in the middle
-				}
+				parameter = ( (Spread)parameter ).getExpression();
+				symbols[ o ] = ( (Identifier)parameter ).getSymbol();
+				values[ o ] = pw.rest();
+				o++;
+				if( o < oCount )
+					throw new ThrowException( "Collecting parameter must be the last parameter", thread.cloneStack() ); // TODO Also in the middle
+			}
 			else if( parameter instanceof Assign )
 			{
 				Assign assign = (Assign)parameter;
@@ -146,17 +122,19 @@ public class FunctionObject implements solidstack.script.java.Function
 			}
 			else
 			{
-					if( !pw.hasNext() )
-						throw new ThrowException( "Not enough parameters", thread.cloneStack() );
-					Object par = pw.get();
-					symbols[ o ] = ( (Identifier)parameter ).getSymbol();
-					values[ o ] = par;
-					o++;
-				}
+				if( !pw.hasNext() )
+					throw new ThrowException( "Not enough parameters", thread.cloneStack() );
+				Object par = pw.get();
+				symbols[ o ] = ( (Identifier)parameter ).getSymbol();
+				values[ o ] = par;
+				o++;
 			}
-			if( pw.hasNext() )
-				throw new ThrowException( "Too many parameters", thread.cloneStack() );
 		}
+		if( pw.hasNext() )
+			throw new ThrowException( "Too many parameters", thread.cloneStack() );
+
+		return call( thread, symbols, values );
+	}
 
 	public Object call( ThreadContext thread, Map<Symbol, Object> args )
 	{
@@ -217,14 +195,14 @@ public class FunctionObject implements solidstack.script.java.Function
 		if( this.function.subScope() )
 		{
 			DefaultScope scope = new DefaultScope( this.scope );
-			for( int i = 0; i < oCount; i++ )
+			for( int i = 0; i < count; i++ )
 				scope.var( symbols[ i ], values[ i ] ); // TODO If we keep the Link we get output parameters!
 			newScope = scope;
 		}
-		else if( oCount > 0 )
+		else if( count > 0 )
 		{
 			ParameterScope parScope = new ParameterScope( this.scope );
-			for( int i = 0; i < oCount; i++ )
+			for( int i = 0; i < count; i++ )
 				parScope.defParameter( symbols[ i ], values[ i ] ); // TODO If we keep the Link we get output parameters!
 			newScope = parScope;
 		}

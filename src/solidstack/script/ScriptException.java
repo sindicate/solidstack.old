@@ -22,7 +22,6 @@ public class ScriptException extends RuntimeException
 	{
 	}
 
-	// TODO Add stacktrace
 	public ScriptException( String message )
 	{
 		super( message );

@@ -39,10 +39,10 @@ public class CallSignature
 	@Override
 	public int hashCode()
 	{
-        int result = 1;
-        result = 31 * result + this.type.hashCode();
-        result = 31 * result; if( this.name != null ) result += this.name.hashCode();
-        result = 31 * result + ( this.staticCall ? 1231 : 1237 );
+		int result = 1;
+		result = 31 * result + this.type.hashCode();
+		result *= 31; if( this.name != null ) result += this.name.hashCode();
+		result = 31 * result + ( this.staticCall ? 1231 : 1237 );
 		result = 31 * result + ( this.property ? 1231 : 1237 );
 		if( this.argTypes != null ) // argTypes is only null when reading a property, no need to hash this fact
 			for( Class<?> type : this.argTypes )
@@ -50,14 +50,13 @@ public class CallSignature
 				result *= 31;
 				if( type != null ) result += type.hashCode();
 			}
-        return result;
+		return result;
 	}
 
 	@Override
 	public boolean equals( Object other )
 	{
-		if( !( other instanceof CallSignature ) )
-			return false;
+		if( !( other instanceof CallSignature ) ) return false;
 
 		CallSignature key = (CallSignature)other;
 
@@ -67,9 +66,6 @@ public class CallSignature
 		if( key.name == null ? this.name != null : !key.name.equals( this.name ) ) return false;
 		if( key.argTypes == null ) return this.argTypes == null;
 		if( this.argTypes == null ) return false;
-
-		if( key.name == null ? this.name != null : !key.name.equals( this.name ) )
-			return false;
 
 		int len = key.argTypes.length;
 		if( this.argTypes.length != len )

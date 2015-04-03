@@ -87,4 +87,6 @@ public class StringExpression extends LocalizedExpression
 		{
 			expression.writeTo( out );
 			out.append( '+' );
+		}
+	}
 }

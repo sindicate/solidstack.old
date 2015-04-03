@@ -117,7 +117,7 @@ public class CallResolutionContext
 		return this.call.staticCall;
 	}
 
-	public CallSignature getCallKey()
+	public CallSignature getCallSignature()
 	{
 		return this.call;
 	}

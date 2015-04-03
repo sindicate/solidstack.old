@@ -21,18 +21,36 @@ import solidstack.script.ThreadContext;
 
 
 
-public class BooleanConstant extends LocalizedExpression
+public class StringLiteral extends LocalizedExpression
 {
-	private boolean value;
+	private String value;
 
-	public BooleanConstant( SourceLocation location, boolean value )
+
+	public StringLiteral( SourceLocation location, String value )
 	{
 		super( location );
+
 		this.value = value;
 	}
 
-	public Boolean evaluate( ThreadContext thread )
+	public String getString()
 	{
 		return this.value;
+	}
+
+	public Expression compile()
+	{
+		return this;
+	}
+
+	public String evaluate( ThreadContext thread )
+	{
+		return this.value;
+	}
+
+	public void writeTo( StringBuilder out )
+	{
+		// TODO Escape the string literal
+		out.append( '"' ).append( this.value ).append( '"' );
 	}
 }

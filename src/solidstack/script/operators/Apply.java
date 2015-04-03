@@ -17,15 +17,21 @@
 package solidstack.script.operators;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import solidstack.script.JavaException;
 import solidstack.script.Returning;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.expressions.Expression;
+import solidstack.script.expressions.Identifier;
 import solidstack.script.java.Java;
-import solidstack.script.objects.ClassMember;
 import solidstack.script.objects.FunctionObject;
+import solidstack.script.objects.Type;
 import solidstack.script.objects.Util;
 import funny.Symbol;
 
@@ -142,23 +148,22 @@ public class Apply extends Operator
 			{
 				return Java.invoke( l, "apply", args );
 			}
-		}
-		catch( InvocationTargetException e )
-		{
-			Throwable t = e.getCause();
-			if( t instanceof Returning )
-				throw (Returning)t;
-			throw new JavaException( t, thread.cloneStack( getLocation() ) );
-		}
-		catch( Returning e )
-		{
-			throw e;
-		}
-		catch( Exception e )
-		{
-			throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), thread.cloneStack( getLocation() ) );
-//			throw new JavaException( e, thread.cloneStack( getLocation() ) );
-		}
+			catch( InvocationTargetException e )
+			{
+				Throwable t = e.getCause();
+				if( t instanceof Returning )
+					throw (Returning)t;
+				throw new JavaException( t, thread.cloneStack( getLocation() ) );
+			}
+			catch( Returning e )
+			{
+				throw e;
+			}
+			catch( Exception e )
+			{
+				throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), thread.cloneStack( getLocation() ) );
+	//			throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
+			}
 		}
 		finally
 		{
@@ -166,6 +171,13 @@ public class Apply extends Operator
 		}
 	}
 
-		throw new ThrowException( "Can't apply parameters to a " + left.getClass().getName(), thread.cloneStack( getLocation() ) );
+	@Override
+	public void writeTo( StringBuilder out )
+	{
+		this.left.writeTo( out );
+		out.append( '(' );
+		if( this.right != null )
+			this.right.writeTo( out );
+		out.append( ')' );
 	}
 }

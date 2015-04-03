@@ -39,8 +39,7 @@ import solidstack.script.objects.Type;
 import solidstack.script.scopes.DefaultScope;
 import solidstack.script.scopes.GlobalScope;
 import solidstack.script.scopes.Scope;
-import solidstack.script.scopes.Symbol;
-import solidstack.script.scopes.TempSymbol;
+import funny.Symbol;
 
 
 @SuppressWarnings( { "javadoc", "unchecked", "rawtypes" } )
@@ -67,8 +66,9 @@ public class ScriptTests extends Util
 	@Test
 	static public void test3()
 	{
-		test( "1 + 1 * 2", 3 );
-		test( "2 * 1 + 1", 3 );
+		test( "1 + 1 * 2", \u0033 ); // Unicode 33 is '3'
+		test( "2 * 1 + \u0031", 3 ); // Unicode done by Java parser
+//		test( "2 * 1 + \\u0031", 3 ); // Unicode done by script parser
 		test( "1 + 1 + 1", 3 );
 		test( "1 + 2 * 2 + 1", 6 );
 		test( "( 1 + 2 ) * 2 + 1", 7 );
@@ -116,13 +116,13 @@ public class ScriptTests extends Util
 	@Test
 	static public void test4()
 	{
-		test( "if( 1; 2; 3 + 1 )", 2 );
-		test( "if( !\"\"; 2; 3 )", 2 );
-		test( "if( !\"x\"; 2; 3 )", 3 );
-		test( "if( 1; 2 )", 2 );
-		test( "if( 1;; 2 )", null );
-		test( "if( null; 2 )", null );
-		test( "if( null;; 2 )", 2 );
+		test( "if( 1 ) 2 else 3 + 1", 2 );
+		test( "if( !\"\" ) 2 else 3", 2 );
+		test( "if( !\"x\" ) 2 else 3", 3 );
+		test( "if( 1 ) 2", 2 );
+		test( "if( 1 ) () else 2", null );
+		test( "if( null ) 2", null );
+		test( "if( null ) () else 2", 2 );
 		test( "1 || 2", 1 );
 		test( "0 || 2", 0 );
 		test( "null || 2", 2 );
@@ -158,27 +158,29 @@ public class ScriptTests extends Util
 	{
 		test( "\"test\"", "test" );
 		test( "\"test\" + \"test\"", "testtest" );
+		test( "\"\u00E9\"", "é" ); // Unicode escape parsed by Java
+		test( "\"\\u00E9\"", "é" ); // Unicode escape parsed by script
 	}
 
 	@Test
 	static public void test7()
 	{
-		test( "abs( +1 )", 1 );
-		test( "abs( -1 )", 1 );
-		test( "abs( 1 + -2 )", 1 );
+		test( "(+1).abs()", 1 );
+		test( "(-1).abs()", 1 );
+		test( "-1.abs()", -1 );
+		test( "(1+ -2).abs()", 1 );
 
-		test( "substr( \"sinterklaas\", 1 + 2 * 1, 9 - 1 - 1 )", "terk" );
-		test( "substr( \"sinterklaas\", 6 )", "klaas" );
-		test( "upper( \"sinterklaas\" )", "SINTERKLAAS" );
+		test( "\"sinterklaas\".substring( 1+2*1, 9-1-1 )", "terk" );
+		test( "\"sinterklaas\".substring( 6 )", "klaas" );
+		test( "\"sinterklaas\".toUpperCase()", "SINTERKLAAS" );
 		test( "println( \"Hello World!\" )", "Hello World!" );
-		test( "println( upper( \"Hello World!\" ) )", "HELLO WORLD!" );
-		test( "length( \"sinterklaas\" )", 11 );
+		test( "println( \"Hello World!\".toUpperCase() )", "HELLO WORLD!" );
 		test( "\"sinterklaas\".length()", 11 );
 		test( "\"sinterklaas\".size()", 11 );
-		test( "defined( a )", false );
-		test( "defined( def( a ) )", true );
+		test( "defined( a )", false ); // TODO or a.isDefined() ?
+		test( "defined( var a )", true );
 		test( "a = null; defined( a )", true );
-		test( "if( a; a )", null ); // TODO Ponder over this once more
+		test( "if( a ) a", null ); // TODO Ponder over this once more
 		test( "a = null; a && a", null );
 		test( "a && 1 || 2", 2 );
 	}
@@ -239,15 +241,16 @@ public class ScriptTests extends Util
 	static public void test11()
 	{
 		test( "( 2; 3 )", 3 );
-		test( "a = 1; a + a + a++", 3 );
-		test( "a = 1; a + a + ++a", 4 );
-		test( "a = 0; ( b, c ) = if( true; a++, a++ )", Arrays.asList( 0, 1 ) );
-		test( "if( a = 1, b = a, b; 3; 4 )", 3 );
-		test( "if( a = null, b = a, b; 3; 4 )", 4 );
-		test( "a = 0; ( b, c ) = if( false; a++, a++; ++a, ++a )", Arrays.asList( 1, 2 ) );
-		test( "i = 0; while( i < 10; print( i++ ) )", 9 );
-		test( "i = 0; while( i++ < 10; print( i ) )", 10 );
-		test( "i = 0; while( i++ < 10 && print( i ) )", null ); // TODO Is there an example where result of condition should be returned?
+//		test( "a = 1; a + a + a++", 3 );
+//		test( "a = 1; a + a + ++a", 4 );
+		// TODO If should stop at the comma just as with the ;
+		test( "a = 0; ( b, c ) = if( true ) ( a = a + 1, a = a + 1 )", Arrays.asList( 1, 2 ) );
+		test( "if( a = 1, b = a, b ) 3 else 4", 3 );
+		test( "if( a = null, b = a, b ) 3 else 4", 4 );
+		test( "a = 0; ( b, c ) = if( false ) ( 1, 2 ) else ( 3, 4 )", Arrays.asList( 3, 4 ) );
+//		test( "i = 0; while( i < 10 ) print( i++ )", 9 );
+		test( "i = 0; while( i < 10 ) ( print( i ); i = i + 1 )", 10 );
+//		test( "i = 0; while( i < 10 && print( i = i + 1 ) ) ()", null ); // TODO Is there an example where result of condition should be returned?
 	}
 
 	@Test
@@ -267,13 +270,13 @@ public class ScriptTests extends Util
 		test( "o1.test( \"string\" )", scope, 3 );
 		test( "o1.test( \"string\", \"string\" )", scope, 4 );
 		assert o1.test( new BigDecimal( 1 ), new BigDecimal( 1 ) ) == 6;
-		test( "o1.test( 1, 1 )", context, 6 );
+		test( "o1.test( 1, 1 )", scope, 6 );
 		test( "1.getClass()", Integer.class );
 		test( "1.1.getClass()", BigDecimal.class );
-		test( "1.0.getClass()#valueOf( 1.1 as double )", new BigDecimal( "1.1" ) );
+		test( "loadClass( 1.0.getClass() ).valueOf( 1.1 as double )", new BigDecimal( "1.1" ) );
 		test( "1.00.valueOf( 1.1 as double )", new BigDecimal( "1.1" ) );
-		test( "o1.test( 1 == 1 )", context, 7 );
-		test( "o1.test( a: 1, b: 2 )", context, 8 );
+		test( "o1.test( 1 == 1 )", scope, 7 );
+//		test( "o1.test( a = 1, b = 2 )", scope, 8 ); TODO
 
 		TestObject2 o2 = new TestObject2();
 		scope.set( Symbol.apply( "o2" ), o2 );
@@ -294,8 +297,8 @@ public class ScriptTests extends Util
 		test( "new c( 1 == 1 ).value", scope, 7 );
 //		test( "new c( a = 1, b = 2 ).value", scope, 8 ); TODO
 
-		test( "c2 = class( \"solidstack.script.ScriptTests$TestObject2\" );", context, TestObject2.class );
-		test( "c2( 1, 1 ).value", context, 1 );
+		test( "c2 = loadClass( \"solidstack.script.ScriptTests$TestObject2\" );", scope, TestObject2.class );
+		test( "new c2( 1, 1 ).value", scope, 1 );
 	}
 
 	@Test
@@ -409,10 +412,8 @@ public class ScriptTests extends Util
 	{
 		test( "( a, b ) = ( 1, 2 ); a + b", 3 );
 		test( "( a, b ) = ( 1, 2 ); a + b", 3 );
-		test( "( a, b ) = fun( ; 1, 2 )(); a + b", 3 );
-		test( "( a, b ) = ( fun( ; 1 ), fun( ; 2 ) ) ; a() + b()", 3 );
-		test( "( a, b ) = ( () -> ( 1, 2 ) )(); a + b", 3 );
-		test( "( a, b ) = ( () -> 1, () -> 2 ); a() + b()", 3 );
+		test( "( a, b ) = ( () => ( 1, 2 ) )(); a + b", 3 );
+		test( "( a, b ) = ( () => 1, () => 2 ); a() + b()", 3 );
 	}
 
 	@Test
@@ -437,54 +438,41 @@ public class ScriptTests extends Util
 	@Test
 	static public void nestedScopes()
 	{
-		test( "def( a ) = 1;", 1 );
+		test( "var a = 1;", 1 );
 
-		test( "fun( ; a = 1 )(); a", 1 ); // The function has no context of its own
-		test( "a = 1; fun( a; a++ )( a ); a;", 1 );
-		test( "a = 1; fun( ; def( a ) = 2 )(); a", 2 ); // The function has no context of its own
-//		test( "a = 1; fun( ; val( a ) = 2 )(); a", 2 ); // The function has no context of its own
-		test( "a = 1; fun{ ; def( a ) = 2 }(); a", 1 ); // The function has its own context
+		test( "( a = 1 ); a", 1 ); // The block has no scope of its own
+		test( "a = 1; ( var a = 2 ); a", 2 ); // The block has no scope of its own
+		test( "a = 1; { var a = 2 }; a", 1 ); // The block has its own scope
 
-		test( "( a = 1 ); a", 1 ); // The block has no context of its own
-		test( "a = 1; ( def( a ) = 2 ); a", 2 ); // The block has no context of its own
-//		test( "a = 1; fun( ; val( a ) = 2 )(); a", 2 ); // The function has no context of its own
-		test( "a = 1; { def( a ) = 2 }; a", 1 ); // The block has its own context
-
-		test( "( () -> a = 1 )(); a", 1 ); // The function has no context of its own
-		test( "a = 1; ( a -> a++ )( a ); a;", 1 );
-		test( "a = 1; ( () -> def( a ) = 2 )(); a", 2 ); // The function has no context of its own
-//		test( "a = 1; fun( ; val( a ) = 2 )(); a", 2 ); // The function has no context of its own
-		test( "a = 1; f = () -> { def( a ) = 2 }; f(); a", 1 ); // The function has its own context
+		test( "( () => a = 1 )(); a", 1 ); // The function has no scope of its own
+		test( "a = 1; ( a => a = 2 )( a ); a;", 1 );
+		test( "a = 1; ( () => var a = 2 )(); a", 2 ); // The function has no scope of its own
+		test( "a = 1; f = () => { var a = 2 }; f(); a", 1 ); // The function has its own scope
 	}
 
 	@Test
 	static public void test17()
 	{
-		test( "class( \"java.util.ArrayList\" );", ArrayList.class );
-		test( "c = class( \"java.util.ArrayList\" ); c();", new ArrayList<Object>() );
-		test( "l = class( \"java.util.ArrayList\" )(); l.add( \"sinterklaas\" ); l.toArray();", new Object[] { "sinterklaas" } );
-		test( "ArrayList = class( \"java.util.ArrayList\" ); l = ArrayList(); l.toArray();", new Object[ 0 ] );
+		test( "loadClass( \"java.util.ArrayList\" );", ArrayList.class );
+		test( "new ArrayList();", new ArrayList<Object>() );
+		test( "l = new ArrayList(); l.add( \"sinterklaas\" ); l.toArray();", new Object[] { "sinterklaas" } );
+		test( "l = new ArrayList(); l.toArray();", new Object[ 0 ] );
 	}
 
 	@Test
 	static public void test18()
 	{
-		test( "l = class( \"java.util.ArrayList\" )(); i = 0; while( i < 10; l.add( i ), i++ ); l.each( fun( i; println( i ) ) )", 9 );
-		eval( "Calendar = class( \"java.util.Calendar\" ); println( Calendar#getInstance().getClass() )" );
-		test( "Calendar = class( \"java.util.Calendar\" ); Calendar#SATURDAY", 7 );
-		fail( "Calendar = class( \"java.util.Calendar\" ); Calendar#clear()", ScriptException.class, "static java.util.Calendar.clear()" );
-		fail( "TestObject = class( \"solidstack.script.ScriptTests$TestObject2\" ); TestObject#value", ScriptException.class, "static solidstack.script.ScriptTests$TestObject2.value" );
+		test( "l = new ArrayList(); i = 0; while( i < 10 ) ( l.add( i ); i = i + 1 ); l.foreach( i => println( i ) )", 9 );
+		eval( "println( Calendar.getInstance().getClass() )" );
+		test( "Calendar.SATURDAY", 7 );
+		fail( "Calendar.clear()", ScriptException.class, "static java.util.Calendar.clear()" );
+		fail( "TestObject = loadClass( \"solidstack.script.ScriptTests$TestObject2\" ); TestObject.value", ScriptException.class, "static solidstack.script.ScriptTests$TestObject2.value" );
 	}
 
 	@Test
 	static public void test19()
 	{
 		fail( "o = new ( loadClass( \"solidstack.script.ScriptTests$TestObject3\" ) )(); o.throwException()", ScriptException.class, "test exception" );
-		}
-		catch( Exception e )
-		{
-			e.printStackTrace( System.out );
-		}
 	}
 
 	@Test
@@ -559,45 +547,45 @@ public class ScriptTests extends Util
 	@Test
 	static public void test21()
 	{
-		test( "f = a -> a; f( 3 )", 3 );
-		test( "f = a -> a * a; f( 3 )", 9 );
-		test( "f = ( a ) -> ( a * a ); f( 3 )", 9 );
-		test( "( a -> a * a )( 5 )", 25 );
-		test( "( a -> a( 3 ) ) ( b -> 5 * b )", 15 );
-		test( "( ( a, b ) -> a( 1, 2 ) * b( 3, 4 ) ) ( ( c, d ) -> c * d, ( e, f ) -> e * f )", 24 );
-		test( "( ( a, b ) -> a( 1, 2 ) * b( 3, 4 ) ) ( ( a, b ) -> a * b, ( a, b ) -> a * b )", 24 );
-		test( "f = () -> 1; f()", 1 );
-		test( "a = 0; ( () -> a = 1 ) (); a", 1 );
-		test( "( a -> a ) ( null )", null );
-		test( "f = () -> () -> 2; f()()", 2 );
-		test( "a = 1; f = () -> a; a = 2; f()", 2 );
-		test( "( a -> () -> a )( 1 )()", 1 );
+		test( "f = a => a; f( 3 )", 3 );
+		test( "f = a => a * a; f( 3 )", 9 );
+		test( "f = ( a ) => ( a * a ); f( 3 )", 9 );
+		test( "( a => a * a )( 5 )", 25 );
+		test( "( a => a( 3 ) ) ( b => 5 * b )", 15 );
+		test( "( ( a, b ) => a( 1, 2 ) * b( 3, 4 ) ) ( ( c, d ) => c * d, ( e, f ) => e * f )", 24 );
+		test( "( ( a, b ) => a( 1, 2 ) * b( 3, 4 ) ) ( ( a, b ) => a * b, ( a, b ) => a * b )", 24 );
+		test( "f = () => 1; f()", 1 );
+		test( "a = 0; ( () => a = 1 ) (); a", 1 );
+		test( "( a => a ) ( null )", null );
+		test( "f = () => () => 2; f()()", 2 );
+		test( "a = 1; f = () => a; a = 2; f()", 2 );
+		test( "( a => () => a )( 1 )()", 1 );
 
-		test( "f = (a,b)->a*b; g = a->f(a,3); g(5)", 15 );
-		test( "s = \"string\"; c = x->s.charAt(x); c(2)", 'r' );
-		test( "f = () -> (1,2,3); (a,b,c) = f(); a+b+c;", 6 );
+		test( "f = (a,b)=>a*b; g = a=>f(a,3); g(5)", 15 );
+		test( "s = \"string\"; c = x=>s.charAt(x); c(2)", 'r' );
+		test( "f = () => (1,2,3); (a,b,c) = f(); a+b+c;", 6 );
 
-		test( "l = [ 1, 2, 3 ]; l.each( i -> println( i ) )", 3 );
+		test( "l = List( 1, 2, 3 ); l.foreach( i => println( i ) )", 3 );
 	}
 
 	@Test
 	static public void varargAndSpread()
 	{
-		test( "f = (a,b,c) -> a+b+c; g = (*a) -> f(*a); g(1,2,3)", 6 );
-		test( "f = *a -> \"sinterklaas\".charAt( *a ); f( 1 )", 'i' );
-		test( "Arrays = class( \"java.util.Arrays\" ); asList = *i -> Arrays#asList( *i ); list = asList( 1, 2, 3 ); list.size()", 3 );
-		test( "f = ( a, *b ) -> b.size(); f( 1, 2, 3 )", 2 );
-		test( "f = ( a, *b ) -> a; g = ( a, *b ) -> f( *b, a ); g( 1, 2, 3 )", 2 );
-		test( "f = *a -> a.size(); f( 1, 2, 3 );", 3 );
-		test( "l = [1,2,3]; f = (a,b,c) -> a+b+c; f(*l);", 6 );
+		test( "f = (a,b,c) => a+b+c; g = (*a) => f(*a); g(1,2,3)", 6 );
+		test( "f = *a => \"sinterklaas\".charAt( *a ); f( 1 )", 'i' );
+		test( "asList = *i => Arrays.asList( *i ); list = asList( 1, 2, 3 ); list.size()", 3 );
+		test( "f = ( a, *b ) => b.size(); f( 1, 2, 3 )", 2 );
+		test( "f = ( a, *b ) => a; g = ( a, *b ) => f( *b, a ); g( 1, 2, 3 )", 2 );
+		test( "f = *a => a.size(); f( 1, 2, 3 );", 3 );
+		test( "l = List(1,2,3); f = (a,b,c) => a+b+c; f(*l);", 6 );
 
-		test( "( a, b, c ) = *[ 1, 2, 3 ]; a + b + c", 6 );
-		test( "a = [ 1, 2, 3 ]; ( b, c, d ) = *a; b + c + d", 6 );
+		test( "( a, b, c ) = *List( 1, 2, 3 ); a + b + c", 6 );
+		test( "a = List( 1, 2, 3 ); ( b, c, d ) = *a; b + c + d", 6 );
 		test( "( 1, 2, 3 ).list().size()", 3 );
 //		test( "*a = ( 1, 2, 3 ); a.size()", 3 ); // TODO Can only assign tuple if *identifier
 //		test( "( a, *b ) = ( 1, 2, 3 )", 3 ); // TODO
 //		test( "( a, *b ) = ( *[ 1, 2 ], 3 )", 3 ); // TODO
-		test( "a = [ 1, [ 2, 3, 4 ], 5 ]; ( (a,b,c) -> a+b+c )( *a[ 1 ] )", 9 );
+		test( "a = List( 1, List( 2, 3, 4 ), 5 ); ( (a,b,c) => a+b+c )( *a( 1 ) )", 9 );
 
 		fail( "f = a => (); f( 1, 2, 3 );", ScriptException.class, "Too many parameters" );
 		test( "a = *List( 1, 2, 3 ); ( b, c, d ) = a; b + c + d", 6 );
@@ -639,19 +627,19 @@ public class ScriptTests extends Util
 	@Test
 	static public void symbols()
 	{
-		Symbol real1 = Symbol.forString( "symbol" );
-		Symbol real2 = Symbol.forString( "symbol" );
-		Symbol temp1 = new TempSymbol( "symbol" );
-		Symbol temp2 = new TempSymbol( "symbol" );
+		Symbol real1 = Symbol.apply( "symbol" );
+		Symbol real2 = Symbol.apply( "symbol" );
+//		Symbol temp1 = new TempSymbol( "symbol" );
+//		Symbol temp2 = new TempSymbol( "symbol" );
 		assertThat( real1 ).isSameAs( real2 );
 		assertThat( real1 ).isEqualTo( real2 );
-		assertThat( real1 ).isEqualTo( temp1 );
-		assertThat( temp1 ).isEqualTo( real1 );
-		assertThat( temp1 ).isEqualTo( temp2 );
+//		assertThat( real1 ).isEqualTo( temp1 );
+//		assertThat( temp1 ).isEqualTo( real1 );
+//		assertThat( temp1 ).isEqualTo( temp2 );
 
-		test( "s = :symbol; s.toString()", "symbol" );
-		test( "s = :\"dit is ook een symbol\"; s.toString()", "dit is ook een symbol" );
-		test( "s = :red; if( s == :red; true; false )", true );
+		test( "s = 'symbol; s.toString()", "symbol" );
+		test( "s = 'red; if( s == 'red ) true else false", true );
+		test( "s = Symbol( \"dit is ook een symbol\" ); s.toString()", "dit is ook een symbol" );
 	}
 
 	@Test
@@ -665,10 +653,10 @@ public class ScriptTests extends Util
 		test( "true as boolean", true );
 		test( "\"\" as boolean", false );
 		test( "\"x\" as boolean", true );
-		test( "[] as boolean", false );
-		test( "[1] as boolean", true );
-		test( "[:] as boolean", false );
-		test( "[1:1] as boolean", true );
+		test( "List() as boolean", false );
+		test( "List(1) as boolean", true );
+		test( "Map() as boolean", false );
+		test( "Map(1->1) as boolean", true );
 
 		test( "1 as byte", (byte)1 );
 		test( "a = 1; a as byte", (byte)1 );
@@ -689,7 +677,7 @@ public class ScriptTests extends Util
 
 		test( "1 instanceof Integer", true );
 		test( "1 instanceof int", false );
-		test( "\"1\" instanceof class( \"java.lang.CharSequence\" )", true );
+		test( "\"1\" instanceof CharSequence", true );
 		test( "\"1\" instanceof String", true );
 		test( "null instanceof Byte", false );
 	}
@@ -726,6 +714,7 @@ public class ScriptTests extends Util
 		assertThat( -3 % 2 ).isEqualTo( -1 ); // So this is not mod but remainder
 		assertThat( new BigInteger( "-3" ).mod( new BigInteger( "2" ) ) ).isEqualTo( new BigInteger( "1" ) );
 		assertThat( new BigInteger( "-3" ).remainder( new BigInteger( "2" ) ) ).isEqualTo( new BigInteger( "-1" ) );
+		test( "-3%2", -1 );
 
 		test( "16 as float / 15 as byte", (float)16 / 15 );
 		test( "16 as float % 15 as byte", (float)1 );
@@ -736,10 +725,10 @@ public class ScriptTests extends Util
 		test( "-(15 as char)", -15 );
 		test( "-(1.5 as float)", -1.5f );
 
-		test( "abs( -15 as byte )", 15 );
-		test( "abs( -15 as char )", 65521 );
-		test( "abs( -15 )", 15 );
-		test( "abs( -1.5 as float )", 1.5f );
+		test( "(-15as byte).abs()", 15 );
+		test( "( -15 as char ).abs()", 65521 );
+		test( "( -15 ).abs()", 15 );
+		test( "( -1.5 as float ).abs()", 1.5f );
 
 		test( "1 as byte < 2 as byte", true );
 		test( "1 as char < 2 as char", true );
@@ -781,14 +770,14 @@ public class ScriptTests extends Util
 		fail( "1 = 1", ScriptException.class, "Can't assign to a java.lang.Integer" );
 		fail( "loadClass( \"xxx\" )", ScriptException.class, "Class not found: xxx" );
 		fail( "1.xxx", ScriptException.class, "No such field: java.lang.Integer.xxx" );
-		fail( "class( \"java.lang.Integer\" )#xxx", ScriptException.class, "No such field: static java.lang.Integer.xxx" );
+		fail( "Integer.xxx", ScriptException.class, "No such field: static java.lang.Integer.xxx" );
 		fail( "o1.test( null )", scope, ScriptException.class, "test(java.util.Map)" );
-		fail( "f = ( *b, c ) -> (); f()", ScriptException.class, "Collecting parameter must be the last parameter" );
-		fail( "f = ( a ) -> (); f()", ScriptException.class, "Not enough parameters" );
-		fail( "f = () -> (); f( 1 )", ScriptException.class, "Too many parameters" );
+		fail( "f = ( *b, c ) => (); f()", ScriptException.class, "Collecting parameter must be the last parameter" );
+		fail( "f = ( a ) => (); f()", ScriptException.class, "Not enough parameters" );
+		fail( "f = () => (); f( 1 )", ScriptException.class, "Too many parameters" );
 		fail( "f()", ScriptException.class, "'f' undefined" );
 		fail( "f = null; f()", ScriptException.class, "Function is null" );
-		fail( "f = 1; f()", ScriptException.class, "Can't apply parameters to a java.lang.Integer" );
+		fail( "f = 1; f()", ScriptException.class, "No such method: java.lang.Integer.apply()" );
 //		fail( "a = ( 1, 2 )", ScriptException.class, "Can't assign tuples to variables" );
 //		fail( "f = null; f[]", ScriptException.class, "Null can't be indexed" );
 //		fail( "f = 1; f[]", ScriptException.class, "Missing index" );
@@ -931,8 +920,8 @@ public class ScriptTests extends Util
 	// DONE Symbols :red
 	// TODO Mixins
 	// TODO Class extension pluggable
-	// TODO with() to execute a function with a different context
-	// DONE Currying, no need
+	// TODO with() to execute a function with a different scope
+	// TODO Multiple parameters lists: fun(args)(args)
 	// TODO Operator calling method on first operand, operator overloading
 	// TODO Hints for null parameters: a as String which evaluates to a TypedNull object if a is null
 	// TODO Compilation errors including column number
@@ -1018,4 +1007,5 @@ public class ScriptTests extends Util
 		private String _string3 = "string3";
 		public String getString3() { return this._string3; }
 		public void setString3( String value ) { this._string3 = value; }
+	}
 }

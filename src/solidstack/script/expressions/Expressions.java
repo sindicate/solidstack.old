@@ -103,4 +103,13 @@ public class Expressions implements Expression
 		Assert.isTrue( !this.expressions.isEmpty() );
 		return this.expressions.get( 0 ).getLocation();
 	}
+
+	public void writeTo( StringBuilder out )
+	{
+		for( Expression expression : this.expressions )
+		{
+			expression.writeTo( out );
+			out.append( ';' );
+		}
+	}
 }

@@ -21,6 +21,7 @@ import java.util.Map;
 import funny.Symbol;
 
 
+
 public class CombinedScope extends AbstractScope
 {
 	private Scope scope1, scope2;
@@ -49,11 +50,11 @@ public class CombinedScope extends AbstractScope
 		try
 		{
 			return this.scope1.get( symbol );
-	}
+		}
 		catch( UndefinedException e )
 		{
 			return this.scope2.get( symbol );
-}
+		}
 	}
 
 	@Override

@@ -33,7 +33,7 @@ import solidstack.script.objects.Tuple;
 
 public class Assign extends Operator
 {
-	public Assign( String name, Expression left, Expression right)
+	public Assign( String name, Expression left, Expression right )
 	{
 		super( name, left, right );
 	}
@@ -60,7 +60,7 @@ public class Assign extends Operator
 			}
 		}
 		else if( this.left instanceof BuildTuple )
-				{
+		{
 			Save save = new Save( this.right.compile() );
 
 			ListIterator<Expression> i = ( (BuildTuple)this.left ).getExpressions().listIterator();
@@ -70,13 +70,13 @@ public class Assign extends Operator
 				Expression expression = i.next();
 				expression = new Assign( "=", expression, new Load( j++ ) );
 				i.set( expression.compile() );
-				}
-
-			return new Expressions( save, this.left );
 			}
 
-		return this;
+			return new Expressions( save, this.left );
 		}
+
+		return this;
+	}
 
 	public Object evaluate( ThreadContext thread )
 	{
@@ -88,18 +88,18 @@ public class Assign extends Operator
 				throw new UnsupportedOperationException();
 
 			List<Expression> leftTuple = ((BuildTuple)this.left).getExpressions();
-				Tuple rightTuple = (Tuple)right;
-				int len = leftTuple.size();
-				Assert.isTrue( rightTuple.size() == len );
-				for( int i = 0; i < len; i++ )
-				{
+			Tuple rightTuple = (Tuple)right;
+			int len = leftTuple.size();
+			Assert.isTrue( rightTuple.size() == len );
+			for( int i = 0; i < len; i++ )
+			{
 				Expression l = leftTuple.get( i );
 				Assert.isTrue( l instanceof Identifier ); // TODO And vars
-					Object r = rightTuple.get( i );
+				Object r = rightTuple.get( i );
 				( (Identifier)l ).assign( thread, r );
-				}
-			return right;
 			}
+			return right;
+		}
 
 //		if( right instanceof Tuple )
 //			throw new ThrowException( "Can't assign tuples to variables", thread.cloneStack( getLocation() ) );

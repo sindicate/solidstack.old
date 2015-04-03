@@ -35,7 +35,7 @@ public class Identifier extends LocalizedExpression
 	{
 		super( location );
 
-		this.symbol = Symbol.forString( name );
+		this.symbol = Symbol.apply( name );
 	}
 
 	public Symbol getSymbol()
@@ -53,7 +53,7 @@ public class Identifier extends LocalizedExpression
 		try
 		{
 			return thread.getScope().get( this.symbol );
-	}
+		}
 		catch( UndefinedException e )
 		{
 			try
@@ -114,7 +114,7 @@ public class Identifier extends LocalizedExpression
 	public void writeTo( StringBuilder out )
 	{
 		out.append( this.symbol );
-}
+	}
 
 	@Override
 	public String toString()

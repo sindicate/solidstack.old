@@ -26,11 +26,13 @@ public class Util
 		return eval( expression, null );
 	}
 
-	static public Object eval( String expression, Scope context )
+	static public Object eval( String expression, Object scope )
 	{
 		Script script = Script.compile( expression );
-//		String dump = new Dumper().dump( script );
-		return script.eval( context );
+//		StringBuilder buffer = new StringBuilder();
+//		script.writeTo( buffer );
+//		System.out.println( buffer );
+		return script.eval( scope );
 	}
 
 	static public void fail( Script script, Class<? extends Exception> exception, String message )
@@ -95,7 +97,7 @@ public class Util
 	static public void test( Script script, int expected )
 	{
 		Assert.assertEquals( script.eval(), expected );
-}
+	}
 
 	static public void test( SourceReader source, Object expected )
 	{

@@ -20,6 +20,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 import solidstack.lang.Assert;
+import solidstack.script.JavaException;
+import solidstack.script.Returning;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.UndefinedPropertyException;
@@ -27,6 +29,7 @@ import solidstack.script.expressions.Expression;
 import solidstack.script.expressions.Identifier;
 import solidstack.script.java.Java;
 import solidstack.script.java.MissingFieldException;
+import solidstack.script.objects.Type;
 import solidstack.script.objects.Util;
 import solidstack.script.scopes.Scope;
 import solidstack.script.scopes.ScopeException;
@@ -36,7 +39,7 @@ import funny.Symbol;
 
 public class Member extends Operator
 {
-	public Member( String name, Expression left, Expression right)
+	public Member( String name, Expression left, Expression right )
 	{
 		super( name, left, right );
 	}
@@ -67,7 +70,16 @@ public class Member extends Operator
 				return ( (Map)left ).get( right.toString() );
 			try
 			{
+				if( left instanceof Type )
+					return Java.getStatic( ( (Type)left ).theClass(), right.toString() );
 				return Java.get( left, right.toString() );
+			}
+			catch( InvocationTargetException e )
+			{
+				Throwable t = e.getCause();
+				if( t instanceof Returning )
+					throw (Returning)t;
+				throw new JavaException( t, thread.cloneStack( getLocation() ) );
 			}
 			catch( MissingFieldException e )
 			{
@@ -115,12 +127,12 @@ public class Member extends Operator
 		catch( Returning e )
 		{
 			throw e;
-	}
+		}
 		catch( Exception e )
 		{
 			throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), thread.cloneStack( getLocation() ) );
 //			throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
-}
+		}
 	}
 
 	public Object apply( ThreadContext thread, Object[] pars )

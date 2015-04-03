@@ -35,8 +35,20 @@ abstract public class Operator implements Expression
 	// TODO Make private
 	protected String operator;
 	protected Expression left;
-	protected Expression middle;
 	protected Expression right;
+
+	/* Scala precedences: lowest to highest
+		(all letters)
+		|
+		^
+		&
+		< >
+		= !
+		:
+		+ -
+		* / %
+		(all other special characters)
+	*/
 
 	static
 	{
@@ -45,20 +57,20 @@ abstract public class Operator implements Expression
 		precedences.put( "[", 1 ); // array index
 		precedences.put( "(", 1 ); // method call
 		precedences.put( ".", 1 ); // object member
-		precedences.put( "#", 1 ); // static member
+//		precedences.put( "#", 1 ); // static member
+		precedences.put( "new", 1 ); // object creation
 
-		precedences.put( "@++", 2 ); // postfix increment
-		precedences.put( "@--", 2 ); // postfix decrement
-
-		precedences.put( "++@", 3 ); // prefix increment
-		precedences.put( "--@", 3 ); // prefix decrement
+//		precedences.put( "@++", 2 ); // postfix increment
+//		precedences.put( "@--", 2 ); // postfix decrement
+//
+//		precedences.put( "++@", 3 ); // prefix increment
+//		precedences.put( "--@", 3 ); // prefix decrement
 		precedences.put( "+@", 3 ); // unary plus
 		precedences.put( "-@", 3 ); // unary minus
 //		precedences.put( "~", 3 ); // bitwise NOT
 		precedences.put( "!@", 3 ); // boolean NOT
 //		precedences.put( "(type)", 3 ); // type cast
 		precedences.put( "as", 3 ); // type cast TODO Same precedence as instanceof?
-//		precedences.put( "new", 3 ); // object creation
 
 		precedences.put( "*", 4 ); // multiplication
 		precedences.put( "/", 4 ); // division
@@ -90,8 +102,8 @@ abstract public class Operator implements Expression
 
 //		precedences.put( "?", 14 ); // conditional
 
-		precedences.put( ":", 15 ); // label TODO 15 ok?
 		precedences.put( "->", 15 ); // lambda TODO Equal to assignment precedence? Do we want that?
+		precedences.put( "=>", 15 ); // lambda TODO Equal to assignment precedence? Do we want that?
 		precedences.put( "=", 15 ); // assignment
 //		precedences.put( "*=", 15 ); // assignment
 //		precedences.put( "/=", 15 ); // assignment
@@ -137,7 +149,7 @@ abstract public class Operator implements Expression
 				if( name.equals( "-" ) )
 					return new Minus( name, left, right );
 				if( name.equals( "->" ) )
-					return new Function( name, left, right );
+					return new Associate( name, left, right );
 				break;
 
 			case '=':
@@ -145,6 +157,8 @@ abstract public class Operator implements Expression
 					return new Assign( name, left, right );
 				if( name.equals( "==" ) )
 					return new Equals( name, left, right );
+				if( name.equals( "=>" ) )
+					return new Function( name, left, right );
 				break;
 
 			case '!':
@@ -195,7 +209,7 @@ abstract public class Operator implements Expression
 
 			case ':':
 				if( name.equals( ":" ) )
-					return new Label( name, left, right );
+					return new Associate( name, left, right );
 				break;
 
 			case ',':
@@ -237,6 +251,11 @@ abstract public class Operator implements Expression
 			case '!':
 				if( name.equals( "!@" ) )
 					return new Not( location, name, right );
+				break;
+
+			case 'n':
+				if( name.equals( "new" ) )
+					return new New( location, name, right );
 				break;
 		}
 		Assert.fail( "Unknown operator " + name );
@@ -559,5 +578,14 @@ abstract public class Operator implements Expression
 		if( this.left == null )
 			throw new NullPointerException( getClass().getName() );
 		return this.left.getLocation();
+	}
+
+	public void writeTo( StringBuilder out )
+	{
+		if( this.left != null )
+			this.left.writeTo( out );
+		out.append( this.operator );
+		if( this.right != null )
+			this.right.writeTo( out );
 	}
 }
