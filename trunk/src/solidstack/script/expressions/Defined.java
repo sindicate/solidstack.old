@@ -17,35 +17,47 @@
 package solidstack.script.expressions;
 
 import solidstack.io.SourceLocation;
-import solidstack.script.Script;
 import solidstack.script.ThreadContext;
+import solidstack.script.ThrowException;
+import solidstack.script.UndefinedPropertyException;
 
 
 
-public class While extends LocalizedExpression
+public class Defined extends LocalizedExpression
 {
-	private Expression condition;
-	private Expression left;
+	private Expression expression;
 
-	public While( SourceLocation location, Expression condition, Expression left )
+	public Defined( SourceLocation location, Expression expression )
 	{
 		super( location );
-		this.condition = condition;
-		this.left = left;
+		this.expression = expression;
 	}
 
 	public Expression compile()
 	{
-		this.condition = this.condition.compile();
-		this.left = this.left.compile();
+		this.expression = this.expression.compile();
 		return this;
 	}
 
 	public Object evaluate( ThreadContext thread )
 	{
-		Object result = null;
-		while( Script.isTrue( this.condition.evaluate( thread ) ) )
-			result = this.left.evaluate( thread );
-		return result;
+		try
+		{
+			if( this.expression == null ) // TODO This could be moved to compile()
+				throw new ThrowException( "defined() expects a parameter", thread.cloneStack( getLocation() ) );
+			this.expression.evaluate( thread );
+			return true;
+		}
+		catch( UndefinedPropertyException e )
+		{
+			return false;
+		}
+	}
+
+	public void writeTo( StringBuilder out )
+	{
+		out.append( "defined(" );
+		this.expression.writeTo( out );
+		out.append( ')' );
 	}
 }

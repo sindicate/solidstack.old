@@ -25,7 +25,6 @@ import solidstack.script.expressions.Expression;
 import solidstack.script.java.Types;
 import solidstack.script.objects.Tuple;
 import solidstack.script.objects.Util;
-import solidstack.script.scopes.AbstractScope.Ref;
 import solidstack.script.scopes.DefaultScope;
 import solidstack.script.scopes.MapScope;
 import solidstack.script.scopes.ObjectScope;
@@ -40,7 +39,9 @@ public class Script
 
 	static public Script compile( SourceReader reader )
 	{
-		return new Script( new ScriptParser( new ScriptTokenizer( reader ) ).parse() );
+		Expression expression = new ScriptParser( new ScriptTokenizer( reader ) ).parse();
+		if( expression != null ) expression = expression.compile();
+		return new Script( expression );
 	}
 
 	static private Object eval0( Expression expression, AbstractScope scope )
@@ -59,7 +60,8 @@ public class Script
 		else
 			s = new ObjectScope( scope );
 
-		ThreadContext thread = ThreadContext.init( s );
+		ThreadContext thread = ThreadContext.get();
+		s = thread.swapScope( s );
 		try
 		{
 			return expression.evaluate( thread );
@@ -72,10 +74,14 @@ public class Script
 		{
 			throw new ScriptException( e );
 		}
-//		catch( JavaException e )
-//		{
-//			throw new ScriptException( e );
-//		}
+		catch( JavaException e )
+		{
+			throw new ScriptException( e );
+		}
+		finally
+		{
+			thread.swapScope( s );
+		}
 	}
 
 	static public Object eval( Expression expression, AbstractScope scope )
@@ -90,12 +96,6 @@ public class Script
 
 	static public boolean isTrue( Object object )
 	{
-		if( object instanceof Ref )
-		{
-			if( ( (Ref)object ).isUndefined() )
-				return false;
-			object = ( (Ref)object ).get();
-		}
 		if( object instanceof Tuple )
 		{
 			// TODO Maybe we shouldn't even do this
@@ -105,6 +105,22 @@ public class Script
 			object = results.getLast();
 		}
 		return Types.castToBoolean( Util.toJava( object ) );
+	}
+
+	static public boolean isTrue( ThreadContext thread, Object object )
+	{
+		if( object instanceof Expression )
+		{
+			try
+			{
+				object = ((Expression)object).evaluate( thread );
+			}
+			catch( UndefinedPropertyException e ) // TODO But what if deeper into the expression this exception is thrown?
+			{
+				return false;
+			}
+		}
+		return isTrue( object );
 	}
 
 	// --- Non static members

@@ -20,31 +20,32 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import solidstack.io.SourceLocation;
+import solidstack.lang.Assert;
+import solidstack.script.objects.Tuple;
 import solidstack.script.scopes.Scope;
 
 public class ThreadContext
 {
-	static private ThreadLocal<ThreadContext> contexts = new ThreadLocal<ThreadContext>();
-
-	static public ThreadContext init( Scope scope )
+	static private ThreadLocal<ThreadContext> context = new ThreadLocal<ThreadContext>()
 	{
-//		Assert.isNull( contexts.get() );
-		ThreadContext result = new ThreadContext( scope );
-		contexts.set( result );
-		return result;
+		@Override
+		protected ThreadContext initialValue()
+		{
+			return new ThreadContext();
 	}
+	};
 
 	static public ThreadContext get()
 	{
-		return contexts.get();
+		return context.get();
 	}
 
 	private Scope scope;
 	private Deque<SourceLocation> stack = new ArrayDeque<SourceLocation>();
+	private Tuple saved;
 
-	private ThreadContext( Scope scope )
+	private ThreadContext()
 	{
-		this.scope = scope;
 	}
 
 	public Scope getScope()
@@ -59,9 +60,10 @@ public class ThreadContext
 		return old;
 	}
 
-	public void pushStack( SourceLocation sourceLocation )
+	public void pushStack( SourceLocation location )
 	{
-		this.stack.push( sourceLocation ); // TODO Is this the fastest combination of push & pop?
+		Assert.notNull( location );
+		this.stack.push( location );
 	}
 
 	public void popStack()
@@ -85,5 +87,20 @@ public class ThreadContext
 		SourceLocation[] result = cloneStack();
 		popStack();
 		return result;
+	}
+
+	public void save( Object tuple )
+	{
+//		Assert.isNull( this.saved );
+		if( tuple instanceof Tuple )
+			this.saved = (Tuple)tuple;
+		else
+			this.saved = new Tuple( tuple );
+}
+
+	public Object load( int index )
+	{
+		Assert.notNull( this.saved );
+		return this.saved.get( index );
 	}
 }

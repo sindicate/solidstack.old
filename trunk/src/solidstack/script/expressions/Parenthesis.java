@@ -36,6 +36,13 @@ public class Parenthesis extends LocalizedExpression
 		return this.expression;
 	}
 
+	public Expression compile()
+	{
+		if( this.expression == null )
+			return null;
+		return this.expression.compile(); // Remove Parenthesis from the hierarchy
+	}
+
 	public Object evaluate( ThreadContext thread )
 	{
 		if( this.expression != null )

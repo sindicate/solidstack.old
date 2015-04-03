@@ -283,20 +283,33 @@ public class Query
 	 */
 	public List< Map< String, Object > > listOfMaps( Connection connection, Object args )
 	{
+		ResultSet resultSet = resultSet( connection, args );
 		try
 		{
-			ResultSet resultSet = resultSet( connection, args );
-			try
-			{
-				// DETERMINE THE LOWERCASE NAMES IN ADVANCE!!! Otherwise the names will not be shared in memory.
-				Map< String, Integer > names = getColumnLabelMap( resultSet.getMetaData() );
-				List< Object[] > result = listOfArrays( resultSet, this.flyWeight );
-				return new ResultList( result, names );
-			}
-			finally
-			{
-				close( resultSet );
-			}
+			return listOfMaps( resultSet, this.flyWeight );
+		}
+		finally
+		{
+			close( resultSet );
+		}
+	}
+
+	/**
+	 * Converts a {@link ResultSet} into a {@link List} of {@link Map}s.
+	 * The maps contain the column names from the query as keys and the column values as the map's values.
+	 *
+	 * @param resultSet The {@link ResultSet} to convert.
+	 * @param flyWeight If true, duplicate values are stored in memory only once.
+	 * @return A {@link List} of {@link Map}s.
+	 */
+	static public List< Map< String, Object > > listOfMaps( ResultSet resultSet, boolean flyWeight )
+	{
+		try
+		{
+			// DETERMINE THE LOWERCASE NAMES IN ADVANCE!!! Otherwise the names will not be shared in memory.
+			Map< String, Integer > names = getColumnLabelMap( resultSet.getMetaData() );
+			List< Object[] > result = listOfArrays( resultSet, flyWeight );
+			return new ResultList( result, names );
 		}
 		catch( SQLException e )
 		{

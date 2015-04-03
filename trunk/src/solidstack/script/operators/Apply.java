@@ -26,10 +26,7 @@ import solidstack.script.expressions.Expression;
 import solidstack.script.java.Java;
 import solidstack.script.objects.ClassMember;
 import solidstack.script.objects.FunctionObject;
-import solidstack.script.objects.ObjectMember;
 import solidstack.script.objects.Util;
-import solidstack.script.scopes.ObjectScope.ObjectRef;
-import solidstack.script.scopes.ScopeException;
 import funny.Symbol;
 
 
@@ -44,7 +41,7 @@ public class Apply extends Operator
 	{
 		if( this.left instanceof New )
 		{
-			Object left = Util.deref( ( (New)this.left ).evaluateForApply( thread ) );
+			Object left = ( (New)this.left ).evaluateForApply( thread );
 			if( !( left instanceof Type ) )
 				throw new ThrowException( "The new operator needs a type argument, not a " + left.getClass().getName(), thread.cloneStack( getLocation() ) );
 
@@ -56,7 +53,7 @@ public class Apply extends Operator
 				thread.pushStack( getLocation() );
 				try
 				{
-					return Java.construct( cls, Util.toJavaParameters( thread, pars ) );
+					return Java.construct( cls, Util.toJavaParameters( pars ) );
 				}
 				finally
 				{
@@ -76,37 +73,45 @@ public class Apply extends Operator
 			}
 		}
 
-		Object left = this.left.evaluateRef( thread );
+		Expression left = this.left;
 
-		if( left instanceof ObjectMember )
+		// Build parameters
+
+		List<Expression> vals;
+		if( this.right instanceof BuildTuple )
+			vals = ( (BuildTuple)this.right ).getExpressions();
+		else if( this.right != null )
+			vals = Arrays.asList( this.right );
+		else
+			vals = Collections.emptyList();
+
+		if( !vals.isEmpty() && vals.get( 0 ) instanceof Assign )
 		{
-			ObjectMember ref = (ObjectMember)left;
-			Object object = ref.getObject();
-			String name = ref.getKey().toString();
-			Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY; // TODO Shouldn't this happen outside the try catch?
-			pars = Util.toJavaParameters( thread, pars );
+			Map<Symbol, Object> args = new HashMap<Symbol, Object>();
+			for( Expression expression : vals )
+			{
+				if( !( expression instanceof Assign ) )
+					throw new ThrowException( "All parameters must be named", thread.cloneStack( expression.getLocation() ) );
+				Assign assign = (Assign)expression;
+				if( !( assign.left instanceof Identifier ) )
+					throw new ThrowException( "Parameter must be named with a variable identifier", thread.cloneStack( assign.left.getLocation() ) );
+				args.put( ( (Identifier)assign.left ).getSymbol(), assign.right.evaluate( thread ) ); // TODO Error message
+			}
+
 			thread.pushStack( getLocation() );
 			try
 			{
-				if( object instanceof Type )
-					return Java.invokeStatic( ( (Type)object ).theClass(), name, pars );
-				return Java.invoke( object, name, pars );
-			}
-			catch( InvocationTargetException e )
-			{
-				Throwable t = e.getCause();
-				if( t instanceof Returning )
-					throw (Returning)t;
-				throw new JavaException( t, thread.cloneStack( getLocation() ) );
-			}
-			catch( Returning e )
-			{
-				throw e;
-			}
-			catch( Exception e )
-			{
-				throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), thread.cloneStack( getLocation() ) );
-//				throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
+				if( left instanceof Member )
+					return ( (Member)left ).apply( thread, args );
+
+				if( left instanceof Identifier )
+					return ( (Identifier)left ).apply( thread, args );
+
+				Object l = left.evaluate( thread );
+				if( l instanceof FunctionObject )
+					return ( (FunctionObject)l ).call( thread, args );
+
+				throw new ThrowException( "Can't apply named parameters to a Java object", thread.cloneStack() );
 			}
 			finally
 			{
@@ -114,116 +119,29 @@ public class Apply extends Operator
 			}
 		}
 
-		if( left instanceof ObjectRef )
-		{
-			ObjectRef ref = (ObjectRef)left;
-			Object object = ref.getObject();
-			String name = ref.getKey().toString();
-			Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY; // TODO Shouldn't this happen outside the try catch?
-			pars = Util.toJavaParameters( thread, pars );
-			thread.pushStack( getLocation() );
-			try
-			{
-				if( object instanceof Type )
-					return Java.invokeStatic( ( (Type)object ).theClass(), name, pars );
-				return Java.invoke( object, name, pars );
-			}
-			catch( InvocationTargetException e )
-			{
-				Throwable t = e.getCause();
-				if( t instanceof Returning )
-					throw (Returning)t;
-				throw new JavaException( t, thread.cloneStack( getLocation() ) );
-			}
-			catch( Returning e )
-			{
-				throw e;
-			}
-			catch( Exception e )
-			{
-				throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), thread.cloneStack( getLocation() ) );
-//				throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
-			}
-			finally
-			{
-				thread.popStack();
-			}
-		}
+		for( Expression expression : vals )
+			if( expression instanceof Assign )
+				throw new ThrowException( "All parameters must be named", thread.cloneStack( expression.getLocation() ) );
+		Object[] args = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY;
 
+		thread.pushStack( getLocation() );
 		try
 		{
-		left = Util.deref( left );
-		}
-		catch( ScopeException e )
-		{
-			throw new ThrowException( e.getMessage(), thread.cloneStack( getLocation() ) );
-		}
-		if( left == null )
-			throw new ThrowException( "Function is null", thread.cloneStack( getLocation() ) );
+			if( left instanceof Member )
+				return ( (Member)left ).apply( thread, args );
 
-		if( left instanceof Type )
-		{
-			Class<?> cls = ( (Type)left ).theClass();
-			Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY; // TODO Shouldn't this happen outside the try catch?
-			pars = Util.toJavaParameters( thread, pars );
-			thread.pushStack( getLocation() );
+			if( left instanceof Identifier )
+				return ( (Identifier)left ).apply( thread, args );
+
+			Object l = left.evaluate( thread );
+			if( l instanceof FunctionObject )
+				return ( (FunctionObject)l ).call( thread, args );
+
+			args = Util.toJavaParameters( args );
 			try
 			{
-				return Java.invokeStatic( cls, "apply", pars );
+				return Java.invoke( l, "apply", args );
 			}
-			catch( InvocationTargetException e )
-			{
-				Throwable t = e.getCause();
-				if( t instanceof Returning )
-					throw (Returning)t;
-				throw new JavaException( t, thread.cloneStack( getLocation() ) );
-			}
-			catch( Returning e )
-			{
-				throw e;
-			}
-			catch( Exception e )
-			{
-				throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), thread.cloneStack( getLocation() ) );
-//				throw new JavaException( e, thread.cloneStack( getLocation() ) ); // TODO Debug flag or something?
-			}
-			finally
-			{
-				thread.popStack();
-			}
-		}
-
-		if( left instanceof FunctionObject )
-		{
-			FunctionObject f = (FunctionObject)left;
-			thread.pushStack( getLocation() );
-			try
-			{
-				return f.call( thread, pars );
-			}
-			finally
-			{
-				thread.popStack();
-			}
-		}
-
-		try
-		{
-				return f.call( thread, pars );
-			}
-			finally
-			{
-				thread.popStack();
-			}
-		}
-
-		Object[] pars = this.right != null ? Util.toArray( this.right.evaluate( thread ) ) : Util.EMPTY_ARRAY; // TODO Shouldn't this happen outside the try catch?
-		pars = Util.toJavaParameters( thread, pars );
-				thread.pushStack( getLocation() );
-				try
-				{
-			return Java.invoke( left, "apply", pars );
-				}
 		}
 		catch( InvocationTargetException e )
 		{
@@ -240,6 +158,7 @@ public class Apply extends Operator
 		{
 			throw new ThrowException( e.getMessage() != null ? e.getMessage() : e.toString(), thread.cloneStack( getLocation() ) );
 //			throw new JavaException( e, thread.cloneStack( getLocation() ) );
+		}
 		}
 		finally
 		{

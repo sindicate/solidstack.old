@@ -31,15 +31,15 @@ public interface Expression
 	 * @param thread The thread context.
 	 * @return The result of evaluating this expression.
 	 */
-	Object evaluate( ThreadContext thread );
+	Expression compile();
 
 	/**
-	 * Evaluate the expression and return a reference if possible.
+	 * Evaluate the expression.
 	 *
 	 * @param thread The thread context.
 	 * @return The result of evaluating this expression.
 	 */
-	Object evaluateRef( ThreadContext thread );
+	Object evaluate( ThreadContext thread );
 
 	/**
 	 * @return The source location where this expression is encountered.

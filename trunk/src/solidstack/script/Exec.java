@@ -49,7 +49,7 @@ public class Exec
 		}
 
 		DefaultScope scope = new DefaultScope();
-		scope.def( Symbol.forString( "args" ), args );
+		scope.var( Symbol.apply( "args" ), args );
 
 		try
 		{

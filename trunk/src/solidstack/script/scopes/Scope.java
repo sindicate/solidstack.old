@@ -16,9 +16,8 @@
 
 package solidstack.script.scopes;
 
-import solidstack.script.scopes.AbstractScope.Ref;
-import solidstack.script.scopes.AbstractScope.Value;
-import solidstack.script.scopes.AbstractScope.Variable;
+import java.util.Map;
+
 import funny.Symbol;
 
 
@@ -26,9 +25,12 @@ import funny.Symbol;
 
 public interface Scope
 {
-	Ref findRef( Symbol symbol );
-	Ref getRef( Symbol symbol );
+	void var( Symbol symbol, Object value ); // TODO Rename to var
+	void val( Symbol symbol, Object value );
+
 	Object get( Symbol symbol );
-	Variable def( Symbol symbol, Object value ); // TODO Rename to var
-	Value val( Symbol symbol, Object value );
+	void set( Symbol symbol, Object value );
+
+	Object apply( Symbol symbol, Object... args );
+	Object apply( Symbol symbol, Map args );
 	}

@@ -20,7 +20,6 @@ import solidstack.script.Returning;
 import solidstack.script.ThreadContext;
 import solidstack.script.ThrowException;
 import solidstack.script.objects.FunctionObject;
-import solidstack.script.objects.Util;
 
 public class Return extends FunctionObject
 {
@@ -30,6 +29,6 @@ public class Return extends FunctionObject
 		// TODO What about returning tuples?
 		if( parameters.length != 1 )
 			throw new ThrowException( "return() needs exactly one parameter", thread.cloneStack() );
-		throw new Returning( Util.deref( parameters[ 0 ] ) );
+		throw new Returning( parameters[ 0 ] );
 	}
 }

@@ -22,7 +22,6 @@ import java.util.HashMap;
 
 import solidstack.io.SourceLocation;
 import solidstack.lang.Assert;
-import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Expression;
 import solidstack.script.java.Types;
 import solidstack.script.scopes.CombinedScope;
@@ -189,19 +188,9 @@ abstract public class Operator implements Expression
 					return new Apply( name, left, right );
 				break;
 
-			case '[':
-				if( name.equals( "[" ) )
-					return new Index( name, left, right );
-				break;
-
 			case '.':
 				if( name.equals( "." ) )
 					return new Member( name, left, right );
-				break;
-
-			case '#':
-				if( name.equals( "#" ) )
-					return new StaticMember( name, left, right );
 				break;
 
 			case ':':
@@ -254,6 +243,13 @@ abstract public class Operator implements Expression
 		return null;
 	}
 
+	public Expression compile()
+	{
+		if( this.left != null ) this.left = this.left.compile();
+		if( this.right != null ) this.right = this.right.compile();
+		return this;
+	}
+
 	public Expression getLeft()
 	{
 		return this.left;
@@ -262,11 +258,6 @@ abstract public class Operator implements Expression
 	public Expression getRight()
 	{
 		return this.right;
-	}
-
-	public Object evaluateRef( ThreadContext thread )
-	{
-		return evaluate( thread );
 	}
 
 	static protected Object add( Object left, Object right )
@@ -565,6 +556,8 @@ abstract public class Operator implements Expression
 
 	public SourceLocation getLocation()
 	{
+		if( this.left == null )
+			throw new NullPointerException( getClass().getName() );
 		return this.left.getLocation();
 	}
 }

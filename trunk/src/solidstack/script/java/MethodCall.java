@@ -53,17 +53,22 @@ public class MethodCall
 		return this.method.getParameterTypes();
 	}
 
-//	public Class getDeclaringClass()
-//	{
-//		// TODO What do we do if it is an extension method?
-//		return this.method.getDeclaringClass();
-//	}
-
 	public Object invoke() throws InvocationTargetException
 	{
 		this.args = Types.transformArguments( getParameterTypes(), this.args );
 		try
 		{
+			if( this.field != null )
+			{
+				if( !this.field.isAccessible() )
+					this.field.setAccessible( true );
+				if( this.args == null )
+					return this.field.get( this.object );
+				this.field.set( this.object, this.args[0] ); // TODO Parameter transformation?
+				return null;
+			}
+			if( this.args != null )
+				this.args = Types.transformArguments( getParameterTypes(), this.args ); // TODO Why this.args?
 			if( this.constructor != null )
 				return this.constructor.newInstance( this.args );
 			if( this.extMethod != null )
@@ -100,26 +105,12 @@ public class MethodCall
 		return this.method;
 	}
 
-//	public String getName()
-//	{
-//		if( this.extMethod != null )
-//			return this.extMethod.getMethod().getName();
-//		return this.method.getName();
-//	}
-
 	public boolean isVararg()
 	{
 		if( this.extMethod != null )
 			return this.extMethod.isVararg();
 		return ( this.method.getModifiers() & Modifier.TRANSIENT ) != 0;
 	}
-
-//	public Object getReturnType()
-//	{
-//		if( this.extMethod != null )
-//			return this.extMethod.getMethod().getReturnType();
-//		return this.method.getReturnType();
-//	}
 
 	public Object[] getArgs()
 	{

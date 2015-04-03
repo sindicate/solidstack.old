@@ -63,6 +63,7 @@ public class CallResolver
 	}
 
 
+	// TODO prefer non-static access?
 	static private MethodCall resolveMethodCall0( CallResolutionContext context )
 	{
 		boolean needStatic = context.staticCall();
@@ -316,7 +317,7 @@ public class CallResolver
 
 	static public MethodCall resolvePropertyRead( CallResolutionContext context )
 	{
-		Assert.isTrue( context.getArgs().length == 0 );
+		Assert.isTrue( context.getArgs() == null );
 		// TODO Switch to enable caching
 		MethodHandle handle = cache.get( context.getCallSignature() );
 		if( handle != null )
@@ -350,9 +351,9 @@ public class CallResolver
 		String name = "get" + capitalize( context.getName() );
 		CallResolutionContext context2;
 		if( needStatic )
-			context2 = new CallResolutionContext( context.getType(), name, false );
+			context2 = CallResolutionContext.forMethodCall( context.getType(), name );
 		else
-			context2 = new CallResolutionContext( context.getObject(), name, false );
+			context2 = CallResolutionContext.forMethodCall( context.getObject(), name );
 
 		MethodCall caller = resolveMethodCall( context2 );
 		if( caller != null )
@@ -408,9 +409,9 @@ public class CallResolver
 		String name = "set" + capitalize( context.getName() );
 		CallResolutionContext context2;
 		if( needStatic )
-			context2 = new CallResolutionContext( context.getType(), name, false, context.getArgs() );
+			context2 = CallResolutionContext.forMethodCall( context.getType(), name, context.getArgs() );
 		else
-			context2 = new CallResolutionContext( context.getObject(), name, false, context.getArgs() );
+			context2 = CallResolutionContext.forMethodCall( context.getObject(), name, context.getArgs() );
 
 		MethodCall caller = resolveMethodCall( context2 );
 		if( caller != null )

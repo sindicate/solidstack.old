@@ -218,14 +218,14 @@ public class FunctionObject implements solidstack.script.java.Function
 		{
 			DefaultScope scope = new DefaultScope( this.scope );
 			for( int i = 0; i < oCount; i++ )
-				scope.def( symbols[ i ], Util.deref( values[ i ] ) ); // TODO If we keep the Link we get output parameters!
+				scope.var( symbols[ i ], values[ i ] ); // TODO If we keep the Link we get output parameters!
 			newScope = scope;
 		}
 		else if( oCount > 0 )
 		{
 			ParameterScope parScope = new ParameterScope( this.scope );
 			for( int i = 0; i < oCount; i++ )
-				parScope.defParameter( symbols[ i ], Util.deref( values[ i ] ) ); // TODO If we keep the Link we get output parameters!
+				parScope.defParameter( symbols[ i ], values[ i ] ); // TODO If we keep the Link we get output parameters!
 			newScope = parScope;
 		}
 		else
@@ -234,6 +234,8 @@ public class FunctionObject implements solidstack.script.java.Function
 		Scope old = thread.swapScope( newScope );
 		try
 		{
+			if( this.function.getExpression() == null )
+				return null;
 			return this.function.getExpression().evaluate( thread );
 		}
 		catch( Returning e )
@@ -277,7 +279,7 @@ public class FunctionObject implements solidstack.script.java.Function
 			Assert.isTrue( this.current < this.pars.length );
 			while( true )
 			{
-				Object result = Util.deref( this.pars[ this.current++ ] );
+				Object result = this.pars[ this.current++ ];
 				if( !( result instanceof Tuple ) )
 					return result;
 				Tuple t = (Tuple)result;
