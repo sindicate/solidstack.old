@@ -59,7 +59,7 @@ public class Reload
 		Assert.assertTrue( in.read() >= 0 );
 		in.close();
 
-		resource = Resources.getResource( "http://nu.nl" );
+		resource = Resources.getResource( "http://solidbase.org" );
 		Assert.assertTrue( resource instanceof URIResource );
 		Assert.assertEquals( resource.getURL().getProtocol(), "http" );
 		try

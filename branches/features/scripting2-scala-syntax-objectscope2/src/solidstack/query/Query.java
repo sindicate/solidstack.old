@@ -160,12 +160,12 @@ public class Query
 	 * Retrieves a {@link ResultSet} from the given {@link Connection}.
 	 *
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query.
+	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return a {@link ResultSet}.
-	 * @see #resultSet(Connection, Map)
+	 * @see #resultSet(Connection, Object)
 	 */
 	// TODO Test the args map with groovy script.
-	public ResultSet resultSet( Connection connection, Map< String, Object > args )
+	public ResultSet resultSet( Connection connection, Object args )
 	{
 		try
 		{
@@ -182,10 +182,10 @@ public class Query
 	 * Retrieves a {@link List} of {@link Object} arrays from the given {@link Connection}.
 	 *
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query.
+	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return A {@link List} of {@link Object} arrays from the given {@link Connection}.
 	 */
-	public List< Object[] > listOfArrays( Connection connection, Map< String, Object > args )
+	public List< Object[] > listOfArrays( Connection connection, Object args )
 	{
 		ResultSet resultSet = resultSet( connection, args );
 		try
@@ -278,10 +278,10 @@ public class Query
 	 * Retrieve a {@link List} of {@link Map}s from the given {@link Connection}. The maps contain the column names from the query as keys and the column values as the map's values.
 	 *
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query.
+	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return A {@link List} of {@link Map}s.
 	 */
-	public List< Map< String, Object > > listOfMaps( Connection connection, Map< String, Object > args )
+	public List< Map< String, Object > > listOfMaps( Connection connection, Object args )
 	{
 		ResultSet resultSet = resultSet( connection, args );
 		try
@@ -339,11 +339,11 @@ public class Query
 	 * Executes an update (DML) or a DDL query.
 	 *
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query.
+	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 * @throws SQLException Whenever the query caused an {@link SQLException}.
 	 */
-	public int updateChecked( Connection connection, Map< String, Object > args ) throws SQLException
+	public int updateChecked( Connection connection, Object args ) throws SQLException
 	{
 		return getPreparedStatement( connection, args ).executeUpdate();
 	}
@@ -352,10 +352,10 @@ public class Query
 	 * Executes an update (DML) or a DDL query. {@link SQLException}s are wrapped in a {@link QueryException}.
 	 *
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query.
+	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return The row count from a DML statement or 0 for SQL that does not return anything.
 	 */
-	public int update( Connection connection, Map< String, Object > args )
+	public int update( Connection connection, Object args )
 	{
 		try
 		{
@@ -371,10 +371,10 @@ public class Query
 	 * Returns a {@link PreparedStatement} for the query.
 	 *
 	 * @param connection The {@link Connection} to use.
-	 * @param args The arguments to the query.
+	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return a {@link PreparedStatement} for the query.
 	 */
-	public PreparedStatement getPreparedStatement( Connection connection, Map< String, Object > args )
+	public PreparedStatement getPreparedStatement( Connection connection, Object args )
 	{
 		PreparedSQL preparedSql = getPreparedSQL( args );
 		List< Object > pars = preparedSql.getParameters();
@@ -432,10 +432,10 @@ public class Query
 	/**
 	 * Returns a prepared SQL string together with a parameters array.
 	 *
-	 * @param args The arguments to the query.
+	 * @param args The arguments to the query. When a map, then the contents of the map. When an Object, then the JavaBean properties.
 	 * @return A prepared SQL string together with a parameters array.
 	 */
-	public PreparedSQL getPreparedSQL( Map< String, Object > args )
+	public PreparedSQL getPreparedSQL( Object args )
 	{
 		QueryEncodingWriter gsql = new QueryEncodingWriter();
 		this.template.apply( args, gsql );

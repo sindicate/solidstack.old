@@ -49,6 +49,28 @@ public class Basic
 				"AND TABLENAME IN ([name1, name2])\n" );
 	}
 
+	static public class ParameterObject
+	{
+		public String prefix = "prefix";
+		public String getName() { return "name"; }
+		public String getNames() { return null; }
+	}
+
+	@Test
+	public void testObjectScope()
+	{
+		TemplateLoader templates = new TemplateLoader();
+		templates.setTemplatePath( "classpath:/solidstack/template" );
+
+		Template template = templates.getTemplate( "test.txt" );
+		String result = template.apply( new ParameterObject() );
+		Assert.assertEquals( result, "SELECT *\n" +
+				"FROM SYS.SYSTABLES\n" +
+				"WHERE 1 = 1\n" +
+				"AND TABLENAME LIKE 'prefix%'\n" +
+				"AND TABLENAME = name\n" );
+	}
+
 	@Test
 	public void testTransform() throws Exception
 	{
