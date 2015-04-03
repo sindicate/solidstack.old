@@ -21,7 +21,7 @@ import java.io.Writer;
 
 /**
  * An encoding writer that passes through everything unmodified.
- *
+ * 
  * @author René M. de Bloois
  */
 public class NoEncodingWriter implements EncodingWriter
@@ -33,7 +33,7 @@ public class NoEncodingWriter implements EncodingWriter
 
 	/**
 	 * Constructor.
-	 *
+	 * 
 	 * @param out The writer to write to.
 	 */
 	public NoEncodingWriter( Writer out )
@@ -41,23 +41,10 @@ public class NoEncodingWriter implements EncodingWriter
 		this.out = out;
 	}
 
-	/**
-	 * Writes the given characters.
-	 *
-	 * @param chars The characters.
-	 * @param off The start index.
-	 * @param len The length.
-	 * @throws IOException Whenever an IOException is thrown.
-	 */
-	public void write( char[] chars, int off, int len ) throws IOException
-	{
-		this.out.write( chars, off, len );
-	}
-
 	public void write( String s ) throws IOException
 	{
 		if( s != null )
-			write( s.toCharArray(), 0, s.length() );
+			this.out.write( s );
 	}
 
 	public void writeEncoded( Object o ) throws IOException
@@ -68,10 +55,5 @@ public class NoEncodingWriter implements EncodingWriter
 	public boolean stringsOnly()
 	{
 		return true;
-	}
-
-	public void flush() throws IOException
-	{
-		this.out.flush();
 	}
 }
