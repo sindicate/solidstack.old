@@ -23,7 +23,7 @@ import java.util.Map.Entry;
 import solidstack.io.FatalIOException;
 import solidstack.script.Script;
 import solidstack.script.objects.ObjectMember;
-import solidstack.script.scopes.Scope;
+import solidstack.script.scopes.DefaultScope;
 import solidstack.script.scopes.Symbol;
 import solidstack.script.scopes.TempSymbol;
 import solidstack.template.ConvertingWriter;
@@ -52,14 +52,15 @@ public class FunnyTemplate extends Template
 	{
 		ConvertingWriter out = new FunnyConvertingWriter( writer );
 
-		Scope scope = new Scope();
+		DefaultScope scope = new DefaultScope();
 		for( Entry<String, Object> entry : params.entrySet() )
 			scope.def( new TempSymbol( entry.getKey() ), entry.getValue() );
 		// TODO What about 'this'?
 		scope.def( OUT, out );
 
 		FunnyTemplateHelper helper = new FunnyTemplateHelper( this, params, writer );
-		scope.def( Symbol.forString( "include" ), new ObjectMember( helper, "include" ) );
+		// TODO In the future this must be done with a prototype
+		scope.def( Symbol.apply( "include" ), new ObjectMember( helper, Symbol.apply( "include" ) ) );
 
 		this.script.eval( scope );
 

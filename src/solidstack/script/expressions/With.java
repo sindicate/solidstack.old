@@ -16,39 +16,57 @@
 
 package solidstack.script.expressions;
 
+import java.util.Map;
+
 import solidstack.io.SourceLocation;
 import solidstack.script.ThreadContext;
-import solidstack.script.scopes.DefaultScope;
+import solidstack.script.objects.Util;
+import solidstack.script.scopes.CombinedScope;
+import solidstack.script.scopes.MapScope;
+import solidstack.script.scopes.ObjectScope;
 import solidstack.script.scopes.Scope;
 
 
-public class Block extends LocalizedExpression // TODO Is this localized needed?
+
+public class With extends LocalizedExpression
 {
+	private Expression object;
 	private Expression expression;
 
-
-	public Block( SourceLocation location, Expression expression )
+	public With( SourceLocation location, Expression object, Expression expression )
 	{
 		super( location );
+		this.object = object;
 		this.expression = expression;
-	}
-
-	public Expression getExpression()
-	{
-		return this.expression;
 	}
 
 	public Object evaluate( ThreadContext thread )
 	{
-		DefaultScope scope = new DefaultScope( thread.getScope() );
-		Scope old = thread.swapScope( scope );
+		Object object = Util.deref( this.object.evaluate( thread ) );
+		Scope scope;
+		if( object instanceof Scope )
+			scope = (Scope)object;
+		else if( object instanceof Map )
+			scope = new MapScope( (Map)object );
+		else
+			scope = new ObjectScope( object );
+		scope = new CombinedScope( scope, thread.getScope() );
+		scope = thread.swapScope( scope );
 		try
 		{
 			return this.expression.evaluate( thread );
 		}
 		finally
 		{
-			thread.swapScope( old );
+			thread.swapScope( scope );
 		}
+	}
+
+	public void writeTo( StringBuilder out )
+	{
+		out.append( "with(" );
+		this.object.writeTo( out );
+		out.append( ')' );
+		this.expression.writeTo( out );
 	}
 }

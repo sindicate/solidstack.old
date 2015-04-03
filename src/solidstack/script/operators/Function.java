@@ -19,8 +19,7 @@ package solidstack.script.operators;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.util.Assert;
-
+import solidstack.lang.Assert;
 import solidstack.script.ThreadContext;
 import solidstack.script.expressions.Block;
 import solidstack.script.expressions.Expression;
@@ -46,13 +45,13 @@ public class Function extends Operator
 		{
 			for( Expression par : ( (BuildTuple)args ).getExpressions() )
 			{
-				Assert.isTrue( par instanceof Spread || par instanceof Identifier );
+				Assert.isTrue( par instanceof Spread || par instanceof Identifier || par instanceof Assign );
 				parameters.add( par );
 			}
 		}
 		else if( args != null )
 		{
-			Assert.isTrue( args instanceof Spread || args instanceof Identifier );
+			Assert.isTrue( args instanceof Spread || args instanceof Identifier || args instanceof Assign );
 			parameters.add( args );
 		}
 		this.parameters = parameters.toArray( new Expression[ parameters.size() ] );

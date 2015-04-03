@@ -18,43 +18,49 @@ package solidstack.script;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import solidstack.io.SourceException;
+import solidstack.io.SourceReader;
+import solidstack.io.memfs.Folder;
+import solidstack.io.memfs.Resource;
 import solidstack.script.java.Java;
-import solidstack.script.objects.FunnyString;
+import solidstack.script.objects.PString;
+import solidstack.script.scopes.DefaultScope;
+import solidstack.script.scopes.GlobalScope;
 import solidstack.script.scopes.Scope;
-import solidstack.script.scopes.ScopeException;
 import solidstack.script.scopes.Symbol;
 import solidstack.script.scopes.TempSymbol;
 
 
-@SuppressWarnings( "javadoc" )
+@SuppressWarnings( { "javadoc", "unchecked", "rawtypes" } )
 public class ScriptTests extends Util
 {
 	@Test
 	static public void test1()
 	{
-		Scope context = new Scope();
-		context.set( "var1", "Value" );
-		test( "var1", context, "Value" );
+		test( "println( \"Hello World!\" )", "Hello World!" );
+		DefaultScope scope = new DefaultScope();
+		scope.set( "var1", "Value" );
+		test( "var1", scope, "Value" );
 		test( "", null );
 	}
 
 	@Test
 	static public void test2()
 	{
-		Scope context = new Scope();
-		context.set( "var1", 1 );
-		test( "var1 + 1", context, 2 );
+		DefaultScope scope = new DefaultScope();
+		scope.set( "var1", 1 );
+		test( "var1 + 1", scope, 2 );
 	}
 
 	@Test
@@ -130,7 +136,7 @@ public class ScriptTests extends Util
 	@Test
 	static public void test5()
 	{
-		Scope context = new Scope();
+		DefaultScope scope = new DefaultScope();
 
 		test( "a = 1", context, 1 );
 		Assert.assertEquals( context.get( "a" ), 1 );
@@ -264,12 +270,12 @@ public class ScriptTests extends Util
 	@Test
 	static public void test13()
 	{
-		Scope context = new Scope();
-		context.set( "s", "sinterklaas" );
-		test( "s.length()", context, 11 );
-		test( "s.substring( 6 )", context, "klaas" );
-		test( "s.substring( 1, 6 )", context, "inter" );
-		test( "s.contains( \"kl\" )", context, true );
+		DefaultScope scope = new DefaultScope();
+		scope.set( "s", "sinterklaas" );
+		test( "s.length()", scope, 11 );
+		test( "s.substring( 6 )", scope, "klaas" );
+		test( "s.substring( 1, 6 )", scope, "inter" );
+		test( "s.contains( \"kl\" )", scope, true );
 
 		TestObject1 o1 = new TestObject1();
 		context.set( "o1", o1 );
@@ -294,16 +300,16 @@ public class ScriptTests extends Util
 	@Test
 	static public void test13_2()
 	{
-		Scope context = new Scope();
-		test( "c = class( \"solidstack.script.ScriptTests$TestObject1\" );", context, TestObject1.class );
-		test( "c().value", context, 0 );
-		test( "c( 3.14 ).value", context, 2 );
-		test( "c( 0.123E-10 ).value", context, 2 );
-		test( "c( \"string\" ).value", context, 3 );
-		test( "c( \"string\", \"string\" ).value", context, 4 );
-		test( "c( 1, 1 ).value", context, 6 );
-		test( "c( 1 == 1 ).value", context, 7 );
-		test( "c( a: 1, b: 2 ).value", context, 8 );
+		DefaultScope scope = new DefaultScope();
+		test( "c = loadClass( \"solidstack.script.ScriptTests$TestObject1\" );", scope, TestObject1.class );
+		test( "new c().value", scope, 0 );
+		test( "new c( 3.14 ).value", scope, 2 );
+		test( "new c( 0.123E-10 ).value", scope, 2 );
+		test( "new c( \"string\" ).value", scope, 3 );
+		test( "new c( \"string\", \"string\" ).value", scope, 4 );
+		test( "new c( 1, 1 ).value", scope, 6 );
+		test( "new c( 1 == 1 ).value", scope, 7 );
+//		test( "new c( a = 1, b = 2 ).value", scope, 8 ); TODO
 
 		test( "c2 = class( \"solidstack.script.ScriptTests$TestObject2\" );", context, TestObject2.class );
 		test( "c2( 1, 1 ).value", context, 1 );
@@ -321,22 +327,26 @@ public class ScriptTests extends Util
 	}
 
 	@Test
-	static public void test15()
+	static public void pStrings()
 	{
-		test( "a = 1; \"a = ${a}\"", "a = 1" );
-		test( "a = 1; s = \"a = ${a}\"; a = 2; s", "a = 1" );
-		test( "a = 1; \"a = \\${a}\"", "a = ${a}" );
-		test( "\"${1}\"", "1" );
-//		test( "\"${}\"", "1" ); TODO
-		test( "\"\".getClass()", String.class );
-		test( "\"x\".getClass()", String.class );
-		test( "\"${1}\".getClass()", FunnyString.class );
-		test( "\"x${1}x\".getClass()", FunnyString.class );
-		test( "\"x${1}x\".size()", 3 );
+		test( "a = 1; s\"a = ${a}\".toString()", "a = 1" );
+		test( "a = 1; s = s\"a = ${a}\"; a = 2; s.toString()", "a = 1" );
+		test( "a = 1; s\"a = \\${a}\"", "a = ${a}" );
+		test( "s\"${1}\".toString()", "1" );
+		test( "s\"${}\"", "" );
+		test( "s\"\".getClass()", String.class );
+		test( "s\"x\".getClass()", String.class );
+		test( "s\"${1}\".getClass()", PString.class );
+		test( "s\"x${1}x\".getClass()", PString.class );
+		test( "s\"x${1}x\".size()", 3 );
+		test( "s\"${\"x\"}\".toString()", "x" );
+		failParse( "\"${\"x\"}\"", "Unexpected token 'x'" );
+		test( "s\"\\\"${1}\\\"\".toString()", "\"1\"" );
+		test( "s\"\\\"${\"X\"}\\\"\".toString()", "\"X\"" );
 	}
 
 	@Test
-	static public void test16()
+	static public void nestedScopes()
 	{
 		test( "def( a ) = 1;", 1 );
 
@@ -391,7 +401,7 @@ public class ScriptTests extends Util
 	}
 
 	@Test
-	static public void test20() throws ClassNotFoundException, InstantiationException, IllegalAccessException
+	static public void collections() throws ClassNotFoundException
 	{
 		Object test = new String[ 10 ][ 10 ];
 		assert test instanceof Object[];
@@ -413,29 +423,43 @@ public class ScriptTests extends Util
 		test( "list = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ].toArray(); list[ 3 ]", 4 );
 		test( "list = []; list.size()", 0 );
 
-		test( "map = [ 0: 1, 1: 2, 2: 3, 3: 4 ]; map[ 3 ]", 4 );
-		test( "map = [ \"first\": 1, \"second\": 2, \"third\": 3 ]; map[ \"second\" ]", 2 );
-		test( "map = [ \"fir\" + \"st\": 1, \"second\": 2, \"third\": 3 ]; map[ \"first\" ]", 1 );
-		test( "map = [ \"first\": 1, \"second\": 2, \"third\": 3 ]; map[ \"fourth\" ]", null ); // TODO Undefined? Then we assign to it too.
-		test( "map = scope( [ \"first\": 1, \"second\": 2, \"third\": 3 ] ); map.third", 3 );
-		test( "map = scope( [ \"first\": 1, \"second\": 2, \"third\": 3 ] ); map.fourth", null ); // TODO What about undefined?
-		test( "map = [:]; s = scope( map ); s.first = 1; map[ \"first\" ]", 1 );
-		test( "map = [:]; map[ \"fourth\" ]", null );
-		test( "map = [:]; map.size()", 0 );
-		test( "map = [:]; map[ \"third\" ] = 3; map[ \"third\" ]", 3 );
+		test( "map = Map( 0 -> 1, 1 -> 2, 2 -> 3, 3 -> 4 ); map( 3 )", 4 );
+		test( "map = Map( \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ); map( \"second\" )", 2 );
+		test( "map = Map( \"fir\" + \"st\" -> 1, \"second\" -> 2, \"third\" -> 3 ); map( \"first\" )", 1 );
+		test( "map = Map( \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ); map( \"fourth\" )", null ); // TODO Undefined? Then we assign to it too.
+		test( "map = Map( \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ); map.third", 3 );
+		test( "map = Map( \"first\" -> 1, \"second\" -> 2, \"third\" -> 3 ); map.fourth", null ); // TODO What about undefined?
+		test( "map = Map(); map.first = 1; map( \"first\" )", 1 );
+		test( "map = Map(); map( \"fourth\" )", null );
+		test( "map = Map(); map.size()", 0 );
+		test( "map = Map(); map( \"third\" ) = 3; map( \"third\" )", 3 );
+		test( "map = LinkedHashMap( 0 -> 1 ); map.size()", 1 );
 
-		test( "array = class( \"java.lang.reflect.Array\" )#newInstance( class( \"java.lang.String\" ), 10 ); array.size()", 10 );
-		test( "array = class( \"java.lang.reflect.Array\" )#newInstance( class( \"int\" ), 10 ); array.size()", 10 );
+		test( "set = Set( 0 ); set.size()", 1 );
+		test( "set = LinkedHashSet( 0, 1, 0 ); set.size()", 2 );
 
-		eval( "fun( a; a )( null )" );
-		eval( "fun( a; a )( if( false; 1 ) )" );
-		eval( "fun( a; a )( while( false; 1 ) )" );
-		eval( "fun( a; a )( [].each( fun( a; () ) ) )" );
+		test( "props = Properties( \"prop1\" -> \"value1\" ); props.prop1", "value1" );
 
-		eval( "( a -> a )( null )" );
-		eval( "( a -> a )( if( false; 1 ) )" );
-		eval( "( a -> a )( while( false; 1 ) )" );
-		eval( "( a -> a )( [].each( a -> () ) )" );
+		test( "array = loadClass( \"java.lang.reflect.Array\" ).newInstance( loadClass( \"java.lang.String\" ), 10 ); array.size()", 10 );
+		test( "array = loadClass( \"java.lang.reflect.Array\" ).newInstance( loadClass( \"int\" ), 10 ); array.size()", 10 );
+
+		test( "scope = Scope( \"test\" -> 1, 'test2 -> 2 ); scope.test", 1 );
+		test( "scope = Scope(); with( scope )( test = 1 ); scope.test", 1 );
+		test( "scope = Scope(); compile( \"test = 1\" ).eval( scope ); scope.test", 1 );
+//		test( "scope = Scope(); x = =>( test = 1 ); x.eval( scope ); scope.test", 1 );
+//		test( "scope = Scope(); scope.do( test = 1 ); scope.test", 1 );
+
+		eval( "( a => a )( null )" );
+		eval( "( a => a )( if( false; 1 ) )" );
+		eval( "( a => a )( while( false ) 1 )" );
+		eval( "( a => a )( List().foreach( a => () ) )" );
+	}
+
+	@Test
+	static public void toStringTests()
+	{
+		test( "List().toString()", "[]" ); // JDK
+		test( "Map().toString()", "{}" ); // JDK
 	}
 
 	@Test
@@ -489,10 +513,33 @@ public class ScriptTests extends Util
 	}
 
 	@Test
-	static public void test23()
+	static public void testNamedParameters()
 	{
-		test( "f = (a,b,c) -> a+b+c; f( a: 1, b: 2, c: 3 )", 6 );
+		// TODO Calling default global methods with named parameter
+		test( "f = (a,b,c) => a; f( b = 1, c = 2, a = 3 )", 3 );
+		test( "f = (a,b=0,c=0) => a; f( a = 3 )", 3 );
+		test( "f = (a,b=0,c=0) => a; f( a = null )", null );
+		test( "f = (a=0,b,c=0) => a; f( b = 1 )", 0 );
+		test( "f = () => (); f()", null );
+		test( "f = (a=1) => a; f()", 1 );
+		test( "f = (a=1) => a; f(2)", 2 );
+		fail( "f = (a=1) => a; f(2,3)", ScriptException.class, "Too many parameters" );
+		test( "f = (a=1,b=2) => a+b; f()", 3 );
+		test( "f = (a=1,b=2) => a+b; f(3)", 5 );
+		test( "f = (a=1,b=2) => a+b; f(3,4)", 7 ); // TODO _ as placeholder
+		fail( "f = (a=1,b=2) => a+b; f(3,4,5)", ScriptException.class, "Too many parameters" );
+		test( "f = (a=1,b=2) => a+b; f(a=3)", 5 );
+		test( "f = (a=1,b=2) => a+b; f(b=4)", 5 );
+		test( "f = (a=1,b=2) => a+b; f(b=4,a=3)", 7 );
+		test( "x=5; f = (a=x,b=2) => a+b; { var x=7; f() }", 7 );
+//		test( "f = ( =>a, =>b ) => a; f(b=4,a=3)", 7 );
 	}
+
+//	@Test
+//	static public void testDef()
+//	{
+//		test( "def f(a) = a; f(1)", 1 );
+//	}
 
 	@Test
 	static public void test24()
@@ -633,68 +680,176 @@ public class ScriptTests extends Util
 	@Test
 	static public void test27()
 	{
-		Scope scope = new Scope();
+		DefaultScope scope = new DefaultScope();
 		scope.set( "o1", new TestObject1() );
 
-		fail( "class( \"xxx\" )", ScriptException.class, "No such class: xxx" );
+		fail( "1 = 1", ScriptException.class, "Can't assign to a java.lang.Integer" );
+		fail( "loadClass( \"xxx\" )", ScriptException.class, "Class not found: xxx" );
 		fail( "1.xxx", ScriptException.class, "No such field: java.lang.Integer.xxx" );
 		fail( "class( \"java.lang.Integer\" )#xxx", ScriptException.class, "No such field: static java.lang.Integer.xxx" );
 		fail( "o1.test( null )", scope, ScriptException.class, "test(java.util.Map)" );
 		fail( "f = ( *b, c ) -> (); f()", ScriptException.class, "Collecting parameter must be the last parameter" );
 		fail( "f = ( a ) -> (); f()", ScriptException.class, "Not enough parameters" );
 		fail( "f = () -> (); f( 1 )", ScriptException.class, "Too many parameters" );
-		fail( "f()", ScopeException.class, "'f' undefined" );
+		fail( "f()", ScriptException.class, "'f' undefined" );
 		fail( "f = null; f()", ScriptException.class, "Function is null" );
 		fail( "f = 1; f()", ScriptException.class, "Can't apply parameters to a java.lang.Integer" );
 		fail( "a = ( 1, 2 )", ScriptException.class, "Can't assign tuples to variables" );
-		fail( "f = null; f[]", ScriptException.class, "Null can't be indexed" );
-		fail( "f = 1; f[]", ScriptException.class, "Missing index" );
-		fail( "f = 1; f[ 1 ]", ScriptException.class, "Can't index a java.lang.Integer" );
-		fail( "--1", ScriptException.class, "Can't apply -- to a java.lang.Integer" );
-		fail( "++1", ScriptException.class, "Can't apply ++ to a java.lang.Integer" );
-		fail( "1--", ScriptException.class, "Can't apply -- to a java.lang.Integer" );
-		fail( "1++", ScriptException.class, "Can't apply ++ to a java.lang.Integer" );
-		fail( "--null", ScriptException.class, "Can't apply -- to a null" );
-		fail( "++null", ScriptException.class, "Can't apply ++ to a null" );
-		fail( "null--", ScriptException.class, "Can't apply -- to a null" );
-		fail( "null++", ScriptException.class, "Can't apply ++ to a null" );
-		fail( "[ a: 1, 2 ]", ScriptException.class, "All items in a map must be labeled" );
-		fail( ":1", SourceException.class, "Symbol must be an identifier or a string" );
-		fail( "abs()", ScriptException.class, "abs() needs exactly one parameter" );
-		fail( "class()", ScriptException.class, "class() needs exactly one parameter" );
-		fail( "class( 1 )", ScriptException.class, "class() needs a string parameter" );
-		fail( "def()", ScriptException.class, "def() needs exactly one parameter" );
-		fail( "def( 1 )", ScriptException.class, "def() needs a variable identifier as parameter" );
+//		fail( "f = null; f[]", ScriptException.class, "Null can't be indexed" );
+//		fail( "f = 1; f[]", ScriptException.class, "Missing index" );
+//		fail( "f = 1; f[ 1 ]", ScriptException.class, "Can't index a java.lang.Integer" );
+//		fail( "--1", ScriptException.class, "Can't apply -- to a java.lang.Integer" );
+//		fail( "++1", ScriptException.class, "Can't apply ++ to a java.lang.Integer" );
+//		fail( "1--", ScriptException.class, "Can't apply -- to a java.lang.Integer" );
+//		fail( "1++", ScriptException.class, "Can't apply ++ to a java.lang.Integer" );
+//		fail( "--null", ScriptException.class, "Can't apply -- to a null" );
+//		fail( "++null", ScriptException.class, "Can't apply ++ to a null" );
+//		fail( "null--", ScriptException.class, "Can't apply -- to a null" );
+//		fail( "null++", ScriptException.class, "Can't apply ++ to a null" );
+		fail( "Map( a -> 2 )", ScriptException.class, "'a' undefined" );
+		fail( "Map( 1 -> 2, 3 )", ScriptException.class, "No such method: static java.util.Map.apply() is applicable" );
+		failParse( "'1", "Unexpected character" );
+		failParse( "var", "identifier expected after 'var', not EOF, at line 1" );
+		failParse( "var 1", "identifier expected after 'var', not 1" );
 		fail( "defined()", ScriptException.class, "defined() needs exactly one parameter" );
 		fail( "defined( 1 )", ScriptException.class, "defined() needs a variable identifier as parameter" );
 		fail( "length()", ScriptException.class, "length() needs exactly one parameter" );
 		fail( "length( 1 )", ScriptException.class, "length() needs a string parameter" );
 		fail( "print()", ScriptException.class, "print() needs exactly one parameter" );
 		fail( "println()", ScriptException.class, "println() needs exactly one parameter" );
-		fail( "scope()", ScriptException.class, "scope() needs exactly one parameter" );
-		fail( "scope( 1 )", ScriptException.class, "scope() needs a map parameter" );
-		fail( "stripMargin()", ScriptException.class, "stripMargin() needs exactly one parameter" );
-		fail( "stripMargin( 1 )", ScriptException.class, "stripMargin() needs a string parameter" );
-		fail( "substr()", ScriptException.class, "substr() needs 2 or 3 parameters" );
-		fail( "substr( 1, 1 )", ScriptException.class, "substr() needs a string as first parameter" );
-		fail( "substr( \"\", \"\" )", ScriptException.class, "substr() needs an integer as second parameter" );
-		fail( "substr( \"\", 1, \"\" )", ScriptException.class, "substr() needs an integer as third parameter" );
-		fail( "throw()", ScriptException.class, "throw() needs exactly one parameter" );
-		fail( "upper()", ScriptException.class, "upper() needs exactly one parameter" );
-		fail( "upper( 1 )", ScriptException.class, "upper() needs a string parameter" );
-		fail( "val()", ScriptException.class, "val() needs exactly one parameter" );
-		fail( "val( 1 )", ScriptException.class, "val() needs a variable identifier as parameter" );
-		fail( "f = ( a ) -> (); f( b: 1 )", ScriptException.class, "Parameter 'b' undefined" );
-		fail( "f = ( a, b ) -> (); f( a: 1, 2 )", ScriptException.class, "All parameters must be named" );
-		fail( "f = ( a ) -> (); f( \"a\": 1 )", ScriptException.class, "Parameter must be named with a variable identifier" );
+//		fail( "scope()", ScriptException.class, "scope() needs exactly one parameter" );
+//		fail( "scope( 1 )", ScriptException.class, "scope() needs a map parameter" );
+		failParse( "throw", "expression expected after 'throw'" );
+		failParse( "throw;", "expression expected after 'throw'" );
+		fail( "throw()", ScriptException.class, "null" );
+//		fail( "val()", ScriptException.class, "val() needs exactly one parameter" );
+//		fail( "val( 1 )", ScriptException.class, "val() needs a variable identifier as parameter" );
+		fail( "f = ( a = 1 ) => (); f( b = 1 )", ScriptException.class, "Parameter 'b' undefined" );
+		fail( "f = ( a ) => (); f( b = 1 )", ScriptException.class, "No value specified for parameter 'a'" );
+		fail( "f = ( a, b ) => (); f( a = 1, 2 )", ScriptException.class, "All parameters must be named" );
+		fail( "f = ( a, b ) => (); f( 1, b = 2 )", ScriptException.class, "All parameters must be named" );
+		fail( "f = ( a ) => (); f( \"a\" = 1 )", ScriptException.class, "Parameter must be named with a variable identifier" );
 	}
 
 	@Test
 	static public void test28()
 	{
-		test( "if( true; return( true ) ); return( false )", true );
+		test( "if( true ) return( true ); return( false )", true );
 		test( "l = [ 1, 2, 3 ]; l.each( i -> return( i ) ); 4", 1 );
 		test( "l = [ 1, 2, 3 ]; f = i -> return( i ); l.each( f ); 4", 4 );
+	}
+
+	@Test
+	static public void test29()
+	{
+		test( "List( 1, 2, 3 ).mkString( \"; \" )", "1; 2; 3" );
+		test( "List( 1, 2, 3 ).mkString( \"List( \", \", \", \" )\" )", "List( 1, 2, 3 )" );
+		test( "List( 1, 2, 3 ).iterator().mkString( \"; \" )", "1; 2; 3" );
+		test( "List( 1, 2, 3 ).iterator().mkString( \"List( \", \", \", \" )\" )", "List( 1, 2, 3 )" );
+		test( "Array.newInstance( String, 3 ).mkString()", "nullnullnull" );
+
+		test( "List( 1, 2, 3 ).filter( n => n == 2 )", Arrays.asList( 2 ) );
+		test( "List( 1, 2, 3 ).filter( n => () )", Arrays.asList() );
+		test( "List( 1, 2, 3 ).map( n => s\"${n}.0\".toString() )", Arrays.asList( "1.0", "2.0", "3.0" ) );
+		test( "List( 1, 2, 3 ).fold( 0, ( a, b ) => a + b )", 6 );
+	}
+
+	@Test
+	static public void test30()
+	{
+		Object scope = new TestObject4();
+		test( "field1", scope, 1 );
+		test( "field1 = 2; field2", scope, 2 );
+		test( "field2", scope, 2 );
+		test( "field2 = 3; field2", scope, 3 );
+		test( "getField2()", scope, 3 );
+		test( "setField2( 4 ); field2", scope, 4 );
+
+		Scope scope2 = new DefaultScope();
+		scope2.def( Symbol.apply( "obj" ), new TestObject4() );
+		test( "with( obj ) field1", scope2, 1 );
+		test( "with( obj ) ( field1 = 2; field2 )", scope2, 2 );
+		test( "with( obj ) field2", scope2, 2 );
+		test( "with( obj ) ( field2 = 3; field2 )", scope2, 3 );
+		test( "with( obj ) getField2()", scope2, 3 );
+		test( "with( obj ) ( setField2( 4 ); field2 )", scope2, 4 );
+	}
+
+	@Test
+	static public void test31()
+	{
+		Object object = new TestObject4();
+		DefaultScope scope = new DefaultScope();
+		scope.def( Symbol.apply( "o" ), object );
+		test( "o.field1", scope, 1 );
+		test( "o.field1 = 2; o.field2", scope, 2 );
+		test( "o.field2", scope, 2 );
+		test( "o.field2 = 3; o.field2", scope, 3 );
+		test( "o.getField2()", scope, 3 );
+		test( "o.setField2( 4 ); o.field2", scope, 4 );
+	}
+
+	@Test
+	static public void test32()
+	{
+		Map scope = new HashMap();
+		scope.put( "field1", 1 );
+		scope.put( "field2", 2 );
+		test( "field1", scope, 1 );
+		test( "field1 = 2; field2", scope, 2 );
+		test( "field2", scope, 2 );
+		test( "field2 = 3; field2", scope, 3 );
+	}
+
+	@Test
+	static public void test33()
+	{
+		Map map = new HashMap();
+		map.put( "field1", 1 );
+		map.put( "field2", 2 );
+		DefaultScope scope = new DefaultScope();
+		scope.def( Symbol.apply( "o" ), map );
+		test( "o.field1", scope, 1 );
+		test( "o.field1 = 2; o.field2", scope, 2 );
+		test( "o.field2", scope, 2 );
+		test( "o.field2 = 3; o.field2", scope, 3 );
+	}
+
+	@Test
+	static public void modules() throws FileNotFoundException
+	{
+		eval( "module( \"m1\" )( m2 = 3 )" );
+		test( "m1.m2", 3 );
+
+		Folder root = new Folder();
+		Resource module = root.putFile( "module.funny", "module( \"m1\" )( m2 = 3 )" );
+		root.putFile( "script.funny", "require( \"module.funny\" ); m1.m2" );
+
+		SourceReader reader = root.getSourceReader( "script.funny" );
+		Script script = load( reader );
+
+		GlobalScope.instance.reset();
+		test( script, 3 );
+
+		// ---- Second time skips
+		module.setContents( "module( \"m1\" )( throw \"Should not come here\" )" );
+		script.eval();
+
+		// TODO Require does nothing more than execute the script file
+		// ---- Circular tests
+		GlobalScope.instance.reset();
+		root.putFile( "module.funny", "module( \"m1\" )( require( \"module2.funny\" ) )" );
+		root.putFile( "module2.funny", "module( \"m2\" )( require( \"module.funny\" ) )" );
+		fail( script, ScriptException.class, "Circular module dependency detected" );
+
+		// ---- Constructor
+		GlobalScope.instance.reset();
+		root = new Folder();
+		root.putFile( "deployer.funny", "module( \"Deployer\" )( var Deployer = x => x * 2 )" );
+		root.putFile( "script.funny", "require( \"deployer.funny\" ); var deployer = Deployer.Deployer( 1 )" );
+		reader = root.getSourceReader( "script.funny" );
+		script = load( reader );
+		test( script, 2 );
 	}
 
 	@Test
@@ -712,10 +867,10 @@ public class ScriptTests extends Util
 	}
 
 	// DONE Calls with named parameters
-	// TODO A function without parameters, does not need the FunctionObject. Its just an unevaluated expression.
 	// TODO Exceptions, catch & finally
 	// TODO MethodMissing
-	// TODO Default parameter values
+	// TODO Scala dynamic?
+	// DONE Default parameter values
 	// TODO def & val
 	// TODO Store tuples in variables?
 	// TODO Binary and hexadecimal literals
@@ -727,7 +882,7 @@ public class ScriptTests extends Util
 	// TODO Ranges
 	// TODO Synchronization
 	// TODO Return, switch, break, continue
-	// TODO Threads & sleep, etc
+	// TODO Threads, sleep, wait, notify, join, etc
 	// TODO Assert with lazy evaluation of its arguments
 	// TODO Optional? Lazy evaluation of all arguments
 	// DONE // Comments, /* comments
@@ -736,18 +891,21 @@ public class ScriptTests extends Util
 	// TODO Token interceptors that work on the token stream, or custom script parsers for eval
 	// DONE Symbols :red
 	// TODO Mixins
-	// TODO Lazy evaluation
 	// TODO Class extension pluggable
-	// TODO Extensions: unique/each(WithIndex)/find(All)/collect/contains/every/indexOf/flatten/groupBy/inject/join/max/min/removeAll/replaceAll/reverse/sum/tail/traverse/withReader(etc)
 	// TODO with() to execute a function with a different context
 	// DONE Currying, no need
-	// TODO Global namespaces
 	// TODO Operator calling method on first operand, operator overloading
 	// TODO Hints for null parameters: a as String which evaluates to a TypedNull object if a is null
 	// TODO Compilation errors including column number
 	// TODO Compartmentalization like Java does with classloaders. This means name spaces too.
 	// TODO Adding tuples or appending values to it.
 	// TODO Always remember the lexical scope. Needed if we want script file specific settings.
+	// TODO Axis: owner = lexical owner, delegate, prototype, global, this
+	// TODO Add resource attribute or resource() method which returns the resource of the current script
+	// TODO Reloadable scripts, need ResourceLoader (like the TemplateLoader)
+	// TODO Caching of loaded and compiled scripts (to execute repeatedly)
+	// TODO Modules and namespaces
+	// TODO Values with extra attributes. For example: val is a String, but val.kind is something else
 
 	@SuppressWarnings( "unused" )
 	static public class TestObject1
@@ -786,7 +944,6 @@ public class ScriptTests extends Util
 		public int test( int i1, int i2 ) { return 1; }
 	}
 
-	@SuppressWarnings( "unused" )
 	static public class TestObject3
 	{
 		public void throwException() throws Exception
@@ -794,4 +951,11 @@ public class ScriptTests extends Util
 			throw new Exception( "test exception" );
 		}
 	}
+
+	static public class TestObject4
+	{
+		public int field1 = 1;
+		private int _field2 = 2;
+		public int getField2() { return this._field2; }
+		public void setField2( int value ) { this._field2 = value; }
 }

@@ -11,24 +11,19 @@ import java.io.Reader;
 import org.testng.Assert;
 
 import solidstack.io.SourceException;
+import solidstack.io.SourceReader;
 import solidstack.script.scopes.Scope;
 
 public class Util
 {
-	static public void test( String expression, Object expected )
+	static public Object eval( SourceReader source, Object scope )
 	{
-		Util.test( expression, null, expected );
-	}
-
-	static public void test( String expression, Scope context, Object expected )
-	{
-		Object result = Util.eval( expression, context );
-		Assert.assertEquals( result, expected );
+		return load( source ).eval( scope );
 	}
 
 	static public Object eval( String expression )
 	{
-		return Util.eval( expression, null );
+		return eval( expression, null );
 	}
 
 	static public Object eval( String expression, Scope context )
@@ -38,7 +33,36 @@ public class Util
 		return script.eval( context );
 	}
 
-	static public void testParseFail( String expression )
+	static public void fail( Script script, Class<? extends Exception> exception, String message )
+	{
+		fail( script, null, exception, message );
+	}
+
+	static public void fail( Script script, Scope scope, Class<? extends Exception> exception, String message )
+	{
+		try
+		{
+			script.eval( scope );
+			failBecauseExceptionWasNotThrown( exception );
+		}
+		catch( Exception t )
+		{
+			assertThat( t ).isExactlyInstanceOf( exception );
+			assertThat( t ).hasMessageContaining( message );
+		}
+	}
+
+	static public void fail( String expression, Class<? extends Exception> exception, String message )
+	{
+		fail( Script.compile( expression ), null, exception, message );
+	}
+
+	static public void fail( String expression, Scope scope, Class<? extends Exception> exception, String message )
+	{
+		fail( Script.compile( expression ), scope, exception, message );
+	}
+
+	static public void failParse( String expression, String message )
 	{
 		try
 		{
@@ -47,27 +71,13 @@ public class Util
 		}
 		catch( SourceException e )
 		{
-			// Expected
+			assertThat( e ).hasMessageContaining( message );
 		}
 	}
 
-	static public void fail( String expression, Class<? extends Exception> exception, String message )
+	static public Script load( SourceReader source )
 	{
-		fail( expression, null, exception, message );
-	}
-
-	static public void fail( String expression, Scope scope, Class<? extends Exception> exception, String message )
-	{
-		try
-		{
-			eval( expression, scope );
-			failBecauseExceptionWasNotThrown( exception );
-		}
-		catch( Exception t )
-		{
-			assertThat( t ).isExactlyInstanceOf( exception );
-			assertThat( t ).hasMessageContaining( message );
-		}
+		return Script.compile( source );
 	}
 
 	static public String readFile( String file ) throws IOException
@@ -80,5 +90,31 @@ public class Util
 		while( ( len = reader.read( buffer ) ) >= 0 )
 			result.append( buffer, 0, len );
 		return result.toString();
+	}
+
+	static public void test( Script script, int expected )
+	{
+		Assert.assertEquals( script.eval(), expected );
+}
+
+	static public void test( SourceReader source, Object expected )
+	{
+		test( source, null, expected );
+	}
+
+	static public void test( SourceReader source, Object scope, Object expected )
+	{
+		Assert.assertEquals( eval( source, scope ), expected );
+	}
+
+	static public void test( String expression, Object expected )
+	{
+		test( expression, null, expected );
+	}
+
+	static public void test( String expression, Object scope, Object expected )
+	{
+		Object result = eval( expression, scope );
+		Assert.assertEquals( result, expected );
 	}
 }

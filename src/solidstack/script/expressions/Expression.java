@@ -34,7 +34,22 @@ public interface Expression
 	Object evaluate( ThreadContext thread );
 
 	/**
+	 * Evaluate the expression and return a reference if possible.
+	 *
+	 * @param thread The thread context.
+	 * @return The result of evaluating this expression.
+	 */
+	Object evaluateRef( ThreadContext thread );
+
+	/**
 	 * @return The source location where this expression is encountered.
 	 */
 	SourceLocation getLocation();
+
+	/**
+	 * Output this expression to a string.
+	 *
+	 * @param out To write the expression to.
+	 */
+	void writeTo( StringBuilder out );
 }

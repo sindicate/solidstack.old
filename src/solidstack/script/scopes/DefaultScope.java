@@ -16,39 +16,65 @@
 
 package solidstack.script.scopes;
 
+import funny.Symbol;
 
 
-public class CombinedScope extends AbstractScope
+
+
+public class DefaultScope extends AbstractScope
 {
-	private Scope scope1, scope2;
+	static public final Symbol THIS = Symbol.apply( "this" );
 
-	public CombinedScope( Scope scope1, Scope scope2 )
+	private Scope parent;
+
+	private ValueMap<Value> values = new ValueMap<Value>();
+
+	public DefaultScope()
 	{
-		this.scope1 = scope1;
-		this.scope2 = scope2;
+		def( THIS, this );
+	}
+
+	public DefaultScope( Scope parent )
+	{
+		this();
+		this.parent = parent;
+	}
+
+	// For testing
+	public void clear()
+	{
+		this.values.clear();
+	}
+
+	Value findLocalValue( Symbol symbol )
+	{
+		return this.values.get( symbol );
 	}
 
 	@Override
 	public Ref findRef( Symbol symbol )
 	{
-		Ref v = this.scope1.findRef( symbol );
+		Value v = findLocalValue( symbol );
 		if( v != null )
 			return v;
-		v = this.scope2.findRef( symbol );
-		if( v != null )
-			return v;
-		return null;
+		if( this.parent != null )
+			return this.parent.findRef( symbol );
+		return GlobalScope.instance.findRef( symbol );
 	}
 
 	@Override
 	public Variable def( Symbol symbol, Object value )
 	{
-		return this.scope1.def( symbol, value );
+		Variable result = new Variable( symbol, value );
+		this.values.put( result );
+		return result;
 	}
 
 	@Override
 	public Value val( Symbol symbol, Object value )
 	{
-		return this.scope1.val( symbol, value );
+		Value result = new Value( symbol, value );
+		this.values.put( result );
+		return result;
 	}
 }

@@ -17,6 +17,7 @@
 package solidstack.script.expressions;
 
 import solidstack.io.SourceLocation;
+import solidstack.script.ThreadContext;
 
 
 /**
@@ -37,5 +38,10 @@ abstract public class LocalizedExpression implements Expression
 	public SourceLocation getLocation()
 	{
 		return this.location;
+	}
+
+	public Object evaluateRef( ThreadContext thread )
+	{
+		return evaluate( thread );
 	}
 }

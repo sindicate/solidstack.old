@@ -14,34 +14,31 @@
  * limitations under the License.
  */
 
-package solidstack.script;
+package solidstack.script.expressions;
 
 import solidstack.io.SourceLocation;
+import solidstack.script.ThreadContext;
 
-public class ThrowException extends RuntimeException
+
+public class Var extends LocalizedExpression
 {
-	private Object object;
-	private SourceLocation[] stack;
+	private Identifier identifier;
 
-	public ThrowException( Object object, SourceLocation[] stack )
+
+	public Var( SourceLocation location, Identifier identifier )
 	{
-		this.object = object == null ? "null" : object ;
-		this.stack = stack;
+		super( location );
+		this.identifier = identifier;
 	}
 
-	@Override
-	public String getMessage()
+	public Object evaluate( ThreadContext thread )
 	{
-		return this.object.toString();
+		return thread.getScope().def( this.identifier.getSymbol(), null );
 	}
 
-	@Override
-	public String toString()
+	public void writeTo( StringBuilder out )
 	{
-		StringBuilder result = new StringBuilder();
-		result.append( getMessage() );
-		for( SourceLocation location : this.stack )
-			result.append( "\n- at " ).append( location.toString() );
-		return result.toString();
+		out.append( "var " );
+		this.identifier.writeTo( out );
 	}
 }

@@ -16,17 +16,29 @@
 
 package solidstack.script.objects;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
+
+import solidstack.script.JavaException;
+import solidstack.script.Returning;
+import solidstack.script.ThreadContext;
+import solidstack.script.java.Java;
+import solidstack.script.java.MissingFieldException;
+import solidstack.script.scopes.AbstractScope.Ref;
+import solidstack.script.scopes.ScopeException;
+import funny.Symbol;
 
 
-public class ObjectMember
+
+public class ObjectMember implements Ref
 {
 	private Object object;
-	private String name;
+	private Symbol key;
 
-	public ObjectMember( Object object, String name )
+	public ObjectMember( Object object, Symbol key )
 	{
 		this.object = object;
-		this.name = name;
+		this.key = key;
 	}
 
 	public Object getObject()
@@ -34,8 +46,54 @@ public class ObjectMember
 		return this.object;
 	}
 
-	public String getName()
+	public Symbol getKey()
 	{
-		return this.name;
+		return this.key;
+	}
+
+	public boolean isUndefined()
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	public Object get()
+	{
+		try
+		{
+			return Java.get( this.object, this.key.toString() ); // TODO Use resolve() instead.
+		}
+		catch( InvocationTargetException e )
+		{
+			Throwable t = e.getCause();
+			if( t instanceof Returning )
+				throw (Returning)t;
+			throw new JavaException( t, ThreadContext.get().cloneStack( /* TODO getLocation() */ ) );
+		}
+		catch( MissingFieldException e )
+		{
+			throw new ScopeException( "'" + this.key + "' undefined" );
+		}
+	}
+
+	public void set( Object value )
+	{
+		try
+		{
+			if( this.object instanceof Map )
+				( (Map)this.object ).put( this.key.toString(), value );
+			else
+				Java.set( this.object, this.key.toString(), value ); // TODO Use resolve() instead.
+		}
+		catch( InvocationTargetException e )
+		{
+			Throwable t = e.getCause();
+			if( t instanceof Returning )
+				throw (Returning)t;
+			throw new JavaException( t, ThreadContext.get().cloneStack( /* TODO getLocation() */ ) );
+		}
+		catch( MissingFieldException e )
+		{
+			throw new ScopeException( "'" + this.key + "' undefined" );
+		}
 	}
 }
