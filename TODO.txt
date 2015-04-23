@@ -1,6 +1,5 @@
 The following branches are not merged into the trunk yet:
 	beanshell
-	include
 	http-pipelining
 	eclipselink
 	result-mapper
